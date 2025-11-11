@@ -9,6 +9,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import Dashboard from "./pages/Dashboard";
 import Pacientes from "./pages/Pacientes";
+import Dentistas from "./pages/Dentistas";
 import Resumo from "./pages/Resumo";
 import AgendaClinica from "./pages/AgendaClinica";
 import GerenciamentoModulos from "./pages/GerenciamentoModulos";
@@ -33,6 +34,7 @@ const App = () => (
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/resumo" element={<Resumo />} />
                     <Route path="/pacientes" element={<Pacientes />} />
+                    <Route path="/dentistas" element={<Dentistas />} />
                     <Route path="/agenda-clinica" element={<AgendaClinica />} />
                     <Route path="/modulos" element={<GerenciamentoModulos />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
