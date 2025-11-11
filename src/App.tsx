@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Pacientes from "./pages/Pacientes";
 import Dentistas from "./pages/Dentistas";
 import Funcionarios from "./pages/Funcionarios";
+import Procedimentos from "./pages/Procedimentos";
 import Resumo from "./pages/Resumo";
 import AgendaClinica from "./pages/AgendaClinica";
 import GerenciamentoModulos from "./pages/GerenciamentoModulos";
@@ -37,6 +38,7 @@ const App = () => (
                     <Route path="/pacientes" element={<Pacientes />} />
                     <Route path="/dentistas" element={<Dentistas />} />
                     <Route path="/funcionarios" element={<Funcionarios />} />
+                    <Route path="/procedimentos" element={<Procedimentos />} />
                     <Route path="/agenda-clinica" element={<AgendaClinica />} />
                     <Route path="/modulos" element={<GerenciamentoModulos />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
