@@ -10,6 +10,7 @@ import { DashboardHeader } from "@/components/DashboardHeader";
 import Dashboard from "./pages/Dashboard";
 import Pacientes from "./pages/Pacientes";
 import Resumo from "./pages/Resumo";
+import AgendaClinica from "./pages/AgendaClinica";
 import GerenciamentoModulos from "./pages/GerenciamentoModulos";
 import NotFound from "./pages/NotFound";
 
@@ -32,6 +33,7 @@ const App = () => (
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/resumo" element={<Resumo />} />
                     <Route path="/pacientes" element={<Pacientes />} />
+                    <Route path="/agenda-clinica" element={<AgendaClinica />} />
                     <Route path="/modulos" element={<GerenciamentoModulos />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
