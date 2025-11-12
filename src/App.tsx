@@ -42,6 +42,7 @@ import ContasReceber from '@/pages/financeiro/ContasReceber';
 import ContasPagar from '@/pages/financeiro/ContasPagar';
 import NotasFiscais from '@/pages/financeiro/NotasFiscais';
 import Transacoes from '@/pages/financeiro/Transacoes';
+import CryptoPagamentos from '@/pages/financeiro/CryptoPagamentos';
 import Orcamentos from '@/pages/Orcamentos';
 import Contratos from '@/pages/Contratos';
 import PortalPaciente from '@/pages/PortalPaciente';
@@ -88,6 +89,7 @@ const App = () => (
                               <Route path="/financeiro/contas-receber" element={<ContasReceber />} />
                               <Route path="/financeiro/contas-pagar" element={<ContasPagar />} />
                               <Route path="/financeiro/notas-fiscais" element={<NotasFiscais />} />
+                              <Route path="/financeiro/crypto" element={<CryptoPagamentos />} />
                               <Route path="/agenda" element={<AgendaClinica />} />
                               <Route path="/agenda-clinica" element={<AgendaClinica />} />
                               <Route path="/pep" element={<PEP />} />

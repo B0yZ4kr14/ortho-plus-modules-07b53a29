@@ -15,6 +15,7 @@ import {
   CreditCard,
   BarChart3,
   FileBarChart,
+  Bitcoin,
   FolderOpen,
   ShoppingCart,
   Webhook,
@@ -112,6 +113,7 @@ const menuGroups = [
       { title: 'Notas Fiscais', url: '/financeiro/notas-fiscais', icon: FileText },
       { title: 'Cobrança', url: '/cobranca', icon: CreditCard },
       { title: 'Split de Pagamento', url: '/split-pagamento', icon: DollarSign, badge: 'Novo' },
+      { title: 'Crypto Pagamentos', url: '/financeiro/crypto', icon: Bitcoin, badge: 'Beta' },
     ]
   },
   {
