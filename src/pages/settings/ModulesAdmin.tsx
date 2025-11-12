@@ -8,10 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Settings, Info, AlertCircle, CheckCircle2, XCircle, Link2, Lock, Unlock, Loader2, Network } from 'lucide-react';
+import { Settings, Info, AlertCircle, CheckCircle2, XCircle, Link2, Lock, Unlock, Loader2, Network, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { ModuleDependencyGraph } from '@/components/modules/ModuleDependencyGraph';
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 
 interface ModuleData {
   id: number;
@@ -32,6 +33,16 @@ export default function ModulesAdmin() {
   const [modules, setModules] = useState<ModuleData[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
+
+  useEffect(() => {
+    // Check if user has completed onboarding
+    const hasCompletedOnboarding = localStorage.getItem('ortho-onboarding-completed');
+    if (!hasCompletedOnboarding) {
+      // Show onboarding for first-time users
+      setOnboardingOpen(true);
+    }
+  }, []);
 
   const fetchModules = async () => {
     try {
@@ -178,28 +189,40 @@ export default function ModulesAdmin() {
           description="Gerencie quais módulos estão ativos na sua clínica"
         />
         
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="lg" className="gap-2">
-              <Network className="h-5 w-5" />
-              Visualizar Grafo de Dependências
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-[95vw] h-[90vh] p-0">
-            <DialogHeader className="px-6 pt-6 pb-4 border-b">
-              <DialogTitle className="flex items-center gap-2">
+        <div className="flex gap-3">
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="gap-2"
+            onClick={() => setOnboardingOpen(true)}
+          >
+            <BookOpen className="h-5 w-5" />
+            Guia de Onboarding
+          </Button>
+          
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="lg" className="gap-2">
                 <Network className="h-5 w-5" />
-                Grafo de Dependências dos Módulos
-              </DialogTitle>
-              <DialogDescription>
-                Visualização interativa das dependências entre os módulos. Use os controles para zoom e navegação.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="h-[calc(90vh-120px)]">
-              <ModuleDependencyGraph modules={modules} />
-            </div>
-          </DialogContent>
-        </Dialog>
+                Visualizar Grafo de Dependências
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-[95vw] h-[90vh] p-0">
+              <DialogHeader className="px-6 pt-6 pb-4 border-b">
+                <DialogTitle className="flex items-center gap-2">
+                  <Network className="h-5 w-5" />
+                  Grafo de Dependências dos Módulos
+                </DialogTitle>
+                <DialogDescription>
+                  Visualização interativa das dependências entre os módulos. Use os controles para zoom e navegação.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="h-[calc(90vh-120px)]">
+                <ModuleDependencyGraph modules={modules} />
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <Alert>
@@ -356,6 +379,11 @@ export default function ModulesAdmin() {
           </div>
         </div>
       ))}
+
+      <OnboardingWizard 
+        open={onboardingOpen} 
+        onClose={() => setOnboardingOpen(false)} 
+      />
     </div>
   );
 }
