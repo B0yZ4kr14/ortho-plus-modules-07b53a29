@@ -76,6 +76,18 @@ export const fornecedorSchema = z.object({
   cep: z.string().optional(),
   observacoes: z.string().optional(),
   ativo: z.boolean().default(true),
+  // Campos de integração API
+  apiEnabled: z.boolean().default(false),
+  apiEndpoint: z.string().optional(),
+  apiAuthType: z.enum(['none', 'basic', 'bearer', 'api_key']).default('none'),
+  apiUsername: z.string().optional(),
+  apiPassword: z.string().optional(),
+  apiToken: z.string().optional(),
+  apiKeyHeader: z.string().optional(),
+  apiKeyValue: z.string().optional(),
+  apiRequestFormat: z.enum(['json', 'xml', 'form']).default('json'),
+  autoOrderEnabled: z.boolean().default(false),
+  autoOrderConfig: z.any().optional(),
   createdAt: z.string().optional(),
 });
 
