@@ -36,6 +36,7 @@ import EstoqueMovimentacoes from '@/pages/estoque/EstoqueMovimentacoes';
 import EstoqueAnaliseConsumo from '@/pages/estoque/EstoqueAnaliseConsumo';
 import EstoquePedidos from '@/pages/estoque/EstoquePedidos';
 import EstoqueAnalisePedidos from '@/pages/estoque/EstoqueAnalisePedidos';
+import EstoqueIntegracoes from '@/pages/estoque/EstoqueIntegracoes';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -80,7 +81,8 @@ const App = () => (
                               <Route path="/estoque/cadastros" element={<EstoqueCadastros />} />
                               <Route path="/estoque/requisicoes" element={<EstoqueRequisicoes />} />
                               <Route path="/estoque/movimentacoes" element={<EstoqueMovimentacoes />} />
-                              <Route path="/estoque/pedidos" element={<EstoquePedidos />} />
+                               <Route path="/estoque/pedidos" element={<EstoquePedidos />} />
+                              <Route path="/estoque/integracoes" element={<EstoqueIntegracoes />} />
                               <Route path="/estoque/analise-pedidos" element={<EstoqueAnalisePedidos />} />
                               <Route path="/estoque/analise-consumo" element={<EstoqueAnaliseConsumo />} />
                               <Route

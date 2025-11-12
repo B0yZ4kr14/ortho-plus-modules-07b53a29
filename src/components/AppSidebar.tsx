@@ -16,7 +16,9 @@ import {
   BarChart3,
   FileBarChart,
   FolderOpen,
-  ShoppingCart
+  ShoppingCart,
+  Webhook,
+  LineChart
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -81,7 +83,8 @@ const menuGroups = [
       { title: 'Requisições', url: '/estoque/requisicoes', icon: ClipboardList },
       { title: 'Movimentações', url: '/estoque/movimentacoes', icon: Package },
       { title: 'Pedidos', url: '/estoque/pedidos', icon: ShoppingCart },
-      { title: 'Análise de Pedidos', url: '/estoque/analise-pedidos', icon: TrendingUp },
+      { title: 'Integrações API', url: '/estoque/integracoes', icon: Webhook },
+      { title: 'Análise de Pedidos', url: '/estoque/analise-pedidos', icon: LineChart },
       { title: 'Análise de Consumo', url: '/estoque/analise-consumo', icon: BarChart3 },
     ]
   },
