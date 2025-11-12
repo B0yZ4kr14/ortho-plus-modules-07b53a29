@@ -18,10 +18,11 @@ import Financeiro from "./pages/Financeiro";
 import Resumo from "./pages/Resumo";
 import AgendaClinica from "./pages/AgendaClinica";
 import GerenciamentoModulos from "./pages/GerenciamentoModulos";
-import ModulesAdmin from "./pages/settings/ModulesAdmin";
-import Configuracoes from "./pages/Configuracoes";
-import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
+import ModulesAdmin from './pages/settings/ModulesAdmin';
+import Configuracoes from './pages/Configuracoes';
+import PEP from './pages/PEP';
+import Auth from './pages/Auth';
+import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
                               <Route path="/procedimentos" element={<Procedimentos />} />
                               <Route path="/financeiro" element={<Financeiro />} />
                               <Route path="/agenda-clinica" element={<AgendaClinica />} />
+                              <Route path="/pep" element={<PEP />} />
                               <Route path="/modulos" element={<GerenciamentoModulos />} />
                               <Route 
                                 path="/configuracoes" 

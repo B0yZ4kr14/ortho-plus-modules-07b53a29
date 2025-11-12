@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import ModulesAdmin from './settings/ModulesAdmin';
 import { DatabaseBackupTab } from '@/components/settings/DatabaseBackupTab';
+import { BackupStatsDashboard } from '@/components/settings/BackupStatsDashboard';
 
 export default function Configuracoes() {
   const { user, hasRole } = useAuth();
@@ -104,6 +105,7 @@ export default function Configuracoes() {
         </TabsContent>
 
         <TabsContent value="database" className="space-y-4">
+          <BackupStatsDashboard />
           <DatabaseBackupTab />
         </TabsContent>
 
