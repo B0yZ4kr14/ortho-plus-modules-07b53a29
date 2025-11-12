@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
-import ModulesAdmin from './settings/ModulesAdmin';
+import ModulesSimple from './settings/ModulesSimple';
 import { DatabaseBackupTab } from '@/components/settings/DatabaseBackupTab';
 import { BackupStatsDashboard } from '@/components/settings/BackupStatsDashboard';
 import { UserManagementTab } from '@/components/settings/UserManagementTab';
@@ -83,7 +83,7 @@ export default function Configuracoes() {
         </TabsList>
 
         <TabsContent value="modules" className="space-y-4">
-          <ModulesAdmin />
+          <ModulesSimple />
         </TabsContent>
 
         <TabsContent value="users" className="space-y-4">
