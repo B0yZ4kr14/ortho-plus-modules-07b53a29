@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -109,8 +110,36 @@ serve(async (req) => {
         }
       }
 
-      // Aqui você poderia integrar com serviço de email (Resend)
-      // para enviar notificações por email aos administradores
+      // Enviar email via Resend para administradores
+      if (admins && admins.length > 0 && Deno.env.get('RESEND_API_KEY')) {
+        const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
+        
+        const produtosHtml = produtosClinica.map(p => 
+          `<li><strong>${p.nome}</strong>: ${p.quantidade_atual} unidades (mínimo: ${p.quantidade_minima})</li>`
+        ).join('');
+
+        for (const admin of admins) {
+          try {
+            await resend.emails.send({
+              from: 'Ortho+ <onboarding@resend.dev>',
+              to: [admin.id], // Usar email real do admin quando disponível
+              subject: '⚠️ Alerta de Estoque - Ortho+',
+              html: `
+                <h2>Alerta de Estoque</h2>
+                <p>Olá ${admin.full_name || 'Administrador'},</p>
+                <p>Os seguintes produtos estão com estoque baixo ou crítico:</p>
+                <ul>${produtosHtml}</ul>
+                <p>Por favor, providencie a reposição destes materiais.</p>
+                <p><strong>Ortho+</strong> - Sistema de Gestão Odontológica</p>
+              `,
+            });
+            console.log(`Email enviado para ${admin.full_name}`);
+          } catch (emailError) {
+            console.error(`Erro ao enviar email para ${admin.full_name}:`, emailError);
+          }
+        }
+      }
+      
       console.log(`Alertas criados para clínica ${clinicId}:`, produtosClinica.length);
     }
 
