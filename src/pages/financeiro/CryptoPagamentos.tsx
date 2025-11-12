@@ -16,7 +16,8 @@ import {
   RefreshCw,
   Settings,
   Plus,
-  ExternalLink
+  ExternalLink,
+  QrCode
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -29,6 +30,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { ExchangeConfigForm } from '@/components/crypto/ExchangeConfigForm';
 import { WalletForm } from '@/components/crypto/WalletForm';
+import { BitcoinQRCodeDialog } from '@/components/crypto/BitcoinQRCodeDialog';
 
 export default function CryptoPagamentos() {
   const { user } = useAuth();
@@ -44,6 +46,7 @@ export default function CryptoPagamentos() {
     getDashboardData,
     createExchangeConfig,
     createWallet,
+    createPaymentRequest,
   } = useCryptoSupabase(clinicId);
 
   const [selectedWallet, setSelectedWallet] = useState(null);
@@ -51,6 +54,7 @@ export default function CryptoPagamentos() {
   const [convertingTx, setConvertingTx] = useState<string | null>(null);
   const [exchangeDialogOpen, setExchangeDialogOpen] = useState(false);
   const [walletDialogOpen, setWalletDialogOpen] = useState(false);
+  const [qrCodeDialogOpen, setQrCodeDialogOpen] = useState(false);
 
   const dashboardData = getDashboardData();
 
@@ -185,9 +189,14 @@ export default function CryptoPagamentos() {
         <TabsContent value="transactions" className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Histórico de Transações</h3>
-            <Button variant="outline" size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Transação
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setQrCodeDialogOpen(true)}
+              disabled={wallets.filter(w => w.is_active).length === 0}
+            >
+              <QrCode className="h-4 w-4 mr-2" />
+              Gerar QR Code de Pagamento
             </Button>
           </div>
 
@@ -492,6 +501,13 @@ export default function CryptoPagamentos() {
           )}
         </TabsContent>
       </Tabs>
+
+      <BitcoinQRCodeDialog
+        open={qrCodeDialogOpen}
+        onOpenChange={setQrCodeDialogOpen}
+        wallets={wallets}
+        onGeneratePayment={createPaymentRequest}
+      />
     </div>
   );
 }

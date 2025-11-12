@@ -206,6 +206,48 @@ export const useCryptoSupabase = (clinicId: string) => {
     }
   };
 
+  const createPaymentRequest = async (data: {
+    wallet_id: string;
+    amount_crypto: number;
+    patient_id?: string;
+    conta_receber_id?: string;
+  }) => {
+    if (!clinicId) throw new Error('Clinic ID required');
+
+    const wallet = wallets.find(w => w.id === data.wallet_id);
+    if (!wallet) throw new Error('Wallet not found');
+
+    const exchangeRate = await fetchExchangeRate(wallet.coin_type);
+    const amountBrl = data.amount_crypto * exchangeRate;
+
+    const { data: transaction, error } = await supabase
+      .from('crypto_transactions')
+      .insert({
+        clinic_id: clinicId,
+        exchange_config_id: wallet.exchange_config_id,
+        wallet_id: data.wallet_id,
+        patient_id: data.patient_id,
+        conta_receber_id: data.conta_receber_id,
+        coin_type: wallet.coin_type,
+        amount_crypto: data.amount_crypto,
+        amount_brl: amountBrl,
+        exchange_rate: exchangeRate,
+        tipo: 'RECEBIMENTO',
+        status: 'PENDENTE',
+        confirmations: 0,
+        required_confirmations: 3,
+        to_address: wallet.wallet_address,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    toast.success('Solicitação de pagamento criada! Aguardando confirmação...');
+    await loadData();
+    return transaction;
+  };
+
   const convertCryptoToBRL = async (transactionId: string) => {
     try {
       const { data, error } = await supabase.functions.invoke('convert-crypto-to-brl', {
@@ -255,6 +297,48 @@ export const useCryptoSupabase = (clinicId: string) => {
     };
   };
 
+  const createPaymentRequest = async (data: {
+    wallet_id: string;
+    amount_crypto: number;
+    patient_id?: string;
+    conta_receber_id?: string;
+  }) => {
+    if (!clinicId) throw new Error('Clinic ID required');
+
+    const wallet = wallets.find(w => w.id === data.wallet_id);
+    if (!wallet) throw new Error('Wallet not found');
+
+    const exchangeRate = await fetchExchangeRate(wallet.coin_type);
+    const amountBrl = data.amount_crypto * exchangeRate;
+
+    const { data: transaction, error } = await supabase
+      .from('crypto_transactions')
+      .insert({
+        clinic_id: clinicId,
+        exchange_config_id: wallet.exchange_config_id,
+        wallet_id: data.wallet_id,
+        patient_id: data.patient_id,
+        conta_receber_id: data.conta_receber_id,
+        coin_type: wallet.coin_type,
+        amount_crypto: data.amount_crypto,
+        amount_brl: amountBrl,
+        exchange_rate: exchangeRate,
+        tipo: 'RECEBIMENTO',
+        status: 'PENDENTE',
+        confirmations: 0,
+        required_confirmations: 3,
+        to_address: wallet.wallet_address,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    toast.success('Solicitação de pagamento criada! Aguardando confirmação...');
+    await loadData();
+    return transaction;
+  };
+
   return {
     exchanges,
     wallets,
@@ -265,6 +349,7 @@ export const useCryptoSupabase = (clinicId: string) => {
     syncWalletBalance,
     convertCryptoToBRL,
     getDashboardData,
+    createPaymentRequest,
     reload: loadData,
   };
 };
