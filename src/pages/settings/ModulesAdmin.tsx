@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Settings, Info, AlertCircle, CheckCircle2, XCircle, Link2, Lock, Unlock, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Settings, Info, AlertCircle, CheckCircle2, XCircle, Link2, Lock, Unlock, Loader2, Network } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { ModuleDependencyGraph } from '@/components/modules/ModuleDependencyGraph';
 
 interface ModuleData {
   id: number;
@@ -169,11 +171,36 @@ export default function ModulesAdmin() {
 
   return (
     <div className="flex-1 space-y-8 p-8">
-      <PageHeader
-        icon={Settings}
-        title="Administração de Módulos"
-        description="Gerencie quais módulos estão ativos na sua clínica"
-      />
+      <div className="flex items-center justify-between">
+        <PageHeader
+          icon={Settings}
+          title="Administração de Módulos"
+          description="Gerencie quais módulos estão ativos na sua clínica"
+        />
+        
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="lg" className="gap-2">
+              <Network className="h-5 w-5" />
+              Visualizar Grafo de Dependências
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-[95vw] h-[90vh] p-0">
+            <DialogHeader className="px-6 pt-6 pb-4 border-b">
+              <DialogTitle className="flex items-center gap-2">
+                <Network className="h-5 w-5" />
+                Grafo de Dependências dos Módulos
+              </DialogTitle>
+              <DialogDescription>
+                Visualização interativa das dependências entre os módulos. Use os controles para zoom e navegação.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="h-[calc(90vh-120px)]">
+              <ModuleDependencyGraph modules={modules} />
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
 
       <Alert>
         <Info className="h-4 w-4" />
