@@ -4,10 +4,11 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { 
   Settings, 
   Loader2, 
-  Check, 
   LayoutDashboard,
   Users,
   UserPlus,
@@ -25,10 +26,16 @@ import {
   PenTool,
   Bot,
   FileBarChart,
-  Briefcase
+  Briefcase,
+  AlertCircle,
+  Eye,
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { ModuleDependencyGraph } from '@/components/modules/ModuleDependencyGraph';
+import { SidebarPreview } from '@/components/modules/SidebarPreview';
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 
 // Mapeamento de ícones por module_key
 const moduleIcons: Record<string, any> = {
@@ -67,12 +74,17 @@ interface Module {
   is_active: boolean;
   can_activate: boolean;
   can_deactivate: boolean;
+  unmet_dependencies?: string[];
+  blocking_dependents?: string[];
 }
 
 export default function ModulesSimple() {
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
+  const [expandedModule, setExpandedModule] = useState<string | null>(null);
 
   const fetchModules = async () => {
     try {
@@ -111,6 +123,15 @@ export default function ModulesSimple() {
     }
   };
 
+  const handleWizardActivate = async (moduleKeys: string[]) => {
+    for (const key of moduleKeys) {
+      const module = modules.find(m => m.module_key === key);
+      if (module && !module.is_active) {
+        await handleToggle(key);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
@@ -143,77 +164,168 @@ export default function ModulesSimple() {
 
   return (
     <div className="flex-1 space-y-6 p-8">
-      <PageHeader
-        icon={Settings}
-        title="Gestão de Módulos"
-        description="Ative ou desative módulos do sistema"
-      />
+      <div className="flex items-center justify-between">
+        <PageHeader
+          icon={Settings}
+          title="Gestão de Módulos"
+          description="Ative ou desative módulos do sistema"
+        />
+        
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowWizard(true)}
+            className="gap-2"
+          >
+            <Sparkles className="h-4 w-4" />
+            Assistente de Configuração
+          </Button>
+          
+          <Button
+            variant={showPreview ? "default" : "outline"}
+            onClick={() => setShowPreview(!showPreview)}
+            className="gap-2"
+          >
+            <Eye className="h-4 w-4" />
+            {showPreview ? 'Ocultar' : 'Visualizar'} Menu
+          </Button>
+        </div>
+      </div>
 
-      <div className="space-y-8">
-        {sortedCategories.map((category) => (
-          <div key={category} className="space-y-3">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-foreground">{category}</h2>
-              <div className="flex-1 h-px bg-border"></div>
-            </div>
-            
-            <div className="grid gap-3">
-              {groupedModules[category].map((module) => {
-                const isToggling = toggling === module.module_key;
-                const canToggle = module.is_active ? module.can_deactivate : module.can_activate;
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Modules List */}
+        <div className={cn("space-y-8", showPreview ? "lg:col-span-2" : "lg:col-span-3")}>
+          {sortedCategories.map((category) => (
+            <div key={category} className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-foreground">{category}</h2>
+                <div className="flex-1 h-px bg-border"></div>
+              </div>
+              
+              <div className="grid gap-3">
+                {groupedModules[category].map((module) => {
+                  const isToggling = toggling === module.module_key;
+                  const canToggle = module.is_active ? module.can_deactivate : module.can_activate;
+                  const hasWarnings = module.unmet_dependencies?.length || module.blocking_dependents?.length;
+                  const isExpanded = expandedModule === module.module_key;
 
-                return (
-                  <Card
-                    key={module.module_key}
-                    className={cn(
-                      "p-4 transition-all hover:shadow-md",
-                      module.is_active && "border-primary/50 bg-primary/5",
-                      isToggling && "opacity-60"
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-4 flex-1">
-                      <div className={cn(
-                        "flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-300",
-                        module.is_active 
-                          ? "bg-gradient-to-br from-success/20 to-success/10 shadow-lg shadow-success/20" 
-                          : "bg-muted/50"
-                      )}>
-                        {(() => {
-                          const Icon = moduleIcons[module.module_key] || Settings;
-                          return (
-                            <Icon className={cn(
-                              "h-6 w-6 transition-all duration-300",
-                              module.is_active ? "text-success animate-pulse" : "text-muted-foreground"
-                            )} />
-                          );
-                        })()}
-                      </div>
-                        
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold text-foreground">{module.name}</h3>
-                            <Badge variant={module.is_active ? 'success' : 'secondary'} className="text-xs">
-                              {module.is_active ? 'Ativo' : 'Inativo'}
-                            </Badge>
+                  return (
+                    <Card
+                      key={module.module_key}
+                      className={cn(
+                        "p-4 transition-all hover:shadow-md",
+                        module.is_active && "border-primary/50 bg-primary/5",
+                        isToggling && "opacity-60",
+                        hasWarnings && !canToggle && "border-warning/30"
+                      )}
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-4 flex-1">
+                            <div className={cn(
+                              "flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-300 shadow-md",
+                              module.is_active 
+                                ? "bg-gradient-to-br from-success/30 to-success/15 shadow-success/30 border-2 border-success/40" 
+                                : "bg-gradient-to-br from-muted to-muted/50 border-2 border-border"
+                            )}>
+                              {(() => {
+                                const Icon = moduleIcons[module.module_key] || Settings;
+                                return (
+                                  <Icon className={cn(
+                                    "h-6 w-6 transition-all duration-300",
+                                    module.is_active ? "text-success drop-shadow-[0_0_4px_rgba(34,197,94,0.5)]" : "text-muted-foreground"
+                                  )} />
+                                );
+                              })()}
+                            </div>
+                            
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-semibold text-foreground">{module.name}</h3>
+                                <Badge variant={module.is_active ? 'success' : 'secondary'} className="text-xs">
+                                  {module.is_active ? 'Ativo' : 'Inativo'}
+                                </Badge>
+                                {hasWarnings && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-6 w-6 p-0"
+                                          onClick={() => setExpandedModule(isExpanded ? null : module.module_key)}
+                                        >
+                                          <AlertCircle className="h-4 w-4 text-warning" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Ver dependências</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
+                              </div>
+                              <p className="text-sm text-muted-foreground">{module.description}</p>
+                            </div>
                           </div>
-                          <p className="text-sm text-muted-foreground">{module.description}</p>
-                        </div>
-                      </div>
 
-                      <Switch
-                        checked={module.is_active}
-                        disabled={!canToggle || isToggling}
-                        onCheckedChange={() => handleToggle(module.module_key)}
-                      />
-                    </div>
-                  </Card>
-                );
-              })}
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div>
+                                  <Switch
+                                    checked={module.is_active}
+                                    disabled={!canToggle || isToggling}
+                                    onCheckedChange={() => handleToggle(module.module_key)}
+                                  />
+                                </div>
+                              </TooltipTrigger>
+                              {!canToggle && (
+                                <TooltipContent>
+                                  <p className="text-xs">
+                                    {module.unmet_dependencies?.length 
+                                      ? 'Ative as dependências primeiro' 
+                                      : 'Desative os módulos dependentes primeiro'}
+                                  </p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+
+                        {/* Dependency Graph */}
+                        {isExpanded && (
+                          <ModuleDependencyGraph modules={module} allModules={modules} />
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Sidebar Preview */}
+        {showPreview && (
+          <div className="lg:col-span-1 sticky top-8 h-fit">
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                Preview do Menu
+              </h3>
+              <SidebarPreview modules={modules} />
             </div>
           </div>
-        ))}
+        )}
       </div>
+
+      {/* Onboarding Wizard */}
+      <OnboardingWizard
+        isOpen={showWizard}
+        onClose={setShowWizard}
+        modules={modules}
+        onActivateModules={handleWizardActivate}
+      />
     </div>
   );
 }

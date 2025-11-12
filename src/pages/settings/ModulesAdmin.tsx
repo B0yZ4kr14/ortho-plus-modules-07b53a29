@@ -270,7 +270,10 @@ export default function ModulesAdmin() {
                 </DialogDescription>
               </DialogHeader>
               <div className="h-[calc(90vh-120px)]">
-                <ModuleDependencyGraph modules={modules} loading={loading} />
+                {/* TODO: Implement network dependency graph visualization */}
+                <div className="text-center text-muted-foreground p-8">
+                  Grafo de dependências em desenvolvimento
+                </div>
               </div>
             </DialogContent>
           </Dialog>
@@ -434,8 +437,17 @@ export default function ModulesAdmin() {
       ))}
 
       <OnboardingWizard 
-        open={onboardingOpen} 
+        isOpen={onboardingOpen} 
         onClose={() => setOnboardingOpen(false)} 
+        modules={modules}
+        onActivateModules={async (moduleKeys) => {
+          for (const key of moduleKeys) {
+            const module = modules.find(m => m.module_key === key);
+            if (module && !module.is_active) {
+              await handleToggle(key, module.is_active);
+            }
+          }
+        }}
       />
     </div>
   );
