@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { SearchInput } from '@/components/shared/SearchInput';
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog';
 import { Package, Users, Building2, Plus } from 'lucide-react';
-import { useEstoqueStore } from '@/modules/estoque/hooks/useEstoqueStore';
+import { useEstoqueSupabase } from '@/modules/estoque/hooks/useEstoqueSupabase';
 import { ProdutoForm } from '@/modules/estoque/components/ProdutoForm';
 import { ProdutosList } from '@/modules/estoque/components/ProdutosList';
 import { FornecedorForm } from '@/modules/estoque/components/FornecedorForm';
@@ -24,6 +24,7 @@ export default function EstoqueCadastros() {
     produtos,
     fornecedores,
     categorias,
+    loading,
     addProduto,
     updateProduto,
     deleteProduto,
@@ -33,7 +34,7 @@ export default function EstoqueCadastros() {
     addCategoria,
     updateCategoria,
     deleteCategoria,
-  } = useEstoqueStore();
+  } = useEstoqueSupabase();
 
   const [produtoViewMode, setProdutoViewMode] = useState<ViewMode>('list');
   const [fornecedorViewMode, setFornecedorViewMode] = useState<ViewMode>('list');
@@ -88,16 +89,20 @@ export default function EstoqueCadastros() {
     setFornecedorViewMode('form');
   };
 
-  const handleSubmitFornecedor = (data: Fornecedor) => {
-    if (selectedFornecedor) {
-      updateFornecedor(selectedFornecedor.id!, data);
-      toast.success('Fornecedor atualizado com sucesso!');
-    } else {
-      addFornecedor(data);
-      toast.success('Fornecedor cadastrado com sucesso!');
+  const handleSubmitFornecedor = async (data: Fornecedor) => {
+    try {
+      if (selectedFornecedor) {
+        await updateFornecedor(selectedFornecedor.id!, data);
+        toast.success('Fornecedor atualizado com sucesso!');
+      } else {
+        await addFornecedor(data);
+        toast.success('Fornecedor cadastrado com sucesso!');
+      }
+      setFornecedorViewMode('list');
+      setSelectedFornecedor(undefined);
+    } catch (error) {
+      console.error('Erro ao salvar fornecedor:', error);
     }
-    setFornecedorViewMode('list');
-    setSelectedFornecedor(undefined);
   };
 
   const handleDeleteFornecedor = (id: string) => {
@@ -116,16 +121,20 @@ export default function EstoqueCadastros() {
     setCategoriaViewMode('form');
   };
 
-  const handleSubmitCategoria = (data: Categoria) => {
-    if (selectedCategoria) {
-      updateCategoria(selectedCategoria.id!, data);
-      toast.success('Categoria atualizada com sucesso!');
-    } else {
-      addCategoria(data);
-      toast.success('Categoria cadastrada com sucesso!');
+  const handleSubmitCategoria = async (data: Categoria) => {
+    try {
+      if (selectedCategoria) {
+        await updateCategoria(selectedCategoria.id!, data);
+        toast.success('Categoria atualizada com sucesso!');
+      } else {
+        await addCategoria(data);
+        toast.success('Categoria cadastrada com sucesso!');
+      }
+      setCategoriaViewMode('list');
+      setSelectedCategoria(undefined);
+    } catch (error) {
+      console.error('Erro ao salvar categoria:', error);
     }
-    setCategoriaViewMode('list');
-    setSelectedCategoria(undefined);
   };
 
   const handleDeleteCategoria = (id: string) => {
@@ -133,26 +142,30 @@ export default function EstoqueCadastros() {
     setDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!itemToDelete) return;
 
-    switch (itemToDelete.type) {
-      case 'produto':
-        deleteProduto(itemToDelete.id);
-        toast.success('Produto excluído com sucesso!');
-        break;
-      case 'fornecedor':
-        deleteFornecedor(itemToDelete.id);
-        toast.success('Fornecedor excluído com sucesso!');
-        break;
-      case 'categoria':
-        deleteCategoria(itemToDelete.id);
-        toast.success('Categoria excluída com sucesso!');
-        break;
-    }
+    try {
+      switch (itemToDelete.type) {
+        case 'produto':
+          await deleteProduto(itemToDelete.id);
+          toast.success('Produto excluído com sucesso!');
+          break;
+        case 'fornecedor':
+          await deleteFornecedor(itemToDelete.id);
+          toast.success('Fornecedor excluído com sucesso!');
+          break;
+        case 'categoria':
+          await deleteCategoria(itemToDelete.id);
+          toast.success('Categoria excluída com sucesso!');
+          break;
+      }
 
-    setDeleteDialogOpen(false);
-    setItemToDelete(null);
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+    } catch (error) {
+      console.error('Erro ao excluir:', error);
+    }
   };
 
   const filteredProdutos = produtos.filter(p =>

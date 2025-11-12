@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { SearchInput } from '@/components/shared/SearchInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp, TrendingDown, ArrowRightLeft, Plus } from 'lucide-react';
-import { useEstoqueStore } from '@/modules/estoque/hooks/useEstoqueStore';
+import { useEstoqueSupabase } from '@/modules/estoque/hooks/useEstoqueSupabase';
 import { MovimentacaoForm } from '@/modules/estoque/components/MovimentacaoForm';
 import { MovimentacoesList } from '@/modules/estoque/components/MovimentacoesList';
 import { toast } from 'sonner';
@@ -18,8 +18,9 @@ export default function EstoqueMovimentacoes() {
     produtos,
     fornecedores,
     movimentacoes,
+    loading,
     addMovimentacao,
-  } = useEstoqueStore();
+  } = useEstoqueSupabase();
 
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,10 +28,14 @@ export default function EstoqueMovimentacoes() {
 
   const currentUser = 'Usuário Atual'; // TODO: Integrar com sistema de autenticação
 
-  const handleSubmit = (data: Movimentacao) => {
-    addMovimentacao(data);
-    toast.success('Movimentação registrada com sucesso!');
-    setShowForm(false);
+  const handleSubmit = async (data: Movimentacao) => {
+    try {
+      await addMovimentacao(data);
+      toast.success('Movimentação registrada com sucesso!');
+      setShowForm(false);
+    } catch (error) {
+      console.error('Erro ao registrar movimentação:', error);
+    }
   };
 
   const movimentacoesEntrada = movimentacoes.filter(m => m.tipo === 'ENTRADA' || m.tipo === 'DEVOLUCAO');

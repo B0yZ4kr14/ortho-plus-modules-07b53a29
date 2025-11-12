@@ -12,9 +12,62 @@ export function useEstoqueSupabase() {
   const [alertas, setAlertas] = useState<Alerta[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load data on mount
+  // Load data on mount and setup realtime
   useEffect(() => {
     loadAllData();
+
+    // Setup Realtime subscriptions
+    const produtosChannel = supabase
+      .channel('estoque_produtos_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_produtos' }, () => {
+        loadProdutos();
+      })
+      .subscribe();
+
+    const categoriasChannel = supabase
+      .channel('estoque_categorias_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_categorias' }, () => {
+        loadCategorias();
+      })
+      .subscribe();
+
+    const fornecedoresChannel = supabase
+      .channel('estoque_fornecedores_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_fornecedores' }, () => {
+        loadFornecedores();
+      })
+      .subscribe();
+
+    const requisicoesChannel = supabase
+      .channel('estoque_requisicoes_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_requisicoes' }, () => {
+        loadRequisicoes();
+      })
+      .subscribe();
+
+    const movimentacoesChannel = supabase
+      .channel('estoque_movimentacoes_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_movimentacoes' }, () => {
+        loadMovimentacoes();
+      })
+      .subscribe();
+
+    const alertasChannel = supabase
+      .channel('estoque_alertas_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_alertas' }, () => {
+        loadAlertas();
+      })
+      .subscribe();
+
+    // Cleanup subscriptions on unmount
+    return () => {
+      supabase.removeChannel(produtosChannel);
+      supabase.removeChannel(categoriasChannel);
+      supabase.removeChannel(fornecedoresChannel);
+      supabase.removeChannel(requisicoesChannel);
+      supabase.removeChannel(movimentacoesChannel);
+      supabase.removeChannel(alertasChannel);
+    };
   }, []);
 
   const loadAllData = async () => {

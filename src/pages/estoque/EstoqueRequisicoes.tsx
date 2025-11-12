@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { ClipboardList, Plus, AlertCircle } from 'lucide-react';
-import { useEstoqueStore } from '@/modules/estoque/hooks/useEstoqueStore';
+import { useEstoqueSupabase } from '@/modules/estoque/hooks/useEstoqueSupabase';
 import { RequisicaoForm } from '@/modules/estoque/components/RequisicaoForm';
 import { RequisicoesList } from '@/modules/estoque/components/RequisicoesList';
 import { AlertasEstoque } from '@/modules/estoque/components/AlertasEstoque';
@@ -19,12 +19,13 @@ export default function EstoqueRequisicoes() {
     produtos,
     requisicoes,
     alertas,
+    loading,
     addRequisicao,
     aprovarRequisicao,
     rejeitarRequisicao,
     marcarAlertaComoLido,
     limparAlertasLidos,
-  } = useEstoqueStore();
+  } = useEstoqueSupabase();
 
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -36,22 +37,34 @@ export default function EstoqueRequisicoes() {
   const currentUser = 'Usuário Atual'; // TODO: Integrar com sistema de autenticação
   const isAdmin = true; // TODO: Integrar com sistema de roles
 
-  const handleSubmit = (data: Requisicao) => {
-    addRequisicao(data);
-    toast.success('Requisição enviada com sucesso!');
-    setShowForm(false);
+  const handleSubmit = async (data: Requisicao) => {
+    try {
+      await addRequisicao(data);
+      toast.success('Requisição enviada com sucesso!');
+      setShowForm(false);
+    } catch (error) {
+      console.error('Erro ao criar requisição:', error);
+    }
   };
 
-  const handleAprovar = (id: string) => {
-    aprovarRequisicao(id, currentUser);
-    toast.success('Requisição aprovada!');
+  const handleAprovar = async (id: string) => {
+    try {
+      await aprovarRequisicao(id, currentUser);
+      toast.success('Requisição aprovada!');
+    } catch (error) {
+      console.error('Erro ao aprovar requisição:', error);
+    }
   };
 
-  const handleRejeitar = () => {
+  const handleRejeitar = async () => {
     if (!rejectDialog.id) return;
-    rejeitarRequisicao(rejectDialog.id, 'Requisição rejeitada pelo gestor');
-    toast.success('Requisição rejeitada');
-    setRejectDialog({ open: false, id: null });
+    try {
+      await rejeitarRequisicao(rejectDialog.id, 'Requisição rejeitada pelo gestor');
+      toast.success('Requisição rejeitada');
+      setRejectDialog({ open: false, id: null });
+    } catch (error) {
+      console.error('Erro ao rejeitar requisição:', error);
+    }
   };
 
   const requisicoesPendentes = requisicoes.filter(r => r.status === 'PENDENTE');

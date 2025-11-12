@@ -75,6 +75,7 @@ const menuGroups = [
     label: 'Estoque',
     collapsed: true,
     items: [
+      { title: 'Dashboard', url: '/estoque', icon: BarChart3 },
       { title: 'Cadastros', url: '/estoque/cadastros', icon: FolderOpen },
       { title: 'Requisições', url: '/estoque/requisicoes', icon: ClipboardList },
       { title: 'Movimentações', url: '/estoque/movimentacoes', icon: Package },
