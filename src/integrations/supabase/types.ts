@@ -244,6 +244,194 @@ export type Database = {
         }
         Relationships: []
       }
+      contrato_anexos: {
+        Row: {
+          caminho_storage: string
+          contrato_id: string
+          created_at: string
+          id: string
+          mime_type: string
+          nome_arquivo: string
+          tamanho_bytes: number
+          uploaded_by: string
+        }
+        Insert: {
+          caminho_storage: string
+          contrato_id: string
+          created_at?: string
+          id?: string
+          mime_type: string
+          nome_arquivo: string
+          tamanho_bytes: number
+          uploaded_by: string
+        }
+        Update: {
+          caminho_storage?: string
+          contrato_id?: string
+          created_at?: string
+          id?: string
+          mime_type?: string
+          nome_arquivo?: string
+          tamanho_bytes?: number
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contrato_anexos_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contrato_templates: {
+        Row: {
+          ativo: boolean
+          clinic_id: string
+          conteudo_html: string
+          created_at: string
+          created_by: string
+          id: string
+          nome: string
+          tipo_tratamento: string
+          updated_at: string
+          variaveis_disponiveis: Json | null
+        }
+        Insert: {
+          ativo?: boolean
+          clinic_id: string
+          conteudo_html: string
+          created_at?: string
+          created_by: string
+          id?: string
+          nome: string
+          tipo_tratamento: string
+          updated_at?: string
+          variaveis_disponiveis?: Json | null
+        }
+        Update: {
+          ativo?: boolean
+          clinic_id?: string
+          conteudo_html?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          nome?: string
+          tipo_tratamento?: string
+          updated_at?: string
+          variaveis_disponiveis?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contrato_templates_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contratos: {
+        Row: {
+          assinado_em: string | null
+          assinatura_dentista_base64: string | null
+          assinatura_paciente_base64: string | null
+          cancelado_em: string | null
+          clinic_id: string
+          conteudo_html: string
+          created_at: string
+          created_by: string
+          data_inicio: string
+          data_termino: string | null
+          hash_blockchain: string | null
+          id: string
+          ip_assinatura: string | null
+          motivo_cancelamento: string | null
+          numero_contrato: string
+          orcamento_id: string | null
+          patient_id: string
+          renovacao_automatica: boolean | null
+          status: string
+          template_id: string | null
+          titulo: string
+          updated_at: string
+          valor_contrato: number
+        }
+        Insert: {
+          assinado_em?: string | null
+          assinatura_dentista_base64?: string | null
+          assinatura_paciente_base64?: string | null
+          cancelado_em?: string | null
+          clinic_id: string
+          conteudo_html: string
+          created_at?: string
+          created_by: string
+          data_inicio: string
+          data_termino?: string | null
+          hash_blockchain?: string | null
+          id?: string
+          ip_assinatura?: string | null
+          motivo_cancelamento?: string | null
+          numero_contrato: string
+          orcamento_id?: string | null
+          patient_id: string
+          renovacao_automatica?: boolean | null
+          status?: string
+          template_id?: string | null
+          titulo: string
+          updated_at?: string
+          valor_contrato: number
+        }
+        Update: {
+          assinado_em?: string | null
+          assinatura_dentista_base64?: string | null
+          assinatura_paciente_base64?: string | null
+          cancelado_em?: string | null
+          clinic_id?: string
+          conteudo_html?: string
+          created_at?: string
+          created_by?: string
+          data_inicio?: string
+          data_termino?: string | null
+          hash_blockchain?: string | null
+          id?: string
+          ip_assinatura?: string | null
+          motivo_cancelamento?: string | null
+          numero_contrato?: string
+          orcamento_id?: string | null
+          patient_id?: string
+          renovacao_automatica?: boolean | null
+          status?: string
+          template_id?: string | null
+          titulo?: string
+          updated_at?: string
+          valor_contrato?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contratos_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_orcamento_id_fkey"
+            columns: ["orcamento_id"]
+            isOneToOne: false
+            referencedRelation: "orcamentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "contrato_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estoque_pedidos: {
         Row: {
           clinic_id: string
@@ -503,6 +691,392 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      orcamento_itens: {
+        Row: {
+          created_at: string
+          dente_codigo: string | null
+          descricao: string
+          id: string
+          observacoes: string | null
+          orcamento_id: string
+          ordem: number
+          procedimento_id: string | null
+          quantidade: number
+          valor_total: number
+          valor_unitario: number
+        }
+        Insert: {
+          created_at?: string
+          dente_codigo?: string | null
+          descricao: string
+          id?: string
+          observacoes?: string | null
+          orcamento_id: string
+          ordem?: number
+          procedimento_id?: string | null
+          quantidade?: number
+          valor_total: number
+          valor_unitario: number
+        }
+        Update: {
+          created_at?: string
+          dente_codigo?: string | null
+          descricao?: string
+          id?: string
+          observacoes?: string | null
+          orcamento_id?: string
+          ordem?: number
+          procedimento_id?: string | null
+          quantidade?: number
+          valor_total?: number
+          valor_unitario?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orcamento_itens_orcamento_id_fkey"
+            columns: ["orcamento_id"]
+            isOneToOne: false
+            referencedRelation: "orcamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orcamento_pagamento: {
+        Row: {
+          created_at: string
+          forma_pagamento: string[] | null
+          id: string
+          numero_parcelas: number | null
+          observacoes: string | null
+          orcamento_id: string
+          tipo_pagamento: string
+          valor_entrada: number | null
+          valor_parcela: number | null
+        }
+        Insert: {
+          created_at?: string
+          forma_pagamento?: string[] | null
+          id?: string
+          numero_parcelas?: number | null
+          observacoes?: string | null
+          orcamento_id: string
+          tipo_pagamento: string
+          valor_entrada?: number | null
+          valor_parcela?: number | null
+        }
+        Update: {
+          created_at?: string
+          forma_pagamento?: string[] | null
+          id?: string
+          numero_parcelas?: number | null
+          observacoes?: string | null
+          orcamento_id?: string
+          tipo_pagamento?: string
+          valor_entrada?: number | null
+          valor_parcela?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orcamento_pagamento_orcamento_id_fkey"
+            columns: ["orcamento_id"]
+            isOneToOne: false
+            referencedRelation: "orcamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orcamento_visualizacoes: {
+        Row: {
+          duracao_segundos: number | null
+          id: string
+          ip_address: string | null
+          orcamento_id: string
+          user_agent: string | null
+          visualizado_em: string
+        }
+        Insert: {
+          duracao_segundos?: number | null
+          id?: string
+          ip_address?: string | null
+          orcamento_id: string
+          user_agent?: string | null
+          visualizado_em?: string
+        }
+        Update: {
+          duracao_segundos?: number | null
+          id?: string
+          ip_address?: string | null
+          orcamento_id?: string
+          user_agent?: string | null
+          visualizado_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orcamento_visualizacoes_orcamento_id_fkey"
+            columns: ["orcamento_id"]
+            isOneToOne: false
+            referencedRelation: "orcamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orcamentos: {
+        Row: {
+          aprovado_em: string | null
+          aprovado_por: string | null
+          clinic_id: string
+          convertido_em: string | null
+          created_at: string
+          created_by: string
+          data_validade: string
+          desconto_percentual: number | null
+          desconto_valor: number | null
+          descricao: string | null
+          id: string
+          motivo_rejeicao: string | null
+          numero_orcamento: string
+          observacoes: string | null
+          patient_id: string
+          prontuario_id: string | null
+          rejeitado_em: string | null
+          status: string
+          tipo_plano: string
+          titulo: string
+          updated_at: string
+          validade_dias: number
+          valor_final: number
+          valor_total: number
+        }
+        Insert: {
+          aprovado_em?: string | null
+          aprovado_por?: string | null
+          clinic_id: string
+          convertido_em?: string | null
+          created_at?: string
+          created_by: string
+          data_validade: string
+          desconto_percentual?: number | null
+          desconto_valor?: number | null
+          descricao?: string | null
+          id?: string
+          motivo_rejeicao?: string | null
+          numero_orcamento: string
+          observacoes?: string | null
+          patient_id: string
+          prontuario_id?: string | null
+          rejeitado_em?: string | null
+          status?: string
+          tipo_plano: string
+          titulo: string
+          updated_at?: string
+          validade_dias?: number
+          valor_final?: number
+          valor_total?: number
+        }
+        Update: {
+          aprovado_em?: string | null
+          aprovado_por?: string | null
+          clinic_id?: string
+          convertido_em?: string | null
+          created_at?: string
+          created_by?: string
+          data_validade?: string
+          desconto_percentual?: number | null
+          desconto_valor?: number | null
+          descricao?: string | null
+          id?: string
+          motivo_rejeicao?: string | null
+          numero_orcamento?: string
+          observacoes?: string | null
+          patient_id?: string
+          prontuario_id?: string | null
+          rejeitado_em?: string | null
+          status?: string
+          tipo_plano?: string
+          titulo?: string
+          updated_at?: string
+          validade_dias?: number
+          valor_final?: number
+          valor_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orcamentos_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orcamentos_prontuario_id_fkey"
+            columns: ["prontuario_id"]
+            isOneToOne: false
+            referencedRelation: "prontuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_accounts: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          email: string
+          email_verificado: boolean
+          id: string
+          patient_id: string
+          senha_hash: string
+          token_verificacao: string | null
+          ultimo_acesso: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          email: string
+          email_verificado?: boolean
+          id?: string
+          patient_id: string
+          senha_hash: string
+          token_verificacao?: string | null
+          ultimo_acesso?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          email?: string
+          email_verificado?: boolean
+          id?: string
+          patient_id?: string
+          senha_hash?: string
+          token_verificacao?: string | null
+          ultimo_acesso?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      patient_messages: {
+        Row: {
+          anexos: Json | null
+          clinic_id: string
+          created_at: string
+          id: string
+          lida: boolean
+          lida_em: string | null
+          mensagem: string
+          patient_id: string
+          remetente_id: string
+          remetente_tipo: string
+        }
+        Insert: {
+          anexos?: Json | null
+          clinic_id: string
+          created_at?: string
+          id?: string
+          lida?: boolean
+          lida_em?: string | null
+          mensagem: string
+          patient_id: string
+          remetente_id: string
+          remetente_tipo: string
+        }
+        Update: {
+          anexos?: Json | null
+          clinic_id?: string
+          created_at?: string
+          id?: string
+          lida?: boolean
+          lida_em?: string | null
+          mensagem?: string
+          patient_id?: string
+          remetente_id?: string
+          remetente_tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_messages_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          lida: boolean
+          lida_em: string | null
+          link_acao: string | null
+          mensagem: string
+          patient_id: string
+          tipo: string
+          titulo: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lida?: boolean
+          lida_em?: string | null
+          link_acao?: string | null
+          mensagem: string
+          patient_id: string
+          tipo: string
+          titulo: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lida?: boolean
+          lida_em?: string | null
+          link_acao?: string | null
+          mensagem?: string
+          patient_id?: string
+          tipo?: string
+          titulo?: string
+        }
+        Relationships: []
+      }
+      patient_preferences: {
+        Row: {
+          id: string
+          idioma: string | null
+          lembrete_consulta_horas: number | null
+          notificacoes_email: boolean | null
+          notificacoes_push: boolean | null
+          notificacoes_sms: boolean | null
+          notificacoes_whatsapp: boolean | null
+          patient_id: string
+          tema: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          idioma?: string | null
+          lembrete_consulta_horas?: number | null
+          notificacoes_email?: boolean | null
+          notificacoes_push?: boolean | null
+          notificacoes_sms?: boolean | null
+          notificacoes_whatsapp?: boolean | null
+          patient_id: string
+          tema?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          idioma?: string | null
+          lembrete_consulta_horas?: number | null
+          notificacoes_email?: boolean | null
+          notificacoes_push?: boolean | null
+          notificacoes_sms?: boolean | null
+          notificacoes_whatsapp?: boolean | null
+          patient_id?: string
+          tema?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       pep_anexos: {
         Row: {

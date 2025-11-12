@@ -42,6 +42,9 @@ import ContasReceber from '@/pages/financeiro/ContasReceber';
 import ContasPagar from '@/pages/financeiro/ContasPagar';
 import NotasFiscais from '@/pages/financeiro/NotasFiscais';
 import Transacoes from '@/pages/financeiro/Transacoes';
+import Orcamentos from '@/pages/Orcamentos';
+import Contratos from '@/pages/Contratos';
+import PortalPaciente from '@/pages/PortalPaciente';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
