@@ -42,13 +42,25 @@ const themes = [
       accent: 'bg-teal-400',
     },
   },
+  {
+    id: 'dark-gold',
+    name: 'Dark Gold',
+    description: 'Tema escuro premium com acentos dourados',
+    icon: Palette,
+    preview: {
+      background: 'bg-[#0d0f12]',
+      card: 'bg-[#13151a]',
+      text: 'text-amber-50',
+      accent: 'bg-amber-400',
+    },
+  },
 ] as const;
 
 export function ThemePreview() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {themes.map((themeOption) => {
         const Icon = themeOption.icon;
         const isActive = theme === themeOption.id;

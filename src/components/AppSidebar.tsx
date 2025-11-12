@@ -161,32 +161,32 @@ export function AppSidebar() {
                     <SidebarGroupContent>
                       <SidebarMenu>
                         {group.items.map((item) => (
-                          <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton 
-                              asChild 
-                              isActive={isActive(item.url)}
-                              className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-md hover:border-l-2 hover:border-l-primary data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/20 data-[active=true]:to-transparent data-[active=true]:border-l-2 data-[active=true]:border-l-primary data-[active=true]:shadow-inner transition-all duration-300"
-                            >
-                              <NavLink 
-                                to={item.url} 
-                                end 
-                                className="flex items-center gap-3 px-3 py-3"
-                              >
-                                <item.icon className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
-                                {!collapsed && (
-                                  <span className="text-sm animate-slide-in flex-1">{item.title}</span>
-                                )}
-                                {!collapsed && item.badge && (
-                                  <Badge 
-                                    variant={item.badge === 'IA' ? 'default' : item.badge === 'Beta' ? 'secondary' : 'outline'} 
-                                    className="ml-auto text-[10px] px-1.5 py-0.5"
-                                  >
-                                    {item.badge}
-                                  </Badge>
-                                )}
-                              </NavLink>
-                            </SidebarMenuButton>
-                          </SidebarMenuItem>
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={isActive(item.url)}
+                      className="relative group hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] hover:border-l-4 hover:border-l-primary hover:-translate-x-0.5 data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/25 data-[active=true]:via-primary/15 data-[active=true]:to-transparent data-[active=true]:border-l-4 data-[active=true]:border-l-primary data-[active=true]:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3),0_4px_12px_-2px_rgba(0,0,0,0.5)] transition-all duration-300 ease-out"
+                    >
+                      <NavLink 
+                        to={item.url} 
+                        end 
+                        className="flex items-center gap-3 px-4 py-3.5 rounded-lg"
+                      >
+                        <item.icon className="h-5 w-5 shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
+                        {!collapsed && (
+                          <span className="text-sm font-medium animate-slide-in flex-1">{item.title}</span>
+                        )}
+                        {!collapsed && item.badge && (
+                          <Badge 
+                            variant={item.badge === 'IA' ? 'default' : item.badge === 'Beta' ? 'secondary' : 'outline'} 
+                            className="ml-auto text-[10px] px-1.5 py-0.5 shadow-sm"
+                          >
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                         ))}
                       </SidebarMenu>
                     </SidebarGroupContent>
@@ -205,21 +205,21 @@ export function AppSidebar() {
                         <SidebarMenuButton 
                           asChild 
                           isActive={isActive(item.url)}
-                          className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-md hover:border-l-2 hover:border-l-primary data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/20 data-[active=true]:to-transparent data-[active=true]:border-l-2 data-[active=true]:border-l-primary data-[active=true]:shadow-inner transition-all duration-300"
+                          className="relative group hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] hover:border-l-4 hover:border-l-primary hover:-translate-x-0.5 data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/25 data-[active=true]:via-primary/15 data-[active=true]:to-transparent data-[active=true]:border-l-4 data-[active=true]:border-l-primary data-[active=true]:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3),0_4px_12px_-2px_rgba(0,0,0,0.5)] transition-all duration-300 ease-out"
                         >
                           <NavLink 
                             to={item.url} 
                             end 
-                            className="flex items-center gap-3 px-3 py-3"
+                            className="flex items-center gap-3 px-4 py-3.5 rounded-lg"
                           >
-                            <item.icon className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
+                            <item.icon className="h-5 w-5 shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
                             {!collapsed && (
-                              <span className="text-sm animate-slide-in flex-1">{item.title}</span>
+                              <span className="text-sm font-medium animate-slide-in flex-1">{item.title}</span>
                             )}
                             {!collapsed && item.badge && (
                               <Badge 
                                 variant={item.badge === 'IA' ? 'default' : item.badge === 'Beta' ? 'secondary' : 'outline'} 
-                                className="ml-auto text-[10px] px-1.5 py-0.5"
+                                className="ml-auto text-[10px] px-1.5 py-0.5 shadow-sm"
                               >
                                 {item.badge}
                               </Badge>
@@ -248,14 +248,14 @@ export function AppSidebar() {
                     <SidebarMenuButton 
                       asChild 
                       isActive={isActive('/configuracoes')}
-                      className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-md hover:border-l-2 hover:border-l-primary data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/20 data-[active=true]:to-transparent data-[active=true]:border-l-2 data-[active=true]:border-l-primary data-[active=true]:shadow-inner transition-all duration-300"
+                      className="relative group hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] hover:border-l-4 hover:border-l-primary hover:-translate-x-0.5 data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/25 data-[active=true]:via-primary/15 data-[active=true]:to-transparent data-[active=true]:border-l-4 data-[active=true]:border-l-primary data-[active=true]:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3),0_4px_12px_-2px_rgba(0,0,0,0.5)] transition-all duration-300 ease-out"
                     >
                       <NavLink 
                         to="/configuracoes" 
-                        className="flex items-center gap-3 px-3 py-3"
+                        className="flex items-center gap-3 px-4 py-3.5 rounded-lg"
                       >
-                        <Settings className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
-                        {!collapsed && <span className="text-sm animate-slide-in">Configurações</span>}
+                        <Settings className="h-5 w-5 shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
+                        {!collapsed && <span className="text-sm font-medium animate-slide-in">Configurações</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -263,14 +263,14 @@ export function AppSidebar() {
                     <SidebarMenuButton 
                       asChild 
                       isActive={isActive('/style-guide')}
-                      className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-md hover:border-l-2 hover:border-l-primary data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/20 data-[active=true]:to-transparent data-[active=true]:border-l-2 data-[active=true]:border-l-primary data-[active=true]:shadow-inner transition-all duration-300"
+                      className="relative group hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] hover:border-l-4 hover:border-l-primary hover:-translate-x-0.5 data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/25 data-[active=true]:via-primary/15 data-[active=true]:to-transparent data-[active=true]:border-l-4 data-[active=true]:border-l-primary data-[active=true]:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3),0_4px_12px_-2px_rgba(0,0,0,0.5)] transition-all duration-300 ease-out"
                     >
                       <NavLink 
                         to="/style-guide" 
-                        className="flex items-center gap-3 px-3 py-3"
+                        className="flex items-center gap-3 px-4 py-3.5 rounded-lg"
                       >
-                        <Palette className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
-                        {!collapsed && <span className="text-sm animate-slide-in">Guia de Estilo</span>}
+                        <Palette className="h-5 w-5 shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
+                        {!collapsed && <span className="text-sm font-medium animate-slide-in">Guia de Estilo</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
