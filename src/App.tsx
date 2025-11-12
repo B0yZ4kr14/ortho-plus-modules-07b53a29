@@ -41,6 +41,7 @@ import EstoqueAnalisePedidos from '@/pages/estoque/EstoqueAnalisePedidos';
 import ContasReceber from '@/pages/financeiro/ContasReceber';
 import ContasPagar from '@/pages/financeiro/ContasPagar';
 import NotasFiscais from '@/pages/financeiro/NotasFiscais';
+import Transacoes from '@/pages/financeiro/Transacoes';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -74,6 +75,7 @@ const App = () => (
                               <Route path="/funcionarios" element={<Funcionarios />} />
                               <Route path="/procedimentos" element={<Procedimentos />} />
                               <Route path="/financeiro" element={<Financeiro />} />
+                              <Route path="/financeiro/transacoes" element={<Transacoes />} />
                               <Route path="/financeiro/contas-receber" element={<ContasReceber />} />
                               <Route path="/financeiro/contas-pagar" element={<ContasPagar />} />
                               <Route path="/financeiro/notas-fiscais" element={<NotasFiscais />} />

@@ -8,21 +8,27 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DollarSign, Plus, Search, Filter, Download, Calendar, AlertCircle, CheckCircle2, Clock, CreditCard } from 'lucide-react';
-import { format } from 'date-fns';
+import { DollarSign, Plus, Search, Filter, Download, Calendar, AlertCircle, CheckCircle2, Clock, CreditCard, Mail, Send } from 'lucide-react';
+import { format, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinanceiroSupabase } from '@/modules/financeiro/hooks/useFinanceiroSupabase';
 import { PaymentDialog } from '@/components/financeiro/PaymentDialog';
 import type { ContaReceber } from '@/modules/financeiro/types/financeiro-completo.types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import jsPDF from 'jspdf';
+import * as XLSX from 'xlsx';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export default function ContasReceber() {
   const { contasReceber, loading, addContaReceber } = useFinanceiroSupabase();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('todas');
+  const [filterPeriodo, setFilterPeriodo] = useState('mes-atual');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedConta, setSelectedConta] = useState<ContaReceber | null>(null);
+  const [sendingCobranca, setSendingCobranca] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -53,9 +59,26 @@ export default function ContasReceber() {
         conta.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         conta.descricao.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = filterStatus === 'todas' || conta.status === filterStatus;
-      return matchesSearch && matchesStatus;
+      
+      // Filtro de período
+      const dataVencimento = new Date(conta.data_vencimento);
+      let matchesPeriodo = true;
+      
+      if (filterPeriodo === 'mes-atual') {
+        const inicio = startOfMonth(new Date());
+        const fim = endOfMonth(new Date());
+        matchesPeriodo = dataVencimento >= inicio && dataVencimento <= fim;
+      } else if (filterPeriodo === '30-dias') {
+        const inicio = subDays(new Date(), 30);
+        matchesPeriodo = dataVencimento >= inicio;
+      } else if (filterPeriodo === 'trimestre') {
+        const inicio = subMonths(new Date(), 3);
+        matchesPeriodo = dataVencimento >= inicio;
+      }
+      
+      return matchesSearch && matchesStatus && matchesPeriodo;
     });
-  }, [contasReceber, searchTerm, filterStatus]);
+  }, [contasReceber, searchTerm, filterStatus, filterPeriodo]);
 
   // KPIs
   const totalReceber = contasReceber
@@ -106,6 +129,71 @@ export default function ContasReceber() {
   const handleOpenPayment = (conta: ContaReceber) => {
     setSelectedConta(conta);
     setPaymentDialogOpen(true);
+  };
+
+  const handleEnviarCobranca = async (contaId: string, tipo: 'EMAIL' | 'WHATSAPP') => {
+    try {
+      setSendingCobranca(contaId);
+      const { error } = await supabase.functions.invoke('enviar-cobranca', {
+        body: { cobrancaId: contaId, tipo },
+      });
+
+      if (error) throw error;
+
+      toast.success(`Cobrança enviada via ${tipo} com sucesso!`);
+    } catch (error: any) {
+      console.error('Erro ao enviar cobrança:', error);
+      toast.error(error.message || 'Erro ao enviar cobrança');
+    } finally {
+      setSendingCobranca(null);
+    }
+  };
+
+  const exportarPDF = () => {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text('Relatório de Contas a Receber', 14, 22);
+    
+    doc.setFontSize(11);
+    doc.text(`Período: ${filterPeriodo}`, 14, 32);
+    doc.text(`Total a Receber: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalReceber)}`, 14, 40);
+    
+    let y = 50;
+    filteredContas.forEach((conta, index) => {
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+      
+      doc.text(
+        `${index + 1}. ${conta.patient_name} - ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(conta.valor)} - ${conta.status}`,
+        14,
+        y
+      );
+      y += 10;
+    });
+    
+    doc.save(`contas-receber-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+    toast.success('PDF exportado com sucesso!');
+  };
+
+  const exportarExcel = () => {
+    const data = filteredContas.map(conta => ({
+      'Cliente': conta.patient_name,
+      'Descrição': conta.descricao,
+      'Valor': conta.valor,
+      'Vencimento': format(new Date(conta.data_vencimento), 'dd/MM/yyyy'),
+      'Status': conta.status,
+      'Valor Pago': conta.valor_pago || 0,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Contas a Receber');
+    
+    XLSX.writeFile(wb, `contas-receber-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+    toast.success('Excel exportado com sucesso!');
   };
 
   if (loading) {
@@ -217,13 +305,32 @@ export default function ContasReceber() {
                   <SelectItem value="parcial">Pagamento Parcial</SelectItem>
                 </SelectContent>
               </Select>
+              
+              <Select value={filterPeriodo} onValueChange={setFilterPeriodo}>
+                <SelectTrigger className="w-[180px]">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mes-atual">Mês Atual</SelectItem>
+                  <SelectItem value="30-dias">Últimos 30 dias</SelectItem>
+                  <SelectItem value="trimestre">Trimestre</SelectItem>
+                  <SelectItem value="todos">Todos</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" className="gap-2">
-                <Download className="h-4 w-4" />
-                Exportar
-              </Button>
+              <Select onValueChange={(value) => value === 'pdf' ? exportarPDF() : exportarExcel()}>
+                <SelectTrigger className="w-[150px]">
+                  <Download className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Exportar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pdf">Exportar PDF</SelectItem>
+                  <SelectItem value="excel">Exportar Excel</SelectItem>
+                </SelectContent>
+              </Select>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
                   <Button variant="elevated" className="gap-2">
@@ -357,12 +464,38 @@ export default function ContasReceber() {
                   </TableCell>
                   <TableCell>{getStatusBadge(conta.status)}</TableCell>
                   <TableCell className="text-right">
-                    {conta.status !== 'pago' && conta.status !== 'cancelado' && (
-                      <Button variant="elevated" size="sm" className="gap-2" onClick={() => handleOpenPayment(conta)}>
-                        <CreditCard className="h-4 w-4" />
-                        Receber
-                      </Button>
-                    )}
+                    <div className="flex gap-2 justify-end">
+                      {conta.status === 'atrasado' && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                            onClick={() => handleEnviarCobranca(conta.id, 'EMAIL')}
+                            disabled={sendingCobranca === conta.id}
+                          >
+                            <Mail className="h-4 w-4" />
+                            Email
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                            onClick={() => handleEnviarCobranca(conta.id, 'WHATSAPP')}
+                            disabled={sendingCobranca === conta.id}
+                          >
+                            <Send className="h-4 w-4" />
+                            WhatsApp
+                          </Button>
+                        </>
+                      )}
+                      {conta.status !== 'pago' && conta.status !== 'cancelado' && (
+                        <Button variant="elevated" size="sm" className="gap-2" onClick={() => handleOpenPayment(conta)}>
+                          <CreditCard className="h-4 w-4" />
+                          Receber
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

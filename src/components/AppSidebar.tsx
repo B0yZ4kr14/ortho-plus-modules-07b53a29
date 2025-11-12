@@ -69,13 +69,6 @@ const menuGroups = [
     ]
   },
   {
-    label: 'Financeiro',
-    items: [
-      { title: 'Financeiro', url: '/financeiro', icon: DollarSign },
-      { title: 'Cobrança', url: '/cobranca', icon: CreditCard },
-    ]
-  },
-  {
     label: 'Estoque',
     collapsed: true,
     items: [
@@ -91,11 +84,13 @@ const menuGroups = [
   },
   {
     label: 'Financeiro',
+    collapsed: true,
     items: [
-      { title: 'Dashboard Financeiro', url: '/financeiro', icon: DollarSign },
+      { title: 'Dashboard', url: '/financeiro', icon: BarChart3 },
+      { title: 'Transações', url: '/financeiro/transacoes', icon: Activity, badge: 'Novo' },
       { title: 'Contas a Receber', url: '/financeiro/contas-receber', icon: TrendingUp },
       { title: 'Contas a Pagar', url: '/financeiro/contas-pagar', icon: CreditCard },
-      { title: 'Notas Fiscais (NFe/NFSe)', url: '/financeiro/notas-fiscais', icon: FileText },
+      { title: 'Notas Fiscais', url: '/financeiro/notas-fiscais', icon: FileText },
       { title: 'Cobrança', url: '/cobranca', icon: CreditCard },
     ]
   },

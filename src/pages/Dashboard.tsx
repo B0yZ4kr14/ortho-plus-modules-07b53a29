@@ -176,32 +176,32 @@ export default function Dashboard() {
               route="/agenda-clinica"
             />
             <ActionCard
-              title="Novo Orçamento"
-              subtitle="Criar orçamento"
+              title="Prontuário"
+              subtitle="Abrir PEP"
               icon={FileText}
               bgColor="bg-[hsl(var(--module-yellow))]"
               route="/pep"
             />
             <ActionCard
-              title="Tratamento"
-              subtitle="Iniciar tratamento"
+              title="Contas a Receber"
+              subtitle="Financeiro"
+              icon={DollarSign}
+              bgColor="bg-[hsl(var(--module-green))]"
+              route="/financeiro/contas-receber"
+            />
+            <ActionCard
+              title="Estoque"
+              subtitle="Gerenciar"
               icon={Activity}
               bgColor="bg-[hsl(var(--module-orange))]"
-              route="/pep"
+              route="/estoque"
             />
             <ActionCard
-              title="Registrar Pagamento"
-              subtitle="Financeiro"
-              icon={CreditCard}
-              bgColor="bg-[hsl(var(--module-pink))]"
-              route="/financeiro"
-            />
-            <ActionCard
-              title="Radiologia"
-              subtitle="Agendar exame"
-              icon={Camera}
+              title="Relatórios"
+              subtitle="Business Intelligence"
+              icon={BarChart3}
               bgColor="bg-[hsl(var(--module-cyan))]"
-              route="/pep"
+              route="/business-intelligence"
             />
           </div>
         </CardContent>
