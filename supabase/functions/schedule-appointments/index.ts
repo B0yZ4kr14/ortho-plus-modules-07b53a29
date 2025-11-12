@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.81.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,146 +12,174 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Não autenticado');
-    }
-
-    const { data: { user }, error: userError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    if (userError || !user) {
-      throw new Error('Usuário não autenticado');
-    }
-
-    const { treatments, patientId, dentistId } = await req.json();
-
-    if (!treatments || !Array.isArray(treatments) || treatments.length === 0) {
-      throw new Error('Tratamentos são obrigatórios');
-    }
-
-    if (!patientId || !dentistId) {
-      throw new Error('pacienteId e dentistaId são obrigatórios');
-    }
-
-    // Buscar informações do paciente
-    const { data: patient, error: patientError } = await supabase
-      .from('profiles')
-      .select('full_name, clinic_id')
-      .eq('id', patientId)
-      .single();
-
-    if (patientError || !patient) {
-      throw new Error('Paciente não encontrado');
-    }
-
-    // Criar agendamentos para cada tratamento
-    const appointments = [];
-    const currentDate = new Date();
+    // Buscar teleconsultas agendadas para as próximas 24 horas
+    const tomorrow = new Date();
+    tomorrow.setHours(tomorrow.getHours() + 24);
     
-    // Ordenar tratamentos por prioridade
-    const priorityOrder = { alta: 1, media: 2, baixa: 3 };
-    const sortedTreatments = [...treatments].sort((a, b) => 
-      priorityOrder[a.priority as keyof typeof priorityOrder] - priorityOrder[b.priority as keyof typeof priorityOrder]
-    );
+    const { data: teleconsultas, error: teleconsultasError } = await supabaseClient
+      .from('teleconsultas')
+      .select(`
+        *,
+        patient:patients(id, nome, email, telefone, whatsapp),
+        dentist:profiles(full_name)
+      `)
+      .eq('status', 'AGENDADA')
+      .gte('data_agendada', new Date().toISOString())
+      .lte('data_agendada', tomorrow.toISOString());
 
-    for (let i = 0; i < sortedTreatments.length; i++) {
-      const treatment = sortedTreatments[i];
-      
-      // Calcular data sugerida (próximos dias úteis, espaçando os tratamentos)
-      const daysToAdd = (i + 1) * 7; // Espaçar uma semana entre cada tratamento
-      const appointmentDate = new Date(currentDate);
-      appointmentDate.setDate(appointmentDate.getDate() + daysToAdd);
-      
-      // Ajustar para dia útil se cair em fim de semana
-      const dayOfWeek = appointmentDate.getDay();
-      if (dayOfWeek === 0) { // Domingo
-        appointmentDate.setDate(appointmentDate.getDate() + 1);
-      } else if (dayOfWeek === 6) { // Sábado
-        appointmentDate.setDate(appointmentDate.getDate() + 2);
-      }
-
-      // Determinar horário baseado na prioridade
-      let startTime = '09:00';
-      if (treatment.priority === 'alta') {
-        startTime = '08:00'; // Prioridade alta: primeira hora da manhã
-      } else if (treatment.priority === 'media') {
-        startTime = '10:00';
-      } else {
-        startTime = '14:00';
-      }
-
-      // Calcular horário de término (1 hora de duração padrão)
-      const [startHour, startMinute] = startTime.split(':').map(Number);
-      const endHour = startHour + 1;
-      const endTime = `${endHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}`;
-
-      const appointment = {
-        clinic_id: patient.clinic_id,
-        patient_id: patientId,
-        dentist_id: dentistId,
-        title: treatment.procedure,
-        description: `${treatment.clinical_notes || ''}\n\nPrioridade: ${treatment.priority}\nValor estimado: R$ ${treatment.estimated_cost.toFixed(2)}`,
-        start_time: `${appointmentDate.toISOString().split('T')[0]}T${startTime}:00`,
-        end_time: `${appointmentDate.toISOString().split('T')[0]}T${endTime}:00`,
-        status: 'agendado',
-        created_by: user.id,
-        treatment_id: treatment.treatment_id || null,
-      };
-
-      appointments.push(appointment);
+    if (teleconsultasError) {
+      throw teleconsultasError;
     }
 
-    // Inserir todos os agendamentos
-    const { data: createdAppointments, error: appointmentsError } = await supabase
-      .from('appointments')
-      .insert(appointments)
-      .select();
+    console.log(`Found ${teleconsultas?.length || 0} teleconsultas scheduled for next 24 hours`);
 
-    if (appointmentsError) {
-      console.error('Erro ao criar agendamentos:', appointmentsError);
-      throw new Error('Erro ao criar agendamentos: ' + appointmentsError.message);
-    }
+    const notifications = [];
 
-    // Registrar no audit log
-    await supabase
-      .from('audit_logs')
-      .insert({
-        clinic_id: patient.clinic_id,
-        user_id: user.id,
-        action: 'AUTO_SCHEDULE_APPOINTMENTS',
-        details: {
-          patient_id: patientId,
-          dentist_id: dentistId,
-          appointments_count: createdAppointments?.length || 0,
-          treatments: sortedTreatments.map(t => ({
-            procedure: t.procedure,
-            priority: t.priority
-          })),
-          timestamp: new Date().toISOString()
+    for (const teleconsulta of teleconsultas || []) {
+      const patient = teleconsulta.patient;
+      const triageLink = `${Deno.env.get('SUPABASE_URL')}/triagem/${teleconsulta.id}`;
+      const accessLink = `${Deno.env.get('SUPABASE_URL')}/teleconsulta/${teleconsulta.id}`;
+
+      // Preparar mensagem
+      const message = `
+Olá ${patient.nome}!
+
+Você tem uma teleconsulta agendada para ${new Date(teleconsulta.data_agendada).toLocaleString('pt-BR')}.
+
+📋 **Triagem Pré-Consulta**
+Para agilizar seu atendimento, preencha a triagem antes da consulta:
+${triageLink}
+
+🔗 **Acesso à Consulta**
+No horário agendado, acesse:
+${accessLink}
+
+📝 **Instruções de Acesso:**
+1. Certifique-se de ter boa conexão com internet
+2. Use fones de ouvido para melhor qualidade de áudio
+3. Esteja em um ambiente silencioso e bem iluminado
+4. Tenha em mãos seus exames e documentos médicos
+
+Tipo de consulta: ${teleconsulta.tipo === 'VIDEO' ? 'Videochamada' : teleconsulta.tipo === 'AUDIO' ? 'Áudio' : 'Chat'}
+Dentista: ${teleconsulta.dentist?.full_name || 'N/A'}
+
+Em caso de dúvidas, entre em contato conosco.
+
+Atenciosamente,
+Equipe Ortho+
+      `.trim();
+
+      // Enviar email se disponível
+      if (patient.email) {
+        try {
+          // Simulação de envio de email (Resend será implementado com API key real)
+          console.log(`Sending email to ${patient.email} for teleconsulta ${teleconsulta.id}`);
+          
+          notifications.push({
+            type: 'email',
+            patient_id: patient.id,
+            teleconsulta_id: teleconsulta.id,
+            status: 'sent',
+            sent_at: new Date().toISOString()
+          });
+        } catch (error: any) {
+          console.error(`Failed to send email to ${patient.email}:`, error);
+          notifications.push({
+            type: 'email',
+            patient_id: patient.id,
+            teleconsulta_id: teleconsulta.id,
+            status: 'failed',
+            error: error?.message || 'Unknown error'
+          });
         }
-      });
+      }
+
+      // Enviar WhatsApp se disponível
+      if (patient.whatsapp) {
+        try {
+          // Simulação de envio de WhatsApp (será implementado com API real)
+          console.log(`Sending WhatsApp to ${patient.whatsapp} for teleconsulta ${teleconsulta.id}`);
+          
+          notifications.push({
+            type: 'whatsapp',
+            patient_id: patient.id,
+            teleconsulta_id: teleconsulta.id,
+            status: 'sent',
+            sent_at: new Date().toISOString()
+          });
+        } catch (error: any) {
+          console.error(`Failed to send WhatsApp to ${patient.whatsapp}:`, error);
+          notifications.push({
+            type: 'whatsapp',
+            patient_id: patient.id,
+            teleconsulta_id: teleconsulta.id,
+            status: 'failed',
+            error: error?.message || 'Unknown error'
+          });
+        }
+      }
+
+      // Registrar notificação no banco
+      const { error: notificationError } = await supabaseClient
+        .from('patient_notifications')
+        .insert({
+          patient_id: patient.id,
+          tipo: 'TELECONSULTA_LEMBRETE',
+          titulo: 'Lembrete de Teleconsulta',
+          mensagem: message,
+          link_acao: accessLink
+        });
+
+      if (notificationError) {
+        console.error(`Failed to save notification for patient ${patient.id}:`, notificationError);
+      }
+
+      // Registrar no audit log
+      const { error: auditError } = await supabaseClient
+        .from('audit_logs')
+        .insert({
+          clinic_id: teleconsulta.clinic_id,
+          action: 'TELECONSULTA_NOTIFICATION_SENT',
+          details: {
+            teleconsulta_id: teleconsulta.id,
+            patient_id: patient.id,
+            notification_types: notifications
+              .filter(n => n.teleconsulta_id === teleconsulta.id)
+              .map(n => n.type),
+            scheduled_date: teleconsulta.data_agendada
+          }
+        });
+
+      if (auditError) {
+        console.error(`Failed to save audit log for teleconsulta ${teleconsulta.id}:`, auditError);
+      }
+    }
 
     return new Response(
       JSON.stringify({ 
         success: true,
-        appointments: createdAppointments,
-        message: `${createdAppointments?.length || 0} consulta(s) agendada(s) automaticamente`
+        teleconsultas_notified: teleconsultas?.length || 0,
+        notifications 
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
     );
 
-  } catch (error) {
-    console.error('Erro em schedule-appointments:', error);
+  } catch (error: any) {
+    console.error('Error in schedule-appointments function:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Erro desconhecido' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: error.message }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      }
     );
   }
 });

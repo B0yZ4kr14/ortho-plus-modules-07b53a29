@@ -45,7 +45,8 @@ import Transacoes from '@/pages/financeiro/Transacoes';
 import Orcamentos from '@/pages/Orcamentos';
 import Contratos from '@/pages/Contratos';
 import PortalPaciente from '@/pages/PortalPaciente';
-import Teleodontologia from '@/pages/Teleodontologia';
+import Teleodontologia from './pages/Teleodontologia';
+import HistoricoTeleconsultas from './pages/HistoricoTeleconsultas';
 import IARadiografia from '@/pages/IARadiografia';
 import CRMFunil from '@/pages/CRMFunil';
 import SplitPagamento from '@/pages/SplitPagamento';
@@ -107,6 +108,7 @@ const App = () => (
                               <Route path="/contratos" element={<Contratos />} />
                               <Route path="/portal-paciente" element={<PortalPaciente />} />
                               <Route path="/teleodontologia" element={<Teleodontologia />} />
+                              <Route path="/historico-teleconsultas" element={<HistoricoTeleconsultas />} />
                               <Route path="/ia-radiografia" element={<IARadiografia />} />
                               <Route path="/crm-funil" element={<CRMFunil />} />
                               <Route path="/split-pagamento" element={<SplitPagamento />} />

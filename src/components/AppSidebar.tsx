@@ -74,7 +74,16 @@ const menuGroups = [
       { title: 'PEP', url: '/pep', icon: FileText },
       { title: 'Orçamentos', url: '/orcamentos', icon: FileText, badge: 'Novo' },
       { title: 'Contratos', url: '/contratos', icon: FileSignature, badge: 'Novo' },
-      { title: 'Teleodontologia', url: '/teleodontologia', icon: Video, badge: 'Beta' },
+      { 
+        title: 'Teleodontologia', 
+        icon: Video, 
+        badge: 'Beta',
+        collapsed: true,
+        subItems: [
+          { title: 'Consultas', url: '/teleodontologia', icon: Video },
+          { title: 'Histórico', url: '/historico-teleconsultas', icon: FileText }
+        ]
+      },
       { title: 'IA Raio-X', url: '/ia-radiografia', icon: Scan, badge: 'IA' },
     ]
   },
@@ -224,32 +233,80 @@ export function AppSidebar() {
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {group.items.map((item) => (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton 
-                          asChild 
-                          isActive={isActive(item.url)}
-                          className="relative group hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] hover:border-l-4 hover:border-l-primary hover:-translate-x-0.5 data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/25 data-[active=true]:via-primary/15 data-[active=true]:to-transparent data-[active=true]:border-l-4 data-[active=true]:border-l-primary data-[active=true]:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3),0_4px_12px_-2px_rgba(0,0,0,0.5)] transition-all duration-300 ease-out"
-                        >
-                          <NavLink 
-                            to={item.url} 
-                            end 
-                            className="flex items-center gap-3 px-4 py-3.5 rounded-lg"
-                          >
-                            <item.icon className="h-5 w-5 shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
-                            {!collapsed && (
-                              <span className="text-sm font-medium animate-slide-in flex-1">{item.title}</span>
-                            )}
-                            {!collapsed && item.badge && (
-                              <Badge 
-                                variant={item.badge === 'IA' ? 'default' : item.badge === 'Beta' ? 'secondary' : 'outline'} 
-                                className="ml-auto text-[10px] px-1.5 py-0.5 shadow-sm"
+                      item.subItems ? (
+                        <Collapsible key={item.title} defaultOpen={false} className="group/submenu">
+                          <SidebarMenuItem>
+                            <CollapsibleTrigger asChild>
+                              <SidebarMenuButton 
+                                className="relative group hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] hover:border-l-4 hover:border-l-primary hover:-translate-x-0.5 transition-all duration-300 ease-out"
                               >
-                                {item.badge}
-                              </Badge>
-                            )}
-                          </NavLink>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
+                                <div className="flex items-center gap-3 px-4 py-3.5 rounded-lg w-full">
+                                  <item.icon className="h-5 w-5 shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
+                                  {!collapsed && (
+                                    <>
+                                      <span className="text-sm font-medium animate-slide-in flex-1">{item.title}</span>
+                                      {item.badge && (
+                                        <Badge 
+                                          variant={item.badge === 'IA' ? 'default' : item.badge === 'Beta' ? 'secondary' : 'outline'} 
+                                          className="text-[10px] px-1.5 py-0.5 shadow-sm"
+                                        >
+                                          {item.badge}
+                                        </Badge>
+                                      )}
+                                      <ChevronDown className="h-4 w-4 transition-transform duration-300 group-data-[state=open]/submenu:rotate-180" />
+                                    </>
+                                  )}
+                                </div>
+                              </SidebarMenuButton>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="overflow-hidden transition-all">
+                              <SidebarMenuSub>
+                                {item.subItems.map((subItem) => (
+                                  <SidebarMenuSubItem key={subItem.title}>
+                                    <SidebarMenuSubButton 
+                                      asChild
+                                      isActive={isActive(subItem.url)}
+                                      className="hover:bg-sidebar-accent/60 data-[active=true]:bg-primary/20"
+                                    >
+                                      <NavLink to={subItem.url} className="flex items-center gap-2">
+                                        <subItem.icon className="h-4 w-4" />
+                                        {!collapsed && <span>{subItem.title}</span>}
+                                      </NavLink>
+                                    </SidebarMenuSubButton>
+                                  </SidebarMenuSubItem>
+                                ))}
+                              </SidebarMenuSub>
+                            </CollapsibleContent>
+                          </SidebarMenuItem>
+                        </Collapsible>
+                      ) : (
+                        <SidebarMenuItem key={item.title}>
+                          <SidebarMenuButton 
+                            asChild 
+                            isActive={isActive(item.url)}
+                            className="relative group hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] hover:border-l-4 hover:border-l-primary hover:-translate-x-0.5 data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/25 data-[active=true]:via-primary/15 data-[active=true]:to-transparent data-[active=true]:border-l-4 data-[active=true]:border-l-primary data-[active=true]:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3),0_4px_12px_-2px_rgba(0,0,0,0.5)] transition-all duration-300 ease-out"
+                          >
+                            <NavLink 
+                              to={item.url} 
+                              end 
+                              className="flex items-center gap-3 px-4 py-3.5 rounded-lg"
+                            >
+                              <item.icon className="h-5 w-5 shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
+                              {!collapsed && (
+                                <span className="text-sm font-medium animate-slide-in flex-1">{item.title}</span>
+                              )}
+                              {!collapsed && item.badge && (
+                                <Badge 
+                                  variant={item.badge === 'IA' ? 'default' : item.badge === 'Beta' ? 'secondary' : 'outline'} 
+                                  className="ml-auto text-[10px] px-1.5 py-0.5 shadow-sm"
+                                >
+                                  {item.badge}
+                                </Badge>
+                              )}
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )
                     ))}
                   </SidebarMenu>
                 </SidebarGroupContent>
