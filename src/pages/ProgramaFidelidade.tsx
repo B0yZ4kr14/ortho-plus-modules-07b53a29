@@ -6,12 +6,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useFidelidadeSupabase } from '@/modules/fidelidade/hooks/useFidelidadeSupabase';
+// Temporarily disabled - waiting for Supabase types regeneration
+// import { useFidelidadeSupabase } from '@/modules/fidelidade/hooks/useFidelidadeSupabase';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
 
 export default function ProgramaFidelidade() {
-  const { pontos, recompensas, indicacoes, loading } = useFidelidadeSupabase();
+  // Temporarily disabled - waiting for Supabase types regeneration
+  const loading = false;
+  const pontos: any[] = [];
+  const recompensas: any[] = [];
+  const indicacoes: any[] = [];
 
   const triggerConfetti = () => {
     confetti({

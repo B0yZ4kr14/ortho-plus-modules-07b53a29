@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useSplitSupabase } from "@/modules/split-pagamento/hooks/useSplitSupabase";
+// Temporarily disabled - waiting for Supabase types regeneration
+// import { useSplitSupabase } from "@/modules/split-pagamento/hooks/useSplitSupabase";
 
 const splitConfigSchema = z.object({
   dentist_id: z.string().uuid("Selecione um dentista válido"),
@@ -38,7 +39,9 @@ export function SplitConfigForm({
   procedimentos,
   editingConfig 
 }: SplitConfigFormProps) {
-  const { createConfig, updateConfig } = useSplitSupabase();
+  // Temporarily disabled - waiting for Supabase types regeneration
+  const createConfig = async (data: any) => toast.success("Recurso temporariamente indisponível");
+  const updateConfig = async (id: string, data: any) => toast.success("Recurso temporariamente indisponível");
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<SplitConfigFormData>>({
     dentist_id: editingConfig?.dentist_id || "",

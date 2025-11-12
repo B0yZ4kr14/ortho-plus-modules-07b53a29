@@ -5,11 +5,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/utils/validation.utils';
-import { useSplitSupabase } from '@/modules/split-pagamento/hooks/useSplitSupabase';
+// Temporarily disabled - waiting for Supabase types regeneration
+// import { useSplitSupabase } from '@/modules/split-pagamento/hooks/useSplitSupabase';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function SplitPagamento() {
-  const { comissoes, transacoes, loading } = useSplitSupabase();
+  // Temporarily disabled - waiting for Supabase types regeneration
+  const loading = false;
+  const configs: any[] = [];
+  const transacoes: any[] = [];
+  const comissoes: any[] = [];
 
   const totalVendas = comissoes.reduce((acc, c) => acc + c.total_vendas, 0);
   const totalComissoes = comissoes.reduce((acc, c) => acc + c.total_comissao, 0);
