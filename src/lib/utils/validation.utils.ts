@@ -62,3 +62,10 @@ export function validarCEP(cep: string): boolean {
   const cepLimpo = cep.replace(/\D/g, '');
   return cepLimpo.length === 8;
 }
+
+export function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(value);
+}

@@ -244,6 +244,156 @@ export type Database = {
         }
         Relationships: []
       }
+      estoque_pedidos: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          created_by: string
+          data_pedido: string
+          data_prevista_entrega: string | null
+          data_recebimento: string | null
+          fornecedor_id: string
+          gerado_automaticamente: boolean | null
+          id: string
+          numero_pedido: string
+          observacoes: string | null
+          status: string
+          tipo: string
+          updated_at: string
+          valor_total: number | null
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          created_by: string
+          data_pedido?: string
+          data_prevista_entrega?: string | null
+          data_recebimento?: string | null
+          fornecedor_id: string
+          gerado_automaticamente?: boolean | null
+          id?: string
+          numero_pedido: string
+          observacoes?: string | null
+          status?: string
+          tipo?: string
+          updated_at?: string
+          valor_total?: number | null
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          created_by?: string
+          data_pedido?: string
+          data_prevista_entrega?: string | null
+          data_recebimento?: string | null
+          fornecedor_id?: string
+          gerado_automaticamente?: boolean | null
+          id?: string
+          numero_pedido?: string
+          observacoes?: string | null
+          status?: string
+          tipo?: string
+          updated_at?: string
+          valor_total?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estoque_pedidos_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estoque_pedidos_config: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          dias_entrega_estimados: number | null
+          gerar_automaticamente: boolean | null
+          id: string
+          ponto_pedido: number
+          produto_id: string
+          quantidade_reposicao: number
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          dias_entrega_estimados?: number | null
+          gerar_automaticamente?: boolean | null
+          id?: string
+          ponto_pedido: number
+          produto_id: string
+          quantidade_reposicao: number
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          dias_entrega_estimados?: number | null
+          gerar_automaticamente?: boolean | null
+          id?: string
+          ponto_pedido?: number
+          produto_id?: string
+          quantidade_reposicao?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estoque_pedidos_config_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estoque_pedidos_itens: {
+        Row: {
+          created_at: string
+          id: string
+          observacoes: string | null
+          pedido_id: string
+          preco_unitario: number
+          produto_id: string
+          quantidade: number
+          quantidade_recebida: number | null
+          valor_total: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          pedido_id: string
+          preco_unitario: number
+          produto_id: string
+          quantidade: number
+          quantidade_recebida?: number | null
+          valor_total: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          pedido_id?: string
+          preco_unitario?: number
+          produto_id?: string
+          quantidade?: number
+          quantidade_recebida?: number | null
+          valor_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estoque_pedidos_itens_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "estoque_pedidos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       historico_clinico: {
         Row: {
           created_at: string

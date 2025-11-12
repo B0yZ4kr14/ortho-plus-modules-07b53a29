@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { Produto, Fornecedor, Categoria, Requisicao, Movimentacao, Alerta } from '../types/estoque.types';
+import type { Produto, Fornecedor, Categoria, Requisicao, Movimentacao, Alerta, Pedido, PedidoItem, PedidoConfig } from '../types/estoque.types';
 import { toast } from 'sonner';
 
 export function useEstoqueSupabase() {
@@ -10,6 +10,9 @@ export function useEstoqueSupabase() {
   const [requisicoes, setRequisicoes] = useState<Requisicao[]>([]);
   const [movimentacoes, setMovimentacoes] = useState<Movimentacao[]>([]);
   const [alertas, setAlertas] = useState<Alerta[]>([]);
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [pedidosItens, setPedidosItens] = useState<PedidoItem[]>([]);
+  const [pedidosConfig, setPedidosConfig] = useState<PedidoConfig[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Load data on mount and setup realtime
@@ -59,6 +62,27 @@ export function useEstoqueSupabase() {
       })
       .subscribe();
 
+    const pedidosChannel = supabase
+      .channel('estoque_pedidos_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_pedidos' }, () => {
+        loadPedidos();
+      })
+      .subscribe();
+
+    const pedidosItensChannel = supabase
+      .channel('estoque_pedidos_itens_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_pedidos_itens' }, () => {
+        loadPedidosItens();
+      })
+      .subscribe();
+
+    const pedidosConfigChannel = supabase
+      .channel('estoque_pedidos_config_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_pedidos_config' }, () => {
+        loadPedidosConfig();
+      })
+      .subscribe();
+
     // Cleanup subscriptions on unmount
     return () => {
       supabase.removeChannel(produtosChannel);
@@ -67,6 +91,9 @@ export function useEstoqueSupabase() {
       supabase.removeChannel(requisicoesChannel);
       supabase.removeChannel(movimentacoesChannel);
       supabase.removeChannel(alertasChannel);
+      supabase.removeChannel(pedidosChannel);
+      supabase.removeChannel(pedidosItensChannel);
+      supabase.removeChannel(pedidosConfigChannel);
     };
   }, []);
 
@@ -80,6 +107,9 @@ export function useEstoqueSupabase() {
         loadRequisicoes(),
         loadMovimentacoes(),
         loadAlertas(),
+        loadPedidos(),
+        loadPedidosItens(),
+        loadPedidosConfig(),
       ]);
     } catch (error) {
       console.error('Error loading estoque data:', error);
@@ -674,6 +704,165 @@ export function useEstoqueSupabase() {
     return 0;
   };
 
+  // Pedidos
+  const loadPedidos = async () => {
+    const { data, error } = await supabase
+      .from('estoque_pedidos' as any)
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error loading pedidos:', error);
+      return;
+    }
+
+    setPedidos((data as any[]).map((p: any) => ({
+      id: p.id,
+      numeroPedido: p.numero_pedido,
+      fornecedorId: p.fornecedor_id,
+      status: p.status,
+      tipo: p.tipo,
+      dataPedido: p.data_pedido,
+      dataPrevistaEntrega: p.data_prevista_entrega,
+      dataRecebimento: p.data_recebimento,
+      valorTotal: Number(p.valor_total),
+      observacoes: p.observacoes,
+      geradoAutomaticamente: p.gerado_automaticamente,
+      createdAt: p.created_at,
+      createdBy: p.created_by,
+    })));
+  };
+
+  const loadPedidosItens = async () => {
+    const { data, error } = await supabase
+      .from('estoque_pedidos_itens' as any)
+      .select('*');
+
+    if (error) {
+      console.error('Error loading pedidos itens:', error);
+      return;
+    }
+
+    setPedidosItens((data as any[]).map((i: any) => ({
+      id: i.id,
+      pedidoId: i.pedido_id,
+      produtoId: i.produto_id,
+      quantidade: Number(i.quantidade),
+      precoUnitario: Number(i.preco_unitario),
+      valorTotal: Number(i.valor_total),
+      quantidadeRecebida: Number(i.quantidade_recebida),
+      observacoes: i.observacoes,
+      createdAt: i.created_at,
+    })));
+  };
+
+  const loadPedidosConfig = async () => {
+    const { data, error } = await supabase
+      .from('estoque_pedidos_config' as any)
+      .select('*');
+
+    if (error) {
+      console.error('Error loading pedidos config:', error);
+      return;
+    }
+
+    setPedidosConfig((data as any[]).map((c: any) => ({
+      id: c.id,
+      produtoId: c.produto_id,
+      quantidadeReposicao: Number(c.quantidade_reposicao),
+      pontoPedido: Number(c.ponto_pedido),
+      gerarAutomaticamente: c.gerar_automaticamente,
+      diasEntregaEstimados: c.dias_entrega_estimados,
+      createdAt: c.created_at,
+    })));
+  };
+
+  const addPedidoConfig = async (config: PedidoConfig) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('clinic_id')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile) throw new Error('Profile not found');
+
+    const { error } = await supabase
+      .from('estoque_pedidos_config' as any)
+      .insert({
+        clinic_id: profile.clinic_id,
+        produto_id: config.produtoId,
+        quantidade_reposicao: config.quantidadeReposicao,
+        ponto_pedido: config.pontoPedido,
+        gerar_automaticamente: config.gerarAutomaticamente,
+        dias_entrega_estimados: config.diasEntregaEstimados,
+      } as any);
+
+    if (error) {
+      toast.error('Erro ao criar configuração');
+      throw error;
+    }
+
+    toast.success('Configuração criada com sucesso');
+    await loadPedidosConfig();
+  };
+
+  const updatePedidoConfig = async (id: string, config: PedidoConfig) => {
+    const { error } = await supabase
+      .from('estoque_pedidos_config' as any)
+      .update({
+        quantidade_reposicao: config.quantidadeReposicao,
+        ponto_pedido: config.pontoPedido,
+        gerar_automaticamente: config.gerarAutomaticamente,
+        dias_entrega_estimados: config.diasEntregaEstimados,
+      } as any)
+      .eq('id', id);
+
+    if (error) {
+      toast.error('Erro ao atualizar configuração');
+      throw error;
+    }
+
+    toast.success('Configuração atualizada com sucesso');
+    await loadPedidosConfig();
+  };
+
+  const updatePedidoStatus = async (id: string, status: string) => {
+    const updates: any = { status };
+    
+    if (status === 'RECEBIDO') {
+      updates.data_recebimento = new Date().toISOString();
+    }
+
+    const { error } = await supabase
+      .from('estoque_pedidos' as any)
+      .update(updates)
+      .eq('id', id);
+
+    if (error) {
+      toast.error('Erro ao atualizar status do pedido');
+      throw error;
+    }
+
+    toast.success('Status do pedido atualizado');
+    await loadPedidos();
+  };
+
+  const gerarPedidosAutomaticos = async () => {
+    const { error } = await supabase.functions.invoke('gerar-pedidos-automaticos');
+
+    if (error) {
+      toast.error('Erro ao gerar pedidos automáticos');
+      throw error;
+    }
+
+    toast.success('Pedidos automáticos gerados com sucesso');
+    await loadPedidos();
+    await loadPedidosItens();
+  };
+
   return {
     produtos,
     fornecedores,
@@ -681,6 +870,9 @@ export function useEstoqueSupabase() {
     requisicoes,
     movimentacoes,
     alertas,
+    pedidos,
+    pedidosItens,
+    pedidosConfig,
     loading,
     addProduto,
     updateProduto,
@@ -704,5 +896,9 @@ export function useEstoqueSupabase() {
     marcarAlertaComoLido,
     limparAlertasLidos,
     calcularSugestaoReposicao,
+    addPedidoConfig,
+    updatePedidoConfig,
+    updatePedidoStatus,
+    gerarPedidosAutomaticos,
   };
 }

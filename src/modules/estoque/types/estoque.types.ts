@@ -133,3 +133,57 @@ export const tiposMovimentacao = [
   { value: 'DEVOLUCAO', label: 'Devolução', color: 'bg-yellow-500' },
   { value: 'PERDA', label: 'Perda', color: 'bg-gray-500' },
 ] as const;
+
+// Schema para Pedido
+export const pedidoSchema = z.object({
+  id: z.string().uuid().optional(),
+  numeroPedido: z.string().min(1, 'Número do pedido é obrigatório'),
+  fornecedorId: z.string().uuid('Selecione um fornecedor'),
+  status: z.enum(['PENDENTE', 'ENVIADO', 'RECEBIDO', 'CANCELADO']).default('PENDENTE'),
+  tipo: z.enum(['MANUAL', 'AUTOMATICO']).default('MANUAL'),
+  dataPedido: z.string(),
+  dataPrevistaEntrega: z.string().optional(),
+  dataRecebimento: z.string().optional(),
+  valorTotal: z.number().min(0).default(0),
+  observacoes: z.string().optional(),
+  geradoAutomaticamente: z.boolean().default(false),
+  createdAt: z.string().optional(),
+  createdBy: z.string(),
+});
+
+export type Pedido = z.infer<typeof pedidoSchema>;
+
+// Schema para Item do Pedido
+export const pedidoItemSchema = z.object({
+  id: z.string().uuid().optional(),
+  pedidoId: z.string().uuid(),
+  produtoId: z.string().uuid('Selecione um produto'),
+  quantidade: z.number().min(1, 'Quantidade deve ser maior que 0'),
+  precoUnitario: z.number().min(0, 'Preço unitário deve ser maior ou igual a 0'),
+  valorTotal: z.number().min(0),
+  quantidadeRecebida: z.number().min(0).default(0),
+  observacoes: z.string().optional(),
+  createdAt: z.string().optional(),
+});
+
+export type PedidoItem = z.infer<typeof pedidoItemSchema>;
+
+// Schema para Configuração de Pedido Automático
+export const pedidoConfigSchema = z.object({
+  id: z.string().uuid().optional(),
+  produtoId: z.string().uuid(),
+  quantidadeReposicao: z.number().min(1, 'Quantidade de reposição deve ser maior que 0'),
+  pontoPedido: z.number().min(0, 'Ponto de pedido deve ser maior ou igual a 0'),
+  gerarAutomaticamente: z.boolean().default(true),
+  diasEntregaEstimados: z.number().min(1).default(7),
+  createdAt: z.string().optional(),
+});
+
+export type PedidoConfig = z.infer<typeof pedidoConfigSchema>;
+
+export const statusPedido = [
+  { value: 'PENDENTE', label: 'Pendente', color: 'bg-yellow-500' },
+  { value: 'ENVIADO', label: 'Enviado', color: 'bg-blue-500' },
+  { value: 'RECEBIDO', label: 'Recebido', color: 'bg-green-500' },
+  { value: 'CANCELADO', label: 'Cancelado', color: 'bg-red-500' },
+] as const;
