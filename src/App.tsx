@@ -21,6 +21,7 @@ import GerenciamentoModulos from "./pages/GerenciamentoModulos";
 import ModulesAdmin from './pages/settings/ModulesAdmin';
 import Configuracoes from './pages/Configuracoes';
 import PEP from './pages/PEP';
+import Relatorios from './pages/Relatorios';
 import Auth from './pages/Auth';
 import NotFound from './pages/NotFound';
 
@@ -54,8 +55,10 @@ const App = () => (
                               <Route path="/funcionarios" element={<Funcionarios />} />
                               <Route path="/procedimentos" element={<Procedimentos />} />
                               <Route path="/financeiro" element={<Financeiro />} />
+                              <Route path="/agenda" element={<AgendaClinica />} />
                               <Route path="/agenda-clinica" element={<AgendaClinica />} />
                               <Route path="/pep" element={<PEP />} />
+                              <Route path="/relatorios" element={<Relatorios />} />
                               <Route path="/modulos" element={<GerenciamentoModulos />} />
                               <Route 
                                 path="/configuracoes" 

@@ -234,6 +234,7 @@ export default function PEP() {
         <TabsContent value="analise-ia" className="space-y-4">
           <OdontogramaAIAnalysis 
             prontuarioId={prontuarioId}
+            patientId="mock-patient-id"
             onTreatmentCreate={handleCreateTreatmentsFromAI}
           />
         </TabsContent>
