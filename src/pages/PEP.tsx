@@ -13,7 +13,8 @@ import { Odontograma2D } from '@/modules/pep/components/Odontograma2D';
 import { Odontograma3D } from '@/modules/pep/components/Odontograma3D';
 import { OdontogramaHistory } from '@/modules/pep/components/OdontogramaHistory';
 import { OdontogramaComparison } from '@/modules/pep/components/OdontogramaComparison';
-import { useOdontogramaStore } from '@/modules/pep/hooks/useOdontogramaStore';
+import { AssinaturaDigital } from '@/modules/pep/components/AssinaturaDigital';
+import { useOdontogramaSupabase } from '@/modules/pep/hooks/useOdontogramaSupabase';
 
 export default function PEP() {
   const [activeTab, setActiveTab] = useState('historico');

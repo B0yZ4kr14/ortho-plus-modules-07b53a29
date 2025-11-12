@@ -481,6 +481,123 @@ export type Database = {
           },
         ]
       }
+      pep_odontograma_data: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          notes: string | null
+          prontuario_id: string
+          status: string
+          tooth_number: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          notes?: string | null
+          prontuario_id: string
+          status?: string
+          tooth_number: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          notes?: string | null
+          prontuario_id?: string
+          status?: string
+          tooth_number?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pep_odontograma_data_prontuario_id_fkey"
+            columns: ["prontuario_id"]
+            isOneToOne: false
+            referencedRelation: "prontuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pep_odontograma_history: {
+        Row: {
+          changed_teeth: number[]
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          prontuario_id: string
+          snapshot_data: Json
+        }
+        Insert: {
+          changed_teeth?: number[]
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          prontuario_id: string
+          snapshot_data: Json
+        }
+        Update: {
+          changed_teeth?: number[]
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          prontuario_id?: string
+          snapshot_data?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pep_odontograma_history_prontuario_id_fkey"
+            columns: ["prontuario_id"]
+            isOneToOne: false
+            referencedRelation: "prontuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pep_tooth_surfaces: {
+        Row: {
+          created_at: string
+          id: string
+          odontograma_data_id: string
+          status: string
+          surface: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          odontograma_data_id: string
+          status?: string
+          surface: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          odontograma_data_id?: string
+          status?: string
+          surface?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pep_tooth_surfaces_odontograma_data_id_fkey"
+            columns: ["odontograma_data_id"]
+            isOneToOne: false
+            referencedRelation: "pep_odontograma_data"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pep_tratamentos: {
         Row: {
           created_at: string
