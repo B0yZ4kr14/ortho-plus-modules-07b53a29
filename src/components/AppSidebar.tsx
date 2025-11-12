@@ -18,7 +18,8 @@ import {
   FolderOpen,
   ShoppingCart,
   Webhook,
-  LineChart
+  LineChart,
+  Palette
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -255,6 +256,21 @@ export function AppSidebar() {
                       >
                         <Settings className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
                         {!collapsed && <span className="text-sm animate-slide-in">Configurações</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={isActive('/style-guide')}
+                      className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-md hover:border-l-2 hover:border-l-primary data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/20 data-[active=true]:to-transparent data-[active=true]:border-l-2 data-[active=true]:border-l-primary data-[active=true]:shadow-inner transition-all duration-300"
+                    >
+                      <NavLink 
+                        to="/style-guide" 
+                        className="flex items-center gap-3 px-3 py-3"
+                      >
+                        <Palette className="h-5 w-5 shrink-0 transition-transform duration-200 group-hover:scale-110" />
+                        {!collapsed && <span className="text-sm animate-slide-in">Guia de Estilo</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

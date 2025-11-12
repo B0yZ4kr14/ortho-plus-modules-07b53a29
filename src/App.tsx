@@ -21,6 +21,7 @@ import AgendaClinica from "./pages/AgendaClinica";
 import GerenciamentoModulos from "./pages/GerenciamentoModulos";
 import ModulesAdmin from './pages/settings/ModulesAdmin';
 import Configuracoes from './pages/Configuracoes';
+import StyleGuide from './pages/StyleGuide';
 import PEP from './pages/PEP';
 import Relatorios from './pages/Relatorios';
 import BusinessIntelligence from './pages/BusinessIntelligence';
@@ -109,6 +110,14 @@ const App = () => (
                                 element={
                                   <ProtectedRoute requireAdmin>
                                     <Configuracoes />
+                                  </ProtectedRoute>
+                                } 
+                              />
+                              <Route
+                                path="/style-guide" 
+                                element={
+                                  <ProtectedRoute requireAdmin>
+                                    <StyleGuide />
                                   </ProtectedRoute>
                                 } 
                               />
