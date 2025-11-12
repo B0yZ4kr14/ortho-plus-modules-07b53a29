@@ -35,8 +35,8 @@ import EstoqueRequisicoes from '@/pages/estoque/EstoqueRequisicoes';
 import EstoqueMovimentacoes from '@/pages/estoque/EstoqueMovimentacoes';
 import EstoqueAnaliseConsumo from '@/pages/estoque/EstoqueAnaliseConsumo';
 import EstoquePedidos from '@/pages/estoque/EstoquePedidos';
-import EstoqueAnalisePedidos from '@/pages/estoque/EstoqueAnalisePedidos';
 import EstoqueIntegracoes from '@/pages/estoque/EstoqueIntegracoes';
+import EstoqueAnalisePedidos from '@/pages/estoque/EstoqueAnalisePedidos';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();

@@ -996,6 +996,38 @@ export type Database = {
           },
         ]
       }
+      user_clinic_access: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          id: string
+          is_default: boolean | null
+          user_id: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          user_id: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_clinic_access_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_module_permissions: {
         Row: {
           can_delete: boolean

@@ -3,6 +3,11 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+interface Clinic {
+  id: string;
+  name: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -10,6 +15,9 @@ interface AuthContextType {
   userRole: 'ADMIN' | 'MEMBER' | null;
   clinicId: string | null;
   isAdmin: boolean;
+  availableClinics: Clinic[];
+  selectedClinic: Clinic | null;
+  switchClinic: (clinicId: string) => void;
   hasRole: (role: 'ADMIN' | 'MEMBER') => boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
@@ -24,8 +32,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<'ADMIN' | 'MEMBER' | null>(null);
   const [clinicId, setClinicId] = useState<string | null>(null);
+  const [availableClinics, setAvailableClinics] = useState<Clinic[]>([]);
+  const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
 
-  // Fetch user role and clinic
+  // Fetch user role and clinics
   const fetchUserMetadata = async (userId: string) => {
     try {
       // Get user role
@@ -39,18 +49,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUserRole(roleData.role as 'ADMIN' | 'MEMBER');
       }
 
-      // Get clinic ID
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('clinic_id')
-        .eq('id', userId)
-        .single();
+      // Get all clinics the user has access to
+      const { data: clinicsData } = await supabase
+        .from('user_clinic_access')
+        .select(`
+          clinic_id,
+          is_default,
+          clinics (
+            id,
+            name
+          )
+        `)
+        .eq('user_id', userId);
 
-      if (profileData) {
-        setClinicId(profileData.clinic_id);
+      if (clinicsData && clinicsData.length > 0) {
+        const clinics = clinicsData
+          .map((item: any) => item.clinics)
+          .filter(Boolean) as Clinic[];
+        
+        setAvailableClinics(clinics);
+
+        // Set selected clinic to default or first available
+        const defaultClinic = clinicsData.find((item: any) => item.is_default);
+        const clinic = defaultClinic?.clinics || clinics[0];
+        
+        if (clinic) {
+          setSelectedClinic(clinic);
+          setClinicId(clinic.id);
+        }
       }
     } catch (error) {
       console.error('Error fetching user metadata:', error);
+    }
+  };
+
+  const switchClinic = (newClinicId: string) => {
+    const clinic = availableClinics.find(c => c.id === newClinicId);
+    if (clinic) {
+      setSelectedClinic(clinic);
+      setClinicId(clinic.id);
+      toast.success(`Clínica alterada para: ${clinic.name}`);
     }
   };
 
@@ -153,6 +191,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userRole,
         clinicId,
         isAdmin,
+        availableClinics,
+        selectedClinic,
+        switchClinic,
         hasRole,
         signUp,
         signIn,
