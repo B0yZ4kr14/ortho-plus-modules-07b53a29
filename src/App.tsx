@@ -14,6 +14,7 @@ import Pacientes from "./pages/Pacientes";
 import Dentistas from "./pages/Dentistas";
 import Funcionarios from "./pages/Funcionarios";
 import Procedimentos from "./pages/Procedimentos";
+import Financeiro from "./pages/Financeiro";
 import Resumo from "./pages/Resumo";
 import AgendaClinica from "./pages/AgendaClinica";
 import GerenciamentoModulos from "./pages/GerenciamentoModulos";
@@ -50,6 +51,7 @@ const App = () => (
                               <Route path="/dentistas" element={<Dentistas />} />
                               <Route path="/funcionarios" element={<Funcionarios />} />
                               <Route path="/procedimentos" element={<Procedimentos />} />
+                              <Route path="/financeiro" element={<Financeiro />} />
                               <Route path="/agenda-clinica" element={<AgendaClinica />} />
                               <Route path="/modulos" element={<GerenciamentoModulos />} />
                               <Route 
