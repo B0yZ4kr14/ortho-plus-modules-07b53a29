@@ -152,22 +152,22 @@ export function AppSidebar() {
   const isActive = (path: string) => currentPath === path;
 
   return (
-    <Sidebar className={collapsed ? 'w-16' : 'w-72'} collapsible="icon">
-      <SidebarHeader className="border-b border-border p-4 bg-gradient-to-b from-sidebar to-sidebar/95">
+    <Sidebar className={`${collapsed ? 'w-16' : 'w-72'} shadow-[4px_0_24px_-2px_rgba(0,0,0,0.2)]`} collapsible="icon">
+      <SidebarHeader className="border-b border-border p-6 bg-gradient-to-br from-sidebar via-sidebar/95 to-sidebar/90 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
         {!collapsed ? (
-          <div className="flex items-center justify-center px-2">
+          <div className="flex items-center justify-center px-2 py-2 bg-background/10 rounded-lg backdrop-blur-sm shadow-[inset_0_2px_10px_rgba(0,0,0,0.2),0_4px_20px_rgba(0,0,0,0.15)]">
             <img 
               src="/src/assets/ortho-logo-full.png" 
               alt="Ortho +" 
-              className="h-20 w-auto object-contain drop-shadow-lg"
+              className="h-20 w-auto object-contain drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] filter brightness-110"
             />
           </div>
         ) : (
-          <div className="flex justify-center">
+          <div className="flex justify-center p-1 bg-background/10 rounded-lg backdrop-blur-sm shadow-[inset_0_1px_5px_rgba(0,0,0,0.2)]">
             <img 
               src="/src/assets/ortho-logo-full.png" 
               alt="Ortho +" 
-              className="h-10 w-auto object-contain drop-shadow-md"
+              className="h-10 w-auto object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.4)] filter brightness-110"
             />
           </div>
         )}
@@ -199,7 +199,7 @@ export function AppSidebar() {
                     <SidebarMenuButton 
                       asChild 
                       isActive={isActive(item.url)}
-                      className="relative group hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] hover:border-l-4 hover:border-l-primary hover:-translate-x-0.5 data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/25 data-[active=true]:via-primary/15 data-[active=true]:to-transparent data-[active=true]:border-l-4 data-[active=true]:border-l-primary data-[active=true]:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3),0_4px_12px_-2px_rgba(0,0,0,0.5)] transition-all duration-300 ease-out"
+                      className="relative group my-1 mx-2 rounded-lg hover:bg-sidebar-accent/90 hover:text-sidebar-accent-foreground hover:shadow-[0_6px_16px_-2px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] hover:border-l-4 hover:border-l-primary hover:-translate-y-0.5 data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/30 data-[active=true]:via-primary/20 data-[active=true]:to-transparent data-[active=true]:border-l-4 data-[active=true]:border-l-primary data-[active=true]:shadow-[inset_0_3px_10px_rgba(0,0,0,0.4),0_6px_16px_-2px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all duration-300 ease-out"
                     >
                       <NavLink 
                         to={item.url} 
@@ -240,7 +240,7 @@ export function AppSidebar() {
                           <SidebarMenuItem>
                             <CollapsibleTrigger asChild>
                               <SidebarMenuButton 
-                                className="relative group hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] hover:border-l-4 hover:border-l-primary hover:-translate-x-0.5 transition-all duration-300 ease-out"
+                                className="relative group my-1 mx-2 rounded-lg hover:bg-sidebar-accent/90 hover:text-sidebar-accent-foreground hover:shadow-[0_6px_16px_-2px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] hover:border-l-4 hover:border-l-primary hover:-translate-y-0.5 transition-all duration-300 ease-out"
                               >
                                 <div className="flex items-center gap-3 px-4 py-3.5 rounded-lg w-full">
                                   <item.icon className="h-5 w-5 shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
@@ -286,7 +286,7 @@ export function AppSidebar() {
                           <SidebarMenuButton 
                             asChild 
                             isActive={isActive(item.url)}
-                            className="relative group hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] hover:border-l-4 hover:border-l-primary hover:-translate-x-0.5 data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/25 data-[active=true]:via-primary/15 data-[active=true]:to-transparent data-[active=true]:border-l-4 data-[active=true]:border-l-primary data-[active=true]:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3),0_4px_12px_-2px_rgba(0,0,0,0.5)] transition-all duration-300 ease-out"
+                            className="relative group my-1 mx-2 rounded-lg hover:bg-sidebar-accent/90 hover:text-sidebar-accent-foreground hover:shadow-[0_6px_16px_-2px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] hover:border-l-4 hover:border-l-primary hover:-translate-y-0.5 data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/30 data-[active=true]:via-primary/20 data-[active=true]:to-transparent data-[active=true]:border-l-4 data-[active=true]:border-l-primary data-[active=true]:shadow-[inset_0_3px_10px_rgba(0,0,0,0.4),0_6px_16px_-2px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all duration-300 ease-out"
                           >
                             <NavLink 
                               to={item.url} 
@@ -330,7 +330,7 @@ export function AppSidebar() {
                     <SidebarMenuButton 
                       asChild 
                       isActive={isActive('/configuracoes')}
-                      className="relative group hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.4)] hover:border-l-4 hover:border-l-primary hover:-translate-x-0.5 data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/25 data-[active=true]:via-primary/15 data-[active=true]:to-transparent data-[active=true]:border-l-4 data-[active=true]:border-l-primary data-[active=true]:shadow-[inset_0_2px_8px_rgba(0,0,0,0.3),0_4px_12px_-2px_rgba(0,0,0,0.5)] transition-all duration-300 ease-out"
+                      className="relative group my-1 mx-2 rounded-lg hover:bg-sidebar-accent/90 hover:text-sidebar-accent-foreground hover:shadow-[0_6px_16px_-2px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] hover:border-l-4 hover:border-l-primary hover:-translate-y-0.5 data-[active=true]:bg-gradient-to-r data-[active=true]:from-primary/30 data-[active=true]:via-primary/20 data-[active=true]:to-transparent data-[active=true]:border-l-4 data-[active=true]:border-l-primary data-[active=true]:shadow-[inset_0_3px_10px_rgba(0,0,0,0.4),0_6px_16px_-2px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.15)] transition-all duration-300 ease-out"
                     >
                       <NavLink 
                         to="/configuracoes" 

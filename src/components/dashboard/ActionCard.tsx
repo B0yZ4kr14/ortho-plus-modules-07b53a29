@@ -13,18 +13,22 @@ interface ActionCardProps {
 export function ActionCard({ title, subtitle, icon: Icon, bgColor, route }: ActionCardProps) {
   const navigate = useNavigate();
 
+  const handleClick = () => {
+    navigate(route);
+  };
+
   return (
     <Card 
-      className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/50"
-      onClick={() => navigate(route)}
+      className="cursor-pointer hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 hover:scale-105 active:scale-95"
+      onClick={handleClick}
     >
       <CardContent className="p-6">
         <div className="flex flex-col items-center text-center space-y-3">
           <div 
-            className={`p-4 rounded-2xl ${bgColor}`}
+            className={`p-4 rounded-2xl ${bgColor} shadow-lg hover:shadow-2xl transition-shadow duration-300`}
             style={{ width: 'fit-content' }}
           >
-            <Icon className="h-8 w-8 text-white" />
+            <Icon className="h-8 w-8 text-white drop-shadow-md" />
           </div>
           <div>
             <h3 className="font-semibold text-lg">{title}</h3>
