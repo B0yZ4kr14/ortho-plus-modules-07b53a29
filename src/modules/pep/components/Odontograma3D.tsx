@@ -124,7 +124,7 @@ export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
     updateToothNotes,
     resetOdontograma,
     getStatusCount,
-  } = useOdontogramaStore(prontuarioId);
+  } = useOdontogramaSupabase(prontuarioId);
 
   const [selectedStatus, setSelectedStatus] = useState<ToothStatus>('higido');
   const [selectedTooth, setSelectedTooth] = useState<ToothData | null>(null);

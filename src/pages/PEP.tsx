@@ -27,7 +27,7 @@ export default function PEP() {
   // Estados para comparação de odontogramas
   const [selectedForComparison, setSelectedForComparison] = useState<[string | null, string | null]>([null, null]);
   
-  const { history, restoreFromHistory } = useOdontogramaStore(prontuarioId);
+  const { history, restoreFromHistory } = useOdontogramaSupabase(prontuarioId);
 
   const handleCompareSelect = (historyId: string) => {
     if (selectedForComparison[0] === historyId) {

@@ -31,7 +31,7 @@ export const Odontograma2D = ({ prontuarioId }: Odontograma2DProps) => {
     updateToothStatus,
     resetOdontograma,
     getStatusCount,
-  } = useOdontogramaStore(prontuarioId);
+  } = useOdontogramaSupabase(prontuarioId);
 
   useEffect(() => {
     if (!canvasRef.current) return;

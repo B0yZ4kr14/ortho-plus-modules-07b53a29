@@ -109,52 +109,20 @@ export const useOdontogramaSupabase = (prontuarioId: string) => {
     loadData();
   }, [loadData]);
 
-  // Realtime subscription para sincronização bidirecional
-  useEffect(() => {
-    if (!prontuarioId) return;
-
-    const channel = supabase
-      .channel(`odontograma-${prontuarioId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'pep_odontograma_data',
-          filter: `prontuario_id=eq.${prontuarioId}`
-        },
-        () => {
-          loadData();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'pep_tooth_surfaces'
-        },
-        () => {
-          loadData();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [prontuarioId, loadData]);
-
   // Adicionar entrada ao histórico
   const addHistoryEntry = useCallback(async (changedTeeth: number[], description?: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
       const { error } = await supabase
         .from('pep_odontograma_history')
         .insert({
           prontuario_id: prontuarioId,
-          snapshot_data: teethData,
+          snapshot_data: teethData as any,
           changed_teeth: changedTeeth,
-          description,
+          description: description || null,
+          created_by: user.id,
         });
 
       if (error) throw error;
