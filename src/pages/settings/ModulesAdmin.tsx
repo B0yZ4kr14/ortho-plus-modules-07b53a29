@@ -163,11 +163,13 @@ export default function ModulesAdmin() {
     };
   };
 
-  const groupedModules = modules.reduce((acc, module) => {
-    if (!acc[module.category]) acc[module.category] = [];
-    acc[module.category].push(module);
-    return acc;
-  }, {} as Record<string, ModuleData[]>);
+  const groupedModules = Array.isArray(modules) 
+    ? modules.reduce((acc, module) => {
+        if (!acc[module.category]) acc[module.category] = [];
+        acc[module.category].push(module);
+        return acc;
+      }, {} as Record<string, ModuleData[]>)
+    : {};
 
   if (loading) {
     return (
