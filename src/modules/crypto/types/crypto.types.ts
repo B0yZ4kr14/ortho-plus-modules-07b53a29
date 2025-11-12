@@ -10,6 +10,7 @@ export const exchangeConfigSchema = z.object({
   supported_coins: z.array(z.string()).default(['BTC', 'ETH', 'USDT']),
   auto_convert_to_brl: z.boolean().default(false),
   conversion_threshold: z.number().default(0),
+  processing_fee_percentage: z.number().min(0).max(100).default(0),
   created_by: z.string().uuid(),
 });
 
@@ -44,6 +45,8 @@ export const cryptoTransactionSchema = z.object({
   from_address: z.string().optional(),
   to_address: z.string().optional(),
   network_fee: z.number().optional(),
+  processing_fee_brl: z.number().optional(),
+  net_amount_brl: z.number().optional(),
   observacoes: z.string().optional(),
 });
 
@@ -57,6 +60,7 @@ export interface CryptoTransactionComplete extends Omit<CryptoTransaction, 'id' 
   patient_name?: string;
   wallet_name?: string;
   exchange_name?: string;
+  processing_fee_percentage?: number;
   converted_to_brl_at?: string;
   created_at?: string;
   updated_at?: string;

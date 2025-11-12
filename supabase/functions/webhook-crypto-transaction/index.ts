@@ -65,6 +65,17 @@ serve(async (req) => {
     const exchangeRate = await fetchExchangeRate(payload.coin_type);
     const amountBrl = payload.amount * exchangeRate;
 
+    // Buscar taxa de processamento da exchange
+    const { data: exchangeConfig } = await supabase
+      .from('crypto_exchange_config')
+      .select('processing_fee_percentage')
+      .eq('id', wallet.exchange_config_id)
+      .single();
+
+    const processingFeePercentage = exchangeConfig?.processing_fee_percentage || 0;
+    const processingFeeBrl = (amountBrl * processingFeePercentage) / 100;
+    const netAmountBrl = amountBrl - processingFeeBrl;
+
     if (existingTx) {
       // Atualizar transação existente com novas confirmações
       const newStatus = payload.confirmations >= 3 ? 'CONFIRMADO' : 'PENDENTE';
@@ -129,6 +140,8 @@ serve(async (req) => {
           amount_crypto: payload.amount,
           amount_brl: amountBrl,
           exchange_rate: exchangeRate,
+          processing_fee_brl: processingFeeBrl,
+          net_amount_brl: netAmountBrl,
           tipo: 'RECEBIMENTO',
           status: payload.confirmations >= 3 ? 'CONFIRMADO' : 'PENDENTE',
           confirmations: payload.confirmations,

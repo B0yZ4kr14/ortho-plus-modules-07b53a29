@@ -252,6 +252,24 @@ export default function CryptoPagamentos() {
                           </div>
                         </div>
 
+                        {(tx.processing_fee_brl && tx.processing_fee_brl > 0) && (
+                          <div className="grid grid-cols-2 gap-4 text-sm pt-2 border-t">
+                            <div>
+                              <span className="text-muted-foreground">Taxa de Processamento:</span>
+                              <p className="font-semibold text-amber-600 dark:text-amber-400">
+                                - R$ {tx.processing_fee_brl?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                {tx.processing_fee_percentage && ` (${tx.processing_fee_percentage}%)`}
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Valor Líquido:</span>
+                              <p className="font-semibold text-green-600 dark:text-green-400">
+                                R$ {tx.net_amount_brl?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
                         {tx.patient_name && (
                           <div className="text-sm">
                             <span className="text-muted-foreground">Paciente: </span>
@@ -489,6 +507,15 @@ export default function CryptoPagamentos() {
                         {exchange.auto_convert_to_brl ? 'Ativada' : 'Desativada'}
                       </Badge>
                     </div>
+
+                    {exchange.processing_fee_percentage && exchange.processing_fee_percentage > 0 && (
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">Taxa de Processamento: </span>
+                        <span className="font-semibold text-amber-600 dark:text-amber-400">
+                          {exchange.processing_fee_percentage}%
+                        </span>
+                      </div>
+                    )}
 
                     <Button variant="outline" size="sm" className="w-full">
                       <Settings className="h-4 w-4 mr-2" />

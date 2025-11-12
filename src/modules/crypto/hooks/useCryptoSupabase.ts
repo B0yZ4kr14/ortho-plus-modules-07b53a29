@@ -74,16 +74,25 @@ export const useCryptoSupabase = (clinicId: string) => {
           *,
           patient:patients(nome),
           wallet:crypto_wallets(wallet_name),
-          exchange:crypto_exchange_config(exchange_name)
+          exchange:crypto_exchange_config(exchange_name, processing_fee_percentage)
         `)
         .eq('clinic_id', clinicId)
         .order('created_at', { ascending: false });
 
       if (transactionsError) throw transactionsError;
 
+      // Map transactions com processing_fee_percentage da exchange
+      const mappedTransactions = (transactionsData || []).map((tx: any) => ({
+        ...tx,
+        patient_name: tx.patient?.nome,
+        wallet_name: tx.wallet?.wallet_name,
+        exchange_name: tx.exchange?.exchange_name,
+        processing_fee_percentage: tx.exchange?.processing_fee_percentage || 0,
+      }));
+
       setExchanges(exchangesData || []);
       setWallets(walletsData || []);
-      setTransactions(transactionsData || []);
+      setTransactions(mappedTransactions);
     } catch (error: any) {
       console.error('Error loading crypto data:', error);
       toast({
@@ -251,8 +260,14 @@ export const useCryptoSupabase = (clinicId: string) => {
     const wallet = wallets.find(w => w.id === data.wallet_id);
     if (!wallet) throw new Error('Wallet not found');
 
+    // Buscar configuração da exchange para obter taxa de processamento
+    const exchange = exchanges.find(e => e.id === wallet.exchange_config_id);
+    const processingFeePercentage = exchange?.processing_fee_percentage || 0;
+
     const exchangeRate = await fetchExchangeRate(wallet.coin_type);
     const amountBrl = data.amount_crypto * exchangeRate;
+    const processingFeeBrl = (amountBrl * processingFeePercentage) / 100;
+    const netAmountBrl = amountBrl - processingFeeBrl;
 
     const { data: transaction, error } = await supabase
       .from('crypto_transactions')
@@ -266,6 +281,8 @@ export const useCryptoSupabase = (clinicId: string) => {
         amount_crypto: data.amount_crypto,
         amount_brl: amountBrl,
         exchange_rate: exchangeRate,
+        processing_fee_brl: processingFeeBrl,
+        net_amount_brl: netAmountBrl,
         tipo: 'RECEBIMENTO',
         status: 'PENDENTE',
         confirmations: 0,
@@ -277,7 +294,10 @@ export const useCryptoSupabase = (clinicId: string) => {
 
     if (error) throw error;
 
-    sonnerToast.success('Solicitação de pagamento criada! Aguardando confirmação...');
+    const feeMessage = processingFeePercentage > 0 
+      ? ` (Taxa de ${processingFeePercentage}%: R$ ${processingFeeBrl.toFixed(2)})`
+      : '';
+    sonnerToast.success(`Solicitação de pagamento criada! Aguardando confirmação...${feeMessage}`);
     await loadData();
     return transaction;
   };

@@ -36,6 +36,7 @@ export function ExchangeConfigForm({ onSubmit, onCancel, initialData }: Exchange
       supported_coins: ['BTC'],
       auto_convert_to_brl: false,
       conversion_threshold: 0,
+      processing_fee_percentage: 0,
     },
   });
 
@@ -203,6 +204,31 @@ export function ExchangeConfigForm({ onSubmit, onCancel, initialData }: Exchange
             )}
           />
         )}
+
+        <FormField
+          control={form.control}
+          name="processing_fee_percentage"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Taxa de Processamento (%)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  placeholder="Ex: 2.5"
+                  {...field}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                />
+              </FormControl>
+              <FormDescription>
+                Percentual cobrado pela clínica em cada transação (0-100%)
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
