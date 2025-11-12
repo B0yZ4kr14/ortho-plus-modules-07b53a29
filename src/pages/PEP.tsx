@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, Plus, History, Upload, Activity, Smile } from 'lucide-react';
+import { FileText, Plus, History, Upload, Activity, Smile, Box } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -10,6 +10,7 @@ import { TratamentoForm } from '@/modules/pep/components/TratamentoForm';
 import { AnexosUpload } from '@/modules/pep/components/AnexosUpload';
 import { EvolucoesTimeline } from '@/modules/pep/components/EvolucoesTimeline';
 import { Odontograma2D } from '@/modules/pep/components/Odontograma2D';
+import { Odontograma3D } from '@/modules/pep/components/Odontograma3D';
 
 export default function PEP() {
   const [activeTab, setActiveTab] = useState('historico');
@@ -55,18 +56,22 @@ export default function PEP() {
 
       {/* Tabs Principais */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="historico">
             <History className="mr-2 h-4 w-4" />
-            Histórico Clínico
+            Histórico
           </TabsTrigger>
           <TabsTrigger value="tratamentos">
             <Activity className="mr-2 h-4 w-4" />
             Tratamentos
           </TabsTrigger>
-          <TabsTrigger value="odontograma">
+          <TabsTrigger value="odontograma2d">
             <Smile className="mr-2 h-4 w-4" />
-            Odontograma
+            Odontograma 2D
+          </TabsTrigger>
+          <TabsTrigger value="odontograma3d">
+            <Box className="mr-2 h-4 w-4" />
+            Odontograma 3D
           </TabsTrigger>
           <TabsTrigger value="anexos">
             <Upload className="mr-2 h-4 w-4" />
@@ -150,8 +155,12 @@ export default function PEP() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="odontograma" className="space-y-4">
-          <Odontograma2D />
+        <TabsContent value="odontograma2d" className="space-y-4">
+          <Odontograma2D prontuarioId={prontuarioId} />
+        </TabsContent>
+
+        <TabsContent value="odontograma3d" className="space-y-4">
+          <Odontograma3D prontuarioId={prontuarioId} />
         </TabsContent>
 
         <TabsContent value="anexos" className="space-y-4">

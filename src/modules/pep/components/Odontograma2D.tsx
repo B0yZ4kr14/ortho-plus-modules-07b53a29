@@ -1,47 +1,37 @@
 import { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas, Rect, Text, FabricObject } from 'fabric';
+import { Canvas as FabricCanvas, Rect, Text } from 'fabric';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useOdontogramaStore } from '../hooks/useOdontogramaStore';
+import {
+  ToothStatus,
+  TOOTH_STATUS_COLORS,
+  TOOTH_STATUS_LABELS,
+  UPPER_RIGHT_TEETH,
+  UPPER_LEFT_TEETH,
+  LOWER_LEFT_TEETH,
+  LOWER_RIGHT_TEETH,
+} from '../types/odontograma.types';
+import { Loader2 } from 'lucide-react';
 
-type ToothStatus = 'higido' | 'cariado' | 'obturado' | 'extraido' | 'ausente' | 'implante';
-
-interface ToothData {
-  number: number;
-  status: ToothStatus;
-  notes?: string;
+interface Odontograma2DProps {
+  prontuarioId: string;
 }
 
-const STATUS_COLORS: Record<ToothStatus, string> = {
-  higido: '#ffffff',
-  cariado: '#ef4444',
-  obturado: '#3b82f6',
-  extraido: '#000000',
-  ausente: '#9ca3af',
-  implante: '#10b981',
-};
-
-const STATUS_LABELS: Record<ToothStatus, string> = {
-  higido: 'Hígido',
-  cariado: 'Cariado',
-  obturado: 'Obturado',
-  extraido: 'Extraído',
-  ausente: 'Ausente',
-  implante: 'Implante',
-};
-
-export const Odontograma2D = () => {
+export const Odontograma2D = ({ prontuarioId }: Odontograma2DProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [fabricCanvas, setFabricCanvas] = useState<FabricCanvas | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<ToothStatus>('higido');
-  const [teethData, setTeethData] = useState<Record<number, ToothData>>({});
-
-  // Numeração FDI padrão
-  const upperRightTeeth = [18, 17, 16, 15, 14, 13, 12, 11];
-  const upperLeftTeeth = [21, 22, 23, 24, 25, 26, 27, 28];
-  const lowerLeftTeeth = [31, 32, 33, 34, 35, 36, 37, 38];
-  const lowerRightTeeth = [48, 47, 46, 45, 44, 43, 42, 41];
+  
+  const {
+    teethData,
+    isLoading,
+    updateToothStatus,
+    resetOdontograma,
+    getStatusCount,
+  } = useOdontogramaStore(prontuarioId);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -55,20 +45,13 @@ export const Odontograma2D = () => {
 
     setFabricCanvas(canvas);
 
-    // Inicializar dados dos dentes
-    const initialData: Record<number, ToothData> = {};
-    [...upperRightTeeth, ...upperLeftTeeth, ...lowerLeftTeeth, ...lowerRightTeeth].forEach(num => {
-      initialData[num] = { number: num, status: 'higido' };
-    });
-    setTeethData(initialData);
-
     return () => {
       canvas.dispose();
     };
   }, []);
 
   useEffect(() => {
-    if (!fabricCanvas) return;
+    if (!fabricCanvas || isLoading) return;
 
     fabricCanvas.clear();
     fabricCanvas.backgroundColor = '#f8fafc';
@@ -89,7 +72,7 @@ export const Odontograma2D = () => {
         top: y,
         width: toothWidth,
         height: toothHeight,
-        fill: STATUS_COLORS[data.status],
+        fill: TOOTH_STATUS_COLORS[data.status],
         stroke: '#334155',
         strokeWidth: 2,
         rx: 5,
@@ -118,12 +101,12 @@ export const Odontograma2D = () => {
     };
 
     // Desenhar arcada superior direita
-    upperRightTeeth.forEach((num, idx) => {
+    UPPER_RIGHT_TEETH.forEach((num, idx) => {
       drawTooth(num, startX + idx * (toothWidth + spacing), upperY);
     });
 
     // Desenhar arcada superior esquerda
-    upperLeftTeeth.forEach((num, idx) => {
+    UPPER_LEFT_TEETH.forEach((num, idx) => {
       drawTooth(num, startX + 8 * (toothWidth + spacing) + 30 + idx * (toothWidth + spacing), upperY);
     });
 
@@ -140,12 +123,12 @@ export const Odontograma2D = () => {
     fabricCanvas.add(divider);
 
     // Desenhar arcada inferior esquerda
-    lowerLeftTeeth.forEach((num, idx) => {
+    LOWER_LEFT_TEETH.forEach((num, idx) => {
       drawTooth(num, startX + 8 * (toothWidth + spacing) + 30 + idx * (toothWidth + spacing), lowerY);
     });
 
     // Desenhar arcada inferior direita
-    lowerRightTeeth.forEach((num, idx) => {
+    LOWER_RIGHT_TEETH.forEach((num, idx) => {
       drawTooth(num, startX + idx * (toothWidth + spacing), lowerY);
     });
 
@@ -168,31 +151,25 @@ export const Odontograma2D = () => {
     addLabel('Inferior Direito', startX, 270);
 
     fabricCanvas.renderAll();
-  }, [fabricCanvas, teethData]);
+  }, [fabricCanvas, teethData, isLoading]);
 
   const handleToothClick = (toothNumber: number) => {
-    setTeethData(prev => ({
-      ...prev,
-      [toothNumber]: {
-        ...prev[toothNumber],
-        status: selectedStatus,
-      },
-    }));
-    toast.success(`Dente ${toothNumber} marcado como ${STATUS_LABELS[selectedStatus]}`);
+    updateToothStatus(toothNumber, selectedStatus);
+    toast.success(`Dente ${toothNumber} marcado como ${TOOTH_STATUS_LABELS[selectedStatus]}`);
   };
 
-  const handleReset = () => {
-    const resetData: Record<number, ToothData> = {};
-    [...upperRightTeeth, ...upperLeftTeeth, ...lowerLeftTeeth, ...lowerRightTeeth].forEach(num => {
-      resetData[num] = { number: num, status: 'higido' };
-    });
-    setTeethData(resetData);
-    toast.info('Odontograma resetado');
-  };
-
-  const getStatusCount = (status: ToothStatus) => {
-    return Object.values(teethData).filter(t => t.status === status).length;
-  };
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="py-12">
+          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <p>Carregando odontograma...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -202,7 +179,7 @@ export const Odontograma2D = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            {(Object.keys(STATUS_COLORS) as ToothStatus[]).map(status => (
+            {(Object.keys(TOOTH_STATUS_COLORS) as ToothStatus[]).map(status => (
               <Button
                 key={status}
                 variant={selectedStatus === status ? 'default' : 'outline'}
@@ -211,12 +188,12 @@ export const Odontograma2D = () => {
               >
                 <div
                   className="w-4 h-4 rounded border border-border"
-                  style={{ backgroundColor: STATUS_COLORS[status] }}
+                  style={{ backgroundColor: TOOTH_STATUS_COLORS[status] }}
                 />
-                {STATUS_LABELS[status]}
+                {TOOTH_STATUS_LABELS[status]}
               </Button>
             ))}
-            <Button variant="destructive" onClick={handleReset}>
+            <Button variant="destructive" onClick={resetOdontograma}>
               Resetar Odontograma
             </Button>
           </div>
@@ -243,10 +220,10 @@ export const Odontograma2D = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {(Object.keys(STATUS_COLORS) as ToothStatus[]).map(status => (
+            {(Object.keys(TOOTH_STATUS_COLORS) as ToothStatus[]).map(status => (
               <div key={status} className="text-center">
                 <Badge variant="outline" className="w-full justify-center mb-2">
-                  {STATUS_LABELS[status]}
+                  {TOOTH_STATUS_LABELS[status]}
                 </Badge>
                 <p className="text-2xl font-bold">{getStatusCount(status)}</p>
               </div>
