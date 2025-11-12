@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      analises_radiograficas: {
+        Row: {
+          clinic_id: string
+          confidence_score: number | null
+          created_at: string
+          created_by: string
+          id: string
+          imagem_storage_path: string
+          imagem_url: string
+          observacoes_dentista: string | null
+          patient_id: string
+          problemas_detectados: number | null
+          prontuario_id: string | null
+          resultado_ia: Json | null
+          revisado_em: string | null
+          revisado_por: string | null
+          revisado_por_dentista: boolean | null
+          status_analise: string
+          tipo_radiografia: string
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          confidence_score?: number | null
+          created_at?: string
+          created_by: string
+          id?: string
+          imagem_storage_path: string
+          imagem_url: string
+          observacoes_dentista?: string | null
+          patient_id: string
+          problemas_detectados?: number | null
+          prontuario_id?: string | null
+          resultado_ia?: Json | null
+          revisado_em?: string | null
+          revisado_por?: string | null
+          revisado_por_dentista?: boolean | null
+          status_analise?: string
+          tipo_radiografia: string
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          confidence_score?: number | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          imagem_storage_path?: string
+          imagem_url?: string
+          observacoes_dentista?: string | null
+          patient_id?: string
+          problemas_detectados?: number | null
+          prontuario_id?: string | null
+          resultado_ia?: Json | null
+          revisado_em?: string | null
+          revisado_por?: string | null
+          revisado_por_dentista?: boolean | null
+          status_analise?: string
+          tipo_radiografia?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analises_radiograficas_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analises_radiograficas_prontuario_id_fkey"
+            columns: ["prontuario_id"]
+            isOneToOne: false
+            referencedRelation: "prontuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           clinic_id: string
@@ -168,6 +246,139 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "backup_history_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campanha_envios: {
+        Row: {
+          aberto_em: string | null
+          campanha_id: string
+          clicado_em: string | null
+          convertido_em: string | null
+          created_at: string
+          destinatario_id: string
+          destinatario_tipo: string
+          email: string | null
+          enviado_em: string | null
+          erro_mensagem: string | null
+          id: string
+          status_envio: string
+          telefone: string | null
+        }
+        Insert: {
+          aberto_em?: string | null
+          campanha_id: string
+          clicado_em?: string | null
+          convertido_em?: string | null
+          created_at?: string
+          destinatario_id: string
+          destinatario_tipo: string
+          email?: string | null
+          enviado_em?: string | null
+          erro_mensagem?: string | null
+          id?: string
+          status_envio?: string
+          telefone?: string | null
+        }
+        Update: {
+          aberto_em?: string | null
+          campanha_id?: string
+          clicado_em?: string | null
+          convertido_em?: string | null
+          created_at?: string
+          destinatario_id?: string
+          destinatario_tipo?: string
+          email?: string | null
+          enviado_em?: string | null
+          erro_mensagem?: string | null
+          id?: string
+          status_envio?: string
+          telefone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campanha_envios_campanha_id_fkey"
+            columns: ["campanha_id"]
+            isOneToOne: false
+            referencedRelation: "campanhas_marketing"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campanhas_marketing: {
+        Row: {
+          clinic_id: string
+          conteudo_template: string
+          created_at: string
+          created_by: string
+          data_fim: string | null
+          data_inicio: string | null
+          id: string
+          nome: string
+          segmento_alvo: Json | null
+          status: string
+          taxa_abertura: number | null
+          taxa_clique: number | null
+          taxa_conversao: number | null
+          tipo: string
+          total_aberturas: number | null
+          total_cliques: number | null
+          total_conversoes: number | null
+          total_destinatarios: number | null
+          total_enviados: number | null
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          conteudo_template: string
+          created_at?: string
+          created_by: string
+          data_fim?: string | null
+          data_inicio?: string | null
+          id?: string
+          nome: string
+          segmento_alvo?: Json | null
+          status?: string
+          taxa_abertura?: number | null
+          taxa_clique?: number | null
+          taxa_conversao?: number | null
+          tipo: string
+          total_aberturas?: number | null
+          total_cliques?: number | null
+          total_conversoes?: number | null
+          total_destinatarios?: number | null
+          total_enviados?: number | null
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          conteudo_template?: string
+          created_at?: string
+          created_by?: string
+          data_fim?: string | null
+          data_inicio?: string | null
+          id?: string
+          nome?: string
+          segmento_alvo?: Json | null
+          status?: string
+          taxa_abertura?: number | null
+          taxa_clique?: number | null
+          taxa_conversao?: number | null
+          tipo?: string
+          total_aberturas?: number | null
+          total_cliques?: number | null
+          total_conversoes?: number | null
+          total_destinatarios?: number | null
+          total_enviados?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campanhas_marketing_clinic_id_fkey"
             columns: ["clinic_id"]
             isOneToOne: false
             referencedRelation: "clinics"
@@ -622,6 +833,165 @@ export type Database = {
             columns: ["prontuario_id"]
             isOneToOne: false
             referencedRelation: "prontuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_interacoes: {
+        Row: {
+          agendou_avaliacao: boolean | null
+          created_at: string
+          created_by: string
+          descricao: string
+          id: string
+          lead_id: string
+          proximo_passo: string | null
+          resultado: string | null
+          tipo: string
+        }
+        Insert: {
+          agendou_avaliacao?: boolean | null
+          created_at?: string
+          created_by: string
+          descricao: string
+          id?: string
+          lead_id: string
+          proximo_passo?: string | null
+          resultado?: string | null
+          tipo: string
+        }
+        Update: {
+          agendou_avaliacao?: boolean | null
+          created_at?: string
+          created_by?: string
+          descricao?: string
+          id?: string
+          lead_id?: string
+          proximo_passo?: string | null
+          resultado?: string | null
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_interacoes_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_tags: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string
+          tag: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id: string
+          tag: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string
+          tag?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_tags_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          atribuido_a: string | null
+          clinic_id: string
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          interesse: string | null
+          motivo_perda: string | null
+          nome: string
+          observacoes: string | null
+          origem: string
+          proximo_followup: string | null
+          score_qualidade: number | null
+          status_funil: string
+          telefone: string | null
+          temperatura: string
+          ultimo_contato: string | null
+          updated_at: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          valor_estimado: number | null
+          whatsapp: string | null
+        }
+        Insert: {
+          atribuido_a?: string | null
+          clinic_id: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          interesse?: string | null
+          motivo_perda?: string | null
+          nome: string
+          observacoes?: string | null
+          origem: string
+          proximo_followup?: string | null
+          score_qualidade?: number | null
+          status_funil?: string
+          telefone?: string | null
+          temperatura?: string
+          ultimo_contato?: string | null
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          valor_estimado?: number | null
+          whatsapp?: string | null
+        }
+        Update: {
+          atribuido_a?: string | null
+          clinic_id?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          interesse?: string | null
+          motivo_perda?: string | null
+          nome?: string
+          observacoes?: string | null
+          origem?: string
+          proximo_followup?: string | null
+          score_qualidade?: number | null
+          status_funil?: string
+          telefone?: string | null
+          temperatura?: string
+          ultimo_contato?: string | null
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          valor_estimado?: number | null
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
             referencedColumns: ["id"]
           },
         ]
@@ -1522,6 +1892,112 @@ export type Database = {
         }
         Relationships: []
       }
+      prescricoes_remotas: {
+        Row: {
+          assinatura_digital: string | null
+          created_at: string
+          descricao: string
+          enviado_em: string | null
+          enviado_para_paciente: boolean | null
+          id: string
+          instrucoes: string | null
+          medicamento_dosagem: string | null
+          medicamento_duracao: string | null
+          medicamento_frequencia: string | null
+          medicamento_nome: string | null
+          teleconsulta_id: string
+          tipo: string
+        }
+        Insert: {
+          assinatura_digital?: string | null
+          created_at?: string
+          descricao: string
+          enviado_em?: string | null
+          enviado_para_paciente?: boolean | null
+          id?: string
+          instrucoes?: string | null
+          medicamento_dosagem?: string | null
+          medicamento_duracao?: string | null
+          medicamento_frequencia?: string | null
+          medicamento_nome?: string | null
+          teleconsulta_id: string
+          tipo: string
+        }
+        Update: {
+          assinatura_digital?: string | null
+          created_at?: string
+          descricao?: string
+          enviado_em?: string | null
+          enviado_para_paciente?: boolean | null
+          id?: string
+          instrucoes?: string | null
+          medicamento_dosagem?: string | null
+          medicamento_duracao?: string | null
+          medicamento_frequencia?: string | null
+          medicamento_nome?: string | null
+          teleconsulta_id?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescricoes_remotas_teleconsulta_id_fkey"
+            columns: ["teleconsulta_id"]
+            isOneToOne: false
+            referencedRelation: "teleconsultas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      problemas_radiograficos: {
+        Row: {
+          analise_id: string
+          confianca: number | null
+          created_at: string
+          dente_codigo: string | null
+          descricao: string | null
+          id: string
+          localizacao: string | null
+          severidade: string
+          sugestao_tratamento: string | null
+          tipo_problema: string
+          urgente: boolean | null
+        }
+        Insert: {
+          analise_id: string
+          confianca?: number | null
+          created_at?: string
+          dente_codigo?: string | null
+          descricao?: string | null
+          id?: string
+          localizacao?: string | null
+          severidade: string
+          sugestao_tratamento?: string | null
+          tipo_problema: string
+          urgente?: boolean | null
+        }
+        Update: {
+          analise_id?: string
+          confianca?: number | null
+          created_at?: string
+          dente_codigo?: string | null
+          descricao?: string | null
+          id?: string
+          localizacao?: string | null
+          severidade?: string
+          sugestao_tratamento?: string | null
+          tipo_problema?: string
+          urgente?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "problemas_radiograficos_analise_id_fkey"
+            columns: ["analise_id"]
+            isOneToOne: false
+            referencedRelation: "analises_radiograficas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1644,6 +2120,137 @@ export type Database = {
             columns: ["clinic_id"]
             isOneToOne: false
             referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teleconsultas: {
+        Row: {
+          appointment_id: string | null
+          clinic_id: string
+          conduta: string | null
+          created_at: string
+          created_by: string
+          data_agendada: string
+          data_finalizada: string | null
+          data_iniciada: string | null
+          dentist_id: string
+          diagnostico: string | null
+          duracao_minutos: number | null
+          id: string
+          link_sala: string | null
+          motivo: string
+          observacoes: string | null
+          patient_id: string
+          recording_url: string | null
+          status: string
+          tipo: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          clinic_id: string
+          conduta?: string | null
+          created_at?: string
+          created_by: string
+          data_agendada: string
+          data_finalizada?: string | null
+          data_iniciada?: string | null
+          dentist_id: string
+          diagnostico?: string | null
+          duracao_minutos?: number | null
+          id?: string
+          link_sala?: string | null
+          motivo: string
+          observacoes?: string | null
+          patient_id: string
+          recording_url?: string | null
+          status?: string
+          tipo: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          clinic_id?: string
+          conduta?: string | null
+          created_at?: string
+          created_by?: string
+          data_agendada?: string
+          data_finalizada?: string | null
+          data_iniciada?: string | null
+          dentist_id?: string
+          diagnostico?: string | null
+          duracao_minutos?: number | null
+          id?: string
+          link_sala?: string | null
+          motivo?: string
+          observacoes?: string | null
+          patient_id?: string
+          recording_url?: string | null
+          status?: string
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teleconsultas_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teleconsultas_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      triagem_teleconsulta: {
+        Row: {
+          alergias: string | null
+          created_at: string
+          fotos_anexas: Json | null
+          id: string
+          intensidade_dor: number | null
+          medicamentos_uso: string | null
+          sintomas: string[] | null
+          teleconsulta_id: string
+          tempo_sintoma: string | null
+        }
+        Insert: {
+          alergias?: string | null
+          created_at?: string
+          fotos_anexas?: Json | null
+          id?: string
+          intensidade_dor?: number | null
+          medicamentos_uso?: string | null
+          sintomas?: string[] | null
+          teleconsulta_id: string
+          tempo_sintoma?: string | null
+        }
+        Update: {
+          alergias?: string | null
+          created_at?: string
+          fotos_anexas?: Json | null
+          id?: string
+          intensidade_dor?: number | null
+          medicamentos_uso?: string | null
+          sintomas?: string[] | null
+          teleconsulta_id?: string
+          tempo_sintoma?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "triagem_teleconsulta_teleconsulta_id_fkey"
+            columns: ["teleconsulta_id"]
+            isOneToOne: false
+            referencedRelation: "teleconsultas"
             referencedColumns: ["id"]
           },
         ]

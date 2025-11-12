@@ -45,6 +45,9 @@ import Transacoes from '@/pages/financeiro/Transacoes';
 import Orcamentos from '@/pages/Orcamentos';
 import Contratos from '@/pages/Contratos';
 import PortalPaciente from '@/pages/PortalPaciente';
+import Teleodontologia from '@/pages/Teleodontologia';
+import IARadiografia from '@/pages/IARadiografia';
+import CRMFunil from '@/pages/CRMFunil';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -98,8 +101,14 @@ const App = () => (
                               <Route path="/estoque/integracoes" element={<EstoqueIntegracoes />} />
                               <Route path="/estoque/analise-pedidos" element={<EstoqueAnalisePedidos />} />
                               <Route path="/estoque/analise-consumo" element={<EstoqueAnaliseConsumo />} />
+                              <Route path="/orcamentos" element={<Orcamentos />} />
+                              <Route path="/contratos" element={<Contratos />} />
+                              <Route path="/portal-paciente" element={<PortalPaciente />} />
+                              <Route path="/teleodontologia" element={<Teleodontologia />} />
+                              <Route path="/ia-radiografia" element={<IARadiografia />} />
+                              <Route path="/crm-funil" element={<CRMFunil />} />
                               <Route
-                                path="/report-templates" 
+                                path="/report-templates"
                                 element={
                                   <ProtectedRoute requireAdmin>
                                     <ReportTemplates />

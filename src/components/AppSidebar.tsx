@@ -18,7 +18,12 @@ import {
   FolderOpen,
   ShoppingCart,
   Webhook,
-  LineChart
+  LineChart,
+  FileSignature,
+  User,
+  Video,
+  Scan,
+  UserCog
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -66,6 +71,10 @@ const menuGroups = [
     items: [
       { title: 'Agenda', url: '/agenda-clinica', icon: Calendar },
       { title: 'PEP', url: '/pep', icon: FileText },
+      { title: 'Orçamentos', url: '/orcamentos', icon: FileText, badge: 'Novo' },
+      { title: 'Contratos', url: '/contratos', icon: FileSignature, badge: 'Novo' },
+      { title: 'Teleodontologia', url: '/teleodontologia', icon: Video, badge: 'Beta' },
+      { title: 'IA Raio-X', url: '/ia-radiografia', icon: Scan, badge: 'IA' },
     ]
   },
   {
@@ -101,6 +110,13 @@ const menuGroups = [
       { title: 'Business Intelligence', url: '/business-intelligence', icon: TrendingUp, badge: 'IA' },
       { title: 'Análise Comportamental', url: '/analise-comportamental', icon: Activity, badge: 'Novo' },
       { title: 'Templates', url: '/report-templates', icon: ClipboardList },
+    ]
+  },
+  {
+    label: 'Pacientes',
+    items: [
+      { title: 'Portal do Paciente', url: '/portal-paciente', icon: User, badge: 'Novo' },
+      { title: 'CRM + Funil', url: '/crm-funil', icon: UserCog, badge: 'Beta' },
     ]
   },
   {
