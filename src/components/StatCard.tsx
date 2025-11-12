@@ -24,7 +24,7 @@ export function StatCard({
   alert
 }: StatCardProps) {
   return (
-    <Card className={cn("p-6 border-l-4", borderColor)}>
+    <Card variant="elevated" className={cn("p-6 border-l-4", borderColor)}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-sm text-muted-foreground mb-1">{label}</p>
@@ -40,7 +40,7 @@ export function StatCard({
             </p>
           )}
         </div>
-        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", iconColor)}>
+        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shadow-md", iconColor)}>
           <Icon className="h-6 w-6 text-white" />
         </div>
       </div>

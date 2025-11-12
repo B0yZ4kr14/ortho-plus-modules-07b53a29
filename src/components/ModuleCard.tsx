@@ -13,11 +13,12 @@ interface ModuleCardProps {
 export function ModuleCard({ title, subtitle, icon: Icon, color, onClick }: ModuleCardProps) {
   return (
     <Card
-      className="p-6 hover:shadow-lg transition-all cursor-pointer border-border bg-card hover:scale-105"
+      variant="interactive"
+      className="p-6"
       onClick={onClick}
     >
       <div className="flex flex-col items-center gap-3 text-center">
-        <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center", color)}>
+        <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center shadow-md transition-transform duration-300 group-hover:scale-110", color)}>
           <Icon className="h-8 w-8 text-white" />
         </div>
         <div>

@@ -240,7 +240,7 @@ export default function ModulesAdmin() {
         <div key={category} className="space-y-4">
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold text-foreground">{category}</h2>
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="info" className="text-xs">
               {categoryModules.filter(m => m.is_active).length} / {categoryModules.length} ativos
             </Badge>
           </div>
@@ -253,9 +253,9 @@ export default function ModulesAdmin() {
 
               return (
                 <Card 
-                  key={module.module_key} 
+                  key={module.module_key}
+                  variant="elevated"
                   className={cn(
-                    "transition-all duration-200 hover:shadow-md",
                     getModuleStatusColor(module),
                     isTogglingThis && "opacity-60"
                   )}
@@ -282,19 +282,19 @@ export default function ModulesAdmin() {
                       {module.is_subscribed ? (
                         <>
                           <Badge 
-                            variant={module.is_active ? 'default' : 'secondary'}
+                            variant={module.is_active ? 'success' : 'secondary'}
                             className="text-xs"
                           >
                             {module.is_active ? 'Ativo' : 'Inativo'}
                           </Badge>
                           {module.unmet_dependencies.length > 0 && !module.is_active && (
-                            <Badge variant="outline" className="text-xs text-destructive border-destructive/50">
+                            <Badge variant="error" className="text-xs">
                               <Lock className="h-3 w-3 mr-1" />
                               Bloqueado
                             </Badge>
                           )}
                           {module.blocking_dependencies.length > 0 && module.is_active && (
-                            <Badge variant="outline" className="text-xs text-primary border-primary/50">
+                            <Badge variant="info" className="text-xs">
                               <Link2 className="h-3 w-3 mr-1" />
                               Em uso
                             </Badge>

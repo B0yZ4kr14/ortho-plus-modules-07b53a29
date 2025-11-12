@@ -154,7 +154,7 @@ export default function Dashboard() {
       </div>
 
       {/* Action Cards - Ações Rápidas */}
-      <Card>
+      <Card variant="gradient">
         <CardHeader>
           <CardTitle>Ações Rápidas</CardTitle>
           <CardDescription>Acesse rapidamente as funcionalidades mais utilizadas</CardDescription>
@@ -209,7 +209,7 @@ export default function Dashboard() {
 
       {/* Tratamentos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+        <Card variant="elevated">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-primary" />
@@ -222,7 +222,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card variant="elevated">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -239,7 +239,7 @@ export default function Dashboard() {
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gráfico de Consultas */}
-        <Card>
+        <Card variant="gradient">
           <CardHeader>
             <CardTitle>Consultas da Semana</CardTitle>
             <CardDescription>Comparação entre agendadas e realizadas</CardDescription>
@@ -265,7 +265,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Gráfico de Receita */}
-        <Card>
+        <Card variant="gradient">
           <CardHeader>
             <CardTitle>Receita vs Despesas</CardTitle>
             <CardDescription>Últimos 6 meses</CardDescription>
@@ -307,7 +307,7 @@ export default function Dashboard() {
       </div>
 
       {/* Próximas Consultas */}
-      <Card>
+      <Card variant="elevated">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />

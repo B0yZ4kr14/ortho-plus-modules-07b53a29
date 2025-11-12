@@ -1,4 +1,4 @@
-import { Search, Bell, LogOut, Building2 } from "lucide-react";
+import { Search, Bell, LogOut, Building2, Palette } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +19,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ThemePreview } from "@/components/ThemePreview";
 
 export function DashboardHeader() {
   const { user, signOut, userRole, availableClinics, selectedClinic, switchClinic } = useAuth();
@@ -47,6 +56,27 @@ export function DashboardHeader() {
       </div>
 
       <div className="flex items-center gap-3">
+        {/* Theme Preview Dialog */}
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="icon" className="relative">
+              <Palette className="h-5 w-5" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-5xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Palette className="h-5 w-5" />
+                Escolher Tema
+              </DialogTitle>
+              <DialogDescription>
+                Selecione o tema visual que melhor se adapta à sua preferência. As alterações são aplicadas instantaneamente.
+              </DialogDescription>
+            </DialogHeader>
+            <ThemePreview />
+          </DialogContent>
+        </Dialog>
+
         {/* Theme Toggle */}
         <ThemeToggle />
         {/* Seletor de Clínica - só aparece se usuário tiver acesso a múltiplas clínicas */}
