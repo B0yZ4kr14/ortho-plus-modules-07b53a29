@@ -6,6 +6,7 @@ import type { ContaReceber, ContaPagar, NotaFiscal, DashboardFinanceiroData } fr
 
 export function useFinanceiroSupabase() {
   const { user, selectedClinic } = useAuth();
+  const sb: any = supabase;
   const [loading, setLoading] = useState(true);
 
   // Estados
@@ -20,7 +21,7 @@ export function useFinanceiroSupabase() {
     
     try {
       // @ts-ignore - Tabela criada via migration, types serão gerados automaticamente
-      const { data, error } = await supabase
+        const { data, error } = await sb
         .from('contas_receber')
         .select('*')
         .eq('clinic_id', selectedClinic)
@@ -39,7 +40,7 @@ export function useFinanceiroSupabase() {
 
     try {
       // @ts-ignore
-      const { data, error} = await supabase
+      const { data, error} = await sb
         .from('contas_receber')
         .insert({
           ...conta,
@@ -63,7 +64,7 @@ export function useFinanceiroSupabase() {
   const updateContaReceber = async (id: string, updates: Partial<ContaReceber>) => {
     try {
       // @ts-ignore
-      const { error } = await supabase
+       const { error } = await sb
         .from('contas_receber')
         .update(updates)
         .eq('id', id);
@@ -81,7 +82,7 @@ export function useFinanceiroSupabase() {
   const deleteContaReceber = async (id: string) => {
     try {
       // @ts-ignore
-      const { error } = await supabase
+       const { error } = await sb
         .from('contas_receber')
         .delete()
         .eq('id', id);
@@ -103,7 +104,7 @@ export function useFinanceiroSupabase() {
     
     try {
       // @ts-ignore
-      const { data, error } = await supabase
+        const { data, error } = await sb
         .from('contas_pagar')
         .select('*')
         .eq('clinic_id', selectedClinic)
@@ -122,7 +123,7 @@ export function useFinanceiroSupabase() {
 
     try {
       // @ts-ignore
-      const { data, error } = await supabase
+       const { data, error } = await sb
         .from('contas_pagar')
         .insert({
           ...conta,
@@ -146,7 +147,7 @@ export function useFinanceiroSupabase() {
   const updateContaPagar = async (id: string, updates: Partial<ContaPagar>) => {
     try {
       // @ts-ignore
-      const { error } = await supabase
+       const { error } = await sb
         .from('contas_pagar')
         .update(updates)
         .eq('id', id);
@@ -164,7 +165,7 @@ export function useFinanceiroSupabase() {
   const deleteContaPagar = async (id: string) => {
     try {
       // @ts-ignore
-      const { error } = await supabase
+       const { error } = await sb
         .from('contas_pagar')
         .delete()
         .eq('id', id);
@@ -186,7 +187,7 @@ export function useFinanceiroSupabase() {
     
     try {
       // @ts-ignore
-      const { data, error } = await supabase
+        const { data, error } = await sb
         .from('notas_fiscais')
         .select('*')
         .eq('clinic_id', selectedClinic)
@@ -205,7 +206,7 @@ export function useFinanceiroSupabase() {
 
     try {
       // @ts-ignore
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from('notas_fiscais')
         .insert({
           ...nota,
@@ -229,7 +230,7 @@ export function useFinanceiroSupabase() {
   const updateNotaFiscal = async (id: string, updates: Partial<NotaFiscal>) => {
     try {
       // @ts-ignore
-      const { error } = await supabase
+       const { error } = await sb
         .from('notas_fiscais')
         .update(updates)
         .eq('id', id);
@@ -247,7 +248,7 @@ export function useFinanceiroSupabase() {
   const deleteNotaFiscal = async (id: string) => {
     try {
       // @ts-ignore
-      const { error } = await supabase
+      const { error } = await sb
         .from('notas_fiscais')
         .delete()
         .eq('id', id);
