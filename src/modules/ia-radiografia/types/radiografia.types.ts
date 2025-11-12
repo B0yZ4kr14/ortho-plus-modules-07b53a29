@@ -33,6 +33,7 @@ export interface AnaliseComplete extends AnaliseRadiografica {
   patient_name?: string;
   problemas_detectados?: number;
   confidence_score?: number;
+  created_at?: string;
   resultado_ia?: {
     problemas_detectados: ProblemaRadiografico[];
     sugestoes_tratamento: string[];

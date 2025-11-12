@@ -5,11 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Teleodontologia() {
   const [activeTab, setActiveTab] = useState('agendadas');
+  const [agendarDialogOpen, setAgendarDialogOpen] = useState(false);
+  const { toast } = useToast();
 
-  // Mock data - em produção viria do hook useTeleo dontologiaSupabase
+  // Mock data - em produção viria do hook useTeleodontologiaSupabase
   const teleconsultas = [
     {
       id: '1',
@@ -33,6 +41,14 @@ export default function Teleodontologia() {
     return variants[status] || 'default';
   };
 
+  const handleAgendar = () => {
+    toast({
+      title: 'Teleconsulta agendada',
+      description: 'A videochamada será disponibilizada no horário marcado. Integração com Twilio/Agora.io será implementada em produção.'
+    });
+    setAgendarDialogOpen(false);
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -41,11 +57,84 @@ export default function Teleodontologia() {
           title="Teleodontologia"
           description="Atendimento remoto via videochamada, áudio ou chat"
         />
-        <Button variant="elevated">
+        <Button variant="elevated" onClick={() => setAgendarDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Agendar Teleconsulta
         </Button>
       </div>
+
+      {/* Dialog de Agendamento */}
+      <Dialog open={agendarDialogOpen} onOpenChange={setAgendarDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Agendar Teleconsulta</DialogTitle>
+            <DialogDescription>
+              Configure uma videochamada com o paciente
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Paciente</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o paciente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">João Silva</SelectItem>
+                    <SelectItem value="2">Maria Santos</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Dentista</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o dentista" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Dr. Carlos</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Data</Label>
+                <Input type="date" />
+              </div>
+              <div>
+                <Label>Horário</Label>
+                <Input type="time" />
+              </div>
+            </div>
+            <div>
+              <Label>Tipo de Consulta</Label>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="VIDEO">Videochamada</SelectItem>
+                  <SelectItem value="AUDIO">Áudio</SelectItem>
+                  <SelectItem value="CHAT">Chat</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Título</Label>
+              <Input placeholder="Ex: Avaliação de Tratamento" />
+            </div>
+            <div>
+              <Label>Motivo</Label>
+              <Textarea placeholder="Descreva o motivo da teleconsulta" rows={3} />
+            </div>
+            <Button onClick={handleAgendar} className="w-full">
+              Agendar Teleconsulta
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Cards de Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

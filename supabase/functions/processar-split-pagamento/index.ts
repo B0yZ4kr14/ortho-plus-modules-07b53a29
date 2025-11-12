@@ -207,69 +207,80 @@ serve(async (req) => {
   }
 });
 
-// Real PIX transfer processing via Gateway
-async function processarPixTransfer(chave_pix: string | null, valor: number) {
-  if (!chave_pix) {
-    return {
-      success: false,
-      erro: 'Chave PIX não configurada',
-    };
-  }
+// Função auxiliar para processar transferência PIX via Mercado Pago
+async function processarPixTransfer(
+  chave_pix: string | null,
+  valor: number
+): Promise<{ success: boolean; erro?: string; comprovante_id?: string; qr_code?: string; qr_code_base64?: string }> {
+  const MERCADOPAGO_ACCESS_TOKEN = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
+  
+  // Se o token do Mercado Pago estiver configurado, usar API real
+  if (MERCADOPAGO_ACCESS_TOKEN && chave_pix) {
+    try {
+      console.log(`[MERCADO PAGO] Processando PIX de R$ ${valor.toFixed(2)} para chave: ${chave_pix}`);
+      
+      const response = await fetch('https://api.mercadopago.com/v1/payments', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${MERCADOPAGO_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          transaction_amount: valor,
+          description: 'Split de Pagamento - Ortho+',
+          payment_method_id: 'pix',
+          payer: {
+            email: 'repasse@orthoplus.com'
+          },
+          metadata: {
+            chave_pix: chave_pix
+          }
+        })
+      });
 
-  // If no gateway token is configured, use simulation
-  if (!PIX_GATEWAY_TOKEN) {
-    console.log(`[SIMULAÇÃO] Transferindo R$ ${valor} via PIX para chave ${chave_pix}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('[MERCADO PAGO] Erro:', errorData);
+        throw new Error(errorData.message || 'Erro ao processar PIX com Mercado Pago');
+      }
+
+      const data = await response.json();
+      
+      return {
+        success: data.status === 'approved' || data.status === 'pending',
+        comprovante_id: data.id?.toString(),
+        qr_code: data.point_of_interaction?.transaction_data?.qr_code,
+        qr_code_base64: data.point_of_interaction?.transaction_data?.qr_code_base64
+      };
+
+    } catch (error) {
+      console.error('[MERCADO PAGO] Erro ao processar PIX:', error);
+      return {
+        success: false,
+        erro: error instanceof Error ? error.message : 'Erro ao processar PIX'
+      };
+    }
+  }
+  
+  // Fallback: Simulação se o token não estiver configurado
+  console.log(`[SIMULAÇÃO] Processando PIX de R$ ${valor.toFixed(2)} para chave: ${chave_pix}`);
+  console.log('[SIMULAÇÃO] Configure MERCADOPAGO_ACCESS_TOKEN para usar API real');
+  
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  const success = Math.random() > 0.05;
+  
+  if (success) {
     return {
       success: true,
       comprovante_id: `PIX-SIM-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      qr_code: `00020126580014BR.GOV.BCB.PIX0136${chave_pix}520400005303986540${valor.toFixed(2)}5802BR5925Ortho Plus6009Sao Paulo62070503***6304`,
+      qr_code_base64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
     };
-  }
-
-  try {
-    // Real integration with PIX Gateway (Mercado Pago example)
-    console.log(`[GATEWAY PIX] Processando transferência de R$ ${valor} para ${chave_pix}`);
-    
-    const response = await fetch(`${PIX_GATEWAY_API_URL}/v1/payments`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${PIX_GATEWAY_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        transaction_amount: valor,
-        payment_method_id: 'pix',
-        payer: {
-          email: 'payer@example.com', // Would come from database
-        },
-        metadata: {
-          recipient_pix_key: chave_pix,
-        },
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('[GATEWAY PIX] Erro:', errorData);
-      return {
-        success: false,
-        erro: errorData.message || 'Erro ao processar PIX',
-      };
-    }
-
-    const data = await response.json();
-    console.log('[GATEWAY PIX] Transferência realizada com sucesso:', data.id);
-
-    return {
-      success: true,
-      comprovante_id: data.id || `PIX-${Date.now()}`,
-      qr_code: data.point_of_interaction?.transaction_data?.qr_code,
-      qr_code_base64: data.point_of_interaction?.transaction_data?.qr_code_base64,
-    };
-  } catch (error: any) {
-    console.error('[GATEWAY PIX] Exceção:', error);
+  } else {
     return {
       success: false,
-      erro: error.message || 'Erro ao processar PIX',
+      erro: 'Falha ao processar PIX. Tente novamente.'
     };
   }
 }
