@@ -46,7 +46,12 @@ export type Teleconsulta = z.infer<typeof teleconsultaSchema>;
 export type PrescricaoRemota = z.infer<typeof prescricaoRemotaSchema>;
 export type Triagem = z.infer<typeof triagemSchema>;
 
-export interface TeleconsultaComplete extends Teleconsulta {
+export interface TeleconsultaComplete extends Omit<Teleconsulta, 'id' | 'clinic_id' | 'patient_id' | 'dentist_id' | 'appointment_id'> {
+  id?: string;
+  clinic_id?: string;
+  patient_id?: string;
+  dentist_id?: string;
+  appointment_id?: string;
   patient_name?: string;
   dentist_name?: string;
   link_sala?: string;

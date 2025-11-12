@@ -1,5 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Video, Calendar, Clock, User, FileText } from 'lucide-react';
+import { useTeleodontologiaSupabase } from '@/modules/teleodontologia/hooks/useTeleodontologiaSupabase';
+import { VideoRoom } from '@/modules/teleodontologia/components/VideoRoom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -15,20 +19,20 @@ import { useToast } from '@/hooks/use-toast';
 export default function Teleodontologia() {
   const [activeTab, setActiveTab] = useState('agendadas');
   const [agendarDialogOpen, setAgendarDialogOpen] = useState(false);
+  const [videoRoomData, setVideoRoomData] = useState<any>(null);
   const { toast } = useToast();
+  const { user, selectedClinic } = useAuth();
 
-  // Mock data - em produção viria do hook useTeleodontologiaSupabase
-  const teleconsultas = [
-    {
-      id: '1',
-      titulo: 'Consulta de Retorno - Implante',
-      patient_name: 'João Silva',
-      tipo: 'VIDEO',
-      status: 'AGENDADA',
-      data_agendada: new Date().toISOString(),
-      motivo: 'Acompanhamento pós-cirúrgico',
-    },
-  ];
+  const {
+    teleconsultas,
+    loading,
+    createTeleconsulta,
+    iniciarConsulta,
+  } = useTeleodontologiaSupabase(selectedClinic?.id || '');
+
+  const agendadas = teleconsultas.filter(t => t.status === 'AGENDADA');
+  const emAndamento = teleconsultas.filter(t => t.status === 'EM_ANDAMENTO');
+  const concluidas = teleconsultas.filter(t => t.status === 'CONCLUIDA');
 
   const getStatusVariant = (status: string) => {
     const variants: Record<string, any> = {
@@ -41,13 +45,46 @@ export default function Teleodontologia() {
     return variants[status] || 'default';
   };
 
-  const handleAgendar = () => {
-    toast({
-      title: 'Teleconsulta agendada',
-      description: 'A videochamada será disponibilizada no horário marcado. Integração com Twilio/Agora.io será implementada em produção.'
-    });
-    setAgendarDialogOpen(false);
+  const handleAgendar = async (formData: any) => {
+    try {
+      await createTeleconsulta({
+        ...formData,
+        created_by: user?.id,
+      });
+      setAgendarDialogOpen(false);
+    } catch (error) {
+      console.error('Error scheduling teleconsulta:', error);
+    }
   };
+
+  const handleIniciarConsulta = async (teleconsultaId: string) => {
+    try {
+      const videoData = await iniciarConsulta(teleconsultaId);
+      setVideoRoomData(videoData);
+    } catch (error) {
+      console.error('Error starting consultation:', error);
+    }
+  };
+
+  const handleLeaveVideoRoom = () => {
+    setVideoRoomData(null);
+    toast({
+      title: 'Consulta encerrada',
+      description: 'A videochamada foi encerrada com sucesso.',
+    });
+  };
+
+  if (videoRoomData) {
+    return (
+      <VideoRoom
+        token={videoRoomData.token}
+        appId={videoRoomData.appId}
+        channelName={videoRoomData.channelName}
+        uid={videoRoomData.uid}
+        onLeave={handleLeaveVideoRoom}
+      />
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -197,55 +234,94 @@ export default function Teleodontologia() {
 
         <TabsContent value="agendadas">
           <Card className="p-6">
-            <div className="space-y-4">
-              {teleconsultas.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Video className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Nenhuma teleconsulta agendada</p>
-                </div>
-              ) : (
-                teleconsultas.map((consulta) => (
-                  <div
-                    key={consulta.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold">{consulta.titulo}</h3>
-                        <Badge variant={getStatusVariant(consulta.status)}>Agendada</Badge>
-                        <Badge variant="outline">{consulta.tipo === 'VIDEO' ? 'Vídeo' : consulta.tipo}</Badge>
-                      </div>
-                      <div className="text-sm text-muted-foreground space-y-1">
-                        <p className="flex items-center gap-2">
-                          <User className="h-3 w-3" />
-                          {consulta.patient_name}
-                        </p>
-                        <p className="flex items-center gap-2">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(consulta.data_agendada).toLocaleString('pt-BR')}
-                        </p>
-                        <p className="text-xs">{consulta.motivo}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="elevated">
-                        <Video className="h-4 w-4 mr-2" />
-                        Iniciar Consulta
-                      </Button>
-                    </div>
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-32 w-full" />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {agendadas.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Video className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Nenhuma teleconsulta agendada</p>
                   </div>
-                ))
-              )}
-            </div>
+                ) : (
+                  agendadas.map((consulta) => (
+                    <div
+                      key={consulta.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="font-semibold">{consulta.titulo}</h3>
+                          <Badge variant={getStatusVariant(consulta.status)}>Agendada</Badge>
+                          <Badge variant="outline">
+                            {consulta.tipo === 'VIDEO' ? 'Vídeo' : consulta.tipo}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <p className="flex items-center gap-2">
+                            <User className="h-3 w-3" />
+                            {consulta.patient_name || 'Paciente'}
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(consulta.data_agendada).toLocaleString('pt-BR')}
+                          </p>
+                          <p className="text-xs">{consulta.motivo}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="elevated"
+                          onClick={() => handleIniciarConsulta(consulta.id)}
+                        >
+                          <Video className="h-4 w-4 mr-2" />
+                          Iniciar Consulta
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </Card>
         </TabsContent>
 
         <TabsContent value="andamento">
           <Card className="p-6">
-            <div className="text-center py-12 text-muted-foreground">
-              <Video className="h-12 w-12 mx-auto mb-4 opacity-50 animate-pulse" />
-              <p>Nenhuma consulta em andamento no momento</p>
-            </div>
+            {loading ? (
+              <Skeleton className="h-32 w-full" />
+            ) : emAndamento.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <Video className="h-12 w-12 mx-auto mb-4 opacity-50 animate-pulse" />
+                <p>Nenhuma consulta em andamento no momento</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {emAndamento.map((consulta) => (
+                  <div
+                    key={consulta.id}
+                    className="flex items-center justify-between p-4 border rounded-lg bg-warning/10"
+                  >
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{consulta.titulo}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {consulta.patient_name || 'Paciente'}
+                      </p>
+                    </div>
+                    <Button
+                      variant="default"
+                      onClick={() => handleIniciarConsulta(consulta.id)}
+                    >
+                      Retornar à Consulta
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </Card>
         </TabsContent>
 
