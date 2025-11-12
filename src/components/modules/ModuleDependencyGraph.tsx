@@ -53,7 +53,7 @@ interface ModuleData {
 }
 
 interface ModuleDependencyGraphProps {
-  modules: ModuleData[];
+  modules?: ModuleData[];
 }
 
 interface SimulationState {
@@ -172,9 +172,13 @@ const nodeTypes = {
   moduleNode: ModuleNode,
 };
 
-function ModuleDependencyGraphContent({ modules }: ModuleDependencyGraphProps) {
+function ModuleDependencyGraphContent({ modules = [] }: ModuleDependencyGraphProps) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { getNodes } = useReactFlow();
+  
+  // Ensure modules is always an array
+  const safeModules = Array.isArray(modules) ? modules : [];
+  
   const [simulationState, setSimulationState] = useState<SimulationState>({
     active: false,
     targetModule: null,
@@ -191,12 +195,12 @@ function ModuleDependencyGraphContent({ modules }: ModuleDependencyGraphProps) {
 
   // Get unique categories
   const categories = useMemo(() => {
-    return ['all', ...Array.from(new Set(modules.map(m => m.category)))];
-  }, [modules]);
+    return ['all', ...Array.from(new Set(safeModules.map(m => m.category)))];
+  }, [safeModules]);
 
   // Filter modules based on filters
   const filteredModules = useMemo(() => {
-    return modules.filter(module => {
+    return safeModules.filter(module => {
       if (filters.hideUnsubscribed && !module.is_subscribed) return false;
       if (filters.category !== 'all' && module.category !== filters.category) return false;
       return true;
@@ -209,12 +213,12 @@ function ModuleDependencyGraphContent({ modules }: ModuleDependencyGraphProps) {
     const wouldBlock: string[] = [];
     const wouldEnable: string[] = [];
 
-    const module = modules.find(m => m.module_key === moduleKey);
+    const module = safeModules.find(m => m.module_key === moduleKey);
     if (!module) return { affected, wouldBlock, wouldEnable };
 
     if (action === 'deactivate') {
       // Find all modules that depend on this one
-      modules.forEach(m => {
+      safeModules.forEach(m => {
         if (m.is_active && m.unmet_dependencies.includes(moduleKey)) {
           wouldBlock.push(m.module_key);
           affected.add(m.module_key);
@@ -226,12 +230,12 @@ function ModuleDependencyGraphContent({ modules }: ModuleDependencyGraphProps) {
       });
     } else {
       // If activating, check what would become available
-      modules.forEach(m => {
+      safeModules.forEach(m => {
         if (!m.is_active && m.unmet_dependencies.includes(moduleKey)) {
           // Check if this is the ONLY missing dependency
           const otherDeps = m.unmet_dependencies.filter(d => d !== moduleKey);
           const otherDepsActive = otherDeps.every(dep => 
-            modules.find(mod => mod.module_key === dep)?.is_active
+            safeModules.find(mod => mod.module_key === dep)?.is_active
           );
           
           if (otherDepsActive) {
@@ -243,11 +247,11 @@ function ModuleDependencyGraphContent({ modules }: ModuleDependencyGraphProps) {
     }
 
     return { affected, wouldBlock, wouldEnable };
-  }, [modules]);
+  }, [safeModules]);
 
   // Start simulation
   const startSimulation = useCallback((moduleKey: string) => {
-    const module = modules.find(m => m.module_key === moduleKey);
+    const module = safeModules.find(m => m.module_key === moduleKey);
     if (!module || !module.is_subscribed) return;
 
     const action = module.is_active ? 'deactivate' : 'activate';
@@ -261,7 +265,7 @@ function ModuleDependencyGraphContent({ modules }: ModuleDependencyGraphProps) {
       wouldBlock: impact.wouldBlock,
       wouldEnable: impact.wouldEnable,
     });
-  }, [modules, calculateImpact]);
+  }, [safeModules, calculateImpact]);
 
   // Clear simulation
   const clearSimulation = useCallback(() => {
@@ -328,7 +332,7 @@ function ModuleDependencyGraphContent({ modules }: ModuleDependencyGraphProps) {
       module.unmet_dependencies.forEach(depKey => {
         if (!moduleKeys.has(depKey)) return;
         
-        const depModule = modules.find(m => m.module_key === depKey);
+        const depModule = safeModules.find(m => m.module_key === depKey);
         if (depModule) {
           const isAffected = simulationState.affectedModules.has(module.module_key) || 
                            simulationState.affectedModules.has(depKey);
@@ -368,7 +372,7 @@ function ModuleDependencyGraphContent({ modules }: ModuleDependencyGraphProps) {
       module.blocking_dependencies.forEach(blockingKey => {
         if (!moduleKeys.has(blockingKey)) return;
         
-        const blockingModule = modules.find(m => m.module_key === blockingKey);
+        const blockingModule = safeModules.find(m => m.module_key === blockingKey);
         if (blockingModule) {
           const edgeExists = edges.some(
             e => e.source === module.module_key && e.target === blockingKey
@@ -561,15 +565,15 @@ function ModuleDependencyGraphContent({ modules }: ModuleDependencyGraphProps) {
           <Play className="h-4 w-4 text-warning" />
           <AlertDescription className="text-sm">
             <strong>Simulação Ativa:</strong> {simulationState.targetAction === 'activate' ? 'Ativando' : 'Desativando'}{' '}
-            <strong>{modules.find(m => m.module_key === simulationState.targetModule)?.name}</strong>
+            <strong>{safeModules.find(m => m.module_key === simulationState.targetModule)?.name}</strong>
             {simulationState.wouldBlock.length > 0 && (
               <span className="block mt-1 text-destructive">
-                ⚠️ Bloquearia: {simulationState.wouldBlock.map(key => modules.find(m => m.module_key === key)?.name).join(', ')}
+                ⚠️ Bloquearia: {simulationState.wouldBlock.map(key => safeModules.find(m => m.module_key === key)?.name).join(', ')}
               </span>
             )}
             {simulationState.wouldEnable.length > 0 && (
               <span className="block mt-1 text-success">
-                ✓ Habilitaria: {simulationState.wouldEnable.map(key => modules.find(m => m.module_key === key)?.name).join(', ')}
+                ✓ Habilitaria: {simulationState.wouldEnable.map(key => safeModules.find(m => m.module_key === key)?.name).join(', ')}
               </span>
             )}
             <span className="block mt-2 text-xs text-muted-foreground">
