@@ -11,7 +11,7 @@ const cardVariants = cva(
         default: "shadow-sm",
         elevated: "shadow-lg hover:shadow-xl border-border/50",
         interactive: "shadow-md hover:shadow-lg hover:-translate-y-1 cursor-pointer border-border/50",
-        gradient: "bg-gradient-to-br from-card to-card/90 shadow-lg border-border/50",
+        gradient: "bg-gradient-to-br from-card to-card/90 shadow-lg border-border/50 relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-primary/5 before:to-transparent before:animate-shimmer",
       },
     },
     defaultVariants: {
