@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.analyze-odontogram]
 verify_jwt = true
+
+[functions.schedule-appointments]
+verify_jwt = true

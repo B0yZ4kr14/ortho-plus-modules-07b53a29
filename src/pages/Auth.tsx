@@ -139,6 +139,14 @@ export default function Auth() {
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? 'Entrando...' : 'Entrar'}
                   </Button>
+
+                  <div className="mt-4 p-4 bg-muted rounded-lg space-y-2">
+                    <p className="text-sm font-semibold text-center">Login Padrão de Administrador</p>
+                    <div className="text-xs space-y-1">
+                      <p><span className="font-medium">Email:</span> admin@orthoplus.com</p>
+                      <p><span className="font-medium">Senha:</span> Admin</p>
+                    </div>
+                  </div>
                 </form>
               </Form>
             </TabsContent>

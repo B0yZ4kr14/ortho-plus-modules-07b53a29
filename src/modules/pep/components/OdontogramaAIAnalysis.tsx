@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Sparkles, AlertTriangle, CheckCircle2, TrendingUp } from 'lucide-react';
+import { Loader2, Sparkles, AlertTriangle, CheckCircle2, TrendingUp, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -26,6 +26,7 @@ interface TreatmentSuggestion {
 
 interface OdontogramaAIAnalysisProps {
   prontuarioId: string;
+  patientId?: string;
   onTreatmentCreate?: (suggestions: TreatmentSuggestion[]) => void;
 }
 
@@ -35,8 +36,9 @@ const priorityConfig = {
   baixa: { label: 'Baixa', color: 'secondary', icon: CheckCircle2 },
 } as const;
 
-export const OdontogramaAIAnalysis = ({ prontuarioId, onTreatmentCreate }: OdontogramaAIAnalysisProps) => {
+export const OdontogramaAIAnalysis = ({ prontuarioId, patientId, onTreatmentCreate }: OdontogramaAIAnalysisProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isScheduling, setIsScheduling] = useState(false);
   const [suggestions, setSuggestions] = useState<TreatmentSuggestion[]>([]);
   const [patientName, setPatientName] = useState<string>('');
   const [selectedSuggestions, setSelectedSuggestions] = useState<Set<number>>(new Set());
@@ -88,6 +90,46 @@ export const OdontogramaAIAnalysis = ({ prontuarioId, onTreatmentCreate }: Odont
     toast.success(`${selectedItems.length} tratamento(s) criado(s) com sucesso!`);
     setSuggestions([]);
     setSelectedSuggestions(new Set());
+  };
+
+  const handleScheduleAppointments = async () => {
+    const selectedItems = suggestions.filter((_, index) => selectedSuggestions.has(index));
+    if (selectedItems.length === 0) {
+      toast.error('Selecione pelo menos uma sugestão para agendar consultas');
+      return;
+    }
+
+    if (!patientId) {
+      toast.error('ID do paciente não disponível');
+      return;
+    }
+
+    setIsScheduling(true);
+
+    try {
+      // Primeiro criar os tratamentos
+      onTreatmentCreate?.(selectedItems);
+
+      // Depois agendar as consultas automaticamente
+      const { data, error } = await supabase.functions.invoke('schedule-appointments', {
+        body: { 
+          treatments: selectedItems,
+          patientId: patientId,
+          dentistId: 'mock-dentist-id' // Em produção, seria selecionado pelo usuário
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success(data.message || 'Consultas agendadas automaticamente!');
+      setSuggestions([]);
+      setSelectedSuggestions(new Set());
+    } catch (error) {
+      console.error('Erro ao agendar consultas:', error);
+      toast.error(error instanceof Error ? error.message : 'Erro ao agendar consultas');
+    } finally {
+      setIsScheduling(false);
+    }
   };
 
   const totalCost = suggestions
@@ -222,10 +264,27 @@ export const OdontogramaAIAnalysis = ({ prontuarioId, onTreatmentCreate }: Odont
               Cancelar
             </Button>
             <Button
+              variant="secondary"
               onClick={handleCreateTreatments}
               disabled={selectedSuggestions.size === 0}
             >
               Criar {selectedSuggestions.size} Tratamento(s)
+            </Button>
+            <Button
+              onClick={handleScheduleAppointments}
+              disabled={selectedSuggestions.size === 0 || isScheduling}
+            >
+              {isScheduling ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Agendando...
+                </>
+              ) : (
+                <>
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Agendar {selectedSuggestions.size} Consulta(s)
+                </>
+              )}
             </Button>
           </div>
         </CardContent>

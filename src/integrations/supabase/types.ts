@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          created_by: string
+          dentist_id: string
+          description: string | null
+          end_time: string
+          id: string
+          patient_id: string
+          start_time: string
+          status: string
+          title: string
+          treatment_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          created_by: string
+          dentist_id: string
+          description?: string | null
+          end_time: string
+          id?: string
+          patient_id: string
+          start_time: string
+          status?: string
+          title: string
+          treatment_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          created_by?: string
+          dentist_id?: string
+          description?: string | null
+          end_time?: string
+          id?: string
+          patient_id?: string
+          start_time?: string
+          status?: string
+          title?: string
+          treatment_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_treatment_id_fkey"
+            columns: ["treatment_id"]
+            isOneToOne: false
+            referencedRelation: "pep_tratamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string

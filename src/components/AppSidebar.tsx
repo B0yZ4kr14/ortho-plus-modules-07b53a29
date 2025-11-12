@@ -35,7 +35,7 @@ const iconMap: Record<string, any> = {
 
 export function AppSidebar() {
   const { modules } = useModules();
-  const { userRole } = useAuth();
+  const { isAdmin } = useAuth();
   
   // Get enabled modules grouped by category
   const enabledModules = modules.filter(m => m.enabled);
@@ -101,7 +101,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border">
-        {userRole === 'ADMIN' && (
+        {isAdmin && (
           <NavLink to="/settings/modules">
             <Button variant="outline" className="w-full gap-2 justify-start" size="sm">
               <Cog className="h-4 w-4" />
