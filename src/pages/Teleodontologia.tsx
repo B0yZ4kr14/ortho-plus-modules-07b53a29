@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Plus, Video, Calendar, Clock, User, FileText } from 'lucide-react';
+import { Plus, Video, Calendar, Clock, User, FileText, Pill, ClipboardList } from 'lucide-react';
 import { useTeleodontologiaSupabase } from '@/modules/teleodontologia/hooks/useTeleodontologiaSupabase';
 import { VideoRoom } from '@/modules/teleodontologia/components/VideoRoom';
 import { TeleconsultaForm } from '@/modules/teleodontologia/components/TeleconsultaForm';
+import { PrescricaoRemotaForm } from '@/modules/teleodontologia/components/PrescricaoRemotaForm';
+import { TriagemForm } from '@/modules/teleodontologia/components/TriagemForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -16,6 +18,9 @@ import { useToast } from '@/hooks/use-toast';
 export default function Teleodontologia() {
   const [activeTab, setActiveTab] = useState('agendadas');
   const [agendarDialogOpen, setAgendarDialogOpen] = useState(false);
+  const [prescricaoDialogOpen, setPrescricaoDialogOpen] = useState(false);
+  const [triagemDialogOpen, setTriagemDialogOpen] = useState(false);
+  const [selectedTeleconsulta, setSelectedTeleconsulta] = useState<any>(null);
   const [videoRoomData, setVideoRoomData] = useState<any>(null);
   const { toast } = useToast();
   const { user, selectedClinic } = useAuth();
@@ -25,6 +30,8 @@ export default function Teleodontologia() {
     loading,
     createTeleconsulta,
     iniciarConsulta,
+    createPrescricao,
+    createTriagem,
   } = useTeleodontologiaSupabase(selectedClinic?.id || '');
 
   const agendadas = teleconsultas.filter(t => t.status === 'AGENDADA');
@@ -63,6 +70,26 @@ export default function Teleodontologia() {
     }
   };
 
+  const handlePrescricao = async (data: any) => {
+    try {
+      await createPrescricao(data);
+      setPrescricaoDialogOpen(false);
+      setSelectedTeleconsulta(null);
+    } catch (error) {
+      console.error('Error creating prescription:', error);
+    }
+  };
+
+  const handleTriagem = async (data: any) => {
+    try {
+      await createTriagem(data);
+      setTriagemDialogOpen(false);
+      setSelectedTeleconsulta(null);
+    } catch (error) {
+      console.error('Error creating triagem:', error);
+    }
+  };
+
   const handleLeaveVideoRoom = () => {
     setVideoRoomData(null);
     toast({
@@ -78,6 +105,7 @@ export default function Teleodontologia() {
         appId={videoRoomData.appId}
         channelName={videoRoomData.channelName}
         uid={videoRoomData.uid}
+        teleconsultaId={videoRoomData.teleconsultaId}
         onLeave={handleLeaveVideoRoom}
       />
     );
@@ -110,6 +138,50 @@ export default function Teleodontologia() {
             onSubmit={handleAgendar}
             onCancel={() => setAgendarDialogOpen(false)}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Prescrição Digital */}
+      <Dialog open={prescricaoDialogOpen} onOpenChange={setPrescricaoDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Prescrição Digital Remota</DialogTitle>
+            <DialogDescription>
+              Crie uma prescrição de medicamento, procedimento ou recomendação
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTeleconsulta && (
+            <PrescricaoRemotaForm
+              teleconsultaId={selectedTeleconsulta.id}
+              onSubmit={handlePrescricao}
+              onCancel={() => {
+                setPrescricaoDialogOpen(false);
+                setSelectedTeleconsulta(null);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Triagem */}
+      <Dialog open={triagemDialogOpen} onOpenChange={setTriagemDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Triagem Pré-Consulta</DialogTitle>
+            <DialogDescription>
+              Preencha as informações sobre os sintomas e anexe fotos se necessário
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTeleconsulta && (
+            <TriagemForm
+              teleconsultaId={selectedTeleconsulta.id}
+              onSubmit={handleTriagem}
+              onCancel={() => {
+                setTriagemDialogOpen(false);
+                setSelectedTeleconsulta(null);
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
@@ -215,6 +287,17 @@ export default function Teleodontologia() {
                       </div>
                       <div className="flex gap-2">
                         <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedTeleconsulta(consulta);
+                            setTriagemDialogOpen(true);
+                          }}
+                        >
+                          <ClipboardList className="h-4 w-4 mr-2" />
+                          Triagem
+                        </Button>
+                        <Button
                           variant="elevated"
                           onClick={() => handleIniciarConsulta(consulta.id)}
                         >
@@ -252,12 +335,25 @@ export default function Teleodontologia() {
                         {consulta.patient_name || 'Paciente'}
                       </p>
                     </div>
-                    <Button
-                      variant="default"
-                      onClick={() => handleIniciarConsulta(consulta.id)}
-                    >
-                      Retornar à Consulta
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedTeleconsulta(consulta);
+                          setPrescricaoDialogOpen(true);
+                        }}
+                      >
+                        <Pill className="h-4 w-4 mr-2" />
+                        Prescrição
+                      </Button>
+                      <Button
+                        variant="default"
+                        onClick={() => handleIniciarConsulta(consulta.id)}
+                      >
+                        Retornar à Consulta
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>

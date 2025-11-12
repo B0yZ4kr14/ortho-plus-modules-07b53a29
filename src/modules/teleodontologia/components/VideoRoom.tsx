@@ -1,21 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Video as VideoIcon, VideoOff, Phone, Monitor } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Mic, MicOff, Video as VideoIcon, VideoOff, Phone, Monitor, Circle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface VideoRoomProps {
   token: string;
   appId: string;
   channelName: string;
   uid: number;
+  teleconsultaId: string;
   onLeave: () => void;
 }
 
-export const VideoRoom = ({ token, appId, channelName, uid, onLeave }: VideoRoomProps) => {
+export const VideoRoom = ({ token, appId, channelName, uid, teleconsultaId, onLeave }: VideoRoomProps) => {
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingStarted, setRecordingStarted] = useState(false);
   const localVideoRef = useRef<HTMLDivElement>(null);
   const remoteVideoRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -38,7 +43,11 @@ export const VideoRoom = ({ token, appId, channelName, uid, onLeave }: VideoRoom
           appId,
           channelName,
           uid,
+          teleconsultaId,
         });
+
+        // Auto-start recording
+        await startRecording();
 
         // In production:
         // await client.join(appId, channelName, token, uid);
@@ -59,10 +68,71 @@ export const VideoRoom = ({ token, appId, channelName, uid, onLeave }: VideoRoom
     initializeVideo();
 
     return () => {
-      // Cleanup: leave channel and unpublish tracks
+      // Cleanup: stop recording and leave channel
+      if (recordingStarted) {
+        stopRecording();
+      }
       // client.leave();
     };
-  }, [token, appId, channelName, uid]);
+  }, [token, appId, channelName, uid, teleconsultaId]);
+
+  const startRecording = async () => {
+    try {
+      setIsRecording(true);
+      const { data, error } = await supabase.functions.invoke('agora-recording', {
+        body: {
+          action: 'start',
+          teleconsultaId,
+          channelName,
+          uid,
+        },
+      });
+
+      if (error) throw error;
+
+      setRecordingStarted(true);
+      toast({
+        title: 'Gravação iniciada',
+        description: 'A consulta está sendo gravada automaticamente.',
+      });
+
+      console.log('Recording started:', data);
+    } catch (error: any) {
+      console.error('Error starting recording:', error);
+      setIsRecording(false);
+      toast({
+        title: 'Erro ao iniciar gravação',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const stopRecording = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('agora-recording', {
+        body: {
+          action: 'stop',
+          teleconsultaId,
+          channelName,
+          uid,
+        },
+      });
+
+      if (error) throw error;
+
+      setIsRecording(false);
+      setRecordingStarted(false);
+      toast({
+        title: 'Gravação finalizada',
+        description: 'A gravação da consulta foi salva com sucesso.',
+      });
+
+      console.log('Recording stopped:', data);
+    } catch (error: any) {
+      console.error('Error stopping recording:', error);
+    }
+  };
 
   const toggleAudio = () => {
     setIsAudioEnabled(!isAudioEnabled);
@@ -115,6 +185,16 @@ export const VideoRoom = ({ token, appId, channelName, uid, onLeave }: VideoRoom
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col">
+      {/* Recording indicator */}
+      {isRecording && (
+        <div className="absolute top-4 left-4 z-10">
+          <Badge variant="destructive" className="flex items-center gap-2 animate-pulse">
+            <Circle className="h-2 w-2 fill-current" />
+            Gravando
+          </Badge>
+        </div>
+      )}
+
       {/* Remote video (main area) */}
       <div className="flex-1 relative bg-muted/50">
         <div

@@ -230,7 +230,10 @@ export const useTeleodontologiaSupabase = (clinicId: string) => {
       // Update status to EM_ANDAMENTO
       await updateTeleconsulta(teleconsultaId, { status: 'EM_ANDAMENTO' });
 
-      return data;
+      return {
+        ...data,
+        teleconsultaId, // Pass teleconsultaId for recording
+      };
     } catch (error: any) {
       console.error('Error starting consultation:', error);
       toast({
