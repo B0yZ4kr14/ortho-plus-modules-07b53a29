@@ -3,15 +3,31 @@ import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import { 
   OdontogramaData, 
   ToothData, 
-  ToothStatus, 
+  ToothStatus,
+  ToothSurface,
+  OdontogramaHistoryEntry,
   ALL_TEETH 
 } from '../types/odontograma.types';
 
 const STORAGE_KEY = 'orthoplus_odontograma_data';
 
+const createInitialToothData = (number: number): ToothData => ({
+  number,
+  status: 'higido',
+  surfaces: {
+    mesial: 'higido',
+    distal: 'higido',
+    oclusal: 'higido',
+    vestibular: 'higido',
+    lingual: 'higido',
+  },
+  updatedAt: new Date().toISOString(),
+});
+
 export const useOdontogramaStore = (prontuarioId: string) => {
   const [storedData, setStoredData] = useLocalStorage<Record<string, OdontogramaData>>(STORAGE_KEY, {});
   const [teethData, setTeethData] = useState<Record<number, ToothData>>({});
+  const [history, setHistory] = useState<OdontogramaHistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Carregar dados do prontuário específico
@@ -21,17 +37,15 @@ export const useOdontogramaStore = (prontuarioId: string) => {
     
     if (prontuarioData) {
       setTeethData(prontuarioData.teeth);
+      setHistory(prontuarioData.history || []);
     } else {
       // Inicializar com todos os dentes hígidos
       const initialData: Record<number, ToothData> = {};
       ALL_TEETH.forEach(num => {
-        initialData[num] = { 
-          number: num, 
-          status: 'higido',
-          updatedAt: new Date().toISOString(),
-        };
+        initialData[num] = createInitialToothData(num);
       });
       setTeethData(initialData);
+      setHistory([]);
     }
     setIsLoading(false);
   }, [prontuarioId, storedData]);
@@ -44,21 +58,65 @@ export const useOdontogramaStore = (prontuarioId: string) => {
         prontuarioId,
         teeth: teethData,
         lastUpdated: new Date().toISOString(),
+        history,
       },
     }));
-  }, [prontuarioId, teethData, setStoredData]);
+  }, [prontuarioId, teethData, history, setStoredData]);
 
-  // Atualizar status de um dente
-  const updateToothStatus = useCallback((toothNumber: number, status: ToothStatus) => {
+  // Adicionar entrada ao histórico
+  const addHistoryEntry = useCallback((changedTeeth: number[], description?: string) => {
+    const entry: OdontogramaHistoryEntry = {
+      id: `${Date.now()}-${Math.random()}`,
+      timestamp: new Date().toISOString(),
+      teeth: JSON.parse(JSON.stringify(teethData)), // Deep clone
+      changedTeeth,
+      description,
+    };
+    setHistory(prev => [entry, ...prev]);
+  }, [teethData]);
+
+  // Atualizar status geral de um dente
+  const updateToothStatus = useCallback((toothNumber: number, status: ToothStatus, addToHistory = true) => {
+    setTeethData(prev => {
+      const newData = {
+        ...prev,
+        [toothNumber]: {
+          ...prev[toothNumber],
+          status,
+          updatedAt: new Date().toISOString(),
+        },
+      };
+      return newData;
+    });
+    
+    if (addToHistory) {
+      setTimeout(() => addHistoryEntry([toothNumber], `Dente ${toothNumber} marcado como ${status}`), 100);
+    }
+  }, [addHistoryEntry]);
+
+  // Atualizar status de uma face específica
+  const updateToothSurface = useCallback((
+    toothNumber: number, 
+    surface: ToothSurface, 
+    status: ToothStatus,
+    addToHistory = true
+  ) => {
     setTeethData(prev => ({
       ...prev,
       [toothNumber]: {
         ...prev[toothNumber],
-        status,
+        surfaces: {
+          ...prev[toothNumber].surfaces,
+          [surface]: status,
+        },
         updatedAt: new Date().toISOString(),
       },
     }));
-  }, []);
+
+    if (addToHistory) {
+      setTimeout(() => addHistoryEntry([toothNumber], `Face ${surface} do dente ${toothNumber} marcada como ${status}`), 100);
+    }
+  }, [addHistoryEntry]);
 
   // Atualizar notas de um dente
   const updateToothNotes = useCallback((toothNumber: number, notes: string) => {
@@ -72,38 +130,73 @@ export const useOdontogramaStore = (prontuarioId: string) => {
     }));
   }, []);
 
+  // Restaurar odontograma de uma entrada do histórico
+  const restoreFromHistory = useCallback((historyId: string) => {
+    const entry = history.find(h => h.id === historyId);
+    if (entry) {
+      setTeethData(JSON.parse(JSON.stringify(entry.teeth)));
+      addHistoryEntry([], 'Odontograma restaurado do histórico');
+    }
+  }, [history, addHistoryEntry]);
+
   // Resetar odontograma
   const resetOdontograma = useCallback(() => {
     const resetData: Record<number, ToothData> = {};
     ALL_TEETH.forEach(num => {
-      resetData[num] = { 
-        number: num, 
-        status: 'higido',
-        updatedAt: new Date().toISOString(),
-      };
+      resetData[num] = createInitialToothData(num);
     });
     setTeethData(resetData);
-  }, []);
+    addHistoryEntry(ALL_TEETH, 'Odontograma resetado');
+  }, [addHistoryEntry]);
 
   // Obter estatísticas
   const getStatusCount = useCallback((status: ToothStatus) => {
     return Object.values(teethData).filter(t => t.status === status).length;
   }, [teethData]);
 
+  // Comparar dois estados do odontograma
+  const compareStates = useCallback((historyId1: string, historyId2: string) => {
+    const state1 = history.find(h => h.id === historyId1);
+    const state2 = history.find(h => h.id === historyId2);
+    
+    if (!state1 || !state2) return [];
+
+    const changes: number[] = [];
+    ALL_TEETH.forEach(num => {
+      const tooth1 = state1.teeth[num];
+      const tooth2 = state2.teeth[num];
+      
+      if (tooth1.status !== tooth2.status || 
+          JSON.stringify(tooth1.surfaces) !== JSON.stringify(tooth2.surfaces)) {
+        changes.push(num);
+      }
+    });
+
+    return changes;
+  }, [history]);
+
   // Salvar quando os dados mudarem
   useEffect(() => {
     if (!isLoading && Object.keys(teethData).length > 0) {
-      saveData();
+      const timeoutId = setTimeout(() => {
+        saveData();
+      }, 500); // Debounce de 500ms
+      
+      return () => clearTimeout(timeoutId);
     }
-  }, [teethData, isLoading, saveData]);
+  }, [teethData, history, isLoading, saveData]);
 
   return {
     teethData,
+    history,
     isLoading,
     updateToothStatus,
+    updateToothSurface,
     updateToothNotes,
     resetOdontograma,
+    restoreFromHistory,
     getStatusCount,
+    compareStates,
     saveData,
   };
 };

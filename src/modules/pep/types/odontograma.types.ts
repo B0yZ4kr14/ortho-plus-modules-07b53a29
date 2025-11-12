@@ -1,23 +1,35 @@
 export type ToothStatus = 'higido' | 'cariado' | 'obturado' | 'extraido' | 'ausente' | 'implante';
+export type ToothSurface = 'mesial' | 'distal' | 'oclusal' | 'vestibular' | 'lingual';
+
+export interface ToothSurfaceData {
+  mesial: ToothStatus;
+  distal: ToothStatus;
+  oclusal: ToothStatus;
+  vestibular: ToothStatus;
+  lingual: ToothStatus;
+}
 
 export interface ToothData {
   number: number;
   status: ToothStatus;
   notes?: string;
-  surfaces?: {
-    mesial?: ToothStatus;
-    distal?: ToothStatus;
-    oclusal?: ToothStatus;
-    vestibular?: ToothStatus;
-    lingual?: ToothStatus;
-  };
-  updatedAt?: string;
+  surfaces: ToothSurfaceData;
+  updatedAt: string;
+}
+
+export interface OdontogramaHistoryEntry {
+  id: string;
+  timestamp: string;
+  teeth: Record<number, ToothData>;
+  changedTeeth: number[];
+  description?: string;
 }
 
 export interface OdontogramaData {
   prontuarioId: string;
   teeth: Record<number, ToothData>;
   lastUpdated: string;
+  history: OdontogramaHistoryEntry[];
 }
 
 export const TOOTH_STATUS_COLORS: Record<ToothStatus, string> = {
@@ -36,6 +48,14 @@ export const TOOTH_STATUS_LABELS: Record<ToothStatus, string> = {
   extraido: 'Extraído',
   ausente: 'Ausente',
   implante: 'Implante',
+};
+
+export const TOOTH_SURFACE_LABELS: Record<ToothSurface, string> = {
+  mesial: 'Mesial',
+  distal: 'Distal',
+  oclusal: 'Oclusal',
+  vestibular: 'Vestibular',
+  lingual: 'Lingual',
 };
 
 // Numeração FDI padrão

@@ -7,8 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useOdontogramaStore } from '../hooks/useOdontogramaStore';
+import { ToothDetailDialog } from './ToothDetailDialog';
 import {
   ToothStatus,
+  ToothSurface,
+  ToothData,
   TOOTH_STATUS_COLORS,
   TOOTH_STATUS_LABELS,
   UPPER_RIGHT_TEETH,
@@ -16,29 +19,41 @@ import {
   LOWER_LEFT_TEETH,
   LOWER_RIGHT_TEETH,
 } from '../types/odontograma.types';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Info } from 'lucide-react';
 
 interface ToothMeshProps {
   position: [number, number, number];
-  toothNumber: number;
-  status: ToothStatus;
+  toothData: ToothData;
   selectedStatus: ToothStatus;
   onToothClick: (toothNumber: number) => void;
+  onToothRightClick: (toothNumber: number) => void;
 }
 
-function ToothMesh({ position, toothNumber, status, selectedStatus, onToothClick }: ToothMeshProps) {
+function ToothMesh({ position, toothData, selectedStatus, onToothClick, onToothRightClick }: ToothMeshProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
 
-  const color = TOOTH_STATUS_COLORS[status];
-  const isExtraido = status === 'extraido';
+  const color = TOOTH_STATUS_COLORS[toothData.status];
+  const isExtraido = toothData.status === 'extraido';
+
+  const handleClick = (e: any) => {
+    e.stopPropagation();
+    if (e.button === 2) {
+      // Right click
+      onToothRightClick(toothData.number);
+    } else {
+      // Left click
+      onToothClick(toothData.number);
+    }
+  };
 
   return (
     <group position={position}>
       {/* Corpo do dente - formato cônico realista */}
       <mesh
         ref={meshRef}
-        onClick={() => onToothClick(toothNumber)}
+        onClick={handleClick}
+        onContextMenu={handleClick}
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
         castShadow
@@ -82,7 +97,7 @@ function ToothMesh({ position, toothNumber, status, selectedStatus, onToothClick
         anchorX="center"
         anchorY="middle"
       >
-        {String(toothNumber)}
+        {String(toothData.number)}
       </Text>
 
       {/* Indicador de hover */}
@@ -105,15 +120,54 @@ export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
     teethData,
     isLoading,
     updateToothStatus,
+    updateToothSurface,
+    updateToothNotes,
     resetOdontograma,
     getStatusCount,
   } = useOdontogramaStore(prontuarioId);
 
   const [selectedStatus, setSelectedStatus] = useState<ToothStatus>('higido');
+  const [selectedTooth, setSelectedTooth] = useState<ToothData | null>(null);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
   const handleToothClick = (toothNumber: number) => {
     updateToothStatus(toothNumber, selectedStatus);
     toast.success(`Dente ${toothNumber} marcado como ${TOOTH_STATUS_LABELS[selectedStatus]}`);
+  };
+
+  const handleToothRightClick = (toothNumber: number) => {
+    const tooth = teethData[toothNumber];
+    if (tooth) {
+      setSelectedTooth(tooth);
+      setIsDetailDialogOpen(true);
+    }
+  };
+
+  const handleUpdateToothStatus = (status: ToothStatus) => {
+    if (selectedTooth) {
+      updateToothStatus(selectedTooth.number, status);
+      setSelectedTooth(prev => prev ? { ...prev, status } : null);
+    }
+  };
+
+  const handleUpdateToothSurface = (surface: ToothSurface, status: ToothStatus) => {
+    if (selectedTooth) {
+      updateToothSurface(selectedTooth.number, surface, status);
+      setSelectedTooth(prev => 
+        prev ? {
+          ...prev,
+          surfaces: { ...prev.surfaces, [surface]: status }
+        } : null
+      );
+    }
+  };
+
+  const handleUpdateToothNotes = (notes: string) => {
+    if (selectedTooth) {
+      updateToothNotes(selectedTooth.number, notes);
+      setSelectedTooth(prev => prev ? { ...prev, notes } : null);
+      toast.success('Observações salvas');
+    }
   };
 
   if (isLoading) {
@@ -130,8 +184,18 @@ export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
+    <>
+      <ToothDetailDialog
+        tooth={selectedTooth}
+        open={isDetailDialogOpen}
+        onClose={() => setIsDetailDialogOpen(false)}
+        onUpdateStatus={handleUpdateToothStatus}
+        onUpdateSurface={handleUpdateToothSurface}
+        onUpdateNotes={handleUpdateToothNotes}
+      />
+
+      <div className="space-y-4">
+        <Card>
         <CardHeader>
           <CardTitle>Selecione o Status</CardTitle>
         </CardHeader>
@@ -160,7 +224,13 @@ export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Odontograma 3D Interativo</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Odontograma 3D Interativo</CardTitle>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Info className="h-4 w-4" />
+              <span>Clique direito para detalhes</span>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="w-full h-[600px] bg-slate-50 rounded-lg border border-border">
@@ -198,10 +268,10 @@ export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
                   <ToothMesh
                     key={num}
                     position={[-7 + idx * 1.2, 2, 2]}
-                    toothNumber={num}
-                    status={teethData[num]?.status || 'higido'}
+                    toothData={teethData[num]}
                     selectedStatus={selectedStatus}
                     onToothClick={handleToothClick}
+                    onToothRightClick={handleToothRightClick}
                   />
                 ))}
 
@@ -210,10 +280,10 @@ export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
                   <ToothMesh
                     key={num}
                     position={[0.5 + idx * 1.2, 2, 2]}
-                    toothNumber={num}
-                    status={teethData[num]?.status || 'higido'}
+                    toothData={teethData[num]}
                     selectedStatus={selectedStatus}
                     onToothClick={handleToothClick}
+                    onToothRightClick={handleToothRightClick}
                   />
                 ))}
 
@@ -222,10 +292,10 @@ export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
                   <ToothMesh
                     key={num}
                     position={[0.5 + idx * 1.2, -2, 2]}
-                    toothNumber={num}
-                    status={teethData[num]?.status || 'higido'}
+                    toothData={teethData[num]}
                     selectedStatus={selectedStatus}
                     onToothClick={handleToothClick}
+                    onToothRightClick={handleToothRightClick}
                   />
                 ))}
 
@@ -234,10 +304,10 @@ export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
                   <ToothMesh
                     key={num}
                     position={[-7 + idx * 1.2, -2, 2]}
-                    toothNumber={num}
-                    status={teethData[num]?.status || 'higido'}
+                    toothData={teethData[num]}
                     selectedStatus={selectedStatus}
                     onToothClick={handleToothClick}
+                    onToothRightClick={handleToothRightClick}
                   />
                 ))}
 
@@ -268,8 +338,9 @@ export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
           </div>
           <div className="mt-4 p-4 bg-muted rounded-lg">
             <p className="text-sm text-muted-foreground">
-              <strong>Controles:</strong> Clique nos dentes para marcar o status selecionado. 
-              Use o mouse para rotacionar (arrastar), aproximar/afastar (scroll) e mover (botão direito + arrastar) a visualização.
+              <strong>Controles:</strong> Clique esquerdo para marcar o status selecionado. 
+              <strong> Clique direito para editar faces específicas e adicionar observações.</strong>
+              {' '}Use o mouse para rotacionar (arrastar), aproximar/afastar (scroll) e mover (botão direito + arrastar) a visualização.
             </p>
           </div>
         </CardContent>
@@ -292,6 +363,7 @@ export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 };

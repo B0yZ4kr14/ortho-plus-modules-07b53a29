@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, Plus, History, Upload, Activity, Smile, Box } from 'lucide-react';
+import { FileText, Plus, History, Upload, Activity, Smile, Box, Clock, GitCompare } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -11,6 +11,9 @@ import { AnexosUpload } from '@/modules/pep/components/AnexosUpload';
 import { EvolucoesTimeline } from '@/modules/pep/components/EvolucoesTimeline';
 import { Odontograma2D } from '@/modules/pep/components/Odontograma2D';
 import { Odontograma3D } from '@/modules/pep/components/Odontograma3D';
+import { OdontogramaHistory } from '@/modules/pep/components/OdontogramaHistory';
+import { OdontogramaComparison } from '@/modules/pep/components/OdontogramaComparison';
+import { useOdontogramaStore } from '@/modules/pep/hooks/useOdontogramaStore';
 
 export default function PEP() {
   const [activeTab, setActiveTab] = useState('historico');
@@ -19,6 +22,26 @@ export default function PEP() {
   
   // Mock prontuario ID - em produção viria da seleção do paciente
   const prontuarioId = 'mock-prontuario-id';
+
+  // Estados para comparação de odontogramas
+  const [selectedForComparison, setSelectedForComparison] = useState<[string | null, string | null]>([null, null]);
+  
+  const { history, restoreFromHistory } = useOdontogramaStore(prontuarioId);
+
+  const handleCompareSelect = (historyId: string) => {
+    if (selectedForComparison[0] === historyId) {
+      setSelectedForComparison([null, null]);
+      setActiveTab('historico-odonto');
+    } else if (selectedForComparison[0] === null) {
+      setSelectedForComparison([historyId, null]);
+    } else if (selectedForComparison[1] === null) {
+      setSelectedForComparison([selectedForComparison[0], historyId]);
+      setActiveTab('comparacao-odonto');
+    } else {
+      setSelectedForComparison([historyId, null]);
+      setActiveTab('historico-odonto');
+    }
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -56,30 +79,38 @@ export default function PEP() {
 
       {/* Tabs Principais */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
           <TabsTrigger value="historico">
             <History className="mr-2 h-4 w-4" />
-            Histórico
+            <span className="hidden lg:inline">Histórico</span>
           </TabsTrigger>
           <TabsTrigger value="tratamentos">
             <Activity className="mr-2 h-4 w-4" />
-            Tratamentos
+            <span className="hidden lg:inline">Tratamentos</span>
           </TabsTrigger>
           <TabsTrigger value="odontograma2d">
             <Smile className="mr-2 h-4 w-4" />
-            Odontograma 2D
+            <span className="hidden lg:inline">Odonto 2D</span>
           </TabsTrigger>
           <TabsTrigger value="odontograma3d">
             <Box className="mr-2 h-4 w-4" />
-            Odontograma 3D
+            <span className="hidden lg:inline">Odonto 3D</span>
+          </TabsTrigger>
+          <TabsTrigger value="historico-odonto">
+            <Clock className="mr-2 h-4 w-4" />
+            <span className="hidden lg:inline">Histórico Odonto</span>
+          </TabsTrigger>
+          <TabsTrigger value="comparacao-odonto">
+            <GitCompare className="mr-2 h-4 w-4" />
+            <span className="hidden lg:inline">Comparação</span>
           </TabsTrigger>
           <TabsTrigger value="anexos">
             <Upload className="mr-2 h-4 w-4" />
-            Anexos
+            <span className="hidden lg:inline">Anexos</span>
           </TabsTrigger>
           <TabsTrigger value="evolucoes">
             <FileText className="mr-2 h-4 w-4" />
-            Evoluções
+            <span className="hidden lg:inline">Evoluções</span>
           </TabsTrigger>
         </TabsList>
 
@@ -161,6 +192,26 @@ export default function PEP() {
 
         <TabsContent value="odontograma3d" className="space-y-4">
           <Odontograma3D prontuarioId={prontuarioId} />
+        </TabsContent>
+
+        <TabsContent value="historico-odonto" className="space-y-4">
+          <OdontogramaHistory
+            history={history}
+            onRestore={restoreFromHistory}
+            onCompare={handleCompareSelect}
+            selectedForComparison={selectedForComparison[0]}
+          />
+        </TabsContent>
+
+        <TabsContent value="comparacao-odonto" className="space-y-4">
+          <OdontogramaComparison
+            history={history}
+            selectedIds={selectedForComparison}
+            onClearSelection={() => {
+              setSelectedForComparison([null, null]);
+              setActiveTab('historico-odonto');
+            }}
+          />
         </TabsContent>
 
         <TabsContent value="anexos" className="space-y-4">
