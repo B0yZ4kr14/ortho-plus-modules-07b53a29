@@ -210,4 +210,30 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Tipografia Hierárquica Global */
+  h1 {
+    @apply text-3xl font-bold tracking-tight;
+  }
+
+  h2 {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+
+  h3 {
+    @apply text-xl font-semibold tracking-tight;
+  }
+
+  h4 {
+    @apply text-lg font-medium;
+  }
+
+  /* Labels e Small Text */
+  .label-primary {
+    @apply text-sm font-medium text-foreground/90;
+  }
+
+  .label-secondary {
+    @apply text-xs font-medium text-muted-foreground uppercase tracking-wider;
+  }
 }

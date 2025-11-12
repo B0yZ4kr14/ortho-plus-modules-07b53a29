@@ -144,6 +144,22 @@ export default {
             opacity: "1"
           },
         },
+        "glow": {
+          "0%, 100%": { 
+            boxShadow: "0 0 20px rgba(45, 212, 191, 0.3)" 
+          },
+          "50%": { 
+            boxShadow: "0 0 30px rgba(45, 212, 191, 0.5)" 
+          }
+        },
+        "shimmer": {
+          "0%": { 
+            backgroundPosition: "-200% 0" 
+          },
+          "100%": { 
+            backgroundPosition: "200% 0" 
+          }
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -152,6 +168,8 @@ export default {
         "collapsible-up": "collapsible-up 0.3s ease-out",
         "fade-in": "fade-in 0.2s ease-out",
         "slide-in": "slide-in 0.3s ease-out",
+        "glow": "glow 2s ease-in-out infinite",
+        "shimmer": "shimmer 2s linear infinite",
       },
     },
   },
