@@ -44,6 +44,12 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
+    /* Shadow variables */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.2);
+
     --sidebar-background: 215 25% 15%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 173 58% 39%;
@@ -112,6 +118,12 @@ All colors MUST be HSL.
     --input: 215 25% 20%;
     --ring: 173 58% 39%;
 
+    /* Shadow variables for dark */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 30px rgba(0, 0, 0, 0.6);
+
     /* Chart colors for dark mode */
     --chart-1: 173 58% 39%;
     --chart-2: 142 71% 45%;
@@ -127,6 +139,66 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 215 25% 18%;
     --sidebar-ring: 173 58% 39%;
+  }
+
+  .professional-dark {
+    /* Backgrounds super escuros inspirados no Cure.AI */
+    --background: 220 20% 8%;
+    --foreground: 210 40% 98%;
+
+    --card: 220 18% 12%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 220 18% 12%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 173 80% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 18% 16%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 220 18% 16%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 220 18% 16%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 24 10% 10%;
+
+    --border: 220 15% 18%;
+    --input: 220 15% 18%;
+    --ring: 173 80% 45%;
+
+    /* Sombras profissionais profundas */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.7);
+
+    /* Chart colors */
+    --chart-1: 173 80% 45%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 217 91% 60%;
+    --chart-5: 271 81% 56%;
+
+    /* Sidebar ainda mais escura */
+    --sidebar-background: 220 20% 6%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 173 80% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 18% 12%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 220 15% 14%;
+    --sidebar-ring: 173 80% 45%;
   }
 }
 

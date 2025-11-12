@@ -1,4 +1,4 @@
-import { Search, Bell, LogOut, Building2, ChevronDown } from "lucide-react";
+import { Search, Bell, LogOut, Building2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function DashboardHeader() {
   const { user, signOut, userRole, availableClinics, selectedClinic, switchClinic } = useAuth();
@@ -34,18 +35,20 @@ export function DashboardHeader() {
   };
 
   return (
-    <header className="h-16 border-b border-border bg-card px-6 flex items-center justify-between">
+    <header className="sticky top-0 z-40 w-full h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm px-6 flex items-center justify-between">
       <div className="flex-1 max-w-md">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar paciente, procedimento..."
-            className="pl-10 bg-background"
+            className="pl-10 bg-muted/50"
           />
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        {/* Theme Toggle */}
+        <ThemeToggle />
         {/* Seletor de Clínica - só aparece se usuário tiver acesso a múltiplas clínicas */}
         {availableClinics && availableClinics.length > 1 && (
           <div className="flex items-center gap-2 mr-2">
@@ -68,12 +71,16 @@ export function DashboardHeader() {
           </div>
         )}
 
-        <div className="relative">
-          <Bell className="h-5 w-5 text-foreground cursor-pointer hover:text-primary transition-colors" />
-          <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center bg-destructive text-[10px]">
+        {/* Notifications */}
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="h-5 w-5" />
+          <Badge 
+            className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px]"
+            variant="destructive"
+          >
             3
           </Badge>
-        </div>
+        </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

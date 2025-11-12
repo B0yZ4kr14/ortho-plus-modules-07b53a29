@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ModulesProvider } from "@/contexts/ModulesContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppSidebar } from "@/components/AppSidebar";
 import { DashboardHeader } from "@/components/DashboardHeader";
@@ -44,12 +45,13 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <ModulesProvider>
-            <Toaster />
-            <Sonner />
-            <Routes>
+      <ThemeProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <ModulesProvider>
+              <Toaster />
+              <Sonner />
+              <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route
                 path="/*"
@@ -127,10 +129,11 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
-            </Routes>
-          </ModulesProvider>
-        </AuthProvider>
-      </BrowserRouter>
+              </Routes>
+            </ModulesProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </ThemeProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

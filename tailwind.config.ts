@@ -19,6 +19,12 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        shadow: {
+          sm: "var(--shadow-sm)",
+          md: "var(--shadow-md)",
+          lg: "var(--shadow-lg)",
+          xl: "var(--shadow-xl)",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
