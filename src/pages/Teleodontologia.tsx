@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Video, Calendar, Clock, User, FileText } from 'lucide-react';
 import { useTeleodontologiaSupabase } from '@/modules/teleodontologia/hooks/useTeleodontologiaSupabase';
 import { VideoRoom } from '@/modules/teleodontologia/components/VideoRoom';
+import { TeleconsultaForm } from '@/modules/teleodontologia/components/TeleconsultaForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -10,10 +11,6 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Teleodontologia() {
@@ -102,74 +99,17 @@ export default function Teleodontologia() {
 
       {/* Dialog de Agendamento */}
       <Dialog open={agendarDialogOpen} onOpenChange={setAgendarDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Agendar Teleconsulta</DialogTitle>
             <DialogDescription>
-              Configure uma videochamada com o paciente
+              Configure uma videochamada, áudio ou chat com o paciente
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Paciente</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o paciente" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">João Silva</SelectItem>
-                    <SelectItem value="2">Maria Santos</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Dentista</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o dentista" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">Dr. Carlos</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Data</Label>
-                <Input type="date" />
-              </div>
-              <div>
-                <Label>Horário</Label>
-                <Input type="time" />
-              </div>
-            </div>
-            <div>
-              <Label>Tipo de Consulta</Label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="VIDEO">Videochamada</SelectItem>
-                  <SelectItem value="AUDIO">Áudio</SelectItem>
-                  <SelectItem value="CHAT">Chat</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Título</Label>
-              <Input placeholder="Ex: Avaliação de Tratamento" />
-            </div>
-            <div>
-              <Label>Motivo</Label>
-              <Textarea placeholder="Descreva o motivo da teleconsulta" rows={3} />
-            </div>
-            <Button onClick={handleAgendar} className="w-full">
-              Agendar Teleconsulta
-            </Button>
-          </div>
+          <TeleconsultaForm
+            onSubmit={handleAgendar}
+            onCancel={() => setAgendarDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
 
