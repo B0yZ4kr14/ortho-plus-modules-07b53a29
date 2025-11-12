@@ -11,6 +11,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppSidebar } from "@/components/AppSidebar";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import Dashboard from "./pages/Dashboard";
+import Demo from "./pages/Demo";
 import Pacientes from "./pages/Pacientes";
 import Dentistas from "./pages/Dentistas";
 import Funcionarios from "./pages/Funcionarios";
@@ -68,6 +69,7 @@ const App = () => (
               <Sonner />
               <ProductTour />
               <Routes>
+              <Route path="/demo" element={<Demo />} />
               <Route path="/auth" element={<Auth />} />
               <Route
                 path="/*"

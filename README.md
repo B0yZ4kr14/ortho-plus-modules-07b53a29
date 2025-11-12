@@ -35,20 +35,37 @@
 
 ---
 
-## 🏗️ Como Rodar o Projeto
+## 🏗️ Instalação
+
+### Opção 1: Instalação Automática (Ubuntu 24.04.3 LTS)
+
+```sh
+# Baixe e execute o script de instalação
+wget https://raw.githubusercontent.com/tsitelecom/ortho-plus/main/install.sh
+chmod +x install.sh
+sudo ./install.sh
+```
+
+O script instala automaticamente:
+- Node.js, PostgreSQL, Nginx
+- Prometheus, Grafana, UFW
+- Configuração completa do Ortho+
+- Backups automáticos diários
+
+**Documentação completa:** [INSTALLATION.md](./INSTALLATION.md)
+
+### Opção 2: Desenvolvimento Local
 
 ```sh
 # Clone o repositório
-git clone <YOUR_GIT_URL>
-
-# Navegue para o diretório
-cd <YOUR_PROJECT_NAME>
+git clone https://github.com/tsitelecom/ortho-plus.git
+cd ortho-plus
 
 # Instale as dependências
 npm install
 
-# Configure as variáveis de ambiente
-# (Supabase já está configurado via Lovable Cloud)
+# Configure variáveis de ambiente (.env)
+# Veja exemplo em .env.example
 
 # Inicie o servidor de desenvolvimento
 npm run dev

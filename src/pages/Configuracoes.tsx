@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import ModulesSimple from './settings/ModulesSimple';
-import { DatabaseBackupTab } from '@/components/settings/DatabaseBackupTab';
+import DatabaseBackupTab from '@/components/settings/DatabaseBackupTab';
 import { BackupStatsDashboard } from '@/components/settings/BackupStatsDashboard';
 import { UserManagementTab } from '@/components/settings/UserManagementTab';
 import { ModulePermissionsManager } from '@/components/settings/ModulePermissionsManager';
