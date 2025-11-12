@@ -15,7 +15,8 @@ import {
   CreditCard,
   BarChart3,
   FileBarChart,
-  FolderOpen
+  FolderOpen,
+  ShoppingCart
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -79,7 +80,9 @@ const menuGroups = [
       { title: 'Cadastros', url: '/estoque/cadastros', icon: FolderOpen },
       { title: 'Requisições', url: '/estoque/requisicoes', icon: ClipboardList },
       { title: 'Movimentações', url: '/estoque/movimentacoes', icon: Package },
-      { title: 'Análise de Consumo', url: '/estoque/analise-consumo', icon: TrendingUp },
+      { title: 'Pedidos', url: '/estoque/pedidos', icon: ShoppingCart },
+      { title: 'Análise de Pedidos', url: '/estoque/analise-pedidos', icon: TrendingUp },
+      { title: 'Análise de Consumo', url: '/estoque/analise-consumo', icon: BarChart3 },
     ]
   },
   {
