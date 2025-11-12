@@ -34,13 +34,41 @@ export function DatabaseBackupTab() {
   const [backupFrequency, setBackupFrequency] = useState('daily');
   const [backupHistory, setBackupHistory] = useState<BackupHistory[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [retentionDays, setRetentionDays] = useState<number>(90);
+  const [autoCleanupEnabled, setAutoCleanupEnabled] = useState(true);
+  const [isLoadingConfig, setIsLoadingConfig] = useState(true);
 
-  // Buscar histórico de backups
+  // Buscar histórico de backups e configurações
   useEffect(() => {
     if (clinicId) {
       fetchBackupHistory();
+      fetchRetentionConfig();
     }
   }, [clinicId]);
+
+  const fetchRetentionConfig = async () => {
+    if (!clinicId) return;
+
+    setIsLoadingConfig(true);
+    try {
+      const { data, error } = await supabase
+        .from('clinics')
+        .select('backup_retention_days, auto_cleanup_enabled')
+        .eq('id', clinicId)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setRetentionDays(data.backup_retention_days || 90);
+        setAutoCleanupEnabled(data.auto_cleanup_enabled ?? true);
+      }
+    } catch (error: any) {
+      console.error('Erro ao buscar configuração de retenção:', error);
+    } finally {
+      setIsLoadingConfig(false);
+    }
+  };
 
   const fetchBackupHistory = async () => {
     if (!clinicId) return;
@@ -263,6 +291,61 @@ export function DatabaseBackupTab() {
     }
   };
 
+  const handleUpdateRetention = async () => {
+    if (!clinicId) return;
+
+    try {
+      const { error } = await supabase
+        .from('clinics')
+        .update({
+          backup_retention_days: retentionDays,
+          auto_cleanup_enabled: autoCleanupEnabled
+        })
+        .eq('id', clinicId);
+
+      if (error) throw error;
+
+      toast.success('Configuração de retenção atualizada!', {
+        description: `Backups serão mantidos por ${retentionDays} dias`
+      });
+    } catch (error: any) {
+      console.error('Erro ao atualizar retenção:', error);
+      toast.error('Erro ao atualizar configuração', { 
+        description: error.message 
+      });
+    }
+  };
+
+  const handleManualCleanup = async () => {
+    if (!clinicId) return;
+
+    const confirmed = window.confirm(
+      `Tem certeza que deseja executar a limpeza manual de backups?\n\nBackups com mais de ${retentionDays} dias serão removidos permanentemente.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('cleanup-old-backups', {
+        body: { clinic_id: clinicId }
+      });
+
+      if (error) throw error;
+
+      toast.success('Limpeza concluída!', {
+        description: `${data.deleted_count} backup(s) removido(s), ${formatBytes(data.freed_bytes)} liberados`
+      });
+
+      // Atualizar histórico
+      await fetchBackupHistory();
+    } catch (error: any) {
+      console.error('Erro ao executar limpeza:', error);
+      toast.error('Erro ao executar limpeza', { 
+        description: error.message 
+      });
+    }
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'success':
@@ -388,6 +471,92 @@ export function DatabaseBackupTab() {
                 Próximo backup agendado: {new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleString('pt-BR')}
               </p>
             </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Retenção e Limpeza Automática */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Retenção e Limpeza de Backups
+          </CardTitle>
+          <CardDescription>
+            Configure por quanto tempo os backups devem ser mantidos antes da limpeza automática
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="auto-cleanup">Ativar Limpeza Automática</Label>
+              <p className="text-sm text-muted-foreground">
+                Backups antigos serão removidos automaticamente
+              </p>
+            </div>
+            <Switch
+              id="auto-cleanup"
+              checked={autoCleanupEnabled}
+              onCheckedChange={setAutoCleanupEnabled}
+              disabled={isLoadingConfig}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="retention">Período de Retenção</Label>
+            <Select 
+              value={retentionDays.toString()} 
+              onValueChange={(value) => setRetentionDays(parseInt(value))}
+              disabled={isLoadingConfig}
+            >
+              <SelectTrigger id="retention">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="30">30 dias (1 mês)</SelectItem>
+                <SelectItem value="60">60 dias (2 meses)</SelectItem>
+                <SelectItem value="90">90 dias (3 meses) - Recomendado</SelectItem>
+                <SelectItem value="180">180 dias (6 meses)</SelectItem>
+                <SelectItem value="365">365 dias (1 ano)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {autoCleanupEnabled 
+                ? `Backups com mais de ${retentionDays} dias serão automaticamente removidos`
+                : 'A limpeza automática está desativada. Backups serão mantidos indefinidamente.'
+              }
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleUpdateRetention}
+              disabled={isLoadingConfig}
+              className="flex-1"
+            >
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Salvar Configuração
+            </Button>
+            
+            <Button 
+              onClick={handleManualCleanup}
+              variant="outline"
+              disabled={isLoadingConfig}
+              className="flex-1"
+            >
+              <Database className="mr-2 h-4 w-4" />
+              Executar Limpeza Agora
+            </Button>
+          </div>
+
+          {autoCleanupEnabled && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                A limpeza automática é executada diariamente às 3h da manhã. 
+                Backups com status "falhou" ou "pendente" não são removidos automaticamente.
+              </AlertDescription>
+            </Alert>
           )}
         </CardContent>
       </Card>

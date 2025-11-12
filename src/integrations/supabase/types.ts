@@ -156,18 +156,24 @@ export type Database = {
       }
       clinics: {
         Row: {
+          auto_cleanup_enabled: boolean | null
+          backup_retention_days: number | null
           created_at: string
           id: string
           name: string
           updated_at: string
         }
         Insert: {
+          auto_cleanup_enabled?: boolean | null
+          backup_retention_days?: number | null
           created_at?: string
           id?: string
           name: string
           updated_at?: string
         }
         Update: {
+          auto_cleanup_enabled?: boolean | null
+          backup_retention_days?: number | null
           created_at?: string
           id?: string
           name?: string
@@ -633,6 +639,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_backups: {
+        Args: { p_clinic_id: string }
+        Returns: {
+          deleted_count: number
+          freed_bytes: number
+        }[]
+      }
       get_user_clinic_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
