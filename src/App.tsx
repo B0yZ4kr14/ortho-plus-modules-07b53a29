@@ -19,6 +19,7 @@ import Resumo from "./pages/Resumo";
 import AgendaClinica from "./pages/AgendaClinica";
 import GerenciamentoModulos from "./pages/GerenciamentoModulos";
 import ModulesAdmin from "./pages/settings/ModulesAdmin";
+import Configuracoes from "./pages/Configuracoes";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -54,6 +55,14 @@ const App = () => (
                               <Route path="/financeiro" element={<Financeiro />} />
                               <Route path="/agenda-clinica" element={<AgendaClinica />} />
                               <Route path="/modulos" element={<GerenciamentoModulos />} />
+                              <Route 
+                                path="/configuracoes" 
+                                element={
+                                  <ProtectedRoute requireAdmin>
+                                    <Configuracoes />
+                                  </ProtectedRoute>
+                                } 
+                              />
                               <Route 
                                 path="/settings/modules" 
                                 element={

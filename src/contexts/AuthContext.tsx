@@ -9,6 +9,7 @@ interface AuthContextType {
   loading: boolean;
   userRole: 'ADMIN' | 'MEMBER' | null;
   clinicId: string | null;
+  hasRole: (role: 'ADMIN' | 'MEMBER') => boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -136,6 +137,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const hasRole = (role: 'ADMIN' | 'MEMBER') => {
+    return userRole === role;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -144,6 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         userRole,
         clinicId,
+        hasRole,
         signUp,
         signIn,
         signOut,
