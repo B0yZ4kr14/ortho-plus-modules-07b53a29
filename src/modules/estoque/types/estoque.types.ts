@@ -11,6 +11,57 @@ export const categoriaSchema = z.object({
 
 export type Categoria = z.infer<typeof categoriaSchema>;
 
+// Schema para Requisição
+export const requisicaoSchema = z.object({
+  id: z.string().uuid().optional(),
+  produtoId: z.string().uuid('Selecione um produto'),
+  quantidade: z.number().min(1, 'Quantidade deve ser maior que 0'),
+  motivo: z.string().min(5, 'Motivo deve ter no mínimo 5 caracteres'),
+  prioridade: z.enum(['BAIXA', 'MEDIA', 'ALTA', 'URGENTE']),
+  status: z.enum(['PENDENTE', 'APROVADA', 'REJEITADA', 'ENTREGUE']).default('PENDENTE'),
+  solicitadoPor: z.string(),
+  aprovadoPor: z.string().optional(),
+  dataAprovacao: z.string().optional(),
+  observacoes: z.string().optional(),
+  createdAt: z.string().optional(),
+});
+
+export type Requisicao = z.infer<typeof requisicaoSchema>;
+
+// Schema para Movimentação
+export const movimentacaoSchema = z.object({
+  id: z.string().uuid().optional(),
+  produtoId: z.string().uuid('Selecione um produto'),
+  tipo: z.enum(['ENTRADA', 'SAIDA', 'AJUSTE', 'DEVOLUCAO', 'PERDA']),
+  quantidade: z.number().min(1, 'Quantidade deve ser maior que 0'),
+  lote: z.string().optional(),
+  dataValidade: z.string().optional(),
+  motivo: z.string().min(3, 'Motivo é obrigatório'),
+  valorUnitario: z.number().min(0).optional(),
+  valorTotal: z.number().min(0).optional(),
+  fornecedorId: z.string().uuid().optional(),
+  notaFiscal: z.string().optional(),
+  realizadoPor: z.string(),
+  observacoes: z.string().optional(),
+  createdAt: z.string().optional(),
+});
+
+export type Movimentacao = z.infer<typeof movimentacaoSchema>;
+
+// Schema para Alerta
+export const alertaSchema = z.object({
+  id: z.string().uuid().optional(),
+  produtoId: z.string().uuid(),
+  tipo: z.enum(['ESTOQUE_MINIMO', 'ESTOQUE_CRITICO', 'VALIDADE_PROXIMA', 'SUGESTAO_REPOSICAO']),
+  mensagem: z.string(),
+  quantidadeAtual: z.number(),
+  quantidadeSugerida: z.number().optional(),
+  lido: z.boolean().default(false),
+  createdAt: z.string().optional(),
+});
+
+export type Alerta = z.infer<typeof alertaSchema>;
+
 // Schema para Fornecedor
 export const fornecedorSchema = z.object({
   id: z.string().uuid().optional(),
@@ -58,4 +109,26 @@ export const unidadesMedida = [
   { value: 'PACOTE', label: 'Pacote' },
   { value: 'KG', label: 'Quilograma' },
   { value: 'LITRO', label: 'Litro' },
+] as const;
+
+export const prioridadesRequisicao = [
+  { value: 'BAIXA', label: 'Baixa', color: 'bg-blue-500' },
+  { value: 'MEDIA', label: 'Média', color: 'bg-yellow-500' },
+  { value: 'ALTA', label: 'Alta', color: 'bg-orange-500' },
+  { value: 'URGENTE', label: 'Urgente', color: 'bg-red-500' },
+] as const;
+
+export const statusRequisicao = [
+  { value: 'PENDENTE', label: 'Pendente', color: 'bg-gray-500' },
+  { value: 'APROVADA', label: 'Aprovada', color: 'bg-green-500' },
+  { value: 'REJEITADA', label: 'Rejeitada', color: 'bg-red-500' },
+  { value: 'ENTREGUE', label: 'Entregue', color: 'bg-blue-500' },
+] as const;
+
+export const tiposMovimentacao = [
+  { value: 'ENTRADA', label: 'Entrada', color: 'bg-green-500' },
+  { value: 'SAIDA', label: 'Saída', color: 'bg-red-500' },
+  { value: 'AJUSTE', label: 'Ajuste', color: 'bg-blue-500' },
+  { value: 'DEVOLUCAO', label: 'Devolução', color: 'bg-yellow-500' },
+  { value: 'PERDA', label: 'Perda', color: 'bg-gray-500' },
 ] as const;

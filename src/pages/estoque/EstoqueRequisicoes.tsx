@@ -1,34 +1,101 @@
+import { useState } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { 
-  ClipboardList,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Plus,
-  Search
-} from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { SearchInput } from '@/components/shared/SearchInput';
+import { ClipboardList, Plus, AlertCircle } from 'lucide-react';
+import { useEstoqueStore } from '@/modules/estoque/hooks/useEstoqueStore';
+import { RequisicaoForm } from '@/modules/estoque/components/RequisicaoForm';
+import { RequisicoesList } from '@/modules/estoque/components/RequisicoesList';
+import { AlertasEstoque } from '@/modules/estoque/components/AlertasEstoque';
+import { toast } from 'sonner';
+import type { Requisicao } from '@/modules/estoque/types/estoque.types';
 
 export default function EstoqueRequisicoes() {
+  const {
+    produtos,
+    requisicoes,
+    alertas,
+    addRequisicao,
+    aprovarRequisicao,
+    rejeitarRequisicao,
+    marcarAlertaComoLido,
+    limparAlertasLidos,
+  } = useEstoqueStore();
+
+  const [showForm, setShowForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [rejectDialog, setRejectDialog] = useState<{ open: boolean; id: string | null }>({
+    open: false,
+    id: null,
+  });
+
+  const currentUser = 'Usuário Atual'; // TODO: Integrar com sistema de autenticação
+  const isAdmin = true; // TODO: Integrar com sistema de roles
+
+  const handleSubmit = (data: Requisicao) => {
+    addRequisicao(data);
+    toast.success('Requisição enviada com sucesso!');
+    setShowForm(false);
+  };
+
+  const handleAprovar = (id: string) => {
+    aprovarRequisicao(id, currentUser);
+    toast.success('Requisição aprovada!');
+  };
+
+  const handleRejeitar = () => {
+    if (!rejectDialog.id) return;
+    rejeitarRequisicao(rejectDialog.id, 'Requisição rejeitada pelo gestor');
+    toast.success('Requisição rejeitada');
+    setRejectDialog({ open: false, id: null });
+  };
+
+  const requisicoesPendentes = requisicoes.filter(r => r.status === 'PENDENTE');
+  const requisicoesAprovadas = requisicoes.filter(r => r.status === 'APROVADA' || r.status === 'ENTREGUE');
+  const requisicoesRejeitadas = requisicoes.filter(r => r.status === 'REJEITADA');
+
+  const filteredRequisicoes = (lista: Requisicao[]) => 
+    lista.filter(r => {
+      const produto = produtos.find(p => p.id === r.produtoId);
+      return produto?.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             r.motivo.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+
+  const alertasNaoLidos = alertas.filter(a => !a.lido);
+
   return (
     <div className="p-8 space-y-6">
       <PageHeader
         icon={ClipboardList}
         title="Requisições de Estoque"
-        description="Controle de solicitações e requisições de produtos"
+        description="Gerencie solicitações e aprovações de produtos"
       />
 
-      <div className="grid gap-4 md:grid-cols-4">
+      {alertasNaoLidos.length > 0 && (
+        <Card className="border-orange-200 bg-orange-50/50">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-orange-500" />
+              <CardTitle className="text-orange-900">
+                {alertasNaoLidos.length} Alerta{alertasNaoLidos.length !== 1 ? 's' : ''} de Estoque
+              </CardTitle>
+            </div>
+          </CardHeader>
+        </Card>
+      )}
+
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-            <Clock className="h-4 w-4 text-warning" />
+            <CardTitle className="text-sm font-medium">Requisições Pendentes</CardTitle>
+            <ClipboardList className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">8</div>
+            <div className="text-2xl font-bold">{requisicoesPendentes.length}</div>
             <p className="text-xs text-muted-foreground">
               Aguardando aprovação
             </p>
@@ -38,123 +105,180 @@ export default function EstoqueRequisicoes() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Aprovadas</CardTitle>
-            <CheckCircle className="h-4 w-4 text-success" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">24</div>
-            <p className="text-xs text-muted-foreground">
-              Este mês
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rejeitadas</CardTitle>
-            <XCircle className="h-4 w-4 text-destructive" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">3</div>
-            <p className="text-xs text-muted-foreground">
-              Este mês
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
             <ClipboardList className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">35</div>
+            <div className="text-2xl font-bold">{requisicoesAprovadas.length}</div>
             <p className="text-xs text-muted-foreground">
-              Todas requisições
+              Aprovadas e entregues
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Alertas Ativos</CardTitle>
+            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{alertasNaoLidos.length}</div>
+            <p className="text-xs text-muted-foreground">
+              Produtos em alerta
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Requisições</CardTitle>
-              <CardDescription>
-                Lista de todas as requisições de produtos
-              </CardDescription>
-            </div>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Requisição
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Buscar requisições..." className="pl-10" />
-              </div>
-            </div>
+      <Tabs defaultValue="pendentes" className="space-y-4">
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="pendentes">
+              Pendentes ({requisicoesPendentes.length})
+            </TabsTrigger>
+            <TabsTrigger value="aprovadas">
+              Aprovadas ({requisicoesAprovadas.length})
+            </TabsTrigger>
+            <TabsTrigger value="rejeitadas">
+              Rejeitadas ({requisicoesRejeitadas.length})
+            </TabsTrigger>
+            <TabsTrigger value="alertas">
+              Alertas ({alertasNaoLidos.length})
+            </TabsTrigger>
+          </TabsList>
+          <Button onClick={() => setShowForm(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Requisição
+          </Button>
+        </div>
 
-            <div className="rounded-md border">
-              <div className="p-4">
-                <div className="space-y-4">
-                  {[
-                    { id: 'REQ-001', date: '25/09/2025', requester: 'Dr. Carlos Silva', items: 5, status: 'pendente' },
-                    { id: 'REQ-002', date: '24/09/2025', requester: 'Dra. Ana Santos', items: 3, status: 'aprovada' },
-                    { id: 'REQ-003', date: '23/09/2025', requester: 'Dr. João Costa', items: 8, status: 'pendente' },
-                  ].map((req) => (
-                    <div key={req.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{req.id}</p>
-                          <Badge 
-                            variant={
-                              req.status === 'pendente' 
-                                ? 'secondary' 
-                                : req.status === 'aprovada' 
-                                ? 'default' 
-                                : 'destructive'
-                            }
-                          >
-                            {req.status === 'pendente' ? 'Pendente' : req.status === 'aprovada' ? 'Aprovada' : 'Rejeitada'}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Solicitante: {req.requester}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {req.items} itens • {req.date}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          Visualizar
-                        </Button>
-                        {req.status === 'pendente' && (
-                          <>
-                            <Button variant="default" size="sm">
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              Aprovar
-                            </Button>
-                            <Button variant="destructive" size="sm">
-                              <XCircle className="h-4 w-4 mr-1" />
-                              Rejeitar
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+        <TabsContent value="pendentes" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Requisições Pendentes</CardTitle>
+              <CardDescription>
+                Requisições aguardando aprovação do gestor
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <SearchInput
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  placeholder="Buscar requisições..."
+                />
+                <RequisicoesList
+                  requisicoes={filteredRequisicoes(requisicoesPendentes)}
+                  produtos={produtos}
+                  canApprove={isAdmin}
+                  onAprovar={handleAprovar}
+                  onRejeitar={(id) => setRejectDialog({ open: true, id })}
+                />
               </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="aprovadas" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Requisições Aprovadas</CardTitle>
+              <CardDescription>
+                Histórico de requisições aprovadas e entregues
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <SearchInput
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  placeholder="Buscar requisições..."
+                />
+                <RequisicoesList
+                  requisicoes={filteredRequisicoes(requisicoesAprovadas)}
+                  produtos={produtos}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="rejeitadas" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Requisições Rejeitadas</CardTitle>
+              <CardDescription>
+                Histórico de requisições rejeitadas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <SearchInput
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  placeholder="Buscar requisições..."
+                />
+                <RequisicoesList
+                  requisicoes={filteredRequisicoes(requisicoesRejeitadas)}
+                  produtos={produtos}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="alertas" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Alertas de Estoque</CardTitle>
+              <CardDescription>
+                Produtos com estoque mínimo e sugestões de reposição
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AlertasEstoque
+                alertas={alertas}
+                produtos={produtos}
+                onMarcarLido={marcarAlertaComoLido}
+                onLimparLidos={limparAlertasLidos}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Nova Requisição de Estoque</DialogTitle>
+          </DialogHeader>
+          <RequisicaoForm
+            produtos={produtos}
+            onSubmit={handleSubmit}
+            onCancel={() => setShowForm(false)}
+            currentUser={currentUser}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={rejectDialog.open} onOpenChange={(open) => setRejectDialog({ ...rejectDialog, open })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Rejeitar Requisição</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja rejeitar esta requisição? O solicitante será notificado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRejeitar}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Rejeitar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
