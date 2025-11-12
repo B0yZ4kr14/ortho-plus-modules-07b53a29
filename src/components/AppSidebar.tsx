@@ -23,7 +23,8 @@ import {
   User,
   Video,
   Scan,
-  UserCog
+  UserCog,
+  Award
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
@@ -101,6 +102,7 @@ const menuGroups = [
       { title: 'Contas a Pagar', url: '/financeiro/contas-pagar', icon: CreditCard },
       { title: 'Notas Fiscais', url: '/financeiro/notas-fiscais', icon: FileText },
       { title: 'Cobrança', url: '/cobranca', icon: CreditCard },
+      { title: 'Split de Pagamento', url: '/split-pagamento', icon: DollarSign, badge: 'Novo' },
     ]
   },
   {
@@ -117,6 +119,7 @@ const menuGroups = [
     items: [
       { title: 'Portal do Paciente', url: '/portal-paciente', icon: User, badge: 'Novo' },
       { title: 'CRM + Funil', url: '/crm-funil', icon: UserCog, badge: 'Beta' },
+      { title: 'Programa Fidelidade', url: '/programa-fidelidade', icon: Award, badge: 'Novo' },
     ]
   },
   {

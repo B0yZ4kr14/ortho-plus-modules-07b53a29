@@ -109,6 +109,8 @@ const App = () => (
                               <Route path="/teleodontologia" element={<Teleodontologia />} />
                               <Route path="/ia-radiografia" element={<IARadiografia />} />
                               <Route path="/crm-funil" element={<CRMFunil />} />
+                              <Route path="/split-pagamento" element={<SplitPagamento />} />
+                              <Route path="/programa-fidelidade" element={<ProgramaFidelidade />} />
                               <Route
                                 path="/report-templates"
                                 element={
