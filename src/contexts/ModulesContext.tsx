@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { LucideIcon } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './AuthContext';
 
 // Validation schema for module configuration
 const moduleConfigSchema = z.object({
@@ -183,33 +185,67 @@ const defaultModules: ModuleDefinition[] = [
 
 export function ModulesProvider({ children }: { children: ReactNode }) {
   const [modules, setModules] = useState<ModuleDefinition[]>(defaultModules);
+  const [activeModuleKeys, setActiveModuleKeys] = useState<string[]>([]);
+  const { user, clinicId } = useAuth();
 
-  // Load modules configuration from localStorage on mount
+  // Fetch active modules from backend
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        const validated = modulesConfigSchema.parse(parsed);
-        
-        // Merge stored config with default modules
-        const updatedModules = defaultModules.map(module => {
-          const stored = validated.find(v => v.id === module.id);
-          if (stored) {
-            return { ...module, enabled: stored.enabled, order: stored.order };
-          }
-          return module;
-        });
+    if (!user || !clinicId) {
+      // If not logged in, use localStorage fallback
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const validated = modulesConfigSchema.parse(parsed);
+          
+          const updatedModules = defaultModules.map(module => {
+            const stored = validated.find(v => v.id === module.id);
+            if (stored) {
+              return { ...module, enabled: stored.enabled, order: stored.order };
+            }
+            return module;
+          });
 
-        // Sort by order
-        updatedModules.sort((a, b) => a.order - b.order);
-        setModules(updatedModules);
+          updatedModules.sort((a, b) => a.order - b.order);
+          setModules(updatedModules);
+        }
+      } catch (error) {
+        console.error('Error loading modules from localStorage:', error);
       }
-    } catch (error) {
-      console.error('Error loading modules configuration:', error);
-      toast.error('Erro ao carregar configuração dos módulos');
+      return;
     }
-  }, []);
+
+    // Fetch active modules from backend
+    const fetchActiveModules = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-my-modules');
+        
+        if (error) throw error;
+
+        if (data && Array.isArray(data)) {
+          // Extract module keys that are active
+          const activeKeys = data
+            .filter((m: any) => m.is_active)
+            .map((m: any) => m.module_key.toLowerCase());
+          
+          setActiveModuleKeys(activeKeys);
+
+          // Update modules based on backend data
+          const updatedModules = defaultModules.map(module => ({
+            ...module,
+            enabled: activeKeys.includes(module.id.toUpperCase()),
+          }));
+
+          setModules(updatedModules);
+        }
+      } catch (error) {
+        console.error('Error fetching active modules:', error);
+        toast.error('Erro ao carregar módulos ativos');
+      }
+    };
+
+    fetchActiveModules();
+  }, [user, clinicId]);
 
   // Save modules configuration to localStorage whenever it changes
   const saveConfig = (updatedModules: ModuleDefinition[]) => {

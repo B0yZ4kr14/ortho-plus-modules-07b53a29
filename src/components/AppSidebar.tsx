@@ -1,6 +1,7 @@
 import { Home, BarChart3, Users, UserCog, Briefcase, Stethoscope, Calendar, ClipboardCheck, Phone, UserCheck, Settings, DollarSign, Cog } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useModules } from "@/contexts/ModulesContext";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
   SidebarContent,
@@ -34,6 +35,7 @@ const iconMap: Record<string, any> = {
 
 export function AppSidebar() {
   const { modules } = useModules();
+  const { userRole } = useAuth();
   
   // Get enabled modules grouped by category
   const enabledModules = modules.filter(m => m.enabled);
@@ -99,12 +101,14 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-sidebar-border">
-        <NavLink to="/modulos">
-          <Button variant="outline" className="w-full gap-2 justify-start" size="sm">
-            <Cog className="h-4 w-4" />
-            Gerenciar Módulos
-          </Button>
-        </NavLink>
+        {userRole === 'ADMIN' && (
+          <NavLink to="/settings/modules">
+            <Button variant="outline" className="w-full gap-2 justify-start" size="sm">
+              <Cog className="h-4 w-4" />
+              Gerenciar Módulos
+            </Button>
+          </NavLink>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
