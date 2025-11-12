@@ -110,6 +110,14 @@ export function ModulePermissionsManager() {
     const currentPermission = hasPermission(userId, moduleId);
 
     try {
+      // Buscar informações para auditoria
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('clinic_id')
+        .eq('id', user?.id)
+        .single();
+
       if (currentPermission) {
         // Remover permissão
         const { error } = await supabase
@@ -123,6 +131,17 @@ export function ModulePermissionsManager() {
         setPermissions(permissions.filter(
           p => !(p.user_id === userId && p.module_catalog_id === moduleId)
         ));
+
+        // Registrar auditoria
+        await supabase
+          .from('permission_audit_logs')
+          .insert({
+            clinic_id: profileData?.clinic_id,
+            user_id: user?.id,
+            target_user_id: userId,
+            action: 'PERMISSION_REVOKED',
+            module_catalog_id: moduleId
+          });
       } else {
         // Adicionar permissão
         const { error } = await supabase
@@ -138,6 +157,17 @@ export function ModulePermissionsManager() {
         if (error) throw error;
 
         setPermissions([...permissions, { user_id: userId, module_catalog_id: moduleId, can_view: true }]);
+
+        // Registrar auditoria
+        await supabase
+          .from('permission_audit_logs')
+          .insert({
+            clinic_id: profileData?.clinic_id,
+            user_id: user?.id,
+            target_user_id: userId,
+            action: 'PERMISSION_GRANTED',
+            module_catalog_id: moduleId
+          });
       }
 
       toast.success('Permissão atualizada com sucesso!');

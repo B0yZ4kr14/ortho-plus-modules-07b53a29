@@ -4,9 +4,59 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Settings, Loader2, Check, X } from 'lucide-react';
+import { 
+  Settings, 
+  Loader2, 
+  Check, 
+  LayoutDashboard,
+  Users,
+  UserPlus,
+  Calendar,
+  FileText,
+  DollarSign,
+  Activity,
+  ClipboardList,
+  Stethoscope,
+  Package,
+  CreditCard,
+  TrendingUp,
+  Shield,
+  Video,
+  PenTool,
+  Bot,
+  FileBarChart,
+  Briefcase
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+
+// Mapeamento de ícones por module_key
+const moduleIcons: Record<string, any> = {
+  'DASHBOARD': LayoutDashboard,
+  'PACIENTES': Users,
+  'DENTISTAS': UserPlus,
+  'FUNCIONARIOS': Briefcase,
+  'AGENDA': Calendar,
+  'PROCEDIMENTOS': ClipboardList,
+  'PEP': FileText,
+  'ODONTOGRAMA': Stethoscope,
+  'ESTOQUE': Package,
+  'FINANCEIRO': DollarSign,
+  'SPLIT_PAGAMENTO': CreditCard,
+  'INADIMPLENCIA': TrendingUp,
+  'COBRANCA': CreditCard,
+  'CRM': Activity,
+  'MARKETING_AUTO': TrendingUp,
+  'BI': FileBarChart,
+  'LGPD': Shield,
+  'ASSINATURA_ICP': PenTool,
+  'TISS': FileText,
+  'TELEODONTO': Video,
+  'FLUXO_DIGITAL': Activity,
+  'IA': Bot,
+  'RELATORIOS': FileBarChart,
+  'ORCAMENTOS': DollarSign,
+};
 
 interface Module {
   id: number;
@@ -123,16 +173,22 @@ export default function ModulesSimple() {
                   >
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-4 flex-1">
-                        <div className={cn(
-                          "flex items-center justify-center w-10 h-10 rounded-full transition-colors",
-                          module.is_active ? "bg-success/20" : "bg-muted"
-                        )}>
-                          {module.is_active ? (
-                            <Check className="h-5 w-5 text-success" />
-                          ) : (
-                            <X className="h-5 w-5 text-muted-foreground" />
-                          )}
-                        </div>
+                      <div className={cn(
+                        "flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-300",
+                        module.is_active 
+                          ? "bg-gradient-to-br from-success/20 to-success/10 shadow-lg shadow-success/20" 
+                          : "bg-muted/50"
+                      )}>
+                        {(() => {
+                          const Icon = moduleIcons[module.module_key] || Settings;
+                          return (
+                            <Icon className={cn(
+                              "h-6 w-6 transition-all duration-300",
+                              module.is_active ? "text-success animate-pulse" : "text-muted-foreground"
+                            )} />
+                          );
+                        })()}
+                      </div>
                         
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">

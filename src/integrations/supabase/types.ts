@@ -870,6 +870,84 @@ export type Database = {
           },
         ]
       }
+      permission_audit_logs: {
+        Row: {
+          action: string
+          clinic_id: string
+          created_at: string
+          details: Json | null
+          id: string
+          module_catalog_id: number | null
+          target_user_id: string
+          template_name: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          clinic_id: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          module_catalog_id?: number | null
+          target_user_id: string
+          template_name?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          clinic_id?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          module_catalog_id?: number | null
+          target_user_id?: string
+          template_name?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permission_audit_logs_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "permission_audit_logs_module_catalog_id_fkey"
+            columns: ["module_catalog_id"]
+            isOneToOne: false
+            referencedRelation: "module_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      permission_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          module_keys: string[]
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          module_keys: string[]
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          module_keys?: string[]
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

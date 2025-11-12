@@ -10,6 +10,8 @@ import { DatabaseBackupTab } from '@/components/settings/DatabaseBackupTab';
 import { BackupStatsDashboard } from '@/components/settings/BackupStatsDashboard';
 import { UserManagementTab } from '@/components/settings/UserManagementTab';
 import { ModulePermissionsManager } from '@/components/settings/ModulePermissionsManager';
+import { PermissionTemplates } from '@/components/settings/PermissionTemplates';
+import { PermissionAuditLogs } from '@/components/settings/PermissionAuditLogs';
 
 export default function Configuracoes() {
   const { user, hasRole } = useAuth();
@@ -87,7 +89,9 @@ export default function Configuracoes() {
         </TabsContent>
 
         <TabsContent value="permissions" className="space-y-4">
+          <PermissionTemplates />
           <ModulePermissionsManager />
+          <PermissionAuditLogs />
         </TabsContent>
 
         <TabsContent value="users" className="space-y-4">
