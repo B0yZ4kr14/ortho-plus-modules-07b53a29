@@ -271,11 +271,11 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
       <SidebarHeader className="border-b p-4">
         {!collapsed ? (
           <div className="flex items-center justify-center py-2">
-            <img src="/src/assets/ortho-logo-full.png" alt="Ortho +" className="h-10 w-auto object-contain" />
+            <img src="/src/assets/ortho-logo-full.png" alt="Ortho +" className="h-14 w-auto object-contain transition-all duration-200" />
           </div>
         ) : (
           <div className="flex justify-center">
-            <img src="/src/assets/ortho-logo-full.png" alt="Ortho +" className="h-8 w-auto object-contain" />
+            <img src="/src/assets/ortho-logo-full.png" alt="Ortho +" className="h-12 w-auto object-contain transition-all duration-200" />
           </div>
         )}
       </SidebarHeader>

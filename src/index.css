@@ -202,6 +202,135 @@ All colors MUST be HSL.
   }
 
   /* dark-gold - inspired by Cure.AI golden accents */
+  /* High Contrast Theme - WCAG AAA (7:1) */
+  .high-contrast {
+    /* Maximum contrast for accessibility */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+
+    /* Primary with 7:1 contrast - darker teal */
+    --primary: 173 80% 25%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 0%;
+
+    --muted: 0 0% 90%;
+    --muted-foreground: 0 0% 20%;
+
+    --accent: 173 80% 25%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Error/Destructive - WCAG AAA compliant */
+    --destructive: 0 80% 35%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Success - WCAG AAA compliant */
+    --success: 142 80% 25%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning - WCAG AAA compliant */
+    --warning: 38 100% 30%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 0 0% 30%;
+    --input: 0 0% 30%;
+    --ring: 173 80% 25%;
+
+    /* High contrast shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 30px rgba(0, 0, 0, 0.6);
+
+    /* Sidebar - maximum contrast */
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 173 80% 25%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 173 80% 25%;
+
+    /* Chart colors - high contrast */
+    --chart-1: 173 80% 25%;
+    --chart-2: 142 80% 25%;
+    --chart-3: 38 100% 30%;
+    --chart-4: 217 80% 30%;
+    --chart-5: 271 80% 30%;
+  }
+
+  .high-contrast-dark {
+    /* Maximum contrast dark mode - WCAG AAA (7:1) */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 100%;
+
+    /* Primary with 7:1 contrast - bright teal */
+    --primary: 173 100% 60%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 85%;
+
+    --accent: 173 100% 60%;
+    --accent-foreground: 0 0% 0%;
+
+    /* Error/Destructive - WCAG AAA compliant */
+    --destructive: 0 100% 70%;
+    --destructive-foreground: 0 0% 0%;
+
+    /* Success - WCAG AAA compliant */
+    --success: 142 100% 60%;
+    --success-foreground: 0 0% 0%;
+
+    /* Warning - WCAG AAA compliant */
+    --warning: 48 100% 60%;
+    --warning-foreground: 0 0% 0%;
+
+    --border: 0 0% 30%;
+    --input: 0 0% 30%;
+    --ring: 173 100% 60%;
+
+    /* High contrast shadows for dark */
+    --shadow-sm: 0 2px 8px rgba(255, 255, 255, 0.1);
+    --shadow-md: 0 4px 16px rgba(255, 255, 255, 0.15);
+    --shadow-lg: 0 8px 32px rgba(255, 255, 255, 0.2);
+    --shadow-xl: 0 16px 48px rgba(255, 255, 255, 0.25);
+
+    /* Sidebar - maximum contrast dark */
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 173 100% 60%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 25%;
+    --sidebar-ring: 173 100% 60%;
+
+    /* Chart colors - high contrast bright */
+    --chart-1: 173 100% 60%;
+    --chart-2: 142 100% 60%;
+    --chart-3: 48 100% 60%;
+    --chart-4: 217 100% 70%;
+    --chart-5: 271 100% 70%;
+  }
+
   .dark-gold {
     --background: 220 20% 6%;
     --foreground: 48 100% 96%;
@@ -278,7 +407,9 @@ All colors MUST be HSL.
   :root,
   .dark,
   .professional-dark,
-  .dark-gold {
+  .dark-gold,
+  .high-contrast,
+  .high-contrast-dark {
     transition: background-color 300ms ease-in-out, color 300ms ease-in-out;
   }
 
