@@ -19,6 +19,7 @@ import { AlertTriangle, CheckCircle, FileDown } from 'lucide-react';
 import { Inventario, InventarioItem } from '../types/estoque.types';
 import { useInventarioSupabase } from '../hooks/useInventarioSupabase';
 import { toast } from 'sonner';
+import { exportInventarioPDF } from './InventarioPDFExport';
 
 interface InventarioDivergenciasDialogProps {
   open: boolean;
@@ -65,8 +66,16 @@ export function InventarioDivergenciasDialog({
     }
   };
 
-  const handleExportarRelatorio = () => {
-    toast.info('Exportação de relatório será implementada em breve');
+  const handleExportarRelatorio = async () => {
+    if (!inventario) return;
+    
+    try {
+      await exportInventarioPDF(inventario, items);
+      toast.success('Relatório PDF exportado com sucesso');
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      toast.error('Erro ao exportar relatório PDF');
+    }
   };
 
   return (

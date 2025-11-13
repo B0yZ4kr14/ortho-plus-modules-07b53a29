@@ -947,6 +947,77 @@ export type Database = {
           },
         ]
       }
+      inventario_agendamentos: {
+        Row: {
+          ativo: boolean
+          categorias_ids: string[] | null
+          clinic_id: string
+          created_at: string
+          created_by: string
+          dia_execucao: number | null
+          dia_semana: number | null
+          id: string
+          nome: string
+          notificar_dias_antes: number | null
+          notificar_responsavel: boolean | null
+          observacoes: string | null
+          periodicidade: string
+          proxima_execucao: string | null
+          responsavel: string
+          tipo_inventario: string
+          ultima_execucao: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          categorias_ids?: string[] | null
+          clinic_id: string
+          created_at?: string
+          created_by: string
+          dia_execucao?: number | null
+          dia_semana?: number | null
+          id?: string
+          nome: string
+          notificar_dias_antes?: number | null
+          notificar_responsavel?: boolean | null
+          observacoes?: string | null
+          periodicidade: string
+          proxima_execucao?: string | null
+          responsavel: string
+          tipo_inventario: string
+          ultima_execucao?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          categorias_ids?: string[] | null
+          clinic_id?: string
+          created_at?: string
+          created_by?: string
+          dia_execucao?: number | null
+          dia_semana?: number | null
+          id?: string
+          nome?: string
+          notificar_dias_antes?: number | null
+          notificar_responsavel?: boolean | null
+          observacoes?: string | null
+          periodicidade?: string
+          proxima_execucao?: string | null
+          responsavel?: string
+          tipo_inventario?: string
+          ultima_execucao?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_agendamentos_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventario_itens: {
         Row: {
           contado_em: string | null

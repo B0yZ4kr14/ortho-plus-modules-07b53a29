@@ -112,6 +112,10 @@ const menuGroups = [{
     url: '/estoque/inventario',
     icon: ClipboardCheck
   }, {
+    title: 'Histórico de Inventários',
+    url: '/estoque/inventario/historico',
+    icon: TrendingUp
+  }, {
     title: 'Scanner Mobile',
     url: '/estoque/scanner-mobile',
     icon: Smartphone
@@ -245,6 +249,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
     '/estoque/analise-pedidos': 'ESTOQUE',
     '/estoque/analise-consumo': 'ESTOQUE',
     '/estoque/inventario': 'ESTOQUE',
+    '/estoque/inventario/historico': 'ESTOQUE',
     '/financeiro': 'FINANCEIRO',
     '/financeiro/transacoes': 'FINANCEIRO',
     '/financeiro/contas-receber': 'FINANCEIRO',

@@ -1,5 +1,8 @@
 project_id = "yxpoqjyfgotkytwtifau"
 
+[functions.processar-inventarios-agendados]
+verify_jwt = false
+
 [functions.get-my-modules]
 verify_jwt = true
 

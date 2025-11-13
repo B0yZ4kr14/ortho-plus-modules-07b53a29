@@ -46,6 +46,7 @@ import EstoqueIntegracoes from '@/pages/estoque/EstoqueIntegracoes';
 import EstoqueAnalisePedidos from '@/pages/estoque/EstoqueAnalisePedidos';
 import EstoqueScannerMobile from '@/pages/estoque/EstoqueScannerMobile';
 import EstoqueInventario from '@/pages/estoque/EstoqueInventario';
+const EstoqueInventarioHistorico = lazy(() => import('@/pages/estoque/EstoqueInventarioHistorico'));
 import ContasReceber from '@/pages/financeiro/ContasReceber';
 import ContasPagar from '@/pages/financeiro/ContasPagar';
 import NotasFiscais from '@/pages/financeiro/NotasFiscais';
@@ -117,6 +118,7 @@ const App = () => (
                 <Route path="/estoque/analise-consumo" element={<ProtectedRoute><AppLayout><EstoqueAnaliseConsumo /></AppLayout></ProtectedRoute>} />
                 <Route path="/estoque/scanner-mobile" element={<ProtectedRoute><AppLayout><EstoqueScannerMobile /></AppLayout></ProtectedRoute>} />
                 <Route path="/estoque/inventario" element={<ProtectedRoute><AppLayout><EstoqueInventario /></AppLayout></ProtectedRoute>} />
+                <Route path="/estoque/inventario/historico" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando histórico..." />}><EstoqueInventarioHistorico /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/orcamentos" element={<ProtectedRoute><AppLayout><Orcamentos /></AppLayout></ProtectedRoute>} />
                 <Route path="/contratos" element={<ProtectedRoute><AppLayout><Contratos /></AppLayout></ProtectedRoute>} />
                 <Route path="/portal-paciente" element={<ProtectedRoute><AppLayout><PortalPaciente /></AppLayout></ProtectedRoute>} />
