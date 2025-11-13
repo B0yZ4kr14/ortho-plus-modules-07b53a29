@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ModuleCard } from '@/components/settings/ModuleCard';
+import { SidebarPreview } from '@/components/modules/SidebarPreview';
 import { Loader2 } from 'lucide-react';
 
 interface Module {
@@ -110,14 +111,16 @@ export default function ModulesPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Gestão de Módulos</CardTitle>
-          <CardDescription>
-            Ative ou desative os módulos contratados pela sua clínica. Solicite novos módulos conforme necessário.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">Gestão de Módulos</CardTitle>
+              <CardDescription>
+                Ative ou desative os módulos contratados pela sua clínica. Solicite novos módulos conforme necessário.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
           <Tabs defaultValue={categories[0]} className="w-full">
             <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${categories.length}, 1fr)` }}>
               {categories.map((category) => (
@@ -144,8 +147,17 @@ export default function ModulesPage() {
               </TabsContent>
             ))}
           </Tabs>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="lg:col-span-1">
+          <div className="sticky top-6">
+            <h3 className="text-lg font-semibold mb-4">Prévia da Sidebar</h3>
+            <SidebarPreview modules={modules} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
