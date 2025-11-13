@@ -436,19 +436,15 @@ export default function ModulesAdmin() {
         </div>
       ))}
 
-      <OnboardingWizard 
-        isOpen={onboardingOpen} 
-        onClose={() => setOnboardingOpen(false)} 
-        modules={modules}
-        onActivateModules={async (moduleKeys) => {
-          for (const key of moduleKeys) {
-            const module = modules.find(m => m.module_key === key);
-            if (module && !module.is_active) {
-              await handleToggle(key, module.is_active);
-            }
-          }
-        }}
-      />
+      {onboardingOpen && (
+        <OnboardingWizard
+          onComplete={() => {
+            setOnboardingOpen(false);
+            localStorage.setItem('ortho-onboarding-completed', 'true');
+            fetchModules();
+          }}
+        />
+      )}
     </div>
   );
 }

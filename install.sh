@@ -303,6 +303,10 @@ cd orthoplus
 log_info "Instalando dependências do projeto..."
 npm install
 
+# Build do projeto para produção
+log_info "Compilando aplicação para produção..."
+npm run build
+
 # Criar arquivo .env
 log_info "Criando arquivo de configuração..."
 cat > .env << EOF
@@ -332,7 +336,7 @@ After=network.target postgresql.service
 Type=simple
 User=www-data
 WorkingDirectory=${INSTALL_DIR}
-ExecStart=/usr/bin/npm run dev -- --host 0.0.0.0
+ExecStart=/usr/bin/npm run preview -- --host 0.0.0.0 --port 5173
 Restart=on-failure
 Environment=NODE_ENV=production
 
