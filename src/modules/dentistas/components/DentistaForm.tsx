@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Dentista, dentistaSchema, especialidadesDisponiveis, diasSemana, coresCalendario } from '../types/dentista.types';
 import { Button } from '@/components/ui/button';
+import { AvatarUpload } from '@/components/shared/AvatarUpload';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -29,6 +30,7 @@ interface DentistaFormProps {
 }
 
 export function DentistaForm({ dentista, onSubmit, onCancel }: DentistaFormProps) {
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(dentista?.avatar_url || null);
   const {
     register,
     handleSubmit,
@@ -80,11 +82,22 @@ export function DentistaForm({ dentista, onSubmit, onCancel }: DentistaFormProps
       ...data,
       especialidades: selectedEspecialidades,
       diasAtendimento: selectedDias,
+      avatar_url: avatarUrl,
     });
   };
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+      {/* Avatar */}
+      <div className="flex justify-center py-4">
+        <AvatarUpload
+          currentAvatarUrl={avatarUrl}
+          onAvatarChange={setAvatarUrl}
+          fallbackText={dentista?.nome.substring(0, 2).toUpperCase() || 'DR'}
+          size="xl"
+        />
+      </div>
+
       <Tabs defaultValue="pessoal" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="pessoal">Dados Pessoais</TabsTrigger>

@@ -28,6 +28,7 @@ export const patientSchema = z.object({
   }),
   observacoes: z.string().optional(),
   status: z.enum(['Ativo', 'Inativo', 'Pendente']).default('Ativo'),
+  avatar_url: z.string().nullable().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });

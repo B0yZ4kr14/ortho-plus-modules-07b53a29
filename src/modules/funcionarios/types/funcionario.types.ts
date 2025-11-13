@@ -92,6 +92,7 @@ export const funcionarioSchema = z.object({
   observacoes: z.string().optional(),
   status: z.enum(['Ativo', 'Inativo', 'Férias', 'Afastado']).default('Ativo'),
   senhaAcesso: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres').optional(),
+  avatar_url: z.string().nullable().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });

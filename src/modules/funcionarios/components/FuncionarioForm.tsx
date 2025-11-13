@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Funcionario, funcionarioSchema, cargosDisponiveis, diasSemana, Permissoes } from '../types/funcionario.types';
 import { Button } from '@/components/ui/button';
+import { AvatarUpload } from '@/components/shared/AvatarUpload';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -30,6 +31,7 @@ interface FuncionarioFormProps {
 }
 
 export function FuncionarioForm({ funcionario, onSubmit, onCancel }: FuncionarioFormProps) {
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(funcionario?.avatar_url || null);
   const {
     register,
     handleSubmit,
@@ -78,11 +80,22 @@ export function FuncionarioForm({ funcionario, onSubmit, onCancel }: Funcionario
       ...data,
       diasTrabalho: selectedDias,
       permissoes: permissoes,
+      avatar_url: avatarUrl,
     });
   };
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+      {/* Avatar */}
+      <div className="flex justify-center py-4">
+        <AvatarUpload
+          currentAvatarUrl={avatarUrl}
+          onAvatarChange={setAvatarUrl}
+          fallbackText={funcionario?.nome.substring(0, 2).toUpperCase() || 'FN'}
+          size="xl"
+        />
+      </div>
+
       <Tabs defaultValue="pessoal" className="w-full">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="pessoal">Pessoal</TabsTrigger>

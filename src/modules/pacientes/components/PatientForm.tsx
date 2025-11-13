@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Patient, patientSchema } from '../types/patient.types';
 import { Button } from '@/components/ui/button';
 import { useConfetti } from '@/hooks/useConfetti';
+import { AvatarUpload } from '@/components/shared/AvatarUpload';
 import {
   Form,
   FormControl,
@@ -31,6 +33,7 @@ interface PatientFormProps {
 
 export function PatientForm({ patient, onSubmit, onCancel }: PatientFormProps) {
   const { triggerSuccessConfetti } = useConfetti();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(patient?.avatar_url || null);
   
   const form = useForm<Patient>({
     resolver: zodResolver(patientSchema),
@@ -66,7 +69,7 @@ export function PatientForm({ patient, onSubmit, onCancel }: PatientFormProps) {
   const temConvenio = form.watch('convenio.temConvenio');
 
   const handleFormSubmit = (data: Patient) => {
-    onSubmit(data);
+    onSubmit({ ...data, avatar_url: avatarUrl });
     // Trigger confetti celebration for new patient registration
     if (!patient) {
       triggerSuccessConfetti();
@@ -76,6 +79,16 @@ export function PatientForm({ patient, onSubmit, onCancel }: PatientFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+        {/* Avatar */}
+        <div className="flex justify-center py-4">
+          <AvatarUpload
+            currentAvatarUrl={avatarUrl}
+            onAvatarChange={setAvatarUrl}
+            fallbackText={patient?.nome.substring(0, 2).toUpperCase() || 'PC'}
+            size="xl"
+          />
+        </div>
+
         {/* Dados Pessoais */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Dados Pessoais</h3>

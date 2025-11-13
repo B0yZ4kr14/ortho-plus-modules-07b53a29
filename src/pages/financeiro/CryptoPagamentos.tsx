@@ -32,6 +32,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ExchangeConfigForm } from '@/components/crypto/ExchangeConfigForm';
 import { WalletForm } from '@/components/crypto/WalletForm';
 import { BitcoinQRCodeDialog } from '@/components/crypto/BitcoinQRCodeDialog';
+import { BitcoinInfo } from './BitcoinInfo';
 
 export default function CryptoPagamentos() {
   const { user } = useAuth();
@@ -162,7 +163,7 @@ export default function CryptoPagamentos() {
       </div>
 
       <Tabs defaultValue="transactions" className="mt-8">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="transactions">
             <ArrowRightLeft className="h-4 w-4 mr-2" />
             Transações
@@ -174,6 +175,10 @@ export default function CryptoPagamentos() {
           <TabsTrigger value="exchanges">
             <Settings className="h-4 w-4 mr-2" />
             Exchanges
+          </TabsTrigger>
+          <TabsTrigger value="info">
+            <Bitcoin className="h-4 w-4 mr-2" />
+            Sobre Bitcoin
           </TabsTrigger>
         </TabsList>
 
@@ -419,6 +424,11 @@ export default function CryptoPagamentos() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        {/* Info Tab */}
+        <TabsContent value="info" className="space-y-4">
+          <BitcoinInfo />
         </TabsContent>
 
         {/* Exchanges Tab */}
