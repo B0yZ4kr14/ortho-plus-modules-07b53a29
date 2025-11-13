@@ -15,18 +15,44 @@ export const useTeleodontologiaSupabase = (clinicId: string) => {
     try {
       setLoading(true);
       
-      // Load teleconsultas
-      const { data: teleconsultasData, error: teleconsultasError } = await supabase
-        .from('teleconsultas')
-        .select(`
-          *,
-          patient:patients(nome),
-          dentist:profiles(full_name)
-        `)
-        .eq('clinic_id', clinicId)
-        .order('data_agendada', { ascending: false });
+    // Buscar teleconsultas
+    const { data: teleconsultasData, error: teleconsultasError } = await supabase
+      .from('teleconsultas')
+      .select('*')
+      .eq('clinic_id', clinicId)
+      .order('data_agendada', { ascending: false });
 
-      if (teleconsultasError) throw teleconsultasError;
+    if (teleconsultasError) {
+      console.error('Error loading teleconsultas:', teleconsultasError);
+      throw teleconsultasError;
+    }
+
+    // Buscar informações de pacientes e dentistas separadamente
+    if (teleconsultasData && teleconsultasData.length > 0) {
+      const patientIds = [...new Set(teleconsultasData.map(t => t.patient_id))];
+      const dentistIds = [...new Set(teleconsultasData.map(t => t.dentist_id))];
+
+      const { data: patientsData } = await supabase
+        .from('patients')
+        .select('id, nome')
+        .in('id', patientIds);
+
+      const { data: dentistsData } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', dentistIds);
+
+      // Mapear dados para as teleconsultas
+      const teleconsultasWithDetails = teleconsultasData.map(t => ({
+        ...t,
+        patient_name: patientsData?.find(p => p.id === t.patient_id)?.nome,
+        dentist_name: dentistsData?.find(d => d.id === t.dentist_id)?.full_name,
+      }));
+
+      setTeleconsultas(teleconsultasWithDetails);
+    } else {
+      setTeleconsultas([]);
+    }
 
       // Load prescricoes
       const { data: prescricoesData, error: prescricoesError } = await supabase
@@ -44,7 +70,6 @@ export const useTeleodontologiaSupabase = (clinicId: string) => {
 
       if (triagensError) throw triagensError;
 
-      setTeleconsultas(teleconsultasData || []);
       setPrescricoes(prescricoesData || []);
       setTriagens(triagensData || []);
     } catch (error: any) {

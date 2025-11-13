@@ -16,8 +16,9 @@ import type { AnaliseComplete } from '@/modules/ia-radiografia/types/radiografia
 import { useToast } from '@/hooks/use-toast';
 import { AnaliseDetailsDialog } from '@/modules/ia-radiografia/components/AnaliseDetailsDialog';
 import { AnaliseCharts } from '@/modules/ia-radiografia/components/AnaliseCharts';
-import { RadiografiaComparison } from '@/modules/ia-radiografia/components/RadiografiaComparison';
 import { IAInsightsDashboard } from '@/modules/ia-radiografia/components/IAInsightsDashboard';
+import { RadiografiaComparison } from '@/modules/ia-radiografia/components/RadiografiaComparison';
+import { PatientRadiographyTimeline } from '@/modules/ia-radiografia/components/PatientRadiographyTimeline';
 
 export default function IARadiografia() {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -297,6 +298,11 @@ export default function IARadiografia() {
       {/* Comparação de Radiografias */}
       {!loading && analises.length > 0 && (
         <RadiografiaComparison analises={analises} />
+      )}
+
+      {/* Timeline de Evolução do Paciente */}
+      {!loading && analises.length > 0 && (
+        <PatientRadiographyTimeline />
       )}
 
       {/* Lista de Análises */}
