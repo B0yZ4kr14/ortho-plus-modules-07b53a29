@@ -82,14 +82,66 @@ serve(async (req) => {
       }
     }
 
-    // Simular sincronização de saldo (em produção, usar API da exchange)
+    // Buscar saldo real da exchange
     let balance = wallet.balance || 0;
     
-    // Se tiver exchange configurada, buscar saldo real
     if (wallet.exchange && wallet.exchange.is_active && wallet.exchange.api_key_encrypted) {
-      console.log(`Would fetch real balance from ${wallet.exchange.exchange_name}`);
-      // Implementar integração real com API da exchange aqui
-      // balance = await fetchBalanceFromExchange(wallet.exchange, wallet.wallet_address, wallet.coin_type);
+      console.log(`Fetching real balance from ${wallet.exchange.exchange_name}`);
+      
+      try {
+        if (wallet.exchange.exchange_name === 'BINANCE') {
+          // Integração com Binance API
+          const binanceApiKey = wallet.exchange.api_key_encrypted; // Em produção, descriptografar
+          const binanceResponse = await fetch(
+            'https://api.binance.com/api/v3/account',
+            {
+              headers: {
+                'X-MBX-APIKEY': binanceApiKey,
+              },
+            }
+          );
+          
+          if (binanceResponse.ok) {
+            const accountData = await binanceResponse.json();
+            const assetBalance = accountData.balances.find(
+              (b: any) => b.asset === wallet.coin_type
+            );
+            if (assetBalance) {
+              balance = parseFloat(assetBalance.free) + parseFloat(assetBalance.locked);
+              console.log(`Real balance from Binance: ${balance} ${wallet.coin_type}`);
+            }
+          }
+        } else if (wallet.exchange.exchange_name === 'COINBASE') {
+          // Integração com Coinbase API
+          const coinbaseApiKey = wallet.exchange.api_key_encrypted;
+          const coinbaseResponse = await fetch(
+            `https://api.coinbase.com/v2/accounts`,
+            {
+              headers: {
+                'Authorization': `Bearer ${coinbaseApiKey}`,
+                'CB-VERSION': '2024-01-01',
+              },
+            }
+          );
+          
+          if (coinbaseResponse.ok) {
+            const accountData = await coinbaseResponse.json();
+            const cryptoAccount = accountData.data.find(
+              (acc: any) => acc.currency === wallet.coin_type
+            );
+            if (cryptoAccount) {
+              balance = parseFloat(cryptoAccount.balance.amount);
+              console.log(`Real balance from Coinbase: ${balance} ${wallet.coin_type}`);
+            }
+          }
+        } else {
+          // Para outras exchanges, usar valor atual
+          console.log(`Exchange ${wallet.exchange.exchange_name} not implemented yet`);
+        }
+      } catch (error) {
+        console.error(`Error fetching balance from ${wallet.exchange.exchange_name}:`, error);
+        // Manter saldo atual em caso de erro
+      }
     }
 
     const balanceBRL = balance * exchangeRate;

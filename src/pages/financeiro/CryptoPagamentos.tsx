@@ -33,6 +33,8 @@ import { ExchangeConfigForm } from '@/components/crypto/ExchangeConfigForm';
 import { WalletForm } from '@/components/crypto/WalletForm';
 import { BitcoinQRCodeDialog } from '@/components/crypto/BitcoinQRCodeDialog';
 import { BitcoinInfo } from './BitcoinInfo';
+import { CryptoAnalysisDashboard } from '@/modules/crypto/components/CryptoAnalysisDashboard';
+import { Info } from 'lucide-react';
 
 export default function CryptoPagamentos() {
   const { user } = useAuth();
@@ -163,7 +165,7 @@ export default function CryptoPagamentos() {
       </div>
 
       <Tabs defaultValue="transactions" className="mt-8">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="transactions">
             <ArrowRightLeft className="h-4 w-4 mr-2" />
             Transações
@@ -176,8 +178,12 @@ export default function CryptoPagamentos() {
             <Settings className="h-4 w-4 mr-2" />
             Exchanges
           </TabsTrigger>
+          <TabsTrigger value="analysis">
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Análise
+          </TabsTrigger>
           <TabsTrigger value="info">
-            <Bitcoin className="h-4 w-4 mr-2" />
+            <Info className="h-4 w-4 mr-2" />
             Sobre Bitcoin
           </TabsTrigger>
         </TabsList>
@@ -528,6 +534,16 @@ export default function CryptoPagamentos() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        {/* Analysis Tab */}
+        <TabsContent value="analysis">
+          <CryptoAnalysisDashboard clinicId={clinicId} />
+        </TabsContent>
+
+        {/* Info Tab */}
+        <TabsContent value="info">
+          <BitcoinInfo />
         </TabsContent>
       </Tabs>
 
