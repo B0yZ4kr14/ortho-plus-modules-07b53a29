@@ -32,7 +32,7 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
-  const { user, signIn, signUp } = useAuth();
+  const { user, signIn, signUp, signInPatient } = useAuth();
   const navigate = useNavigate();
 
   const loginForm = useForm<LoginFormValues>({
@@ -50,6 +50,14 @@ export default function Auth() {
       email: '',
       password: '',
       confirmPassword: '',
+    },
+  });
+
+  const patientLoginForm = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
     },
   });
 
@@ -80,6 +88,16 @@ export default function Auth() {
     }
   };
 
+  const handlePatientLogin = async (values: LoginFormValues) => {
+    setIsLoading(true);
+    const { error } = await signInPatient(values.email, values.password);
+    setIsLoading(false);
+
+    if (!error) {
+      navigate('/portal-paciente');
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
       <Card className="w-full max-w-md shadow-2xl">
@@ -92,12 +110,16 @@ export default function Auth() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Criar Conta</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="login">Equipe</TabsTrigger>
+              <TabsTrigger value="patient">Paciente</TabsTrigger>
+              <TabsTrigger value="signup">Cadastro</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="login">
+            <TabsContent value="login" className="space-y-4">
+              <p className="text-sm text-muted-foreground text-center">
+                Acesso para dentistas, recepcionistas e administradores
+              </p>
               <Form {...loginForm}>
                 <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
                   <FormField
@@ -107,7 +129,7 @@ export default function Auth() {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input 
+                          <Input
                             type="email" 
                             placeholder="seu@email.com" 
                             {...field} 

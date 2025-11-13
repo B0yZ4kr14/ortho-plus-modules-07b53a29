@@ -8,13 +8,24 @@ interface Clinic {
   name: string;
 }
 
+type UserProfile = 'ADMIN' | 'MEMBER' | 'PATIENT';
+
+interface PatientUser {
+  id: string;
+  email: string;
+  role: 'PATIENT';
+}
+
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  user: User | PatientUser | null;
+  session: Session | string | null;
   loading: boolean;
   userRole: 'ADMIN' | 'MEMBER' | null;
+  userProfile: UserProfile | null;
   clinicId: string | null;
   isAdmin: boolean;
+  isMember: boolean;
+  isPatient: boolean;
   availableClinics: Clinic[];
   selectedClinic: Clinic | null;
   userPermissions: string[];
@@ -24,20 +35,26 @@ interface AuthContextType {
   fetchUserMetadata: (userId: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signInPatient: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | PatientUser | null>(null);
+  const [session, setSession] = useState<Session | string | null>(null);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<'ADMIN' | 'MEMBER' | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [clinicId, setClinicId] = useState<string | null>(null);
   const [availableClinics, setAvailableClinics] = useState<Clinic[]>([]);
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
+
+  const isAdmin = userProfile === 'ADMIN';
+  const isMember = userProfile === 'MEMBER';
+  const isPatient = userProfile === 'PATIENT';
 
   // Fetch user role and clinics
   const fetchUserMetadata = async (userId: string) => {
@@ -58,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (roleData) {
         setUserRole(roleData.role as 'ADMIN' | 'MEMBER');
+        setUserProfile(roleData.role as UserProfile);
         
         // Update user object with avatar and full_name
         setUser((currentUser) => {
