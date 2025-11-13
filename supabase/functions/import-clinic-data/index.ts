@@ -1,13 +1,17 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1'
+import { corsHeaders } from '../_shared/cors.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+console.log('import-clinic-data function started')
+
+interface ImportOptions {
+  overwriteExisting: boolean
+  skipConflicts: boolean
+  mergeData: boolean
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
@@ -19,133 +23,171 @@ Deno.serve(async (req) => {
           headers: { Authorization: req.headers.get('Authorization')! },
         },
       }
-    );
+    )
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Não autorizado' }),
+        JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      )
     }
 
-    // Verificar se é ADMIN
     const { data: roles } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
-      .single();
 
-    if (!roles || roles.role !== 'ADMIN') {
+    if (!roles?.some((r) => r.role === 'ADMIN')) {
       return new Response(
-        JSON.stringify({ error: 'Apenas administradores podem importar dados' }),
+        JSON.stringify({ error: 'Forbidden: Admin access required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      )
     }
 
-    const { data: importData, clinic_id } = await req.json();
-
-    if (!importData || !clinic_id) {
-      return new Response(
-        JSON.stringify({ error: 'Dados de importação e clinic_id são obrigatórios' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Verificar se usuário tem acesso à clínica
     const { data: profile } = await supabase
       .from('profiles')
       .select('clinic_id')
       .eq('id', user.id)
-      .single();
+      .single()
 
-    if (!profile || profile.clinic_id !== clinic_id) {
+    if (!profile?.clinic_id) {
       return new Response(
-        JSON.stringify({ error: 'Acesso negado a esta clínica' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+        JSON.stringify({ error: 'Clinic not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    const results: Record<string, any> = {
-      imported_at: new Date().toISOString(),
-      tables: {}
-    };
+    const targetClinicId = profile.clinic_id
+    const body = await req.json()
+    const importData = body.data
+    const options: ImportOptions = body.options || {
+      overwriteExisting: false,
+      skipConflicts: true,
+      mergeData: false
+    }
 
-    // Importar dados para cada tabela
-    if (importData.tables) {
-      for (const [tableName, rows] of Object.entries(importData.tables)) {
+    if (!importData || !importData.version || !importData.data) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid import data format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const results = {
+      success: true,
+      imported: { modules: 0, patients: 0, historico: 0, prontuarios: 0, appointments: 0 },
+      errors: [] as string[],
+      skipped: [] as string[]
+    }
+
+    // Importar módulos
+    if (importData.data.modules && Array.isArray(importData.data.modules)) {
+      for (const moduleData of importData.data.modules) {
         try {
-          if (!Array.isArray(rows) || rows.length === 0) {
-            results.tables[tableName] = { success: true, count: 0, message: 'Sem dados para importar' };
-            continue;
-          }
+          const { data: catalogModule } = await supabase
+            .from('module_catalog')
+            .select('id')
+            .eq('module_key', moduleData.module_catalog?.module_key)
+            .single()
 
-          // Validar e limpar dados antes de inserir
-          const cleanedRows = (rows as any[]).map(row => {
-            const cleaned = { ...row };
-            // Garantir que clinic_id está correto
-            if ('clinic_id' in cleaned) {
-              cleaned.clinic_id = clinic_id;
+          if (catalogModule) {
+            const { error } = await supabase
+              .from('clinic_modules')
+              .upsert({
+                clinic_id: targetClinicId,
+                module_catalog_id: catalogModule.id,
+                is_active: moduleData.is_active
+              }, {
+                onConflict: 'clinic_id,module_catalog_id',
+                ignoreDuplicates: !options.overwriteExisting
+              })
+
+            if (!error) {
+              results.imported.modules++
+            } else if (options.skipConflicts) {
+              results.skipped.push(`Module: ${moduleData.module_catalog?.module_key}`)
             }
-            // Garantir que created_by é o usuário atual
-            if ('created_by' in cleaned) {
-              cleaned.created_by = user.id;
-            }
-            return cleaned;
-          });
-
-          const { error } = await supabase
-            .from(tableName)
-            .insert(cleanedRows);
-
-          if (error) {
-            console.error(`Erro ao importar tabela ${tableName}:`, error);
-            results.tables[tableName] = { 
-              success: false, 
-              error: error.message,
-              count: 0
-            };
-          } else {
-            results.tables[tableName] = { 
-              success: true, 
-              count: cleanedRows.length,
-              message: `${cleanedRows.length} registro(s) importado(s)`
-            };
           }
         } catch (error) {
-          console.error(`Erro ao processar tabela ${tableName}:`, error);
-          results.tables[tableName] = { 
-            success: false, 
-            error: error instanceof Error ? error.message : 'Erro desconhecido',
-            count: 0
-          };
+          const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+          results.errors.push(`Error importing module: ${errorMsg}`)
         }
       }
     }
 
-    // Log de auditoria
-    await supabase.from('audit_logs').insert({
-      user_id: user.id,
-      clinic_id: clinic_id,
-      action: 'DATA_IMPORT',
-      details: { 
-        tables_imported: Object.keys(results.tables),
-        timestamp: new Date().toISOString()
-      }
-    });
+    // Importar prontuários
+    if (importData.data.prontuarios && Array.isArray(importData.data.prontuarios)) {
+      for (const prontuario of importData.data.prontuarios) {
+        try {
+          const newProntuario = {
+            ...prontuario,
+            clinic_id: targetClinicId,
+            id: undefined,
+            created_at: undefined,
+            updated_at: undefined
+          }
 
-    console.log(`Importação concluída para clinic_id: ${clinic_id}`);
+          const { data: inserted, error } = await supabase
+            .from('prontuarios')
+            .insert(newProntuario)
+            .select()
+            .single()
+
+          if (!error && inserted) {
+            results.imported.prontuarios++
+
+            if (importData.data.odontogramas && Array.isArray(importData.data.odontogramas)) {
+              const odontogramasOriginal = importData.data.odontogramas.filter(
+                (o: any) => o.prontuario_id === prontuario.id
+              )
+
+              for (const odonto of odontogramasOriginal) {
+                await supabase
+                  .from('odontograma_teeth')
+                  .insert({
+                    ...odonto,
+                    prontuario_id: inserted.id,
+                    id: undefined
+                  })
+              }
+            }
+          } else if (error && options.skipConflicts) {
+            results.skipped.push(`Prontuario: ${prontuario.id}`)
+          }
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+          results.errors.push(`Error importing prontuario: ${errorMsg}`)
+        }
+      }
+    }
+
+    await supabase.from('audit_logs').insert({
+      clinic_id: targetClinicId,
+      user_id: user.id,
+      action: 'DATA_IMPORT',
+      details: {
+        sourceClinicId: importData.clinicId,
+        options,
+        results: {
+          imported: results.imported,
+          errorsCount: results.errors.length,
+          skippedCount: results.skipped.length
+        }
+      }
+    })
 
     return new Response(
-      JSON.stringify({ success: true, results }),
+      JSON.stringify(results),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    )
 
   } catch (error) {
-    console.error('Erro na importação:', error);
+    console.error('Error in import-clinic-data:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Erro desconhecido' }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    )
   }
-});
+})

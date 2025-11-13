@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Settings, Package, Users, Database, Shield, Bell } from 'lucide-react';
+import { Settings, Package, Users, Database, Shield, Bell, Download, Upload } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import ModulesSimple from './settings/ModulesSimple';
@@ -12,10 +13,13 @@ import { UserManagementTab } from '@/components/settings/UserManagementTab';
 import { ModulePermissionsManager } from '@/components/settings/ModulePermissionsManager';
 import { PermissionTemplates } from '@/components/settings/PermissionTemplates';
 import { PermissionAuditLogs } from '@/components/settings/PermissionAuditLogs';
+import { DataMigrationWizard } from '@/components/settings/DataMigrationWizard';
 
 export default function Configuracoes() {
   const { user, hasRole } = useAuth();
   const [activeTab, setActiveTab] = useState('modules');
+  const [showExportWizard, setShowExportWizard] = useState(false);
+  const [showImportWizard, setShowImportWizard] = useState(false);
 
   // Apenas ADMINs podem acessar configurações
   if (!hasRole('ADMIN')) {
@@ -99,9 +103,50 @@ export default function Configuracoes() {
         </TabsContent>
 
         <TabsContent value="database" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Migração de Dados</CardTitle>
+              <CardDescription>
+                Exporte ou importe dados completos da clínica entre instalações do Ortho+
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-4">
+                <Button 
+                  onClick={() => setShowExportWizard(true)}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar Dados
+                </Button>
+                <Button 
+                  onClick={() => setShowImportWizard(true)}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Importar Dados
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          
           <BackupStatsDashboard />
           <DatabaseBackupTab />
         </TabsContent>
+
+        <DataMigrationWizard 
+          open={showExportWizard}
+          onClose={() => setShowExportWizard(false)}
+          mode="export"
+        />
+        
+        <DataMigrationWizard 
+          open={showImportWizard}
+          onClose={() => setShowImportWizard(false)}
+          mode="import"
+        />
 
         <TabsContent value="notifications" className="space-y-4">
           <Card>

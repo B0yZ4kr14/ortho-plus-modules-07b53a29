@@ -1,13 +1,21 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1'
+import { corsHeaders } from '../_shared/cors.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+console.log('export-clinic-data function started')
+
+interface ExportOptions {
+  includeModules: boolean
+  includePatients: boolean
+  includeHistory: boolean
+  includeProntuarios: boolean
+  includeAppointments: boolean
+  includeFinanceiro: boolean
+  format: 'json' | 'csv' | 'excel'
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
@@ -19,138 +27,143 @@ Deno.serve(async (req) => {
           headers: { Authorization: req.headers.get('Authorization')! },
         },
       }
-    );
+    )
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Não autorizado' }),
+        JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      )
     }
 
-    const { format, clinic_id } = await req.json();
+    const { data: roles } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
 
-    if (!clinic_id) {
+    if (!roles?.some((r) => r.role === 'ADMIN')) {
       return new Response(
-        JSON.stringify({ error: 'clinic_id é obrigatório' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+        JSON.stringify({ error: 'Forbidden: Admin access required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    // Verificar se usuário tem acesso à clínica
     const { data: profile } = await supabase
       .from('profiles')
       .select('clinic_id')
       .eq('id', user.id)
-      .single();
+      .single()
 
-    if (!profile || profile.clinic_id !== clinic_id) {
+    if (!profile?.clinic_id) {
       return new Response(
-        JSON.stringify({ error: 'Acesso negado a esta clínica' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+        JSON.stringify({ error: 'Clinic not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    // Exportar dados de todas as tabelas relevantes
-    const tables = [
-      'prontuarios',
-      'historico_clinico',
-      'pep_tratamentos',
-      'pep_odontograma',
-      'pep_anexos',
-      'pep_assinaturas',
-      'pep_evolucoes'
-    ];
+    const clinicId = profile.clinic_id
+    const options: ExportOptions = await req.json()
 
-    const exportData: Record<string, any> = {
-      exported_at: new Date().toISOString(),
-      clinic_id: clinic_id,
-      format: format,
-      tables: {}
-    };
-
-    // Exportar cada tabela
-    for (const table of tables) {
-      try {
-        let query = supabase.from(table).select('*');
-        
-        // Filtrar por clinic_id se a tabela tiver esse campo
-        if (table === 'prontuarios') {
-          query = query.eq('clinic_id', clinic_id);
-        }
-
-        const { data, error } = await query;
-        
-        if (error) {
-          console.error(`Erro ao exportar tabela ${table}:`, error);
-          continue;
-        }
-
-        exportData.tables[table] = data || [];
-      } catch (error) {
-        console.error(`Erro ao processar tabela ${table}:`, error);
-        exportData.tables[table] = [];
-      }
+    const exportData: any = {
+      version: '1.0.0',
+      exportedAt: new Date().toISOString(),
+      clinicId: clinicId,
+      data: {}
     }
 
-    let content: string;
-    
-    if (format === 'json') {
-      content = JSON.stringify(exportData, null, 2);
-    } else if (format === 'csv') {
-      // Conversão simplificada para CSV (apenas primeira tabela como exemplo)
-      const firstTable = Object.keys(exportData.tables)[0];
-      const rows = exportData.tables[firstTable];
-      
-      if (rows.length === 0) {
-        content = 'Nenhum dado encontrado';
-      } else {
-        const headers = Object.keys(rows[0]).join(',');
-        const csvRows = rows.map((row: any) => 
-          Object.values(row).map(v => 
-            typeof v === 'string' ? `"${v.replace(/"/g, '""')}"` : v
-          ).join(',')
-        );
-        content = [headers, ...csvRows].join('\n');
-      }
-    } else {
-      return new Response(
-        JSON.stringify({ error: 'Formato não suportado' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (options.includeModules) {
+      const { data: clinicModules } = await supabase
+        .from('clinic_modules')
+        .select('*, module_catalog(*)')
+        .eq('clinic_id', clinicId)
+      exportData.data.modules = clinicModules
     }
 
-    console.log(`Exportação concluída para clinic_id: ${clinic_id}, formato: ${format}`);
+    if (options.includePatients) {
+      const { data: patients } = await supabase
+        .from('prontuarios')
+        .select('id, patient_id, clinic_id, created_at, updated_at')
+        .eq('clinic_id', clinicId)
+      exportData.data.patients = patients
+      exportData.data.patientCount = patients?.length || 0
+    }
 
-    // Registrar no histórico de backups
-    await supabase.from('backup_history').insert({
-      clinic_id: clinic_id,
-      backup_type: 'manual',
-      status: 'success',
-      file_size_bytes: content.length,
-      format: format,
-      created_by: user.id,
-      completed_at: new Date().toISOString(),
-      metadata: {
-        tables_exported: Object.keys(exportData.tables),
-        records_count: Object.values(exportData.tables).reduce((acc: number, table: any) => acc + table.length, 0)
-      }
-    });
+    if (options.includeHistory) {
+      const { data: historico } = await supabase
+        .from('historico_clinico')
+        .select('*')
+        .in('prontuario_id', 
+          (await supabase
+            .from('prontuarios')
+            .select('id')
+            .eq('clinic_id', clinicId)
+          ).data?.map(p => p.id) || []
+        )
+      exportData.data.historicoClinico = historico
+    }
+
+    if (options.includeProntuarios) {
+      const { data: prontuarios } = await supabase
+        .from('prontuarios')
+        .select('*')
+        .eq('clinic_id', clinicId)
+
+      const { data: odontogramas } = await supabase
+        .from('odontograma_teeth')
+        .select('*')
+        .in('prontuario_id', prontuarios?.map(p => p.id) || [])
+
+      exportData.data.prontuarios = prontuarios
+      exportData.data.odontogramas = odontogramas
+    }
+
+    if (options.includeAppointments) {
+      const { data: appointments } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('clinic_id', clinicId)
+      exportData.data.appointments = appointments
+    }
+
+    if (options.includeFinanceiro) {
+      const { data: contasReceber } = await supabase
+        .from('contas_receber')
+        .select('*')
+        .eq('clinic_id', clinicId)
+
+      const { data: contasPagar } = await supabase
+        .from('contas_pagar')
+        .select('*')
+        .eq('clinic_id', clinicId)
+
+      exportData.data.financeiro = { contasReceber, contasPagar }
+    }
+
+    await supabase.from('audit_logs').insert({
+      clinic_id: clinicId,
+      user_id: user.id,
+      action: 'DATA_EXPORT',
+      details: { options, recordsExported: {
+        modules: exportData.data.modules?.length || 0,
+        patients: exportData.data.patientCount || 0,
+        historico: exportData.data.historicoClinico?.length || 0,
+        prontuarios: exportData.data.prontuarios?.length || 0,
+        appointments: exportData.data.appointments?.length || 0
+      }}
+    })
 
     return new Response(
-      JSON.stringify({ content, size: content.length }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+      JSON.stringify(exportData),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
 
   } catch (error) {
-    console.error('Erro na exportação:', error);
+    console.error('Error in export-clinic-data:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Erro desconhecido' }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    )
   }
-});
+})
