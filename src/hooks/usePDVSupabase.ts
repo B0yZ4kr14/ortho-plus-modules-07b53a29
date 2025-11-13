@@ -1,56 +1,61 @@
 // @ts-nocheck
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { toast as sonnerToast } from 'sonner';
+import { useState, useCallback } from 'react'
+import { supabase } from '@/integrations/supabase/client'
+import { useToast } from '@/hooks/use-toast'
+import { useAuth } from '@/contexts/AuthContext'
 
 export interface CaixaMovimento {
-  id: string;
-  clinic_id: string;
-  user_id: string;
-  tipo: 'ABERTURA' | 'FECHAMENTO' | 'SANGRIA' | 'SUPRIMENTO';
-  valor_inicial: number;
-  valor_final?: number;
-  valor_esperado?: number;
-  diferenca?: number;
-  observacoes?: string;
-  aberto_em: string;
-  fechado_em?: string;
-  status: 'ABERTO' | 'FECHADO';
-  created_at: string;
-  updated_at: string;
+  id: string
+  clinic_id: string
+  tipo: 'ABERTURA' | 'FECHAMENTO' | 'SANGRIA' | 'SUPRIMENTO'
+  valor_informado: number
+  valor_sistema: number
+  diferenca: number
+  observacoes?: string
+  aberto_por?: string
+  fechado_por?: string
+  created_at: string
+  created_by: string
 }
 
 export interface PDVVenda {
-  id: string;
-  clinic_id: string;
-  caixa_movimento_id: string;
-  patient_id?: string;
-  vendedor_id: string;
-  numero_venda: string;
-  valor_total: number;
-  desconto: number;
-  valor_final: number;
-  status: 'PENDENTE' | 'PAGO' | 'PARCIAL' | 'CANCELADO';
-  observacoes?: string;
-  created_at: string;
-  updated_at: string;
+  id: string
+  clinic_id: string
+  caixa_id: string
+  numero_venda: string
+  patient_id?: string
+  subtotal: number
+  desconto: number
+  valor_total: number
+  status: 'ABERTA' | 'FINALIZADA' | 'CANCELADA'
+  motivo_cancelamento?: string
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+export interface PDVVendaItem {
+  id: string
+  venda_id: string
+  tipo_item: 'PRODUTO' | 'SERVICO' | 'PROCEDIMENTO'
+  produto_id?: string
+  procedimento_id?: string
+  descricao: string
+  quantidade: number
+  valor_unitario: number
+  desconto: number
+  valor_total: number
+  created_at: string
 }
 
 export interface PDVPagamento {
-  id: string;
-  clinic_id: string;
-  venda_id: string;
-  caixa_movimento_id: string;
-  forma_pagamento: 'DINHEIRO' | 'CARTAO_CREDITO' | 'CARTAO_DEBITO' | 'PIX' | 'TRANSFERENCIA' | 'CRYPTO' | 'BOLETO' | 'CHEQUE';
-  valor: number;
-  parcelas: number;
-  taxa_operacao: number;
-  valor_liquido: number;
-  crypto_transaction_id?: string;
-  bandeira_cartao?: string;
-  ultimos_digitos?: string;
-  created_at: string;
+  id: string
+  venda_id: string
+  forma_pagamento: 'DINHEIRO' | 'CREDITO' | 'DEBITO' | 'PIX' | 'TRANSFERENCIA' | 'CRYPTO'
+  valor: number
+  parcelas?: number
+  transacao_id?: string
+  created_at: string
 }
 
 export const usePDVSupabase = (clinicId: string | undefined) => {
