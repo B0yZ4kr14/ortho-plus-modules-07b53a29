@@ -9,7 +9,8 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
 async function generateChecksum(data: string, algorithm: 'MD5' | 'SHA-256'): Promise<string> {
   const encoder = new TextEncoder()
   const dataBuffer = encoder.encode(data)
-  const hashBuffer = await crypto.subtle.digest(algorithm, dataBuffer)
+  const algoName = algorithm === 'MD5' ? 'MD5' : 'SHA-256'
+  const hashBuffer = await crypto.subtle.digest(algoName, dataBuffer)
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }

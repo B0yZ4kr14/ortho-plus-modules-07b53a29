@@ -203,6 +203,8 @@ export type Database = {
       backup_history: {
         Row: {
           backup_type: string
+          checksum_md5: string | null
+          checksum_sha256: string | null
           clinic_id: string
           completed_at: string | null
           created_at: string
@@ -212,11 +214,15 @@ export type Database = {
           file_size_bytes: number | null
           format: string | null
           id: string
+          is_incremental: boolean | null
           metadata: Json | null
+          parent_backup_id: string | null
           status: string
         }
         Insert: {
           backup_type: string
+          checksum_md5?: string | null
+          checksum_sha256?: string | null
           clinic_id: string
           completed_at?: string | null
           created_at?: string
@@ -226,11 +232,15 @@ export type Database = {
           file_size_bytes?: number | null
           format?: string | null
           id?: string
+          is_incremental?: boolean | null
           metadata?: Json | null
+          parent_backup_id?: string | null
           status?: string
         }
         Update: {
           backup_type?: string
+          checksum_md5?: string | null
+          checksum_sha256?: string | null
           clinic_id?: string
           completed_at?: string | null
           created_at?: string
@@ -240,7 +250,9 @@ export type Database = {
           file_size_bytes?: number | null
           format?: string | null
           id?: string
+          is_incremental?: boolean | null
           metadata?: Json | null
+          parent_backup_id?: string | null
           status?: string
         }
         Relationships: [
@@ -249,6 +261,13 @@ export type Database = {
             columns: ["clinic_id"]
             isOneToOne: false
             referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "backup_history_parent_backup_id_fkey"
+            columns: ["parent_backup_id"]
+            isOneToOne: false
+            referencedRelation: "backup_history"
             referencedColumns: ["id"]
           },
         ]
@@ -454,6 +473,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      cloud_storage_configs: {
+        Row: {
+          clinic_id: string
+          config: Json
+          created_at: string
+          id: string
+          is_active: boolean
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          config: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cloud_storage_configs_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contrato_anexos: {
         Row: {
@@ -2496,6 +2553,83 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "prontuarios_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scheduled_backups: {
+        Row: {
+          backup_type: string
+          clinic_id: string
+          cloud_providers: string[] | null
+          cloud_upload_enabled: boolean
+          compression_enabled: boolean
+          created_at: string
+          created_by: string
+          day_of_month: number | null
+          day_of_week: number | null
+          encryption_enabled: boolean
+          frequency: string
+          id: string
+          include_data: Json
+          is_active: boolean
+          last_run_at: string | null
+          name: string
+          next_run_at: string
+          notification_emails: string[] | null
+          time_of_day: string
+          updated_at: string
+        }
+        Insert: {
+          backup_type?: string
+          clinic_id: string
+          cloud_providers?: string[] | null
+          cloud_upload_enabled?: boolean
+          compression_enabled?: boolean
+          created_at?: string
+          created_by: string
+          day_of_month?: number | null
+          day_of_week?: number | null
+          encryption_enabled?: boolean
+          frequency: string
+          id?: string
+          include_data?: Json
+          is_active?: boolean
+          last_run_at?: string | null
+          name: string
+          next_run_at: string
+          notification_emails?: string[] | null
+          time_of_day?: string
+          updated_at?: string
+        }
+        Update: {
+          backup_type?: string
+          clinic_id?: string
+          cloud_providers?: string[] | null
+          cloud_upload_enabled?: boolean
+          compression_enabled?: boolean
+          created_at?: string
+          created_by?: string
+          day_of_month?: number | null
+          day_of_week?: number | null
+          encryption_enabled?: boolean
+          frequency?: string
+          id?: string
+          include_data?: Json
+          is_active?: boolean
+          last_run_at?: string | null
+          name?: string
+          next_run_at?: string
+          notification_emails?: string[] | null
+          time_of_day?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_backups_clinic_id_fkey"
             columns: ["clinic_id"]
             isOneToOne: false
             referencedRelation: "clinics"
