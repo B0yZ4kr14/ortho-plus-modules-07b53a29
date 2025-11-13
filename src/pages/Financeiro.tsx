@@ -3,7 +3,7 @@ import { Plus, Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useFinanceiroStore } from '@/modules/financeiro/hooks/useFinanceiroStore';
+import { useFinanceiroSupabase } from '@/modules/financeiro/hooks/useFinanceiroSupabase';
 import { FinancialStats } from '@/modules/financeiro/components/FinancialStats';
 import { RevenueExpenseChart } from '@/modules/financeiro/components/RevenueExpenseChart';
 import { RevenueDistributionChart } from '@/modules/financeiro/components/RevenueDistributionChart';
@@ -11,6 +11,7 @@ import { TransactionsList } from '@/modules/financeiro/components/TransactionsLi
 import { TransactionForm } from '@/modules/financeiro/components/TransactionForm';
 import { Transaction } from '@/modules/financeiro/types/financeiro.types';
 import { toast } from 'sonner';
+import { LoadingState } from '@/components/shared/LoadingState';
 
 export default function Financeiro() {
   const [formOpen, setFormOpen] = useState(false);
@@ -18,13 +19,14 @@ export default function Financeiro() {
 
   const {
     transactions,
+    loading,
     addTransaction,
     updateTransaction,
     deleteTransaction,
     getFinancialSummary,
     getMonthlyData,
     getCategoryDistribution,
-  } = useFinanceiroStore();
+  } = useFinanceiroSupabase();
 
   const summary = getFinancialSummary();
   const monthlyData = getMonthlyData();
@@ -56,6 +58,10 @@ export default function Financeiro() {
     deleteTransaction(id);
     toast.success('Transação excluída com sucesso!');
   };
+
+  if (loading) {
+    return <LoadingState variant="skeleton" />;
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">

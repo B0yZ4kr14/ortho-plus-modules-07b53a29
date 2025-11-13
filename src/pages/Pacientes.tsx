@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { usePatientsStore } from '@/modules/pacientes/hooks/usePatientsStore';
+import { usePatientsSupabase } from '@/modules/pacientes/hooks/usePatientsSupabase';
 import { PatientsList } from '@/modules/pacientes/components/PatientsList';
 import { PatientForm } from '@/modules/pacientes/components/PatientForm';
 import { PatientDetails } from '@/modules/pacientes/components/PatientDetails';
@@ -15,7 +15,7 @@ import { Users } from 'lucide-react';
 type ViewMode = 'list' | 'form' | 'details';
 
 export default function Pacientes() {
-  const { patients, loading, addPatient, updatePatient, deletePatient, getPatient } = usePatientsStore();
+  const { patients, loading, addPatient, updatePatient, deletePatient, getPatient } = usePatientsSupabase();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedPatient, setSelectedPatient] = useState<Patient | undefined>();
   const [dialogOpen, setDialogOpen] = useState(false);

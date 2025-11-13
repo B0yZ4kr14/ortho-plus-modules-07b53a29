@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAgendaStore } from '@/modules/agenda/hooks/useAgendaStore';
-import { usePatientsStore } from '@/modules/pacientes/hooks/usePatientsStore';
+import { usePatientsSupabase } from '@/modules/pacientes/hooks/usePatientsSupabase';
 import { AgendaCalendar } from '@/modules/agenda/components/AgendaCalendar';
 import { AppointmentForm } from '@/modules/agenda/components/AppointmentForm';
 import { AppointmentDetails } from '@/modules/agenda/components/AppointmentDetails';
@@ -25,7 +25,7 @@ export default function AgendaClinica() {
     enviarLembrete 
   } = useAgendaStore();
   
-  const { patients } = usePatientsStore();
+  const { patients } = usePatientsSupabase();
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | undefined>();
   const [dialogOpen, setDialogOpen] = useState(false);

@@ -419,5 +419,143 @@ export function useFinanceiroSupabase() {
     loadNotasFiscais,
     // Dashboard
     getDashboardData,
+    
+    // ============= MÉTODOS ADAPTER PARA COMPATIBILIDADE =============
+    // Combina contas a receber e pagar em um único array "transactions"
+    transactions: [
+      ...contasReceber.map(c => ({ 
+        ...c, 
+        type: 'RECEITA' as const,
+        status: c.status?.toUpperCase() as any,
+        category: (c as any).categoria || 'OUTROS',
+      })),
+      ...contasPagar.map(c => ({ 
+        ...c, 
+        type: 'DESPESA' as const,
+        status: c.status?.toUpperCase() as any,
+        category: (c as any).categoria || 'OUTROS',
+      }))
+    ].sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()),
+    
+    addTransaction: async (transaction: any) => {
+      if (transaction.tipo === 'RECEITA') {
+        return addContaReceber(transaction);
+      } else {
+        return addContaPagar(transaction);
+      }
+    },
+    
+    updateTransaction: async (id: string, updates: any) => {
+      // Tentar atualizar em contas a receber primeiro
+      const isReceber = contasReceber.some(c => c.id === id);
+      if (isReceber) {
+        return updateContaReceber(id, updates);
+      } else {
+        return updateContaPagar(id, updates);
+      }
+    },
+    
+    deleteTransaction: async (id: string) => {
+      // Tentar deletar de contas a receber primeiro
+      const isReceber = contasReceber.some(c => c.id === id);
+      if (isReceber) {
+        return deleteContaReceber(id);
+      } else {
+        return deleteContaPagar(id);
+      }
+    },
+    
+    getFinancialSummary: () => {
+      const totalReceitas = contasReceber
+        .filter(c => c.status === 'pago')
+        .reduce((sum, c) => sum + (c.valor_pago || 0), 0);
+      
+      const totalDespesas = contasPagar
+        .filter(c => c.status === 'pago')
+        .reduce((sum, c) => sum + (c.valor || 0), 0);
+      
+      const saldoTotal = totalReceitas - totalDespesas;
+      
+      const receitasPendentes = contasReceber
+        .filter(c => c.status === 'pendente')
+        .reduce((sum, c) => sum + (c.valor || 0), 0);
+      
+      const despesasPendentes = contasPagar
+        .filter(c => c.status === 'pendente')
+        .reduce((sum, c) => sum + (c.valor || 0), 0);
+      
+      return {
+        totalRevenue: totalReceitas,
+        totalExpenses: totalDespesas,
+        netProfit: saldoTotal,
+        pendingRevenue: receitasPendentes,
+        pendingPayments: despesasPendentes,
+        revenueChange: 0,
+        paymentsChange: 0,
+        expensesChange: 0,
+        profitChange: 0,
+        totalReceitas,
+        totalDespesas,
+        saldoTotal,
+        receitasPendentes,
+        despesasPendentes,
+      };
+    },
+    
+    getMonthlyData: () => {
+      const now = new Date();
+      const last6Months = Array.from({ length: 6 }, (_, i) => {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        return {
+          month: date.toLocaleString('pt-BR', { month: 'short' }),
+          year: date.getFullYear(),
+          key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+        };
+      }).reverse();
+      
+      return last6Months.map(({ month, key }) => {
+        const receitas = contasReceber
+          .filter(c => {
+            const createdDate = new Date(c.created_at || '');
+            const createdKey = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`;
+            return createdKey === key && c.status === 'pago';
+          })
+          .reduce((sum, c) => sum + (c.valor_pago || 0), 0);
+        
+        const despesas = contasPagar
+          .filter(c => {
+            const createdDate = new Date(c.created_at || '');
+            const createdKey = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`;
+            return createdKey === key && c.status === 'pago';
+          })
+          .reduce((sum, c) => sum + (c.valor || 0), 0);
+        
+        return {
+          month,
+          revenue: receitas,
+          expense: despesas,
+          receitas,
+          despesas,
+        };
+      });
+    },
+    
+    getCategoryDistribution: () => {
+      const categories: Record<string, number> = {};
+      
+      contasReceber
+        .filter(c => c.status === 'pago')
+        .forEach(c => {
+          const category = (c as any).categoria || 'OUTROS';
+          categories[category] = (categories[category] || 0) + (c.valor_pago || 0);
+        });
+      
+      return Object.entries(categories).map(([name, value]) => ({
+        name,
+        category: name,
+        value,
+        percentage: 0, // Calculado posteriormente se necessário
+      }));
+    },
   };
 }
