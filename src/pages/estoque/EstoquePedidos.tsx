@@ -8,9 +8,11 @@ import { PedidosList } from '@/modules/estoque/components/PedidosList';
 import { PedidoConfigForm } from '@/modules/estoque/components/PedidoConfigForm';
 import type { PedidoConfig } from '@/modules/estoque/types/estoque.types';
 import { Card } from '@/components/ui/card';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
+import { LoadingState } from '@/components/shared/LoadingState';
 
 export default function EstoquePedidos() {
+  const { toast } = useToast();
   const {
     produtos,
     fornecedores,
@@ -32,15 +34,15 @@ export default function EstoquePedidos() {
     try {
       if (selectedConfig?.id) {
         await updatePedidoConfig(selectedConfig.id, data);
-        toast.success('Configuração atualizada com sucesso!');
+        toast({ title: 'Sucesso', description: 'Configuração atualizada com sucesso!' });
       } else {
         await addPedidoConfig(data);
-        toast.success('Configuração criada com sucesso!');
+        toast({ title: 'Sucesso', description: 'Configuração criada com sucesso!' });
       }
       setShowConfigForm(false);
       setSelectedConfig(undefined);
     } catch (error) {
-      toast.error('Erro ao salvar configuração');
+      toast({ title: 'Erro', description: 'Erro ao salvar configuração', variant: 'destructive' });
     }
   };
 
@@ -48,9 +50,9 @@ export default function EstoquePedidos() {
     setGeneratingOrders(true);
     try {
       await gerarPedidosAutomaticos();
-      toast.success('Pedidos automáticos gerados com sucesso!');
+      toast({ title: 'Sucesso', description: 'Pedidos automáticos gerados com sucesso!' });
     } catch (error) {
-      toast.error('Erro ao gerar pedidos automáticos');
+      toast({ title: 'Erro', description: 'Erro ao gerar pedidos automáticos', variant: 'destructive' });
     } finally {
       setGeneratingOrders(false);
     }
@@ -72,11 +74,7 @@ export default function EstoquePedidos() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
-    );
+    return <LoadingState variant="spinner" size="lg" message="Carregando pedidos..." />;
   }
 
   return (

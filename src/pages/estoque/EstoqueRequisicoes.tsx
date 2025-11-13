@@ -11,10 +11,11 @@ import { useEstoqueSupabase } from '@/modules/estoque/hooks/useEstoqueSupabase';
 import { RequisicaoForm } from '@/modules/estoque/components/RequisicaoForm';
 import { RequisicoesList } from '@/modules/estoque/components/RequisicoesList';
 import { AlertasEstoque } from '@/modules/estoque/components/AlertasEstoque';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import type { Requisicao } from '@/modules/estoque/types/estoque.types';
 
 export default function EstoqueRequisicoes() {
+  const { toast } = useToast();
   const {
     produtos,
     requisicoes,
@@ -40,19 +41,21 @@ export default function EstoqueRequisicoes() {
   const handleSubmit = async (data: Requisicao) => {
     try {
       await addRequisicao(data);
-      toast.success('Requisição enviada com sucesso!');
+      toast({ title: 'Sucesso', description: 'Requisição enviada com sucesso!' });
       setShowForm(false);
     } catch (error) {
       console.error('Erro ao criar requisição:', error);
+      toast({ title: 'Erro', description: 'Erro ao criar requisição', variant: 'destructive' });
     }
   };
 
   const handleAprovar = async (id: string) => {
     try {
       await aprovarRequisicao(id, currentUser);
-      toast.success('Requisição aprovada!');
+      toast({ title: 'Sucesso', description: 'Requisição aprovada!' });
     } catch (error) {
       console.error('Erro ao aprovar requisição:', error);
+      toast({ title: 'Erro', description: 'Erro ao aprovar requisição', variant: 'destructive' });
     }
   };
 
@@ -60,10 +63,11 @@ export default function EstoqueRequisicoes() {
     if (!rejectDialog.id) return;
     try {
       await rejeitarRequisicao(rejectDialog.id, 'Requisição rejeitada pelo gestor');
-      toast.success('Requisição rejeitada');
+      toast({ title: 'Sucesso', description: 'Requisição rejeitada' });
       setRejectDialog({ open: false, id: null });
     } catch (error) {
       console.error('Erro ao rejeitar requisição:', error);
+      toast({ title: 'Erro', description: 'Erro ao rejeitar requisição', variant: 'destructive' });
     }
   };
 

@@ -9,6 +9,7 @@ import { PrevisaoReposicao } from '@/modules/estoque/components/PrevisaoReposica
 import { format, subDays, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, eachMonthOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { LoadingState } from '@/components/shared/LoadingState';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
@@ -172,11 +173,7 @@ export default function EstoqueAnaliseConsumo() {
   }, [movimentacoes, produtos]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-muted-foreground">Carregando análise de consumo...</div>
-      </div>
-    );
+    return <LoadingState variant="spinner" size="lg" message="Carregando análise de consumo..." />;
   }
 
   return (

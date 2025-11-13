@@ -11,7 +11,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ThemePreview } from "@/components/ThemePreview";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-export function DashboardHeader() {
+import { cn } from "@/lib/utils";
+
+interface DashboardHeaderProps {
+  className?: string;
+}
+
+export function DashboardHeader({ className }: DashboardHeaderProps = {}) {
   const {
     user,
     signOut,
@@ -30,7 +36,7 @@ export function DashboardHeader() {
   };
   return <>
       <HotkeysHelp />
-      <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm shrink-0">
+      <header className={cn("sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm shrink-0", className)}>
         {/* Top row with search and user menu */}
         <div className="h-16 px-4 lg:px-6 flex items-center gap-4 mx-[34px]">
           {/* Centralizar a busca */}

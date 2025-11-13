@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { LoadingState } from '@/components/shared/LoadingState';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Webhook, 
@@ -177,11 +178,7 @@ export default function EstoqueIntegracoes() {
   })).reverse();
 
   if (loading && fornecedores.length === 0) {
-    return (
-      <div className="p-8 flex items-center justify-center">
-        <p className="text-muted-foreground">Carregando integrações...</p>
-      </div>
-    );
+    return <LoadingState variant="spinner" size="lg" message="Carregando integrações..." />;
   }
 
   return (

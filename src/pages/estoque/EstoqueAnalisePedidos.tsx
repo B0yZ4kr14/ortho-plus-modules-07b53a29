@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { LoadingState } from '@/components/shared/LoadingState';
 import { Card } from '@/components/ui/card';
 import { ShoppingCart, TrendingUp, Clock, DollarSign, Package, AlertCircle } from 'lucide-react';
 import { useEstoqueSupabase } from '@/modules/estoque/hooks/useEstoqueSupabase';
@@ -199,11 +200,7 @@ export default function EstoqueAnalisePedidos() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Carregando análise...</p>
-      </div>
-    );
+    return <LoadingState variant="spinner" size="lg" message="Carregando análise de pedidos..." />;
   }
 
   if (pedidos.length === 0) {
