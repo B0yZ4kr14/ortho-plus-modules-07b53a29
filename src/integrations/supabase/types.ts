@@ -689,6 +689,9 @@ export type Database = {
         Row: {
           alert_type: string
           auto_convert_on_trigger: boolean | null
+          cascade_enabled: boolean | null
+          cascade_group_id: string | null
+          cascade_order: number | null
           clinic_id: string
           coin_type: string
           conversion_percentage: number | null
@@ -705,6 +708,9 @@ export type Database = {
         Insert: {
           alert_type: string
           auto_convert_on_trigger?: boolean | null
+          cascade_enabled?: boolean | null
+          cascade_group_id?: string | null
+          cascade_order?: number | null
           clinic_id: string
           coin_type: string
           conversion_percentage?: number | null
@@ -721,6 +727,9 @@ export type Database = {
         Update: {
           alert_type?: string
           auto_convert_on_trigger?: boolean | null
+          cascade_enabled?: boolean | null
+          cascade_group_id?: string | null
+          cascade_order?: number | null
           clinic_id?: string
           coin_type?: string
           conversion_percentage?: number | null

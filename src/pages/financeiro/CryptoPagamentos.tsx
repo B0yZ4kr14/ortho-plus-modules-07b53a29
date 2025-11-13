@@ -24,7 +24,8 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { 
+import { toast } from 'sonner';
+import {
   exchangeLabels, 
   coinLabels, 
   statusLabels,
@@ -37,9 +38,10 @@ import { BitcoinQRCodeDialog } from '@/components/crypto/BitcoinQRCodeDialog';
 import { BitcoinInfo } from './BitcoinInfo';
 import { CryptoAnalysisDashboard } from '@/modules/crypto/components/CryptoAnalysisDashboard';
 import { CryptoPriceAlertForm } from '@/modules/crypto/components/CryptoPriceAlertForm';
+import { CascadeAlertWizard } from '@/modules/crypto/components/CascadeAlertWizard';
 import { useCryptoPriceAlerts } from '@/modules/crypto/hooks/useCryptoPriceAlerts';
 import { Switch } from '@/components/ui/switch';
-import { Trash2 } from 'lucide-react';
+import { Trash2, TrendingDown } from 'lucide-react';
 
 export default function CryptoPagamentos() {
   const { user } = useAuth();
@@ -73,6 +75,7 @@ export default function CryptoPagamentos() {
   const [walletDialogOpen, setWalletDialogOpen] = useState(false);
   const [qrCodeDialogOpen, setQrCodeDialogOpen] = useState(false);
   const [alertDialogOpen, setAlertDialogOpen] = useState(false);
+  const [cascadeWizardOpen, setCascadeWizardOpen] = useState(false);
 
   const dashboardData = getDashboardData();
 
@@ -107,6 +110,20 @@ export default function CryptoPagamentos() {
   const handleAlertSubmit = async (data: any) => {
     await createAlert(data);
     setAlertDialogOpen(false);
+  };
+
+  const handleCascadeSubmit = async (cascadeAlerts: any[]) => {
+    try {
+      // Criar todos os alertas da cascata
+      for (const alertData of cascadeAlerts) {
+        await createAlert(alertData);
+      }
+      toast.success(`Estratégia DCA criada com ${cascadeAlerts.length} níveis!`);
+      setCascadeWizardOpen(false);
+    } catch (error) {
+      console.error('Error creating cascade:', error);
+      toast.error('Erro ao criar estratégia em cascata');
+    }
   };
 
   if (loading) {
@@ -567,24 +584,44 @@ export default function CryptoPagamentos() {
         {/* Alerts Tab */}
         <TabsContent value="alerts" className="space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Alertas de Preço</h3>
-            <Dialog open={alertDialogOpen} onOpenChange={setAlertDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Novo Alerta
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Configurar Alerta de Preço</DialogTitle>
-                </DialogHeader>
-                <CryptoPriceAlertForm
-                  onSubmit={handleAlertSubmit}
-                  onCancel={() => setAlertDialogOpen(false)}
-                />
-              </DialogContent>
-            </Dialog>
+            <h3 className="text-lg font-semibold">Alertas de Preço e Estratégias DCA</h3>
+            <div className="flex gap-2">
+              <Dialog open={cascadeWizardOpen} onOpenChange={setCascadeWizardOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="default" size="sm">
+                    <TrendingDown className="h-4 w-4 mr-2" />
+                    Estratégia DCA
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Criar Estratégia DCA em Cascata</DialogTitle>
+                  </DialogHeader>
+                  <CascadeAlertWizard
+                    onSubmit={handleCascadeSubmit}
+                    onCancel={() => setCascadeWizardOpen(false)}
+                  />
+                </DialogContent>
+              </Dialog>
+              
+              <Dialog open={alertDialogOpen} onOpenChange={setAlertDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Alerta Simples
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Configurar Alerta de Preço</DialogTitle>
+                  </DialogHeader>
+                  <CryptoPriceAlertForm
+                    onSubmit={handleAlertSubmit}
+                    onCancel={() => setAlertDialogOpen(false)}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
 
           {alertsLoading ? (
@@ -601,43 +638,127 @@ export default function CryptoPagamentos() {
             </Card>
           ) : (
             <div className="space-y-3">
-              {alerts.map((alert) => (
-                <Card key={alert.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">{alert.coin_type}</Badge>
-                          <Badge variant={alert.alert_type === 'BELOW' ? 'success' : 'warning'}>
-                            {alert.alert_type === 'BELOW' ? 'Abaixo de' : 'Acima de'} R$ {alert.target_rate_brl.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                          </Badge>
-                          {alert.last_triggered_at && (
-                            <Badge variant="secondary">
-                              Disparado: {format(new Date(alert.last_triggered_at), 'dd/MM HH:mm', { locale: ptBR })}
+              {/* Group alerts by cascade_group_id */}
+              {(() => {
+                const cascadeGroups = new Map<string | null, typeof alerts>();
+                alerts.forEach(alert => {
+                  const groupId = alert.cascade_enabled ? alert.cascade_group_id : null;
+                  if (!cascadeGroups.has(groupId)) {
+                    cascadeGroups.set(groupId, []);
+                  }
+                  cascadeGroups.get(groupId)!.push(alert);
+                });
+
+                return Array.from(cascadeGroups.entries()).map(([groupId, groupAlerts]) => {
+                  const isCascade = groupId !== null;
+                  const sortedAlerts = isCascade 
+                    ? [...groupAlerts].sort((a, b) => (a.cascade_order || 0) - (b.cascade_order || 0))
+                    : groupAlerts;
+
+                  if (isCascade) {
+                    // Render cascade group
+                    return (
+                      <Card key={groupId} className="border-primary/30 bg-primary/5">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <TrendingDown className="h-5 w-5 text-primary" />
+                            <span className="font-semibold text-primary">
+                              Estratégia DCA em Cascata
+                            </span>
+                            <Badge variant="outline" className="ml-auto">
+                              {sortedAlerts.length} níveis
                             </Badge>
-                          )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            {sortedAlerts.map((alert, idx) => (
+                              <div key={alert.id} className="flex items-center gap-2 p-3 bg-background rounded-lg border">
+                                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary font-semibold text-xs shrink-0">
+                                  {alert.cascade_order}
+                                </div>
+                                <div className="flex-1 space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="outline" className="text-xs">{alert.coin_type}</Badge>
+                                    <span className="text-sm font-medium">
+                                      R$ {alert.target_rate_brl.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                    </span>
+                                    <Badge variant="secondary" className="text-xs">
+                                      {alert.conversion_percentage}%
+                                    </Badge>
+                                  </div>
+                                  {alert.last_triggered_at && (
+                                    <span className="text-xs text-muted-foreground">
+                                      ✓ Disparado: {format(new Date(alert.last_triggered_at), 'dd/MM HH:mm', { locale: ptBR })}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <Switch
+                                    checked={alert.is_active}
+                                    onCheckedChange={() => toggleAlert(alert.id, alert.is_active)}
+                                    disabled={idx > 0 && !sortedAlerts[idx - 1].last_triggered_at}
+                                  />
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => deleteAlert(alert.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+
+                  // Render individual alerts
+                  return sortedAlerts.map((alert) => (
+                    <Card key={alert.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline">{alert.coin_type}</Badge>
+                              <Badge variant={alert.alert_type === 'BELOW' ? 'success' : 'warning'}>
+                                {alert.alert_type === 'BELOW' ? 'Abaixo de' : 'Acima de'} R$ {alert.target_rate_brl.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                              </Badge>
+                              {alert.stop_loss_enabled && (
+                                <Badge variant="destructive" className="text-xs">
+                                  Stop-Loss {alert.conversion_percentage}%
+                                </Badge>
+                              )}
+                              {alert.last_triggered_at && (
+                                <Badge variant="secondary">
+                                  Disparado: {format(new Date(alert.last_triggered_at), 'dd/MM HH:mm', { locale: ptBR })}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span>Notificações: {alert.notification_method.join(', ')}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={alert.is_active}
+                              onCheckedChange={() => toggleAlert(alert.id, alert.is_active)}
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteAlert(alert.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>Notificações: {alert.notification_method.join(', ')}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={alert.is_active}
-                          onCheckedChange={() => toggleAlert(alert.id, alert.is_active)}
-                        />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteAlert(alert.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      </CardContent>
+                    </Card>
+                  ));
+                });
+              })()}
             </div>
           )}
         </TabsContent>

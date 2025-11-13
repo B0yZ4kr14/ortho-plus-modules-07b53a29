@@ -43,6 +43,21 @@ serve(async (req) => {
 
     // Processar cada alerta
     for (const alert of alerts) {
+      // Se alerta faz parte de cascata, verificar se alertas anteriores já foram disparados
+      if (alert.cascade_enabled && alert.cascade_order > 1) {
+        const { data: previousAlerts } = await supabaseClient
+          .from('crypto_price_alerts')
+          .select('last_triggered_at')
+          .eq('cascade_group_id', alert.cascade_group_id)
+          .lt('cascade_order', alert.cascade_order)
+          .is('last_triggered_at', null);
+
+        if (previousAlerts && previousAlerts.length > 0) {
+          console.log(`⏸️ Cascade alert ${alert.id} waiting for previous alerts in group`);
+          continue;
+        }
+      }
+
       // Buscar taxa atual
       const { data: latestRate } = await supabaseClient
         .from('crypto_exchange_rates')

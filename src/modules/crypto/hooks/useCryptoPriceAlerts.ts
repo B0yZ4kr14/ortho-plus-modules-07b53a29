@@ -15,6 +15,9 @@ interface PriceAlert {
   stop_loss_enabled?: boolean;
   auto_convert_on_trigger?: boolean;
   conversion_percentage?: number;
+  cascade_enabled?: boolean;
+  cascade_group_id?: string | null;
+  cascade_order?: number;
 }
 
 export function useCryptoPriceAlerts() {
