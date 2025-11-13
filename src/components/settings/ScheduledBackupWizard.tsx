@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +18,7 @@ interface ScheduledBackupConfig {
   timeOfDay: string;
   dayOfWeek?: number;
   dayOfMonth?: number;
+  backupType: 'full' | 'incremental' | 'differential';
   isIncremental: boolean;
   includeModules: boolean;
   includePatients: boolean;
@@ -25,9 +26,23 @@ interface ScheduledBackupConfig {
   includeProntuarios: boolean;
   includeAppointments: boolean;
   includeFinanceiro: boolean;
+  includePostgresDB: boolean;
   enableCompression: boolean;
   enableEncryption: boolean;
-  cloudStorageProvider: 's3' | 'google_drive' | 'dropbox' | 'none';
+  cloudStorageProvider: 's3' | 'google_drive' | 'dropbox' | 'ftp' | 'storj' | 'local' | 'none';
+  ftpConfig?: {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    remotePath: string;
+  };
+  storjConfig?: {
+    accessGrant: string;
+    bucket: string;
+    prefix: string;
+  };
+  localPath?: string;
   notificationEmails: string[];
   isActive: boolean;
 }
@@ -46,6 +61,7 @@ export function ScheduledBackupWizard({ open, onClose }: ScheduledBackupWizardPr
     name: '',
     frequency: 'daily',
     timeOfDay: '02:00',
+    backupType: 'full',
     isIncremental: false,
     includeModules: true,
     includePatients: true,
@@ -53,14 +69,15 @@ export function ScheduledBackupWizard({ open, onClose }: ScheduledBackupWizardPr
     includeProntuarios: true,
     includeAppointments: true,
     includeFinanceiro: true,
+    includePostgresDB: true,
     enableCompression: true,
     enableEncryption: false,
-    cloudStorageProvider: 'none',
+    cloudStorageProvider: 'local',
     notificationEmails: [],
     isActive: true
   });
 
-  const totalSteps = 5;
+  const totalSteps = 6;
   const progress = (step / totalSteps) * 100;
 
   const calculateNextExecutions = (cfg: ScheduledBackupConfig, count = 5) => {
@@ -103,7 +120,7 @@ export function ScheduledBackupWizard({ open, onClose }: ScheduledBackupWizardPr
   };
 
   useEffect(() => {
-    if (step === 5) {
+    if (step === 6) {
       setNextExecutions(calculateNextExecutions(config));
     }
   }, [step, config]);
@@ -224,8 +241,77 @@ export function ScheduledBackupWizard({ open, onClose }: ScheduledBackupWizardPr
           </div>
         )}
 
-        {/* Step 2: Dados a Incluir */}
+        {/* Step 2: Tipo de Backup */}
         {step === 2 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Database className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold">Tipo de Backup</h3>
+            </div>
+
+            <div className="space-y-3">
+              <Card 
+                className={`cursor-pointer transition-all ${config.backupType === 'full' ? 'border-primary bg-primary/5' : ''}`}
+                onClick={() => setConfig({ ...config, backupType: 'full', isIncremental: false })}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1">
+                      {config.backupType === 'full' && <Check className="h-5 w-5 text-primary" />}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold">Backup Completo (Full)</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Copia todos os dados do sistema. Ocupa mais espaço mas permite restauração independente.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className={`cursor-pointer transition-all ${config.backupType === 'incremental' ? 'border-primary bg-primary/5' : ''}`}
+                onClick={() => setConfig({ ...config, backupType: 'incremental', isIncremental: true })}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1">
+                      {config.backupType === 'incremental' && <Check className="h-5 w-5 text-primary" />}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold">Backup Incremental</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Copia apenas dados modificados desde o último backup (full ou incremental). Mais rápido e econômico.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className={`cursor-pointer transition-all ${config.backupType === 'differential' ? 'border-primary bg-primary/5' : ''}`}
+                onClick={() => setConfig({ ...config, backupType: 'differential' })}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1">
+                      {config.backupType === 'differential' && <Check className="h-5 w-5 text-primary" />}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold">Backup Diferencial</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Copia dados modificados desde o último backup completo. Equilíbrio entre velocidade e facilidade de restauração.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Dados a Incluir */}
+        {step === 3 && (
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <Database className="h-5 w-5 text-primary" />
@@ -239,7 +325,8 @@ export function ScheduledBackupWizard({ open, onClose }: ScheduledBackupWizardPr
                 { key: 'includeHistory', label: 'Histórico Clínico' },
                 { key: 'includeProntuarios', label: 'Prontuários Completos' },
                 { key: 'includeAppointments', label: 'Agendamentos' },
-                { key: 'includeFinanceiro', label: 'Dados Financeiros' }
+                { key: 'includeFinanceiro', label: 'Dados Financeiros' },
+                { key: 'includePostgresDB', label: 'Banco de Dados PostgreSQL (dump completo)' }
               ].map((item) => (
                 <div key={item.key} className="flex items-center space-x-2">
                   <Checkbox
@@ -255,8 +342,8 @@ export function ScheduledBackupWizard({ open, onClose }: ScheduledBackupWizardPr
           </div>
         )}
 
-        {/* Step 3: Opções Avançadas */}
-        {step === 3 && (
+        {/* Step 4: Opções Avançadas */}
+        {step === 4 && (
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <Clock className="h-5 w-5 text-primary" />
@@ -266,28 +353,13 @@ export function ScheduledBackupWizard({ open, onClose }: ScheduledBackupWizardPr
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  checked={config.isIncremental}
-                  onCheckedChange={(checked) => 
-                    setConfig({ ...config, isIncremental: checked as boolean })
-                  }
-                />
-                <Label>
-                  Backup Incremental
-                  <p className="text-xs text-muted-foreground">
-                    Exporta apenas dados modificados desde o último backup
-                  </p>
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
                   checked={config.enableCompression}
                   onCheckedChange={(checked) => 
                     setConfig({ ...config, enableCompression: checked as boolean })
                   }
                 />
                 <Label>
-                  Compressão Automática
+                  Compressão Automática (.zip)
                   <p className="text-xs text-muted-foreground">
                     Reduz o tamanho dos arquivos em até 60%
                   </p>
@@ -302,9 +374,9 @@ export function ScheduledBackupWizard({ open, onClose }: ScheduledBackupWizardPr
                   }
                 />
                 <Label>
-                  Criptografia de Dados
+                  Criptografia AES-256-GCM
                   <p className="text-xs text-muted-foreground">
-                    Protege backups com criptografia AES-256
+                    Protege backups com senha forte (recomendado para dados sensíveis)
                   </p>
                 </Label>
               </div>
@@ -312,58 +384,171 @@ export function ScheduledBackupWizard({ open, onClose }: ScheduledBackupWizardPr
           </div>
         )}
 
-        {/* Step 4: Cloud Storage e Notificações */}
-        {step === 4 && (
+        {/* Step 5: Destino do Backup */}
+        {step === 5 && (
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <Cloud className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold">Cloud Storage e Notificações</h3>
+              <h3 className="font-semibold">Destino do Backup</h3>
             </div>
 
             <div className="space-y-2">
-              <Label>Provedor de Cloud Storage</Label>
+              <Label>Onde deseja armazenar o backup?</Label>
               <Select
                 value={config.cloudStorageProvider}
-                onValueChange={(value: any) => 
-                  setConfig({ ...config, cloudStorageProvider: value })
-                }
+                onValueChange={(value: any) => setConfig({ ...config, cloudStorageProvider: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Nenhum (apenas local)</SelectItem>
-                  <SelectItem value="s3">AWS S3</SelectItem>
+                  <SelectItem value="local">Armazenamento Local</SelectItem>
+                  <SelectItem value="s3">Amazon S3</SelectItem>
                   <SelectItem value="google_drive">Google Drive</SelectItem>
                   <SelectItem value="dropbox">Dropbox</SelectItem>
+                  <SelectItem value="ftp">FTP/SFTP</SelectItem>
+                  <SelectItem value="storj">Storj DCS (Descentralizado)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>
-                <Mail className="h-4 w-4 inline mr-1" />
-                Emails para Notificação
-              </Label>
+            {config.cloudStorageProvider === 'local' && (
+              <div className="space-y-2">
+                <Label>Caminho Local</Label>
+                <Input
+                  placeholder="/var/backups/orthoplus"
+                  value={config.localPath || ''}
+                  onChange={(e) => setConfig({ ...config, localPath: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Caminho no servidor onde os backups serão salvos
+                </p>
+              </div>
+            )}
+
+            {config.cloudStorageProvider === 'ftp' && (
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label>Servidor FTP/SFTP</Label>
+                  <Input
+                    placeholder="ftp.example.com"
+                    value={config.ftpConfig?.host || ''}
+                    onChange={(e) => setConfig({ 
+                      ...config, 
+                      ftpConfig: { ...config.ftpConfig!, host: e.target.value }
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Porta</Label>
+                  <Input
+                    type="number"
+                    placeholder="21"
+                    value={config.ftpConfig?.port || ''}
+                    onChange={(e) => setConfig({ 
+                      ...config, 
+                      ftpConfig: { ...config.ftpConfig!, port: parseInt(e.target.value) }
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Usuário</Label>
+                  <Input
+                    placeholder="username"
+                    value={config.ftpConfig?.username || ''}
+                    onChange={(e) => setConfig({ 
+                      ...config, 
+                      ftpConfig: { ...config.ftpConfig!, username: e.target.value }
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Senha</Label>
+                  <Input
+                    type="password"
+                    value={config.ftpConfig?.password || ''}
+                    onChange={(e) => setConfig({ 
+                      ...config, 
+                      ftpConfig: { ...config.ftpConfig!, password: e.target.value }
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Caminho Remoto</Label>
+                  <Input
+                    placeholder="/backups"
+                    value={config.ftpConfig?.remotePath || ''}
+                    onChange={(e) => setConfig({ 
+                      ...config, 
+                      ftpConfig: { ...config.ftpConfig!, remotePath: e.target.value }
+                    })}
+                  />
+                </div>
+              </div>
+            )}
+
+            {config.cloudStorageProvider === 'storj' && (
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label>Access Grant</Label>
+                  <Input
+                    placeholder="Seu access grant do Storj DCS"
+                    value={config.storjConfig?.accessGrant || ''}
+                    onChange={(e) => setConfig({ 
+                      ...config, 
+                      storjConfig: { ...config.storjConfig!, accessGrant: e.target.value }
+                    })}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Obtenha seu access grant em: <a href="https://storj.io" target="_blank" className="text-primary underline">storj.io</a>
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Bucket</Label>
+                  <Input
+                    placeholder="orthoplus-backups"
+                    value={config.storjConfig?.bucket || ''}
+                    onChange={(e) => setConfig({ 
+                      ...config, 
+                      storjConfig: { ...config.storjConfig!, bucket: e.target.value }
+                    })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Prefixo (opcional)</Label>
+                  <Input
+                    placeholder="clinic-name/"
+                    value={config.storjConfig?.prefix || ''}
+                    onChange={(e) => setConfig({ 
+                      ...config, 
+                      storjConfig: { ...config.storjConfig!, prefix: e.target.value }
+                    })}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2 mt-4">
+              <Label>E-mails para Notificação (opcional)</Label>
               <Input
-                placeholder="email1@example.com, email2@example.com"
+                placeholder="admin@example.com, backup@example.com"
                 value={config.notificationEmails.join(', ')}
                 onChange={(e) => 
                   setConfig({ 
                     ...config, 
-                    notificationEmails: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                    notificationEmails: e.target.value.split(',').map(e => e.trim()).filter(Boolean)
                   })
                 }
               />
               <p className="text-xs text-muted-foreground">
-                Separe múltiplos emails com vírgula
+                Separe múltiplos e-mails com vírgula
               </p>
             </div>
           </div>
         )}
 
-        {/* Step 5: Resumo e Preview */}
-        {step === 5 && (
+        {/* Step 6: Resumo e Preview */}
+        {step === 6 && (
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <Check className="h-5 w-5 text-primary" />
@@ -383,7 +568,9 @@ export function ScheduledBackupWizard({ open, onClose }: ScheduledBackupWizardPr
               </div>
               <div>
                 <span className="font-medium">Tipo:</span>{' '}
-                {config.isIncremental ? 'Incremental' : 'Completo'}
+                {config.backupType === 'full' && 'Completo (Full)'}
+                {config.backupType === 'incremental' && 'Incremental'}
+                {config.backupType === 'differential' && 'Diferencial'}
               </div>
               <div>
                 <span className="font-medium">Compressão:</span>{' '}
@@ -391,11 +578,16 @@ export function ScheduledBackupWizard({ open, onClose }: ScheduledBackupWizardPr
               </div>
               <div>
                 <span className="font-medium">Criptografia:</span>{' '}
-                {config.enableEncryption ? 'Sim' : 'Não'}
+                {config.enableEncryption ? 'Sim (AES-256-GCM)' : 'Não'}
               </div>
               <div>
-                <span className="font-medium">Cloud Storage:</span>{' '}
-                {config.cloudStorageProvider === 'none' ? 'Não configurado' : config.cloudStorageProvider.toUpperCase()}
+                <span className="font-medium">Destino:</span>{' '}
+                {config.cloudStorageProvider === 'local' && 'Armazenamento Local'}
+                {config.cloudStorageProvider === 's3' && 'Amazon S3'}
+                {config.cloudStorageProvider === 'google_drive' && 'Google Drive'}
+                {config.cloudStorageProvider === 'dropbox' && 'Dropbox'}
+                {config.cloudStorageProvider === 'ftp' && 'FTP/SFTP'}
+                {config.cloudStorageProvider === 'storj' && 'Storj DCS'}
               </div>
             </Card>
 

@@ -46,10 +46,16 @@ export default function Configuracoes() {
       description: 'Gerenciar usuários e permissões'
     },
     {
+      id: 'backups',
+      label: 'Backups',
+      icon: Database,
+      description: 'Gestão completa de backups e restauração'
+    },
+    {
       id: 'database',
       label: 'Banco de Dados',
       icon: Database,
-      description: 'Configurações de backup e dados'
+      description: 'Migração e exportação de dados'
     },
     {
       id: 'notifications',
@@ -69,7 +75,7 @@ export default function Configuracoes() {
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           {configSections.map((section) => (
             <TabsTrigger 
               key={section.id} 
@@ -100,6 +106,10 @@ export default function Configuracoes() {
 
         <TabsContent value="users" className="space-y-4">
           <UserManagementTab />
+        </TabsContent>
+
+        <TabsContent value="backups" className="space-y-4">
+          <DatabaseBackupTab />
         </TabsContent>
 
         <TabsContent value="database" className="space-y-4">
