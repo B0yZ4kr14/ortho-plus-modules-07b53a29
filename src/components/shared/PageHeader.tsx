@@ -1,7 +1,7 @@
 import { LucideIcon } from 'lucide-react';
 
 interface PageHeaderProps {
-  icon: LucideIcon;
+  icon: LucideIcon; // Obrigatório - não mais opcional
   title: string;
   description: string;
   iconClassName?: string;

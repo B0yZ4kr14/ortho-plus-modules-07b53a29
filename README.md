@@ -162,6 +162,7 @@ Conecte seu domínio em **Project > Settings > Domains > Connect Domain**.
 - **[INSTALLATION.md](./INSTALLATION.md)** - Guia completo de instalação (Ubuntu 24.04.3 LTS)
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Arquitetura técnica e design patterns
 - **[VALIDATION_REPORT.md](./VALIDATION_REPORT.md)** - Relatório de validação sistemática (26 módulos)
+- **[PAGEHEADER_AUDIT.md](./PAGEHEADER_AUDIT.md)** - Auditoria completa de componentes PageHeader (39 arquivos)
 - **[E2E_TESTS_SUMMARY.md](./E2E_TESTS_SUMMARY.md)** - Resumo dos 46 testes E2E automatizados
 - **[REFACTORING_SUMMARY.md](./REFACTORING_SUMMARY.md)** - Histórico de refatorações
 - **[CHANGELOG.md](./CHANGELOG.md)** - Histórico de versões
