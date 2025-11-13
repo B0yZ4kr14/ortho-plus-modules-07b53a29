@@ -4,6 +4,7 @@ import { SidebarMenuButton, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubBu
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
+import { useAuth } from '@/contexts/AuthContext';
 import { MenuItem } from './sidebar.config';
 
 interface SidebarMenuItemProps {
@@ -15,7 +16,16 @@ interface SidebarMenuItemProps {
 export function SidebarMenuItem({ item, isSubItem = false, onNavigate }: SidebarMenuItemProps) {
   const location = useLocation();
   const { state } = useSidebar();
+  const { hasModuleAccess } = useAuth();
   const collapsed = state === 'collapsed';
+
+  // Check module access - if moduleKey is defined, check access
+  const hasAccess = !item.moduleKey || hasModuleAccess(item.moduleKey);
+  
+  // Don't render if user doesn't have access
+  if (!hasAccess) {
+    return null;
+  }
 
   const isActive = (url?: string) => {
     if (!url) return false;
