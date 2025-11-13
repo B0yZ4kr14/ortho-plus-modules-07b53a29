@@ -74,3 +74,6 @@ verify_jwt = true
 
 [functions.send-stock-alerts]
 verify_jwt = true
+
+[functions.check-backup-integrity-alerts]
+verify_jwt = false

@@ -6,6 +6,10 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { BackupStatsDashboard } from "./BackupStatsDashboard";
+import { BackupAdvancedStatsDashboard } from "./BackupAdvancedStatsDashboard";
+import { BackupRetentionConfig } from "./BackupRetentionConfig";
+import { BackupVersionTimeline } from "./BackupVersionTimeline";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScheduledBackupWizard } from "./ScheduledBackupWizard";
 import { BackupRestoreDialog } from "./BackupRestoreDialog";
 import { BackupIntegrityChecker } from "./BackupIntegrityChecker";
@@ -139,6 +143,15 @@ export default function DatabaseBackupTab() {
 
   return (
     <div className="space-y-6">
+      <Tabs defaultValue="backup" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="backup">Backup</TabsTrigger>
+          <TabsTrigger value="stats">Estatísticas</TabsTrigger>
+          <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          <TabsTrigger value="retention">Retenção</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="backup" className="space-y-6 mt-6">
       <BackupStatsDashboard />
       
       <ScheduledBackupWizard 
@@ -362,6 +375,20 @@ export default function DatabaseBackupTab() {
           </div>
         </AlertDescription>
       </Alert>
+        </TabsContent>
+
+        <TabsContent value="stats" className="mt-6">
+          <BackupAdvancedStatsDashboard />
+        </TabsContent>
+
+        <TabsContent value="timeline" className="mt-6">
+          <BackupVersionTimeline />
+        </TabsContent>
+
+        <TabsContent value="retention" className="mt-6">
+          <BackupRetentionConfig />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
