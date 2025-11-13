@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { LayoutDashboard, Users, Calendar, DollarSign, TrendingUp, Activity, CheckCircle2, BarChart3, FileText } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Button } from '@/components/ui/button';
+import { MarketRatesWidget } from '@/components/dashboard/MarketRatesWidget';
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -147,6 +148,9 @@ export default function Dashboard() {
           borderColor="border-l-orange-500"
         />
       </div>
+
+      {/* Widget de Cotações do Mercado */}
+      <MarketRatesWidget />
 
       {/* Action Cards - Ações Rápidas */}
       <Card variant="gradient" depth="intense" data-tour="action-cards">

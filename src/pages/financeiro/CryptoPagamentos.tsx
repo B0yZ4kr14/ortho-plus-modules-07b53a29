@@ -18,7 +18,9 @@ import {
   Settings,
   Plus,
   ExternalLink,
-  QrCode
+  QrCode,
+  Info,
+  Bell
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -34,7 +36,10 @@ import { WalletForm } from '@/components/crypto/WalletForm';
 import { BitcoinQRCodeDialog } from '@/components/crypto/BitcoinQRCodeDialog';
 import { BitcoinInfo } from './BitcoinInfo';
 import { CryptoAnalysisDashboard } from '@/modules/crypto/components/CryptoAnalysisDashboard';
-import { Info } from 'lucide-react';
+import { CryptoPriceAlertForm } from '@/modules/crypto/components/CryptoPriceAlertForm';
+import { useCryptoPriceAlerts } from '@/modules/crypto/hooks/useCryptoPriceAlerts';
+import { Switch } from '@/components/ui/switch';
+import { Trash2 } from 'lucide-react';
 
 export default function CryptoPagamentos() {
   const { user } = useAuth();
@@ -53,12 +58,21 @@ export default function CryptoPagamentos() {
     createPaymentRequest,
   } = useCryptoSupabase(clinicId);
 
+  const {
+    alerts,
+    loading: alertsLoading,
+    createAlert,
+    toggleAlert,
+    deleteAlert,
+  } = useCryptoPriceAlerts();
+
   const [selectedWallet, setSelectedWallet] = useState(null);
   const [syncingWallet, setSyncingWallet] = useState<string | null>(null);
   const [convertingTx, setConvertingTx] = useState<string | null>(null);
   const [exchangeDialogOpen, setExchangeDialogOpen] = useState(false);
   const [walletDialogOpen, setWalletDialogOpen] = useState(false);
   const [qrCodeDialogOpen, setQrCodeDialogOpen] = useState(false);
+  const [alertDialogOpen, setAlertDialogOpen] = useState(false);
 
   const dashboardData = getDashboardData();
 
@@ -88,6 +102,11 @@ export default function CryptoPagamentos() {
   const handleWalletSubmit = async (data: any) => {
     await createWallet(data);
     setWalletDialogOpen(false);
+  };
+
+  const handleAlertSubmit = async (data: any) => {
+    await createAlert(data);
+    setAlertDialogOpen(false);
   };
 
   if (loading) {
@@ -165,7 +184,7 @@ export default function CryptoPagamentos() {
       </div>
 
       <Tabs defaultValue="transactions" className="mt-8">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="transactions">
             <ArrowRightLeft className="h-4 w-4 mr-2" />
             Transações
@@ -181,6 +200,10 @@ export default function CryptoPagamentos() {
           <TabsTrigger value="analysis">
             <TrendingUp className="h-4 w-4 mr-2" />
             Análise
+          </TabsTrigger>
+          <TabsTrigger value="alerts">
+            <Bell className="h-4 w-4 mr-2" />
+            Alertas
           </TabsTrigger>
           <TabsTrigger value="info">
             <Info className="h-4 w-4 mr-2" />
@@ -539,6 +562,84 @@ export default function CryptoPagamentos() {
         {/* Analysis Tab */}
         <TabsContent value="analysis">
           <CryptoAnalysisDashboard clinicId={clinicId} />
+        </TabsContent>
+
+        {/* Alerts Tab */}
+        <TabsContent value="alerts" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Alertas de Preço</h3>
+            <Dialog open={alertDialogOpen} onOpenChange={setAlertDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Alerta
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Configurar Alerta de Preço</DialogTitle>
+                </DialogHeader>
+                <CryptoPriceAlertForm
+                  onSubmit={handleAlertSubmit}
+                  onCancel={() => setAlertDialogOpen(false)}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {alertsLoading ? (
+            <Card>
+              <CardContent className="py-8 text-center">
+                <LoadingState message="Carregando alertas..." />
+              </CardContent>
+            </Card>
+          ) : alerts.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                Nenhum alerta configurado. Crie um alerta para ser notificado quando as taxas atingirem valores específicos.
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {alerts.map((alert) => (
+                <Card key={alert.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">{alert.coin_type}</Badge>
+                          <Badge variant={alert.alert_type === 'BELOW' ? 'success' : 'warning'}>
+                            {alert.alert_type === 'BELOW' ? 'Abaixo de' : 'Acima de'} R$ {alert.target_rate_brl.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </Badge>
+                          {alert.last_triggered_at && (
+                            <Badge variant="secondary">
+                              Disparado: {format(new Date(alert.last_triggered_at), 'dd/MM HH:mm', { locale: ptBR })}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>Notificações: {alert.notification_method.join(', ')}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={alert.is_active}
+                          onCheckedChange={() => toggleAlert(alert.id, alert.is_active)}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteAlert(alert.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         {/* Info Tab */}

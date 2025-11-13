@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, DollarSign, Percent, Calendar, ArrowUpDown } 
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import TechnicalIndicators from "./TechnicalIndicators";
 
 interface ExchangeRate {
   id: number;
@@ -202,34 +203,38 @@ export function CryptoAnalysisDashboard({ clinicId }: CryptoAnalysisDashboardPro
         </TabsList>
 
         <TabsContent value="rates" className="space-y-4">
-          <Card depth="normal">
-            <CardHeader>
-              <CardTitle>Histórico de Taxas de Câmbio (30 dias)</CardTitle>
-              <CardDescription>
-                Acompanhe a variação das taxas de câmbio para identificar melhores momentos de conversão
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={350}>
-                <LineChart data={rateHistoryData}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--popover))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                    }}
-                  />
-                  <Legend />
-                  <Line type="monotone" dataKey="BTC" stroke="hsl(var(--primary))" strokeWidth={2} />
-                  <Line type="monotone" dataKey="ETH" stroke="hsl(var(--chart-2))" strokeWidth={2} />
-                  <Line type="monotone" dataKey="USDT" stroke="hsl(var(--chart-3))" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card depth="normal">
+              <CardHeader>
+                <CardTitle>Histórico de Taxas de Câmbio (30 dias)</CardTitle>
+                <CardDescription>
+                  Acompanhe a variação das taxas de câmbio para identificar melhores momentos de conversão
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={350}>
+                  <LineChart data={rateHistoryData}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--popover))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                    />
+                    <Legend />
+                    <Line type="monotone" dataKey="BTC" stroke="hsl(var(--primary))" strokeWidth={2} />
+                    <Line type="monotone" dataKey="ETH" stroke="hsl(var(--chart-2))" strokeWidth={2} />
+                    <Line type="monotone" dataKey="USDT" stroke="hsl(var(--chart-3))" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <TechnicalIndicators rates={exchangeRates} />
+          </div>
         </TabsContent>
 
         <TabsContent value="volume" className="space-y-4">

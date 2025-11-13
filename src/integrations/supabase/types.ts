@@ -643,6 +643,56 @@ export type Database = {
           },
         ]
       }
+      crypto_price_alerts: {
+        Row: {
+          alert_type: string
+          clinic_id: string
+          coin_type: string
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          last_triggered_at: string | null
+          notification_method: string[]
+          target_rate_brl: number
+          updated_at: string
+        }
+        Insert: {
+          alert_type: string
+          clinic_id: string
+          coin_type: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean
+          last_triggered_at?: string | null
+          notification_method?: string[]
+          target_rate_brl: number
+          updated_at?: string
+        }
+        Update: {
+          alert_type?: string
+          clinic_id?: string
+          coin_type?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          last_triggered_at?: string | null
+          notification_method?: string[]
+          target_rate_brl?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crypto_price_alerts_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estoque_pedidos: {
         Row: {
           clinic_id: string
