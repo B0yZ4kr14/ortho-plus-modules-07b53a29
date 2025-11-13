@@ -18,10 +18,12 @@ export function useCryptoNotifications() {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!clinicId) return;
-
-    connectWebSocket();
-
+    // TEMPORARIAMENTE DESABILITADO: WebSocket será habilitado quando a Edge Function crypto-realtime-notifications for implementada
+    // A funcionalidade de notificações em tempo real está aguardando implementação da Edge Function WebSocket
+    
+    // if (!clinicId) return;
+    // connectWebSocket();
+    
     return () => {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
