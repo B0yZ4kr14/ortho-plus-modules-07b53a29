@@ -1,6 +1,6 @@
 import { Moon, Sun, Palette, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useFontSize } from "@/hooks/useFontSize";
@@ -56,8 +56,9 @@ export function ThemeToggle() {
               return (
                 <Card
                   key={t.id}
-                  className={`cursor-pointer transition-all hover:shadow-md ${
-                    isActive ? 'ring-2 ring-primary bg-accent' : 'hover:bg-accent/50'
+                  variant={isActive ? 'elevated' : 'default'}
+                  className={`cursor-pointer ${
+                    isActive ? 'ring-2 ring-ring bg-accent text-accent-foreground' : 'hover:bg-accent/40'
                   }`}
                   onClick={() => setTheme(t.id as any)}
                 >
@@ -85,10 +86,8 @@ export function ThemeToggle() {
           </div>
         </div>
         
-        <DropdownMenuSeparator className="my-0" />
-        
         {/* Font Size Section */}
-        <div className="p-4 space-y-3">
+        <div className="p-4 space-y-3 border-t border-border/30">
           <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-0">
             Tamanho da Fonte
           </DropdownMenuLabel>

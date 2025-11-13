@@ -97,8 +97,7 @@ export function SidebarPreview({ modules }: SidebarPreviewProps) {
         {/* Menu Items */}
         <div className="space-y-4">
           {Object.entries(groupedModules).map(([category, categoryModules], index) => (
-            <div key={category}>
-              {index > 0 && <Separator className="my-2 bg-border/50" />}
+            <div key={category} className={index > 0 ? 'pt-4 mt-4 border-t border-border/20' : ''}>
               
               <div className="space-y-1">
                 <div className="px-2 py-1">
@@ -126,8 +125,7 @@ export function SidebarPreview({ modules }: SidebarPreviewProps) {
           ))}
 
           {/* Admin Section */}
-          <div>
-            <Separator className="my-2 bg-border/50" />
+          <div className="pt-4 mt-4 border-t border-border/20">
             <div className="space-y-1">
               <div className="px-2 py-1">
                 <span className="text-[10px] font-medium text-sidebar-foreground/70 uppercase tracking-wider">

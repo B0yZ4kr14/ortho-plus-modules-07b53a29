@@ -4,15 +4,15 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const cardVariants = cva(
-  "rounded-lg border bg-card text-card-foreground transition-all duration-200",
+  "rounded-2xl border-0 bg-card text-card-foreground transition-all duration-300",
   {
     variants: {
       variant: {
-        default: "shadow-sm",
-        elevated: "shadow-md hover:shadow-lg border-border/50",
-        interactive: "shadow-sm hover:shadow-md hover:-translate-y-0.5 cursor-pointer border-border/50",
-        gradient: "bg-gradient-to-br from-card to-card/90 shadow-md border-border/50 relative overflow-hidden",
-        metric: "shadow-sm border-l-4 hover:shadow-md hover:border-l-primary/80 bg-gradient-to-br from-card via-card to-muted/20",
+        default: "shadow-lg hover:shadow-xl backdrop-blur-sm bg-card/95",
+        elevated: "shadow-xl hover:shadow-2xl border-0 backdrop-blur-sm bg-card/95 hover:-translate-y-1",
+        interactive: "shadow-lg hover:shadow-xl hover:-translate-y-1 cursor-pointer backdrop-blur-sm bg-card/95 hover:bg-card active:translate-y-0",
+        gradient: "bg-gradient-to-br from-card via-card to-card/80 shadow-xl border-0 relative overflow-hidden backdrop-blur-sm",
+        metric: "shadow-lg border-l-4 border-l-primary/60 hover:shadow-xl hover:border-l-primary hover:-translate-y-0.5 bg-gradient-to-br from-card via-card to-muted/10 backdrop-blur-sm",
       },
     },
     defaultVariants: {

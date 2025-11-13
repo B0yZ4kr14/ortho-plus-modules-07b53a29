@@ -44,13 +44,14 @@ All colors MUST be HSL.
     --input: 214 32% 91%;
     --ring: 173 58% 39%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    /* Shadow variables */
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
-    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.2);
+    /* Shadow variables - enhanced depth */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+    --shadow-xl: 0 20px 30px rgba(0, 0, 0, 0.2);
+    --shadow-2xl: 0 30px 40px rgba(0, 0, 0, 0.25);
 
     --sidebar-background: 215 25% 15%;
     --sidebar-foreground: 210 40% 98%;
@@ -120,11 +121,12 @@ All colors MUST be HSL.
     --input: 215 25% 20%;
     --ring: 173 58% 39%;
 
-    /* Shadow variables for dark */
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.5);
-    --shadow-xl: 0 20px 30px rgba(0, 0, 0, 0.6);
+    /* Shadow variables for dark - enhanced */
+    --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.6);
+    --shadow-xl: 0 20px 35px rgba(0, 0, 0, 0.7);
+    --shadow-2xl: 0 30px 45px rgba(0, 0, 0, 0.8);
 
     /* Chart colors for dark mode */
     --chart-1: 173 58% 39%;

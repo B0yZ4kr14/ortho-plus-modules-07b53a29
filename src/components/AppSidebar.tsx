@@ -282,8 +282,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
 
       <SidebarContent>
         {menuGroups.map((group, index) => (
-          <div key={group.label}>
-            {index > 0 && <Separator className="my-1" />}
+          <div key={group.label} className={index > 0 ? 'mt-2' : ''}>
             
             {group.collapsed ? (
               <Collapsible defaultOpen={false} className="group/collapsible">
@@ -389,8 +388,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
 
         {isAdmin && (
           <>
-            <Separator className="my-1" />
-            <SidebarGroup>
+            <SidebarGroup className="mt-4">
               <SidebarGroupLabel className="text-xs font-medium text-muted-foreground px-3">
                 {!collapsed && 'Administração'}
               </SidebarGroupLabel>
