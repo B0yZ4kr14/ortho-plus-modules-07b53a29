@@ -2,6 +2,7 @@ import { SidebarGroup as ShadcnSidebarGroup, SidebarGroupContent, SidebarGroupLa
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
+import { useAuth } from '@/contexts/AuthContext';
 import { SidebarMenuItem } from './SidebarMenuItem';
 import { MenuGroup } from './sidebar.config';
 
@@ -13,7 +14,21 @@ interface SidebarGroupProps {
 
 export function SidebarGroup({ group, index, onNavigate }: SidebarGroupProps) {
   const { state } = useSidebar();
+  const { hasModuleAccess } = useAuth();
   const collapsed = state === 'collapsed';
+
+  // Filter items based on module access
+  const visibleItems = group.items.filter(item => {
+    // If no moduleKey, item is always visible
+    if (!item.moduleKey) return true;
+    // Check if user has access to this module
+    return hasModuleAccess(item.moduleKey);
+  });
+
+  // Don't render group if no visible items
+  if (visibleItems.length === 0) {
+    return null;
+  }
 
   const containerStyle = `rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-xl backdrop-blur-sm border border-sidebar-border/50 p-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl animate-fade-in`;
 
@@ -37,7 +52,7 @@ export function SidebarGroup({ group, index, onNavigate }: SidebarGroupProps) {
             <CollapsibleContent>
               <SidebarGroupContent className="mt-1">
                 <SidebarMenu>
-                  {group.items.map((item) => (
+                  {visibleItems.map((item) => (
                     <ShadcnSidebarMenuItem key={item.title}>
                       <SidebarMenuItem item={item} onNavigate={onNavigate} />
                     </ShadcnSidebarMenuItem>
@@ -63,7 +78,7 @@ export function SidebarGroup({ group, index, onNavigate }: SidebarGroupProps) {
         </SidebarGroupLabel>
         <SidebarGroupContent className="mt-1">
           <SidebarMenu>
-            {group.items.map((item) => (
+            {visibleItems.map((item) => (
               <ShadcnSidebarMenuItem key={item.title}>
                 <SidebarMenuItem item={item} onNavigate={onNavigate} />
               </ShadcnSidebarMenuItem>

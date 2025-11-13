@@ -29,6 +29,7 @@ interface AuthContextType {
   availableClinics: Clinic[];
   selectedClinic: Clinic | null;
   userPermissions: string[];
+  activeModules: string[]; // List of active module keys for the clinic
   switchClinic: (clinicId: string) => void;
   hasRole: (role: 'ADMIN' | 'MEMBER') => boolean;
   hasModuleAccess: (moduleKey: string) => boolean;
@@ -51,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [availableClinics, setAvailableClinics] = useState<Clinic[]>([]);
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
+  const [activeModules, setActiveModules] = useState<string[]>([]); // Lista de module_keys ativos
 
   // Derived state moved to bottom to avoid redeclaration
 
@@ -141,10 +143,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (clinic) {
           setSelectedClinic(clinic);
           setClinicId(clinic.id);
+          // Fetch active modules for the clinic
+          await fetchActiveModules(clinic.id);
         }
       }
     } catch (error) {
       console.error('Error fetching user metadata:', error);
+    }
+  };
+
+  // Fetch active modules for the clinic
+  const fetchActiveModules = async (clinicId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('clinic_modules')
+        .select('module_catalog:module_catalog_id(module_key)')
+        .eq('clinic_id', clinicId)
+        .eq('is_active', true);
+
+      if (error) throw error;
+
+      const moduleKeys = data
+        ?.map((item: any) => item.module_catalog?.module_key)
+        .filter(Boolean) || [];
+
+      setActiveModules(moduleKeys);
+    } catch (error) {
+      console.error('Error fetching active modules:', error);
     }
   };
 
@@ -153,6 +178,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (clinic) {
       setSelectedClinic(clinic);
       setClinicId(clinic.id);
+      // Fetch active modules for the new clinic
+      fetchActiveModules(clinic.id);
       toast.success(`Clínica alterada para: ${clinic.name}`);
     }
   };
@@ -269,13 +296,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const hasModuleAccess = (moduleKey: string) => {
-    // ADMIN has access to all modules
-    if (userRole === 'ADMIN' || userPermissions.includes('ALL')) {
-      return true;
+    // Check if module is active for the clinic
+    const isModuleActive = activeModules.includes(moduleKey);
+    
+    // ADMIN can see all active modules
+    if (userRole === 'ADMIN') {
+      return isModuleActive;
     }
     
-    // Check if MEMBER has permission for this specific module
-    return userPermissions.includes(moduleKey.toLowerCase());
+    // MEMBER needs both module active AND user permission
+    if (userRole === 'MEMBER') {
+      const hasPermission = userPermissions.includes('ALL') || userPermissions.includes(moduleKey.toLowerCase());
+      return isModuleActive && hasPermission;
+    }
+    
+    return false;
   };
 
   // Derived state
@@ -298,6 +333,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         availableClinics,
         selectedClinic,
         userPermissions,
+        activeModules,
         switchClinic,
         hasRole,
         hasModuleAccess,
