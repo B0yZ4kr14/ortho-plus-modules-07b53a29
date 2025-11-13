@@ -145,8 +145,60 @@ const menuGroups = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
-  const { isAdmin } = useAuth();
+  const { isAdmin, hasModuleAccess, userRole } = useAuth();
   const currentPath = location.pathname;
+  
+  // Module key mapping for permission checks
+  const moduleKeyMap: Record<string, string> = {
+    '/': 'DASHBOARD',
+    '/pacientes': 'PACIENTES',
+    '/dentistas': 'DENTISTAS',
+    '/funcionarios': 'FUNCIONARIOS',
+    '/procedimentos': 'PROCEDIMENTOS',
+    '/agenda-clinica': 'AGENDA',
+    '/pep': 'PEP',
+    '/orcamentos': 'ORCAMENTOS',
+    '/contratos': 'CONTRATOS',
+    '/teleodontologia': 'TELEODONTO',
+    '/historico-teleconsultas': 'TELEODONTO',
+    '/ia-radiografia': 'IA',
+    '/estoque': 'ESTOQUE',
+    '/estoque/cadastros': 'ESTOQUE',
+    '/estoque/requisicoes': 'ESTOQUE',
+    '/estoque/movimentacoes': 'ESTOQUE',
+    '/estoque/pedidos': 'ESTOQUE',
+    '/estoque/integracoes': 'ESTOQUE',
+    '/estoque/analise-pedidos': 'ESTOQUE',
+    '/estoque/analise-consumo': 'ESTOQUE',
+    '/financeiro': 'FINANCEIRO',
+    '/financeiro/transacoes': 'FINANCEIRO',
+    '/financeiro/contas-receber': 'FINANCEIRO',
+    '/financeiro/contas-pagar': 'FINANCEIRO',
+    '/financeiro/notas-fiscais': 'FINANCEIRO',
+    '/financeiro/crypto': 'FINANCEIRO',
+    '/cobranca': 'INADIMPLENCIA',
+    '/split-pagamento': 'SPLIT_PAGAMENTO',
+    '/relatorios': 'RELATORIOS',
+    '/business-intelligence': 'BI',
+    '/analise-comportamental': 'BI',
+    '/report-templates': 'RELATORIOS',
+    '/portal-paciente': 'PORTAL_PACIENTE',
+    '/crm-funil': 'CRM',
+    '/programa-fidelidade': 'FIDELIDADE',
+    '/audit-logs': 'LGPD',
+    '/lgpd-compliance': 'LGPD',
+  };
+  
+  const hasAccessToRoute = (url: string) => {
+    // Admin always has access
+    if (isAdmin) return true;
+    
+    // Check module permission for the route
+    const moduleKey = moduleKeyMap[url];
+    if (!moduleKey) return true; // Allow access if not mapped
+    
+    return hasModuleAccess(moduleKey);
+  };
 
   const collapsed = state === 'collapsed';
   const isActive = (path: string) => currentPath === path;

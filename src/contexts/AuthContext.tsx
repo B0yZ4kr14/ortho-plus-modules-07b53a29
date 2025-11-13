@@ -17,8 +17,10 @@ interface AuthContextType {
   isAdmin: boolean;
   availableClinics: Clinic[];
   selectedClinic: Clinic | null;
+  userPermissions: string[];
   switchClinic: (clinicId: string) => void;
   hasRole: (role: 'ADMIN' | 'MEMBER') => boolean;
+  hasModuleAccess: (moduleKey: string) => boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -34,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [clinicId, setClinicId] = useState<string | null>(null);
   const [availableClinics, setAvailableClinics] = useState<Clinic[]>([]);
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
+  const [userPermissions, setUserPermissions] = useState<string[]>([]);
 
   // Fetch user role and clinics
   const fetchUserMetadata = async (userId: string) => {
@@ -47,6 +50,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (roleData) {
         setUserRole(roleData.role as 'ADMIN' | 'MEMBER');
+        
+        // If ADMIN, grant access to all modules
+        if (roleData.role === 'ADMIN') {
+          setUserPermissions(['ALL']);
+        } else {
+          // Fetch user module permissions for MEMBER
+          const { data: permissionsData } = await supabase
+            .from('user_module_permissions')
+            .select(`
+              module_catalog_id,
+              can_view,
+              module_catalog!inner (
+                module_key
+              )
+            `)
+            .eq('user_id', userId)
+            .eq('can_view', true);
+
+          if (permissionsData) {
+            const moduleKeys = permissionsData.map((p: any) => 
+              p.module_catalog?.module_key?.toLowerCase()
+            ).filter(Boolean);
+            setUserPermissions(moduleKeys);
+          }
+        }
       }
 
       // Get all clinics the user has access to
@@ -180,6 +208,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return userRole === role;
   };
 
+  const hasModuleAccess = (moduleKey: string) => {
+    // ADMIN has access to all modules
+    if (userRole === 'ADMIN' || userPermissions.includes('ALL')) {
+      return true;
+    }
+    
+    // Check if MEMBER has permission for this specific module
+    return userPermissions.includes(moduleKey.toLowerCase());
+  };
+
   const isAdmin = userRole === 'ADMIN';
 
   return (
@@ -193,8 +231,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin,
         availableClinics,
         selectedClinic,
+        userPermissions,
         switchClinic,
         hasRole,
+        hasModuleAccess,
         signUp,
         signIn,
         signOut,
