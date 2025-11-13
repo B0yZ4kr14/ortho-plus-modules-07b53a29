@@ -54,6 +54,7 @@ import CRMFunil from '@/pages/CRMFunil';
 import SplitPagamento from '@/pages/SplitPagamento';
 import ProgramaFidelidade from '@/pages/ProgramaFidelidade';
 import NotFound from './pages/NotFound';
+import TestNotifications from '@/pages/TestNotifications';
 import { ProductTour } from './components/tour/ProductTour';
 
 const queryClient = new QueryClient();
@@ -123,6 +124,7 @@ const App = () => (
                 <Route path="/modulos" element={<ProtectedRoute><AppLayout><GerenciamentoModulos /></AppLayout></ProtectedRoute>} />
                 <Route path="/configuracoes" element={<ProtectedRoute requireAdmin><AppLayout><Configuracoes /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/modules" element={<ProtectedRoute requireAdmin><AppLayout><ModulesAdmin /></AppLayout></ProtectedRoute>} />
+                <Route path="/test-notifications" element={<ProtectedRoute><AppLayout><TestNotifications /></AppLayout></ProtectedRoute>} />
                 
                 {/* 404 Route */}
                 <Route path="*" element={<NotFound />} />
