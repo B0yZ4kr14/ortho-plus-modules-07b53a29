@@ -306,7 +306,7 @@ export function AppSidebar() {
                   </CollapsibleContent>
                 </SidebarGroup>
               </Collapsible> : <SidebarGroup>
-                <SidebarGroupLabel className="text-sidebar-foreground/70 font-medium text-xs uppercase tracking-wider px-3">
+                <SidebarGroupLabel className="text-sidebar-foreground/70 font-medium text-xs uppercase tracking-wider px-3 rounded-lg">
                   {!collapsed && group.label}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
