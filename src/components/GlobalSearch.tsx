@@ -129,10 +129,10 @@ export function GlobalSearch() {
         className="relative w-full max-w-2xl cursor-pointer"
         onClick={() => setOpen(true)}
       >
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <div className="h-10 w-full rounded-xl border-0 bg-muted/50 pl-10 pr-3 text-sm text-muted-foreground flex items-center hover:bg-muted/70 transition-all shadow-sm hover:shadow-md backdrop-blur-sm">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="h-11 w-full rounded-2xl border-0 bg-gradient-to-br from-card to-muted/50 pl-11 pr-3 text-sm text-muted-foreground flex items-center hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 shadow-lg backdrop-blur-md">
           Buscar pacientes, agendamentos, tratamentos...
-          <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-md bg-background/80 px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100 shadow-sm">
+          <kbd className="ml-auto pointer-events-none inline-flex h-6 select-none items-center gap-1 rounded-lg bg-background/90 px-2 font-mono text-[10px] font-medium text-muted-foreground shadow-md border border-border/50">
             <span className="text-xs">⌘</span>K
           </kbd>
         </div>

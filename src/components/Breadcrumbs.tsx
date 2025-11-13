@@ -62,10 +62,10 @@ export function Breadcrumbs() {
 
   return (
     <Breadcrumb>
-      <BreadcrumbList className="text-sm">
+      <BreadcrumbList className="text-sm font-medium">
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link to="/dashboard" className="flex items-center gap-1 hover:text-foreground transition-colors">
+            <Link to="/dashboard" className="flex items-center gap-1.5 hover:text-foreground transition-all duration-200 p-1.5 rounded-lg hover:bg-accent/50">
               <Home className="h-4 w-4" />
               <span className="sr-only">Home</span>
             </Link>
@@ -83,10 +83,10 @@ export function Breadcrumbs() {
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </BreadcrumbSeparator>
               {isLast ? (
-                <BreadcrumbPage className="font-medium text-foreground">{label}</BreadcrumbPage>
+                <BreadcrumbPage className="font-semibold text-foreground px-2 py-1 rounded-lg bg-primary/10">{label}</BreadcrumbPage>
               ) : (
                 <BreadcrumbLink asChild>
-                  <Link to={routeTo} className="hover:text-foreground transition-colors">{label}</Link>
+                  <Link to={routeTo} className="hover:text-foreground transition-all duration-200 px-2 py-1 rounded-lg hover:bg-accent/50">{label}</Link>
                 </BreadcrumbLink>
               )}
             </BreadcrumbItem>
