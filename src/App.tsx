@@ -76,6 +76,7 @@ import ModulesPage from './pages/settings/ModulesPage';
 import DashboardVendasPDV from './pages/financeiro/DashboardVendasPDV';
 import MetasGamificacao from './pages/pdv/MetasGamificacao';
 import DashboardExecutivoPDV from './pages/pdv/DashboardExecutivoPDV';
+import ResetPassword from './pages/ResetPassword';
 
 const queryClient = new QueryClient();
 
@@ -98,6 +99,7 @@ const App = () => (
               <Routes>
                 <Route path="/demo" element={<Demo />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 
                 {/* Protected Routes with Layout */}
                 <Route path="/" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
