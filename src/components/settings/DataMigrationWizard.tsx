@@ -36,6 +36,11 @@ interface ExportOptions {
   includeAppointments: boolean;
   includeFinanceiro: boolean;
   format: 'json' | 'csv' | 'excel';
+  enableCompression: boolean;
+  enableEncryption: boolean;
+  encryptionPassword?: string;
+  isIncremental: boolean;
+  lastBackupDate?: string;
 }
 
 interface ImportOptions {
@@ -63,7 +68,10 @@ export function DataMigrationWizard({ open, onClose, mode }: DataMigrationWizard
     includeProntuarios: true,
     includeAppointments: true,
     includeFinanceiro: false,
-    format: 'json'
+    format: 'json',
+    enableCompression: true,
+    enableEncryption: false,
+    isIncremental: false
   });
 
   // Import options
@@ -86,7 +94,7 @@ export function DataMigrationWizard({ open, onClose, mode }: DataMigrationWizard
     try {
       setProgress(20);
       
-      const { data, error } = await supabase.functions.invoke('export-clinic-data', {
+      const { data, error } = await supabase.functions.invoke('manual-backup', {
         body: exportOptions
       });
 

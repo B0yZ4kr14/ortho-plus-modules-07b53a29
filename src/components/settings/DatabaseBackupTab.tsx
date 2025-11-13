@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { BackupStatsDashboard } from "./BackupStatsDashboard";
 import {
   Download,
   FileJson,
@@ -125,6 +126,7 @@ export default function DatabaseBackupTab() {
 
   return (
     <div className="space-y-6">
+      <BackupStatsDashboard />
       <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>

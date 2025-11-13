@@ -1,99 +1,120 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+console.log('cleanup-old-backups function started')
 
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+Deno.serve(async (_req) => {
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    const { data: clinics, error: clinicsError } = await supabase
+      .from('clinics')
+      .select('id, backup_retention_days, auto_cleanup_enabled')
+
+    if (clinicsError) {
+      console.error('Error fetching clinics:', clinicsError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch clinics' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const results = []
+
+    for (const clinic of clinics || []) {
+      if (!clinic.auto_cleanup_enabled) {
+        console.log(`Skipping clinic ${clinic.id} - auto cleanup disabled`)
+        continue
       }
-    );
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Não autorizado' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      const retentionDays = clinic.backup_retention_days || 90
+      const cutoffDate = new Date()
+      cutoffDate.setDate(cutoffDate.getDate() - retentionDays)
+
+      console.log(`Cleaning up backups for clinic ${clinic.id} older than ${cutoffDate.toISOString()}`)
+
+      const { data: oldBackups, error: fetchError } = await supabase
+        .from('backup_history')
+        .select('id, file_size_bytes')
+        .eq('clinic_id', clinic.id)
+        .lt('created_at', cutoffDate.toISOString())
+        .eq('status', 'success')
+
+      if (fetchError) {
+        console.error(`Error fetching old backups for clinic ${clinic.id}:`, fetchError)
+        results.push({
+          clinicId: clinic.id,
+          success: false,
+          error: fetchError.message
+        })
+        continue
+      }
+
+      if (!oldBackups || oldBackups.length === 0) {
+        console.log(`No old backups to clean up for clinic ${clinic.id}`)
+        results.push({
+          clinicId: clinic.id,
+          success: true,
+          deletedCount: 0,
+          freedBytes: 0
+        })
+        continue
+      }
+
+      const deletedCount = oldBackups.length
+      const freedBytes = oldBackups.reduce((sum, backup) => sum + (backup.file_size_bytes || 0), 0)
+
+      const { error: deleteError } = await supabase
+        .from('backup_history')
+        .delete()
+        .in('id', oldBackups.map(b => b.id))
+
+      if (deleteError) {
+        console.error(`Error deleting old backups for clinic ${clinic.id}:`, deleteError)
+        results.push({
+          clinicId: clinic.id,
+          success: false,
+          error: deleteError.message
+        })
+        continue
+      }
+
+      await supabase.from('audit_logs').insert({
+        clinic_id: clinic.id,
+        action: 'BACKUP_CLEANUP',
+        details: {
+          deletedCount,
+          freedBytes,
+          retentionDays,
+          cutoffDate: cutoffDate.toISOString()
+        }
+      })
+
+      console.log(`Cleaned up ${deletedCount} backups for clinic ${clinic.id}, freed ${freedBytes} bytes`)
+      results.push({
+        clinicId: clinic.id,
+        success: true,
+        deletedCount,
+        freedBytes
+      })
     }
-
-    // Verificar se é ADMIN
-    const { data: roles } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!roles || roles.role !== 'ADMIN') {
-      return new Response(
-        JSON.stringify({ error: 'Apenas administradores podem executar limpeza de backups' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const { clinic_id } = await req.json();
-
-    if (!clinic_id) {
-      return new Response(
-        JSON.stringify({ error: 'clinic_id é obrigatório' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Verificar se usuário tem acesso à clínica
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('clinic_id')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || profile.clinic_id !== clinic_id) {
-      return new Response(
-        JSON.stringify({ error: 'Acesso negado a esta clínica' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Executar função de limpeza
-    const { data, error } = await supabase
-      .rpc('cleanup_old_backups', { p_clinic_id: clinic_id });
-
-    if (error) {
-      console.error('Erro ao executar cleanup:', error);
-      throw error;
-    }
-
-    const result = data?.[0] || { deleted_count: 0, freed_bytes: 0 };
-
-    console.log(`Limpeza concluída para clinic_id: ${clinic_id}`, result);
 
     return new Response(
       JSON.stringify({
         success: true,
-        deleted_count: result.deleted_count,
-        freed_bytes: result.freed_bytes,
-        message: `${result.deleted_count} backup(s) removido(s), ${(result.freed_bytes / (1024 * 1024)).toFixed(2)} MB liberados`
+        processedClinics: results.length,
+        results
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    )
 
   } catch (error) {
-    console.error('Erro na limpeza de backups:', error);
+    console.error('Error in cleanup-old-backups:', error)
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Erro desconhecido' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    )
   }
-});
+})

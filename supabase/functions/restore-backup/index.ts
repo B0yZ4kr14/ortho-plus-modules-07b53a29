@@ -1,13 +1,36 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1'
+import { corsHeaders } from '../_shared/cors.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+console.log('restore-backup function started')
+
+async function decryptData(encryptedData: string, password: string): Promise<string> {
+  const decoder = new TextDecoder()
+  const encoder = new TextEncoder()
+  
+  const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0))
+  const iv = combined.slice(0, 12)
+  const encryptedBuffer = combined.slice(12)
+  
+  const passwordKey = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(password.padEnd(32, '0').substring(0, 32)),
+    'AES-GCM',
+    false,
+    ['decrypt']
+  )
+  
+  const decryptedBuffer = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv },
+    passwordKey,
+    encryptedBuffer
+  )
+  
+  return decoder.decode(decryptedBuffer)
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
@@ -19,120 +42,105 @@ Deno.serve(async (req) => {
           headers: { Authorization: req.headers.get('Authorization')! },
         },
       }
-    );
+    )
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Não autorizado' }),
+        JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      )
     }
 
-    // Verificar se é ADMIN
     const { data: roles } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
-      .single();
 
-    if (!roles || roles.role !== 'ADMIN') {
+    if (!roles?.some((r) => r.role === 'ADMIN')) {
       return new Response(
-        JSON.stringify({ error: 'Apenas administradores podem restaurar backups' }),
+        JSON.stringify({ error: 'Forbidden: Admin access required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      )
     }
 
-    const { backup_id, clinic_id } = await req.json();
-
-    if (!backup_id || !clinic_id) {
-      return new Response(
-        JSON.stringify({ error: 'backup_id e clinic_id são obrigatórios' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Verificar se usuário tem acesso à clínica
     const { data: profile } = await supabase
       .from('profiles')
       .select('clinic_id')
       .eq('id', user.id)
-      .single();
+      .single()
 
-    if (!profile || profile.clinic_id !== clinic_id) {
+    if (!profile?.clinic_id) {
       return new Response(
-        JSON.stringify({ error: 'Acesso negado a esta clínica' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Buscar informações do backup
-    const { data: backup, error: backupError } = await supabase
-      .from('backup_history')
-      .select('*')
-      .eq('id', backup_id)
-      .eq('clinic_id', clinic_id)
-      .single();
-
-    if (backupError || !backup) {
-      return new Response(
-        JSON.stringify({ error: 'Backup não encontrado' }),
+        JSON.stringify({ error: 'Clinic not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      )
     }
 
-    if (backup.status !== 'success') {
+    const { backupData, decryptionPassword } = await req.json()
+
+    let parsedData = backupData
+
+    if (decryptionPassword) {
+      parsedData = await decryptData(backupData, decryptionPassword)
+    }
+
+    const importData = JSON.parse(parsedData)
+
+    if (!importData.version || !importData.data) {
       return new Response(
-        JSON.stringify({ error: 'Apenas backups concluídos podem ser restaurados' }),
+        JSON.stringify({ error: 'Invalid backup format' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      )
     }
 
-    // Log de auditoria da restauração
+    const results = {
+      modules: 0,
+      patients: 0,
+      historico: 0,
+      prontuarios: 0,
+      appointments: 0,
+      financeiro: 0
+    }
+
+    if (importData.data.modules) {
+      for (const module of importData.data.modules) {
+        await supabase
+          .from('clinic_modules')
+          .upsert({
+            clinic_id: profile.clinic_id,
+            module_catalog_id: module.module_catalog_id,
+            is_active: module.is_active
+          }, {
+            onConflict: 'clinic_id,module_catalog_id'
+          })
+        results.modules++
+      }
+    }
+
     await supabase.from('audit_logs').insert({
+      clinic_id: profile.clinic_id,
       user_id: user.id,
-      clinic_id: clinic_id,
       action: 'BACKUP_RESTORED',
       details: {
-        backup_id: backup_id,
-        backup_date: backup.created_at,
-        restored_at: new Date().toISOString()
+        backupId: importData.backupId,
+        results
       }
-    });
-
-    // Criar registro de backup da restauração
-    await supabase.from('backup_history').insert({
-      clinic_id: clinic_id,
-      backup_type: 'manual',
-      status: 'success',
-      created_by: user.id,
-      completed_at: new Date().toISOString(),
-      metadata: {
-        action: 'restore',
-        source_backup_id: backup_id,
-        source_backup_date: backup.created_at
-      }
-    });
-
-    console.log(`Backup ${backup_id} restaurado para clinic_id: ${clinic_id}`);
+    })
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Backup restaurado com sucesso',
-        restored_backup: {
-          id: backup_id,
-          date: backup.created_at
-        }
+      JSON.stringify({
+        success: true,
+        results
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    )
 
   } catch (error) {
-    console.error('Erro ao restaurar backup:', error);
+    console.error('Error in restore-backup:', error)
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Erro desconhecido' }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    )
   }
-});
+})

@@ -12,6 +12,24 @@ verify_jwt = true
 [functions.toggle-module-state]
 verify_jwt = true
 
+[functions.manual-backup]
+verify_jwt = true
+
+[functions.configure-auto-backup]
+verify_jwt = true
+
+[functions.scheduled-cleanup]
+verify_jwt = false
+
+[functions.download-backup]
+verify_jwt = true
+
+[functions.cleanup-old-backups]
+verify_jwt = false
+
+[functions.restore-backup]
+verify_jwt = true
+
 [functions.export-clinic-data]
 verify_jwt = true
 
