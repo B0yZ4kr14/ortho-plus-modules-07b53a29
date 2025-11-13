@@ -9,6 +9,8 @@ import { BackupStatsDashboard } from "./BackupStatsDashboard";
 import { BackupAdvancedStatsDashboard } from "./BackupAdvancedStatsDashboard";
 import { BackupRetentionConfig } from "./BackupRetentionConfig";
 import { BackupVersionTimeline } from "./BackupVersionTimeline";
+import { BackupUnifiedDashboard } from "./BackupUnifiedDashboard";
+import { PostgreSQLDashboard } from "./PostgreSQLDashboard";
 import BackupExecutiveDashboard from "./BackupExecutiveDashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScheduledBackupWizard } from "./ScheduledBackupWizard";
@@ -148,14 +150,24 @@ export default function DatabaseBackupTab() {
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="backup" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="backup">Backup</TabsTrigger>
-          <TabsTrigger value="executive">Executivo</TabsTrigger>
+      <Tabs defaultValue="unified" className="w-full">
+        <TabsList className="grid w-full grid-cols-7">
+          <TabsTrigger value="unified">Dashboard 360°</TabsTrigger>
+          <TabsTrigger value="postgres">PostgreSQL</TabsTrigger>
+          <TabsTrigger value="backup">Backups</TabsTrigger>
           <TabsTrigger value="stats">Estatísticas</TabsTrigger>
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="retention">Retenção</TabsTrigger>
+          <TabsTrigger value="executive">Executivo</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="unified" className="space-y-6 mt-6">
+          <BackupUnifiedDashboard />
+        </TabsContent>
+
+        <TabsContent value="postgres" className="space-y-6 mt-6">
+          <PostgreSQLDashboard />
+        </TabsContent>
 
         <TabsContent value="backup" className="space-y-6 mt-6">
       <BackupStatsDashboard />

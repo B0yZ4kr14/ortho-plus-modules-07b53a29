@@ -122,3 +122,15 @@ verify_jwt = false
 
 [functions.sincronizar-nfce-contingencia]
 verify_jwt = false
+
+[functions.analyze-database-health]
+verify_jwt = true
+
+[functions.backup-streaming]
+verify_jwt = true
+
+[functions.backup-deduplication]
+verify_jwt = true
+
+[functions.backup-immutability]
+verify_jwt = true
