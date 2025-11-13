@@ -35,7 +35,7 @@ export function DashboardHeader({ className, onMenuClick }: DashboardHeaderProps
   };
   return <>
       <HotkeysHelp />
-      <header className={cn("sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60", className)}>
+      <header className={cn("sticky top-0 z-50 w-full bg-background/95 backdrop-blur-xl shadow-lg supports-[backdrop-filter]:bg-background/60", className)}>
         <div className="flex items-center justify-between h-14 px-6 gap-6">
           {/* Mobile menu button - shown only on mobile */}
           {onMenuClick && (
@@ -115,7 +115,7 @@ export function DashboardHeader({ className, onMenuClick }: DashboardHeaderProps
           </div>
         </div>
 
-        <div className="border-t border-border/50 bg-muted/30 px-6 py-2">
+        <div className="bg-muted/20 px-6 py-2.5 mt-1">
           <Breadcrumbs />
         </div>
       </header>
