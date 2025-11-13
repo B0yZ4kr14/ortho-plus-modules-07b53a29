@@ -275,7 +275,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
       <SidebarMenuButton 
         asChild 
         isActive={isActive(item.url)} 
-        className={`group/button my-1 rounded-xl hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-md transition-all duration-200 min-h-[44px] relative overflow-hidden ${
+        className={`group/button my-1 rounded-xl hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-lg transition-all duration-200 min-h-[44px] relative overflow-hidden ${
           isActive(item.url) 
             ? 'bg-primary/20 text-primary border-l-4 border-l-primary shadow-lg' 
             : ''
@@ -324,7 +324,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
       className={`transition-all duration-300 ease-in-out ${collapsed ? 'w-16' : 'w-64'}`} 
       collapsible="icon"
     >
-      <SidebarHeader className="p-4 mb-2 mx-2 rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-xl backdrop-blur-sm border-0 transition-all duration-300">
+      <SidebarHeader className="p-4 mb-2 mx-2 rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-2xl backdrop-blur-sm border-0 transition-all duration-300">
         {!collapsed ? (
           <div className="flex items-center justify-center py-3 transition-all duration-300">
             <img src="/src/assets/ortho-logo-full.png" alt="Ortho +" className="h-24 w-auto object-contain transition-all duration-300 drop-shadow-2xl opacity-100" />
@@ -346,7 +346,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
             
             {group.collapsed ? (
               <Collapsible defaultOpen={false} className="group/collapsible">
-                <div className="rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-lg backdrop-blur-sm border border-sidebar-border/50 p-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl">
+                <div className="rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-xl backdrop-blur-sm border border-sidebar-border/50 p-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl">
                   <SidebarGroup>
                     <SidebarGroupLabel className="text-sm font-bold text-sidebar-foreground px-3 py-2 drop-shadow-md">
                       <CollapsibleTrigger className="flex w-full items-center justify-between hover:text-primary transition-all duration-200">
@@ -373,7 +373,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
                 </div>
               </Collapsible>
             ) : (
-              <div className="rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-lg backdrop-blur-sm border border-sidebar-border/50 p-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl">
+              <div className="rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-xl backdrop-blur-sm border border-sidebar-border/50 p-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl">
                 <SidebarGroup>
                   <SidebarGroupLabel className="text-sm font-bold text-sidebar-foreground px-3 py-2 drop-shadow-md">
                     {!collapsed && <span className="tracking-wide transition-opacity duration-300">{group.label}</span>}
@@ -384,7 +384,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
                         <Collapsible key={item.title} defaultOpen={false} className="group/submenu">
                           <SidebarMenuItem>
                             <CollapsibleTrigger asChild>
-                              <SidebarMenuButton className="group/button my-1 rounded-xl hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-md transition-all duration-200">
+                              <SidebarMenuButton className="group/button my-1 rounded-xl hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-lg transition-all duration-200">
                               <div className="flex items-center gap-3 px-3 py-2 w-full">
                                 <item.icon className="h-5 w-5 shrink-0" />
                                  {!collapsed && (
@@ -423,7 +423,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
         {isAdmin && (
           <>
             <div 
-              className="rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-lg backdrop-blur-sm border border-sidebar-border/50 p-2 mt-3 animate-fade-in transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
+              className="rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-xl backdrop-blur-sm border border-sidebar-border/50 p-2 mt-3 animate-fade-in transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl"
               style={{ animationDelay: `${menuGroups.length * 100}ms` }}
             >
               <SidebarGroup>
@@ -443,7 +443,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
         )}
       </SidebarContent>
 
-      <SidebarFooter className="p-3 mt-2 mx-2 rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-xl backdrop-blur-sm border-0 transition-all duration-300">
+      <SidebarFooter className="p-3 mt-2 mx-2 rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-2xl backdrop-blur-sm border-0 transition-all duration-300">
         {!collapsed && (
           <div className="text-center space-y-0.5 transition-opacity duration-300">
             <p className="text-xs text-sidebar-foreground/80 font-semibold drop-shadow">Ortho + v1.0</p>

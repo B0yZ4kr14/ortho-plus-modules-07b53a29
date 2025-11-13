@@ -8,16 +8,16 @@ const cardVariants = cva(
   {
     variants: {
       variant: {
-        default: "shadow-lg hover:shadow-xl backdrop-blur-sm bg-card/95",
-        elevated: "shadow-xl hover:shadow-2xl border-0 backdrop-blur-sm bg-card/95 hover:-translate-y-1",
-        interactive: "shadow-lg hover:shadow-xl hover:-translate-y-1 cursor-pointer backdrop-blur-sm bg-card/95 hover:bg-card active:translate-y-0",
-        gradient: "bg-gradient-to-br from-card via-card to-card/80 shadow-xl border-0 relative overflow-hidden backdrop-blur-sm",
-        metric: "shadow-lg border-l-4 border-l-primary/60 hover:shadow-xl hover:border-l-primary hover:-translate-y-0.5 bg-gradient-to-br from-card via-card to-muted/10 backdrop-blur-sm",
+        default: "shadow-xl hover:shadow-2xl backdrop-blur-sm bg-card/95 shadow-primary/5",
+        elevated: "shadow-2xl hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-0 backdrop-blur-sm bg-card/95 hover:-translate-y-2 shadow-primary/10",
+        interactive: "shadow-xl hover:shadow-2xl hover:-translate-y-2 cursor-pointer backdrop-blur-sm bg-card/95 hover:bg-card active:translate-y-0 shadow-primary/5 hover:shadow-primary/10",
+        gradient: "bg-gradient-to-br from-card via-card to-card/80 shadow-2xl hover:shadow-[0_25px_60px_rgba(0,0,0,0.35)] border-0 relative overflow-hidden backdrop-blur-sm shadow-primary/10",
+        metric: "shadow-xl border-l-4 border-l-primary/60 hover:shadow-2xl hover:border-l-primary hover:-translate-y-1 bg-gradient-to-br from-card via-card to-muted/10 backdrop-blur-sm shadow-primary/8 hover:shadow-primary/12",
       },
       depth: {
-        subtle: "shadow-md hover:shadow-lg",
-        normal: "shadow-lg hover:shadow-xl",
-        intense: "shadow-xl hover:shadow-2xl",
+        subtle: "shadow-lg hover:shadow-xl shadow-primary/5",
+        normal: "shadow-xl hover:shadow-2xl shadow-primary/8",
+        intense: "shadow-2xl hover:shadow-[0_25px_60px_rgba(0,0,0,0.35)] shadow-primary/10",
       },
     },
     defaultVariants: {
