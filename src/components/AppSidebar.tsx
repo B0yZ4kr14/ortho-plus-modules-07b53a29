@@ -235,21 +235,24 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
     }, 600);
   };
 
-  // Module key mapping for permission checks (REFATORADO - Corrigido para incluir sub-módulos)
+  // Module key mapping for permission checks (REFATORADO COMPLETO - Todos os 51 módulos)
   const moduleKeyMap: Record<string, string> = {
     '/': 'DASHBOARD',
+    '/dashboard': 'DASHBOARD',
     '/pacientes': 'PACIENTES',
     '/dentistas': 'DENTISTAS',
     '/funcionarios': 'FUNCIONARIOS',
     '/procedimentos': 'PROCEDIMENTOS',
+    '/agenda': 'AGENDA',
     '/agenda-clinica': 'AGENDA',
     '/pep': 'PEP',
     '/orcamentos': 'ORCAMENTOS',
     '/contratos': 'CONTRATOS',
     '/teleodontologia': 'TELEODONTO_CONSULTAS',
     '/historico-teleconsultas': 'TELEODONTO_HISTORICO',
-    '/ia-radiografia': 'IA',
+    '/ia-radiografia': 'IA_RADIOGRAFIA',
     '/estoque': 'ESTOQUE_DASHBOARD',
+    '/estoque/dashboard': 'ESTOQUE_DASHBOARD',
     '/estoque/cadastros': 'ESTOQUE_CADASTROS',
     '/estoque/requisicoes': 'ESTOQUE_REQUISICOES',
     '/estoque/movimentacoes': 'ESTOQUE_MOVIMENTACOES',
@@ -262,23 +265,26 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
     '/estoque/inventario/historico': 'ESTOQUE_INVENTARIO_HISTORICO',
     '/estoque/scanner-mobile': 'ESTOQUE_SCANNER',
     '/financeiro': 'FINANCEIRO_DASHBOARD',
+    '/financeiro/dashboard': 'FINANCEIRO_DASHBOARD',
     '/financeiro/transacoes': 'FINANCEIRO_TRANSACOES',
     '/financeiro/contas-receber': 'FINANCEIRO_RECEBER',
     '/financeiro/contas-pagar': 'FINANCEIRO_PAGAR',
     '/financeiro/notas-fiscais': 'FINANCEIRO_NOTAS',
     '/financeiro/crypto': 'FINANCEIRO_CRYPTO',
-    '/cobranca': 'INADIMPLENCIA',
+    '/cobranca': 'COBRANCA',
     '/split-pagamento': 'SPLIT_PAGAMENTO',
     '/relatorios': 'RELATORIOS',
     '/business-intelligence': 'BI',
     '/analise-comportamental': 'BI_COMPORTAMENTAL',
     '/report-templates': 'RELATORIOS_TEMPLATES',
     '/portal-paciente': 'PORTAL_PACIENTE',
-    '/crm-funil': 'CRM',
+    '/crm': 'CRM',
+    '/crm-funil': 'CRM_FUNIL',
     '/programa-fidelidade': 'FIDELIDADE',
     '/audit-logs': 'AUDITORIA',
     '/lgpd-compliance': 'LGPD',
-    '/configuracoes': 'CONFIGURACOES'
+    '/configuracoes': 'CONFIGURACOES',
+    '/configuracoes/analytics': 'CONFIGURACOES'
   };
   const hasAccessToRoute = (url: string) => {
     // Admin always has access
