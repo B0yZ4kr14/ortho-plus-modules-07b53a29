@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCryptoSupabase } from '@/modules/crypto/hooks/useCryptoSupabase';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { LoadingState } from '@/components/shared/LoadingState';
+import { CryptoKPISkeleton, CryptoListSkeleton, CryptoTableSkeleton } from '@/components/crypto/CryptoSkeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -140,13 +141,26 @@ export default function CryptoPagamentos() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-6">
+      <div className="container mx-auto py-6 space-y-6">
         <PageHeader
           icon={Bitcoin}
           title="Pagamentos em Criptomoedas"
           description="Receba pagamentos em Bitcoin e outras criptomoedas"
         />
-        <LoadingState size="lg" message="Carregando dados de criptomoedas..." />
+        
+        <CryptoKPISkeleton />
+        
+        <Card depth="normal" className="mt-6">
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <CryptoListSkeleton />
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -333,6 +347,10 @@ export default function CryptoPagamentos() {
                   <p className="text-muted-foreground max-w-md mx-auto">
                     Para começar a receber pagamentos em criptomoedas, você precisa configurar uma exchange (Binance, Coinbase, etc.)
                   </p>
+                  <p className="text-sm text-muted-foreground max-w-lg mx-auto mt-4">
+                    <strong>Dica:</strong> Você pode gerar suas credenciais API na seção de API Management da sua conta na exchange. 
+                    Certifique-se de habilitar apenas as permissões necessárias (leitura de saldo e histórico).
+                  </p>
                 </div>
                 <div className="flex justify-center gap-4">
                   <Button onClick={() => setExchangeDialogOpen(true)} size="lg">
@@ -341,9 +359,20 @@ export default function CryptoPagamentos() {
                   </Button>
                 </div>
                 <div className="pt-4 border-t">
-                  <p className="text-sm text-muted-foreground">
-                    Após configurar a exchange, você poderá criar carteiras e gerar QR Codes para recebimento.
-                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="text-center p-3 rounded-lg bg-muted/50">
+                      <p className="font-semibold mb-1">Binance</p>
+                      <p className="text-muted-foreground text-xs">Maior volume global</p>
+                    </div>
+                    <div className="text-center p-3 rounded-lg bg-muted/50">
+                      <p className="font-semibold mb-1">Coinbase</p>
+                      <p className="text-muted-foreground text-xs">Interface amigável</p>
+                    </div>
+                    <div className="text-center p-3 rounded-lg bg-muted/50">
+                      <p className="font-semibold mb-1">Mercado Bitcoin</p>
+                      <p className="text-muted-foreground text-xs">Exchange brasileira</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -550,7 +579,11 @@ export default function CryptoPagamentos() {
                 <div className="space-y-2">
                   <h3 className="text-xl font-semibold">Configure uma exchange primeiro</h3>
                   <p className="text-muted-foreground max-w-md mx-auto">
-                    Antes de criar carteiras, você precisa configurar pelo menos uma exchange.
+                    Antes de criar carteiras, você precisa configurar pelo menos uma exchange para sincronização.
+                  </p>
+                  <p className="text-sm text-muted-foreground max-w-lg mx-auto mt-4">
+                    <strong>Por que vincular a uma exchange?</strong> A vinculação permite sincronização automática de saldos, 
+                    confirmações de transações e cotações em tempo real.
                   </p>
                 </div>
                 <div className="flex justify-center">
@@ -620,28 +653,19 @@ export default function CryptoPagamentos() {
                   <p className="text-muted-foreground max-w-md mx-auto">
                     Configure uma exchange (Binance, Coinbase, Kraken, etc.) com suas credenciais API para começar.
                   </p>
+                  <Alert className="mt-6 text-left max-w-2xl mx-auto">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      <strong>Importante:</strong> Suas credenciais API são armazenadas de forma segura e criptografada. 
+                      Recomendamos criar uma API Key com permissões somente de leitura para maior segurança.
+                    </AlertDescription>
+                  </Alert>
                 </div>
                 <div className="flex justify-center">
                   <Button onClick={() => setExchangeDialogOpen(true)} size="lg">
                     <Settings className="h-5 w-5 mr-2" />
                     Configurar Exchange
                   </Button>
-                </div>
-                <div className="pt-4 border-t">
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div className="text-center">
-                      <p className="font-semibold">Binance</p>
-                      <p className="text-muted-foreground text-xs">Maior volume</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="font-semibold">Coinbase</p>
-                      <p className="text-muted-foreground text-xs">Mais segura</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="font-semibold">Mercado Bitcoin</p>
-                      <p className="text-muted-foreground text-xs">Nacional</p>
-                    </div>
-                  </div>
                 </div>
               </div>
             </Card>
