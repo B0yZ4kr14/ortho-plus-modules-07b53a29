@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useInventarioSupabase } from '@/modules/estoque/hooks/useInventarioSupabase';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,14 @@ import { InventarioContagemDialog } from '@/modules/estoque/components/Inventari
 import { InventarioDivergenciasDialog } from '@/modules/estoque/components/InventarioDivergenciasDialog';
 
 export default function EstoqueInventario() {
+  const {
+    inventarios,
+    loading,
+    addInventario,
+    updateInventario,
+    deleteInventario,
+  } = useInventarioSupabase();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [tipoFilter, setTipoFilter] = useState<string>('all');
@@ -40,38 +49,6 @@ export default function EstoqueInventario() {
   const [divergenciasDialogOpen, setDivergenciasDialogOpen] = useState(false);
   const [selectedInventario, setSelectedInventario] = useState<Inventario | undefined>();
   const [viewMode, setViewMode] = useState<'form' | 'view'>('form');
-
-  // Mock data - substituir por useInventarioSupabase
-  const inventarios: Inventario[] = [
-    {
-      id: '1',
-      numero: 'INV-2024-001',
-      data: '2024-01-15',
-      status: 'CONCLUIDO',
-      tipo: 'GERAL',
-      responsavel: 'João Silva',
-      totalItens: 150,
-      itensContados: 150,
-      divergenciasEncontradas: 12,
-      valorDivergencias: 1250.50,
-      observacoes: 'Inventário anual completo',
-      createdAt: '2024-01-15T08:00:00Z',
-    },
-    {
-      id: '2',
-      numero: 'INV-2024-002',
-      data: '2024-01-20',
-      status: 'EM_ANDAMENTO',
-      tipo: 'CICLICO',
-      responsavel: 'Maria Santos',
-      totalItens: 45,
-      itensContados: 30,
-      divergenciasEncontradas: 3,
-      valorDivergencias: 350.00,
-      observacoes: 'Contagem cíclica - Categoria Instrumentos',
-      createdAt: '2024-01-20T09:00:00Z',
-    },
-  ];
 
   const filteredInventarios = inventarios.filter(inv => {
     const matchesSearch = inv.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -109,9 +86,17 @@ export default function EstoqueInventario() {
     setDivergenciasDialogOpen(true);
   };
 
-  const handleSubmit = (data: Inventario) => {
-    console.log('Inventário salvo:', data);
-    setDialogOpen(false);
+  const handleSubmit = async (data: Inventario) => {
+    try {
+      if (selectedInventario) {
+        await updateInventario(selectedInventario.id, data);
+      } else {
+        await addInventario(data);
+      }
+      setDialogOpen(false);
+    } catch (error) {
+      console.error('Error saving inventário:', error);
+    }
   };
 
   const getStatusColor = (status: string) => {

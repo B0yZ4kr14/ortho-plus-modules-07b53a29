@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,6 +17,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle, FileDown } from 'lucide-react';
 import { Inventario, InventarioItem } from '../types/estoque.types';
+import { useInventarioSupabase } from '../hooks/useInventarioSupabase';
+import { toast } from 'sonner';
 
 interface InventarioDivergenciasDialogProps {
   open: boolean;
@@ -28,35 +31,16 @@ export function InventarioDivergenciasDialog({
   onOpenChange,
   inventario,
 }: InventarioDivergenciasDialogProps) {
-  // Mock data com divergências
-  const items: InventarioItem[] = [
-    {
-      id: '1',
-      inventarioId: inventario?.id || '',
-      produtoId: 'prod-1',
-      produtoNome: 'Luva de Procedimento',
-      quantidadeSistema: 150,
-      quantidadeFisica: 145,
-      divergencia: -5,
-      percentualDivergencia: -3.33,
-      valorUnitario: 0.50,
-      valorDivergencia: -2.50,
-      lote: 'LT-2024-001',
-    },
-    {
-      id: '2',
-      inventarioId: inventario?.id || '',
-      produtoId: 'prod-2',
-      produtoNome: 'Seringa 10ml',
-      quantidadeSistema: 80,
-      quantidadeFisica: 92,
-      divergencia: 12,
-      percentualDivergencia: 15.0,
-      valorUnitario: 1.20,
-      valorDivergencia: 14.40,
-      lote: 'LT-2024-005',
-    },
-  ];
+  const { getInventarioItemsByInventarioId, gerarAjustesAutomaticos } = useInventarioSupabase();
+  const [items, setItems] = useState<InventarioItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (inventario?.id && open) {
+      const inventarioItems = getInventarioItemsByInventarioId(inventario.id);
+      setItems(inventarioItems);
+    }
+  }, [inventario?.id, open, getInventarioItemsByInventarioId]);
 
   const divergencias = items.filter(item => item.divergencia !== 0);
 
@@ -65,12 +49,24 @@ export function InventarioDivergenciasDialog({
     0
   );
 
-  const handleGerarAjustes = () => {
-    console.log('Gerar ajustes automáticos de estoque');
+  const handleGerarAjustes = async () => {
+    if (!inventario?.id) return;
+    
+    setLoading(true);
+    try {
+      await gerarAjustesAutomaticos(inventario.id);
+      toast.success('Ajustes automáticos gerados com sucesso');
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error generating adjustments:', error);
+      toast.error('Erro ao gerar ajustes automáticos');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleExportarRelatorio = () => {
-    console.log('Exportar relatório de divergências');
+    toast.info('Exportação de relatório será implementada em breve');
   };
 
   return (
@@ -202,9 +198,9 @@ export function InventarioDivergenciasDialog({
                 Exportar Relatório
               </Button>
               {divergencias.length > 0 && (
-                <Button onClick={handleGerarAjustes}>
+                <Button onClick={handleGerarAjustes} disabled={loading}>
                   <AlertTriangle className="h-4 w-4 mr-2" />
-                  Gerar Ajustes Automáticos
+                  {loading ? 'Gerando...' : 'Gerar Ajustes Automáticos'}
                 </Button>
               )}
             </div>

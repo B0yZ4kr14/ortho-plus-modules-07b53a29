@@ -947,6 +947,130 @@ export type Database = {
           },
         ]
       }
+      inventario_itens: {
+        Row: {
+          contado_em: string | null
+          contado_por: string | null
+          created_at: string
+          divergencia: number | null
+          id: string
+          inventario_id: string
+          lote: string | null
+          observacoes: string | null
+          percentual_divergencia: number | null
+          produto_id: string
+          produto_nome: string
+          quantidade_fisica: number | null
+          quantidade_sistema: number
+          valor_divergencia: number | null
+          valor_unitario: number
+        }
+        Insert: {
+          contado_em?: string | null
+          contado_por?: string | null
+          created_at?: string
+          divergencia?: number | null
+          id?: string
+          inventario_id: string
+          lote?: string | null
+          observacoes?: string | null
+          percentual_divergencia?: number | null
+          produto_id: string
+          produto_nome: string
+          quantidade_fisica?: number | null
+          quantidade_sistema: number
+          valor_divergencia?: number | null
+          valor_unitario: number
+        }
+        Update: {
+          contado_em?: string | null
+          contado_por?: string | null
+          created_at?: string
+          divergencia?: number | null
+          id?: string
+          inventario_id?: string
+          lote?: string | null
+          observacoes?: string | null
+          percentual_divergencia?: number | null
+          produto_id?: string
+          produto_nome?: string
+          quantidade_fisica?: number | null
+          quantidade_sistema?: number
+          valor_divergencia?: number | null
+          valor_unitario?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_itens_inventario_id_fkey"
+            columns: ["inventario_id"]
+            isOneToOne: false
+            referencedRelation: "inventarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventarios: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          created_by: string
+          data: string
+          divergencias_encontradas: number | null
+          id: string
+          itens_contados: number | null
+          numero: string
+          observacoes: string | null
+          responsavel: string
+          status: string
+          tipo: string
+          total_itens: number | null
+          updated_at: string
+          valor_divergencias: number | null
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          created_by: string
+          data: string
+          divergencias_encontradas?: number | null
+          id?: string
+          itens_contados?: number | null
+          numero: string
+          observacoes?: string | null
+          responsavel: string
+          status?: string
+          tipo: string
+          total_itens?: number | null
+          updated_at?: string
+          valor_divergencias?: number | null
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          created_by?: string
+          data?: string
+          divergencias_encontradas?: number | null
+          id?: string
+          itens_contados?: number | null
+          numero?: string
+          observacoes?: string | null
+          responsavel?: string
+          status?: string
+          tipo?: string
+          total_itens?: number | null
+          updated_at?: string
+          valor_divergencias?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventarios_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_interacoes: {
         Row: {
           agendou_avaliacao: boolean | null
