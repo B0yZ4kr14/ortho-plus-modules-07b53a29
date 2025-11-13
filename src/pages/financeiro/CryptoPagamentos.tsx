@@ -147,6 +147,24 @@ export default function CryptoPagamentos() {
         description="Receba pagamentos em Bitcoin e outras criptomoedas de forma profissional e segura"
       />
 
+      {!clinicId && (
+        <Card variant="default" className="border-amber-500/50 bg-amber-500/5">
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                  Nenhuma clínica selecionada
+                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-200 mt-1">
+                  Selecione uma clínica no menu superior para gerenciar pagamentos em criptomoedas.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* KPIs Dashboard */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card variant="metric" depth="normal" className="p-6 border-l-orange-500">
@@ -234,26 +252,77 @@ export default function CryptoPagamentos() {
 
         {/* Transactions Tab */}
         <TabsContent value="transactions" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Histórico de Transações</h3>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setQrCodeDialogOpen(true)}
-              disabled={wallets.filter(w => w.is_active).length === 0}
-            >
-              <QrCode className="h-4 w-4 mr-2" />
-              Gerar QR Code de Pagamento
-            </Button>
-          </div>
-
-          {transactions.length === 0 ? (
-            <Card>
-              <CardContent className="py-8 text-center text-muted-foreground">
-                Nenhuma transação encontrada.
-              </CardContent>
+          {exchanges.length === 0 ? (
+            <Card depth="normal" className="p-8">
+              <div className="text-center space-y-6">
+                <div className="flex justify-center">
+                  <div className="rounded-full bg-primary/10 p-6">
+                    <Settings className="h-12 w-12 text-primary" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold">Configure sua primeira Exchange</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Para começar a receber pagamentos em criptomoedas, você precisa configurar uma exchange (Binance, Coinbase, etc.)
+                  </p>
+                </div>
+                <div className="flex justify-center gap-4">
+                  <Button onClick={() => setExchangeDialogOpen(true)} size="lg">
+                    <Settings className="h-5 w-5 mr-2" />
+                    Configurar Exchange
+                  </Button>
+                </div>
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-muted-foreground">
+                    Após configurar a exchange, você poderá criar carteiras e gerar QR Codes para recebimento.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ) : wallets.length === 0 ? (
+            <Card depth="normal" className="p-8">
+              <div className="text-center space-y-6">
+                <div className="flex justify-center">
+                  <div className="rounded-full bg-orange-500/10 p-6">
+                    <Wallet className="h-12 w-12 text-orange-500" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold">Crie sua primeira Carteira</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Agora que você já configurou uma exchange, crie uma carteira para receber pagamentos em Bitcoin, Ethereum ou outras criptomoedas.
+                  </p>
+                </div>
+                <div className="flex justify-center gap-4">
+                  <Button onClick={() => setWalletDialogOpen(true)} size="lg" className="bg-orange-500 hover:bg-orange-600">
+                    <Plus className="h-5 w-5 mr-2" />
+                    Criar Carteira
+                  </Button>
+                </div>
+              </div>
             </Card>
           ) : (
+            <>
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Histórico de Transações</h3>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setQrCodeDialogOpen(true)}
+                  disabled={wallets.filter(w => w.is_active).length === 0}
+                >
+                  <QrCode className="h-4 w-4 mr-2" />
+                  Gerar QR Code de Pagamento
+                </Button>
+              </div>
+
+              {transactions.length === 0 ? (
+                <Card>
+                  <CardContent className="py-8 text-center text-muted-foreground">
+                    Nenhuma transação encontrada. Gere um QR Code para receber seu primeiro pagamento!
+                  </CardContent>
+                </Card>
+              ) : (
             <div className="space-y-4">
               {transactions.map((tx) => (
                 <Card key={tx.id} className="hover:shadow-md transition-shadow">
@@ -373,6 +442,8 @@ export default function CryptoPagamentos() {
                 </Card>
               ))}
             </div>
+              )}
+            </>
           )}
         </TabsContent>
 
@@ -382,7 +453,7 @@ export default function CryptoPagamentos() {
             <h3 className="text-lg font-semibold">Carteiras Configuradas</h3>
             <Dialog open={walletDialogOpen} onOpenChange={setWalletDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" disabled={exchanges.length === 0}>
                   <Plus className="h-4 w-4 mr-2" />
                   Nova Carteira
                 </Button>
@@ -400,11 +471,49 @@ export default function CryptoPagamentos() {
             </Dialog>
           </div>
 
-          {wallets.length === 0 ? (
-            <Card>
-              <CardContent className="py-8 text-center text-muted-foreground">
-                Nenhuma carteira configurada. Configure uma exchange primeiro.
-              </CardContent>
+          {exchanges.length === 0 ? (
+            <Card depth="normal" className="p-8">
+              <div className="text-center space-y-6">
+                <div className="flex justify-center">
+                  <div className="rounded-full bg-amber-500/10 p-6">
+                    <Info className="h-12 w-12 text-amber-500" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold">Configure uma exchange primeiro</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Antes de criar carteiras, você precisa configurar pelo menos uma exchange.
+                  </p>
+                </div>
+                <div className="flex justify-center">
+                  <Button onClick={() => setExchangeDialogOpen(true)} size="lg">
+                    <Settings className="h-5 w-5 mr-2" />
+                    Configurar Exchange
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ) : wallets.length === 0 ? (
+            <Card depth="normal" className="p-8">
+              <div className="text-center space-y-6">
+                <div className="flex justify-center">
+                  <div className="rounded-full bg-orange-500/10 p-6">
+                    <Wallet className="h-12 w-12 text-orange-500" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold">Nenhuma carteira configurada</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Crie uma carteira para receber pagamentos em Bitcoin, Ethereum ou outras criptomoedas.
+                  </p>
+                </div>
+                <div className="flex justify-center">
+                  <Button onClick={() => setWalletDialogOpen(true)} size="lg" className="bg-orange-500 hover:bg-orange-600">
+                    <Plus className="h-5 w-5 mr-2" />
+                    Criar Carteira
+                  </Button>
+                </div>
+              </div>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -489,7 +598,7 @@ export default function CryptoPagamentos() {
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
                   <Plus className="h-4 w-4 mr-2" />
-                  Configurar Exchange
+                  Nova Exchange
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -505,18 +614,42 @@ export default function CryptoPagamentos() {
           </div>
 
           {exchanges.length === 0 ? (
-            <Card>
-              <CardContent className="py-8 text-center">
-                <Bitcoin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="font-semibold mb-2">Nenhuma Exchange Configurada</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Configure uma exchange para começar a receber pagamentos em criptomoedas
-                </p>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Configurar Primeira Exchange
-                </Button>
-              </CardContent>
+            <Card depth="normal" className="p-8">
+              <div className="text-center space-y-6">
+                <div className="flex justify-center">
+                  <div className="rounded-full bg-blue-500/10 p-6">
+                    <Settings className="h-12 w-12 text-blue-500" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold">Nenhuma exchange configurada</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Configure uma exchange (Binance, Coinbase, Kraken, etc.) com suas credenciais API para começar.
+                  </p>
+                </div>
+                <div className="flex justify-center">
+                  <Button onClick={() => setExchangeDialogOpen(true)} size="lg">
+                    <Settings className="h-5 w-5 mr-2" />
+                    Configurar Exchange
+                  </Button>
+                </div>
+                <div className="pt-4 border-t">
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className="text-center">
+                      <p className="font-semibold">Binance</p>
+                      <p className="text-muted-foreground text-xs">Maior volume</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold">Coinbase</p>
+                      <p className="text-muted-foreground text-xs">Mais segura</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold">Mercado Bitcoin</p>
+                      <p className="text-muted-foreground text-xs">Nacional</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
