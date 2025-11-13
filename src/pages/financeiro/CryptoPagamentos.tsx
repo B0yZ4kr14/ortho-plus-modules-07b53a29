@@ -305,6 +305,19 @@ export default function CryptoPagamentos() {
           </TabsTrigger>
         </TabsList>
 
+        {/* Global Exchange Dialog */}
+        <Dialog open={exchangeDialogOpen} onOpenChange={setExchangeDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Configurar Exchange</DialogTitle>
+            </DialogHeader>
+            <ExchangeConfigForm
+              onSubmit={handleExchangeSubmit}
+              onCancel={() => setExchangeDialogOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
+
         {/* Transactions Tab */}
         <TabsContent value="transactions" className="space-y-4">
           {exchanges.length === 0 ? (
@@ -588,23 +601,10 @@ export default function CryptoPagamentos() {
         <TabsContent value="exchanges" className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Exchanges Configuradas</h3>
-            <Dialog open={exchangeDialogOpen} onOpenChange={setExchangeDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nova Exchange
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Configurar Exchange</DialogTitle>
-                </DialogHeader>
-                <ExchangeConfigForm
-                  onSubmit={handleExchangeSubmit}
-                  onCancel={() => setExchangeDialogOpen(false)}
-                />
-              </DialogContent>
-            </Dialog>
+            <Button variant="outline" size="sm" onClick={() => setExchangeDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Exchange
+            </Button>
           </div>
 
           {exchanges.length === 0 ? (
