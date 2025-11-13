@@ -267,8 +267,9 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
   };
   const collapsed = state === 'collapsed';
   const isActive = (path: string) => currentPath === path;
+  
   return <Sidebar className={collapsed ? 'w-16' : 'w-64'} collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border p-4 shadow-lg">
+      <SidebarHeader className="p-4 mb-2 mx-2 rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-xl backdrop-blur-sm border-0">
         {!collapsed ? (
           <div className="flex items-center justify-center py-3">
             <img src="/src/assets/ortho-logo-full.png" alt="Ortho +" className="h-24 w-auto object-contain transition-all duration-200 drop-shadow-2xl" />
@@ -282,7 +283,11 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
 
       <SidebarContent className="space-y-3 px-2">
         {menuGroups.map((group, index) => (
-          <div key={group.label} className={index > 0 ? '' : ''}>
+          <div 
+            key={group.label} 
+            className="animate-fade-in"
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
             
             {group.collapsed ? (
               <Collapsible defaultOpen={false} className="group/collapsible">
@@ -392,7 +397,10 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
 
         {isAdmin && (
           <>
-            <div className="rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-lg backdrop-blur-sm border border-sidebar-border/50 p-2 mt-3">
+            <div 
+              className="rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-lg backdrop-blur-sm border border-sidebar-border/50 p-2 mt-3 animate-fade-in"
+              style={{ animationDelay: `${menuGroups.length * 100}ms` }}
+            >
               <SidebarGroup>
                 <SidebarGroupLabel className="text-sm font-bold text-sidebar-foreground px-3 py-2 drop-shadow-md">
                   {!collapsed && <span className="tracking-wide">Administração</span>}
@@ -415,7 +423,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
         )}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-3 shadow-lg">
+      <SidebarFooter className="p-3 mt-2 mx-2 rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-xl backdrop-blur-sm border-0">
         {!collapsed && (
           <div className="text-center space-y-0.5">
             <p className="text-xs text-sidebar-foreground/80 font-semibold drop-shadow">Ortho + v1.0</p>
