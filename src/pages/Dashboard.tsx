@@ -3,8 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatCard } from '@/components/StatCard';
 import { ActionCard } from '@/components/dashboard/ActionCard';
+import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LayoutDashboard, Users, Calendar, DollarSign, TrendingUp, Activity, UserPlus, FileText, CreditCard, Camera, CheckCircle2, Loader2, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, DollarSign, TrendingUp, Activity, CheckCircle2, BarChart3, FileText } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Button } from '@/components/ui/button';
 
@@ -96,13 +97,7 @@ export default function Dashboard() {
   ];
 
   if (isLoading) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -160,7 +155,7 @@ export default function Dashboard() {
           <CardDescription>Acesse rapidamente as funcionalidades mais utilizadas</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <div className="animate-fade-in" style={{ animationDelay: '0ms' }}>
               <ActionCard
                 title="Novo Paciente"

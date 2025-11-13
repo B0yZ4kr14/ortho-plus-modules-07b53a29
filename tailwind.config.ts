@@ -93,6 +93,9 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      transitionTimingFunction: {
+        'bounce-soft': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+      },
       keyframes: {
         "accordion-down": {
           from: {
@@ -171,6 +174,10 @@ export default {
           "10%, 30%, 50%, 70%, 90%": { transform: "translateX(-5px)" },
           "20%, 40%, 60%, 80%": { transform: "translateX(5px)" },
         },
+        "ripple": {
+          "0%": { transform: "scale(0)", opacity: "1" },
+          "100%": { transform: "scale(4)", opacity: "0" }
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -182,6 +189,7 @@ export default {
         "glow": "glow 2s ease-in-out infinite",
         "shimmer": "shimmer 2s linear infinite",
         "shake": "shake 0.5s ease-in-out",
+        "ripple": "ripple 0.6s ease-out",
       },
     },
   },

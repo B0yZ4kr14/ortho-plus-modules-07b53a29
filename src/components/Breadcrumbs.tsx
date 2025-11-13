@@ -61,8 +61,9 @@ export function Breadcrumbs() {
   }
 
   return (
-    <Breadcrumb>
-      <BreadcrumbList>
+    <div className="bg-muted/50 backdrop-blur-sm px-4 py-2 rounded-lg border border-border/50">
+      <Breadcrumb>
+        <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
             <Link to="/dashboard" className="flex items-center gap-1">
@@ -92,7 +93,8 @@ export function Breadcrumbs() {
             </BreadcrumbItem>
           );
         })}
-      </BreadcrumbList>
-    </Breadcrumb>
+        </BreadcrumbList>
+      </Breadcrumb>
+    </div>
   );
 }
