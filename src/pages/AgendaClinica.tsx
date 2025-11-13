@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAgendaStore } from '@/modules/agenda/hooks/useAgendaStore';
+import { useAgendaSupabase } from '@/modules/agenda/hooks/useAgendaSupabase';
 import { usePatientsSupabase } from '@/modules/pacientes/hooks/usePatientsSupabase';
 import { AgendaCalendar } from '@/modules/agenda/components/AgendaCalendar';
 import { AppointmentForm } from '@/modules/agenda/components/AppointmentForm';
@@ -23,7 +23,7 @@ export default function AgendaClinica() {
     addAppointment, 
     updateAppointment, 
     enviarLembrete 
-  } = useAgendaStore();
+  } = useAgendaSupabase();
   
   const { patients } = usePatientsSupabase();
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');

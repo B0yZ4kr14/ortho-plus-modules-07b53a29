@@ -104,19 +104,44 @@ export function usePatientsSupabase() {
     }
 
     try {
-      // Temporariamente retorna mock até implementar criação completa de paciente
-      // TODO: Implementar criação completa de paciente na tabela profiles/prontuarios
-      
-      const mockPatient: Patient = {
-        ...patientData,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      // Criar registro em profiles com dados básicos
+      // @ts-ignore - Campos adicionais via migration
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          full_name: patientData.nome,
+          clinic_id: clinicId,
+        } as any)
+        .select()
+        .single();
 
-      toast.success('Paciente cadastrado com sucesso! (Mock temporário)');
+      if (profileError) throw profileError;
+
+      // Criar prontuário vinculado ao profile
+      // @ts-ignore - Tabela criada via migration
+      const { data: prontuarioData, error: prontuarioError } = await supabase
+        .from('prontuarios')
+        .insert([{
+          patient_id: profileData.id,
+          patient_name: patientData.nome,
+          clinic_id: clinicId,
+          created_by: profileData.id,
+        }])
+        .select()
+        .single();
+
+      if (prontuarioError) throw prontuarioError;
+
+      toast.success('Paciente cadastrado com sucesso!');
       await loadPatients();
-      return mockPatient;
+      
+      return {
+        ...patientData,
+        id: profileData.id,
+        prontuarioId: prontuarioData.id,
+        createdAt: profileData.created_at,
+        updatedAt: profileData.updated_at,
+      };
     } catch (error: any) {
       console.error('Error adding patient:', error);
       toast.error('Erro ao cadastrar paciente: ' + error.message);
