@@ -3,7 +3,7 @@ import {
   DollarSign, Settings, TrendingUp, ClipboardList, Shield, Activity, 
   Package, CreditCard, BarChart3, FileBarChart, Bitcoin, FolderOpen, 
   ShoppingCart, Webhook, LineChart, FileSignature, User, Video, Scan, 
-  UserCog, Award, Smartphone, ClipboardCheck, LucideIcon 
+  UserCog, Award, Smartphone, ClipboardCheck, BookOpen, LucideIcon 
 } from 'lucide-react';
 
 export interface MenuSubItem {
