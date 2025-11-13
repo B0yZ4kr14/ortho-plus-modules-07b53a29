@@ -33,9 +33,9 @@ export const useTeleodontologiaSupabase = (clinicId: string) => {
       const dentistIds = [...new Set(teleconsultasData.map(t => t.dentist_id))];
 
       const { data: patientsData } = await supabase
-        .from('patients')
-        .select('id, nome')
-        .in('id', patientIds);
+        .from('prontuarios')
+        .select('patient_id, patient_name')
+        .in('patient_id', patientIds);
 
       const { data: dentistsData } = await supabase
         .from('profiles')
@@ -45,7 +45,7 @@ export const useTeleodontologiaSupabase = (clinicId: string) => {
       // Mapear dados para as teleconsultas
       const teleconsultasWithDetails = teleconsultasData.map(t => ({
         ...t,
-        patient_name: patientsData?.find(p => p.id === t.patient_id)?.nome,
+        patient_name: patientsData?.find(p => p.patient_id === t.patient_id)?.patient_name,
         dentist_name: dentistsData?.find(d => d.id === t.dentist_id)?.full_name,
       }));
 
@@ -62,13 +62,16 @@ export const useTeleodontologiaSupabase = (clinicId: string) => {
 
       if (prescricoesError) throw prescricoesError;
 
-      // Load triagens
+      // Load triagens (nome correto da tabela é singular)
       const { data: triagensData, error: triagensError } = await supabase
-        .from('triagens_teleconsulta')
+        .from('triagem_teleconsulta')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (triagensError) throw triagensError;
+      if (triagensError) {
+        console.error('[Teleodontologia] Error loading triagens:', triagensError);
+        throw triagensError;
+      }
 
       setPrescricoes(prescricoesData || []);
       setTriagens(triagensData || []);
@@ -129,7 +132,7 @@ export const useTeleodontologiaSupabase = (clinicId: string) => {
           {
             event: '*',
             schema: 'public',
-            table: 'triagens_teleconsulta',
+            table: 'triagem_teleconsulta',
           },
           () => {
             console.log('Triagens changed, reloading...');
@@ -223,7 +226,7 @@ export const useTeleodontologiaSupabase = (clinicId: string) => {
   const createTriagem = async (data: Partial<Triagem>) => {
     try {
       const { error } = await supabase
-        .from('triagens_teleconsulta')
+        .from('triagem_teleconsulta')
         .insert([data]);
 
       if (error) throw error;

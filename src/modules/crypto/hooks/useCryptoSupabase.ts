@@ -15,6 +15,12 @@ export const useCryptoSupabase = (clinicId: string) => {
   const { toast } = useToast();
 
   const loadData = async () => {
+    if (!clinicId) {
+      console.log('[CryptoSupabase] No clinicId, skipping data load');
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -25,7 +31,10 @@ export const useCryptoSupabase = (clinicId: string) => {
         .eq('clinic_id', clinicId)
         .order('created_at', { ascending: false });
 
-      if (exchangesError) throw exchangesError;
+      if (exchangesError) {
+        console.error('[CryptoSupabase] Error loading exchanges:', exchangesError);
+        throw exchangesError;
+      }
 
       // Load wallets
       const { data: walletsData, error: walletsError } = await supabase
@@ -34,36 +43,48 @@ export const useCryptoSupabase = (clinicId: string) => {
         .eq('clinic_id', clinicId)
         .order('created_at', { ascending: false });
 
-      if (walletsError) throw walletsError;
+      if (walletsError) {
+        console.error('[CryptoSupabase] Error loading wallets:', walletsError);
+        throw walletsError;
+      }
 
-      // Load transactions with related data using native joins (foreign keys configured)
+      // Load transactions with related data using native joins
       const { data: transactionsData, error: transactionsError } = await supabase
         .from('crypto_transactions')
         .select(`
           *,
-          patient:patients(nome),
+          prontuario:prontuarios!patient_id(patient_name),
           wallet:crypto_wallets(wallet_name, coin_type),
           exchange:crypto_exchange_config(exchange_name, processing_fee_percentage)
         `)
         .eq('clinic_id', clinicId)
         .order('created_at', { ascending: false });
 
-      if (transactionsError) throw transactionsError;
+      if (transactionsError) {
+        console.error('[CryptoSupabase] Error loading transactions:', transactionsError);
+        throw transactionsError;
+      }
 
       // Map transactions with processing_fee_percentage from exchange
       const mappedTransactions = (transactionsData || []).map((tx: any) => ({
         ...tx,
-        patient_name: tx.patient?.nome,
-        wallet_name: tx.wallet?.wallet_name,
-        exchange_name: tx.exchange?.exchange_name,
+        patient_name: tx.prontuario?.patient_name || null,
+        wallet_name: tx.wallet?.wallet_name || null,
+        exchange_name: tx.exchange?.exchange_name || null,
         processing_fee_percentage: tx.exchange?.processing_fee_percentage || 0,
       }));
 
       setExchanges(exchangesData || []);
       setWallets(walletsData || []);
       setTransactions(mappedTransactions);
+      
+      console.log('[CryptoSupabase] Data loaded successfully:', {
+        exchanges: exchangesData?.length || 0,
+        wallets: walletsData?.length || 0,
+        transactions: mappedTransactions?.length || 0,
+      });
     } catch (error: any) {
-      console.error('Error loading crypto data:', error);
+      console.error('[CryptoSupabase] Error loading crypto data:', error);
       toast({
         title: 'Erro ao carregar dados',
         description: error.message,
