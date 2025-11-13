@@ -65,6 +65,7 @@ import ProgramaFidelidade from '@/pages/ProgramaFidelidade';
 import NotFound from './pages/NotFound';
 import TestNotifications from '@/pages/TestNotifications';
 import { ProductTour } from './components/tour/ProductTour';
+import ScheduledBackupsManagement from './pages/settings/ScheduledBackupsManagement';
 
 const queryClient = new QueryClient();
 
@@ -136,6 +137,7 @@ const App = () => (
                 <Route path="/audit-logs" element={<ProtectedRoute requireAdmin><AppLayout><AuditLogs /></AppLayout></ProtectedRoute>} />
                 <Route path="/configuracoes" element={<ProtectedRoute requireAdmin><AppLayout><Configuracoes /></AppLayout></ProtectedRoute>} />
                 <Route path="/configuracoes/analytics" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><OnboardingAnalytics /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/configuracoes/backups-agendados" element={<ProtectedRoute requireAdmin><AppLayout><ScheduledBackupsManagement /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/modules" element={<ProtectedRoute requireAdmin><AppLayout><ModulesAdmin /></AppLayout></ProtectedRoute>} />
                 <Route path="/test-notifications" element={<ProtectedRoute><AppLayout><TestNotifications /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/modules" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><ModulesAdmin /></Suspense></AppLayout></ProtectedRoute>} />

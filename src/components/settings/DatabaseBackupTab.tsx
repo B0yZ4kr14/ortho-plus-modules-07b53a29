@@ -8,7 +8,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { BackupStatsDashboard } from "./BackupStatsDashboard";
 import { ScheduledBackupWizard } from "./ScheduledBackupWizard";
 import { BackupRestoreDialog } from "./BackupRestoreDialog";
-import {
+import { BackupIntegrityChecker } from "./BackupIntegrityChecker";
+import { BackupDiffViewer } from "./BackupDiffViewer";
+import { Link } from "react-router-dom";
+import { 
   Download,
   FileJson,
   FileSpreadsheet,
@@ -17,7 +20,10 @@ import {
   CheckCircle2,
   Loader2,
   Calendar,
-  Database
+  Database,
+  Upload,
+  ShieldCheck,
+  Settings
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -39,6 +45,8 @@ export default function DatabaseBackupTab() {
   const [backupHistory, setBackupHistory] = useState<BackupHistory[]>([]);
   const [showScheduleWizard, setShowScheduleWizard] = useState(false);
   const [showRestoreDialog, setShowRestoreDialog] = useState(false);
+  const [showIntegrityChecker, setShowIntegrityChecker] = useState(false);
+  const [showDiffViewer, setShowDiffViewer] = useState(false);
   const [selectedBackupFile, setSelectedBackupFile] = useState<File>();
 
   const formats = [
@@ -143,6 +151,16 @@ export default function DatabaseBackupTab() {
         onClose={() => setShowRestoreDialog(false)}
         backupFile={selectedBackupFile}
       />
+
+      <BackupIntegrityChecker
+        isOpen={showIntegrityChecker}
+        onClose={() => setShowIntegrityChecker(false)}
+      />
+
+      <BackupDiffViewer
+        open={showDiffViewer}
+        onOpenChange={setShowDiffViewer}
+      />
       <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
@@ -194,7 +212,14 @@ export default function DatabaseBackupTab() {
           </div>
 
           {/* Botões de Ação */}
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" size="lg">
+              <Link to="/configuracoes/backups-agendados">
+                <Settings className="mr-2 h-4 w-4" />
+                Gerenciar Agendamentos
+              </Link>
+            </Button>
+            
             <Button
               onClick={handleExport}
               disabled={isExporting}
@@ -228,8 +253,26 @@ export default function DatabaseBackupTab() {
               variant="secondary"
               size="lg"
             >
-              <Database className="mr-2 h-5 w-5" />
+              <Upload className="mr-2 h-5 w-5" />
               Restaurar
+            </Button>
+
+            <Button 
+              onClick={() => setShowIntegrityChecker(true)}
+              variant="outline"
+              size="lg"
+            >
+              <ShieldCheck className="mr-2 h-5 w-5" />
+              Validar
+            </Button>
+
+            <Button 
+              onClick={() => setShowDiffViewer(true)}
+              variant="outline"
+              size="lg"
+            >
+              <FileText className="mr-2 h-5 w-5" />
+              Comparar
             </Button>
           </div>
         </div>

@@ -19,19 +19,36 @@ interface IntegrityResult {
 }
 
 interface BackupIntegrityCheckerProps {
-  backupId: string;
-  onClose?: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export function BackupIntegrityChecker({ backupId, onClose }: BackupIntegrityCheckerProps) {
+export function BackupIntegrityChecker({ isOpen, onClose }: BackupIntegrityCheckerProps) {
   const [loading, setLoading] = useState(false);
+  const [selectedBackupId, setSelectedBackupId] = useState<string>("");
   const [result, setResult] = useState<IntegrityResult | null>(null);
+  const [backups, setBackups] = useState<any[]>([]);
+
+  const loadBackups = async () => {
+    const { data } = await supabase
+      .from("backup_history")
+      .select("*")
+      .eq("status", "success")
+      .order("created_at", { ascending: false })
+      .limit(20);
+    
+    if (data) setBackups(data);
+  };
 
   const checkIntegrity = async () => {
+    if (!selectedBackupId) return;
+    
     setLoading(true);
+    setResult(null);
+    
     try {
       const { data, error } = await supabase.functions.invoke('validate-backup-integrity', {
-        body: { backupId }
+        body: { backupId: selectedBackupId },
       });
 
       if (error) throw error;
@@ -55,110 +72,109 @@ export function BackupIntegrityChecker({ backupId, onClose }: BackupIntegrityChe
     }
   };
 
-  return (
-    <Card className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Shield className="h-5 w-5 text-primary" />
-          <h3 className="font-semibold">Validação de Integridade</h3>
-        </div>
-        
-        <Button 
-          onClick={checkIntegrity}
-          disabled={loading}
-          size="sm"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Verificando...
-            </>
-          ) : (
-            'Verificar Integridade'
-          )}
-        </Button>
-      </div>
+  if (!isOpen) return null;
 
-      {result && (
-        <div className="space-y-3">
-          <Alert variant={result.isValid ? "default" : "destructive"}>
-            {result.isValid ? (
+  return (
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <Card className="max-w-2xl w-full p-6 space-y-6" depth="normal">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Shield className="h-6 w-6" />
+            <h2 className="text-2xl font-bold">Validação de Integridade</h2>
+          </div>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            ✕
+          </Button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Selecione um Backup para Validar
+            </label>
+            <select 
+              className="w-full p-2 border rounded"
+              value={selectedBackupId}
+              onChange={(e) => setSelectedBackupId(e.target.value)}
+              onFocus={loadBackups}
+            >
+              <option value="">Selecione...</option>
+              {backups.map(b => (
+                <option key={b.id} value={b.id}>
+                  {new Date(b.created_at).toLocaleString()} - {b.backup_type}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <Button 
+            onClick={checkIntegrity} 
+            disabled={loading || !selectedBackupId}
+            className="w-full"
+          >
+            {loading ? (
               <>
-                <CheckCircle2 className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Backup Íntegro</strong>
-                  <p className="text-sm mt-1">
-                    Todos os checksums foram validados com sucesso. O backup não apresenta sinais de corrupção.
-                  </p>
-                </AlertDescription>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Validando...
               </>
             ) : (
               <>
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Backup Corrompido</strong>
-                  <p className="text-sm mt-1">
-                    Os checksums não correspondem. Este backup pode estar corrompido e não é recomendado para restauração.
-                  </p>
-                </AlertDescription>
+                <Shield className="mr-2 h-4 w-4" />
+                Validar Integridade
               </>
             )}
-          </Alert>
+          </Button>
 
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Backup ID:</span>
-              <Badge variant="outline">{result.backupId.substring(0, 8)}</Badge>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Data de Criação:</span>
-              <span>{new Date(result.createdAt).toLocaleString('pt-BR')}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Tamanho:</span>
-              <span>{(result.fileSize / 1024 / 1024).toFixed(2)} MB</span>
-            </div>
+          {result && (
+            <Alert variant={result.isValid ? "default" : "destructive"} className="mt-4">
+              <div className="flex items-start gap-3">
+                {result.isValid ? (
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                ) : (
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                )}
+                <div className="flex-1 space-y-3">
+                  <AlertDescription className="font-semibold">
+                    {result.isValid ? '✓ Backup íntegro' : '⚠ Backup corrompido'}
+                  </AlertDescription>
+                  
+                  <div className="grid gap-2 text-sm font-mono bg-muted p-3 rounded">
+                    <div className="flex justify-between">
+                      <span>MD5:</span>
+                      <Badge variant={result.isValid ? 'success' : 'destructive'}>
+                        {result.isValid ? 'Match' : 'Mismatch'}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>SHA256:</span>
+                      <Badge variant={result.isValid ? 'success' : 'destructive'}>
+                        {result.isValid ? 'Match' : 'Mismatch'}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Tamanho:</span>
+                      <span>{(result.fileSize / 1024).toFixed(2)} KB</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Data:</span>
+                      <span>{new Date(result.createdAt).toLocaleString('pt-BR')}</span>
+                    </div>
+                  </div>
 
-            <div className="pt-3 border-t">
-              <div className="font-medium mb-2">Checksums MD5:</div>
-              <div className="space-y-1 text-xs font-mono">
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Original:</span>
-                  <code className={result.originalMD5 === result.currentMD5 ? 'text-green-600' : 'text-red-600'}>
-                    {result.originalMD5}
-                  </code>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Atual:</span>
-                  <code className={result.originalMD5 === result.currentMD5 ? 'text-green-600' : 'text-red-600'}>
-                    {result.currentMD5}
-                  </code>
+                  {!result.isValid && (
+                    <Alert variant="destructive">
+                      <AlertDescription>
+                        <strong>Atenção:</strong> Este backup pode estar corrompido ou foi modificado.
+                        Recomenda-se não utilizá-lo para restauração.
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </div>
               </div>
-            </div>
-
-            <div className="pt-3 border-t">
-              <div className="font-medium mb-2">Checksums SHA-256:</div>
-              <div className="space-y-1 text-xs font-mono">
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Original:</span>
-                  <code className={result.originalSHA256 === result.currentSHA256 ? 'text-green-600' : 'text-red-600'}>
-                    {result.originalSHA256.substring(0, 32)}...
-                  </code>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Atual:</span>
-                  <code className={result.originalSHA256 === result.currentSHA256 ? 'text-green-600' : 'text-red-600'}>
-                    {result.currentSHA256.substring(0, 32)}...
-                  </code>
-                </div>
-              </div>
-            </div>
-          </div>
+            </Alert>
+          )}
         </div>
-      )}
-    </Card>
+      </Card>
+    </div>
   );
 }
