@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AnaliseDetailsDialog } from '@/modules/ia-radiografia/components/AnaliseDetailsDialog';
 import { AnaliseCharts } from '@/modules/ia-radiografia/components/AnaliseCharts';
 import { RadiografiaComparison } from '@/modules/ia-radiografia/components/RadiografiaComparison';
+import { IAInsightsDashboard } from '@/modules/ia-radiografia/components/IAInsightsDashboard';
 
 export default function IARadiografia() {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -282,6 +283,11 @@ export default function IARadiografia() {
           </div>
         </div>
       </Card>
+
+      {/* Dashboard de Insights da IA */}
+      {!loading && analises.length > 0 && (
+        <IAInsightsDashboard analises={analises} />
+      )}
 
       {/* Gráficos Estatísticos */}
       {!loading && analises.length > 0 && (

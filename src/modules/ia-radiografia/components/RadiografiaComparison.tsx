@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowRight, Calendar, GitCompare, TrendingDown, TrendingUp, Minus, AlertCircle } from 'lucide-react';
 import type { AnaliseComplete } from '../types/radiografia.types';
 import { tipoRadiografiaLabels } from '../types/radiografia.types';
+import { ComparativoPDFExport } from './ComparativoPDFExport';
 
 interface RadiografiaComparisonProps {
   analises: AnaliseComplete[];
@@ -228,10 +229,17 @@ export function RadiografiaComparison({ analises }: RadiografiaComparisonProps) 
               {/* Análise Comparativa */}
               {comparacao && (
                 <Card className="p-6 bg-primary/5 border-primary/20" depth="normal">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <ArrowRight className="h-5 w-5 text-primary" />
-                    Análise Comparativa
-                  </h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <ArrowRight className="h-5 w-5 text-primary" />
+                      Análise Comparativa
+                    </h3>
+                    <ComparativoPDFExport 
+                      analise1={analise1} 
+                      analise2={analise2} 
+                      comparacao={comparacao}
+                    />
+                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-2">

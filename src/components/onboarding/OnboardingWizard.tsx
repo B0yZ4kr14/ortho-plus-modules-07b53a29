@@ -92,7 +92,15 @@ export function OnboardingWizard({ open = true, onClose, onComplete }: Onboardin
       <AnimatePresence>
         {open && (
           <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="max-w-2xl [&>button]:hidden">
+            <DialogContent className="max-w-2xl">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-4 top-4 z-50 rounded-full h-10 w-10 bg-destructive/10 hover:bg-destructive/20 border-2 border-destructive/30"
+                onClick={handleClose}
+              >
+                <X className="h-5 w-5 text-destructive" />
+              </Button>
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -148,7 +156,15 @@ export function OnboardingWizard({ open = true, onClose, onComplete }: Onboardin
     <AnimatePresence>
       {open && (
         <Dialog open={open} onOpenChange={handleClose}>
-          <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto p-0 [&>button]:hidden">
+          <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto p-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-4 top-4 z-50 rounded-full h-10 w-10 bg-destructive/10 hover:bg-destructive/20 border-2 border-destructive/30"
+              onClick={handleClose}
+            >
+              <X className="h-5 w-5 text-destructive" />
+            </Button>
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
