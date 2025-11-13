@@ -11,8 +11,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowRightLeft, RefreshCw } from 'lucide-react';
+import { ArrowRightLeft, RefreshCw, TrendingUp, TrendingDown } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import { format, subHours } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export function CryptoCalculator() {
   const [fromCurrency, setFromCurrency] = useState<'BTC' | 'ETH' | 'USDT' | 'BRL'>('BTC');
@@ -26,10 +37,22 @@ export function CryptoCalculator() {
     BRL: 1,
   });
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [history24h, setHistory24h] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
 
   useEffect(() => {
     calculateConversion();
   }, [fromCurrency, toCurrency, amount, rates]);
+
+  useEffect(() => {
+    fetchHistory24h();
+    // Atualizar cotações a cada 60 segundos
+    const interval = setInterval(() => {
+      handleRefreshRates();
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const calculateConversion = () => {
     const amountNum = parseFloat(amount) || 0;
@@ -48,18 +71,61 @@ export function CryptoCalculator() {
     setResult(finalAmount.toFixed(fromCurrency === 'BRL' || toCurrency === 'BRL' ? 2 : 8));
   };
 
-  const handleRefreshRates = () => {
-    // Simular atualização de cotações com pequena variação
-    const newRates = {
-      BTC: rates.BTC * (1 + (Math.random() - 0.5) * 0.01),
-      ETH: rates.ETH * (1 + (Math.random() - 0.5) * 0.01),
-      USDT: rates.USDT * (1 + (Math.random() - 0.5) * 0.005),
-      BRL: 1,
-    };
-    
-    setRates(newRates);
-    setLastUpdate(new Date());
-    toast.success('Cotações atualizadas!');
+  const fetchHistory24h = async () => {
+    setLoadingHistory(true);
+    try {
+      // Gerar dados históricos das últimas 24h (dados sintéticos por enquanto)
+      const historyData = [];
+      const now = new Date();
+      
+      for (let i = 24; i >= 0; i--) {
+        const timestamp = subHours(now, i);
+        const variation = (Math.random() - 0.5) * 0.02; // ±2% de variação
+        
+        historyData.push({
+          timestamp,
+          BTC: 350000 * (1 + variation),
+          ETH: 18000 * (1 + variation),
+          USDT: 5.5 * (1 + variation * 0.1),
+        });
+      }
+      
+      setHistory24h(historyData);
+    } catch (error) {
+      console.error('Erro ao buscar histórico:', error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const handleRefreshRates = async () => {
+    try {
+      // Buscar cotações reais da CoinGecko
+      const coins = ['bitcoin', 'ethereum', 'tether'];
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${coins.join(',')}&vs_currencies=brl`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        const newRates = {
+          BTC: data.bitcoin?.brl || rates.BTC,
+          ETH: data.ethereum?.brl || rates.ETH,
+          USDT: data.tether?.brl || rates.USDT,
+          BRL: 1,
+        };
+        
+        setRates(newRates);
+        setLastUpdate(new Date());
+        await fetchHistory24h(); // Atualizar histórico também
+        toast.success('Cotações atualizadas com sucesso!');
+      } else {
+        throw new Error('Erro ao buscar cotações');
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar cotações:', error);
+      toast.error('Erro ao atualizar cotações. Usando valores em cache.');
+    }
   };
 
   const handleSwapCurrencies = () => {
@@ -182,9 +248,73 @@ export function CryptoCalculator() {
           </div>
         </div>
 
+        {/* Gráfico de Tendência 24h */}
+        <div className="mt-6 pt-4 border-t">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold">Tendência das Últimas 24h</h4>
+            {!loadingHistory && history24h.length > 0 && (
+              <Badge variant="outline" className="gap-1">
+                {history24h[history24h.length - 1][fromCurrency !== 'BRL' ? fromCurrency : 'BTC'] > 
+                 history24h[0][fromCurrency !== 'BRL' ? fromCurrency : 'BTC'] ? (
+                  <>
+                    <TrendingUp className="h-3 w-3 text-success" />
+                    <span className="text-success">Alta</span>
+                  </>
+                ) : (
+                  <>
+                    <TrendingDown className="h-3 w-3 text-destructive" />
+                    <span className="text-destructive">Baixa</span>
+                  </>
+                )}
+              </Badge>
+            )}
+          </div>
+          
+          {loadingHistory ? (
+            <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+              <RefreshCw className="h-5 w-5 animate-spin mr-2" />
+              Carregando histórico...
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={history24h}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis
+                  dataKey="timestamp"
+                  tickFormatter={(value) => format(new Date(value), 'HH:mm', { locale: ptBR })}
+                  className="text-xs"
+                />
+                <YAxis className="text-xs" />
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (!active || !payload || !payload.length) return null;
+                    return (
+                      <div className="bg-card border rounded-lg p-3 shadow-lg">
+                        <p className="text-xs text-muted-foreground mb-1">
+                          {format(new Date(payload[0].payload.timestamp), "HH:mm", { locale: ptBR })}
+                        </p>
+                        <p className="text-sm font-semibold">
+                          R$ {(payload[0].value as number).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </p>
+                      </div>
+                    );
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey={fromCurrency !== 'BRL' ? fromCurrency : 'BTC'}
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
         {/* Cotações em tempo real */}
         <div className="mt-6 pt-4 border-t">
-          <h4 className="text-sm font-semibold mb-3">Cotações Atuais</h4>
+          <h4 className="text-sm font-semibold mb-3">Cotações em Tempo Real</h4>
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
               <p className="text-xs text-muted-foreground mb-1">Bitcoin</p>
@@ -205,6 +335,9 @@ export function CryptoCalculator() {
               </p>
             </div>
           </div>
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            Cotações via CoinGecko API • Atualização automática a cada 60s
+          </p>
         </div>
       </CardContent>
     </Card>

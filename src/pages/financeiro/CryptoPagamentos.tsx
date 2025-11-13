@@ -42,6 +42,9 @@ import { CryptoTour } from '@/components/crypto/CryptoTour';
 import { CryptoAnalysisDashboard } from '@/modules/crypto/components/CryptoAnalysisDashboard';
 import { AdvancedTechnicalAnalysis } from '@/components/crypto/AdvancedTechnicalAnalysis';
 import { ConversionSimulator } from '@/components/crypto/ConversionSimulator';
+import { CryptoPortfolioDashboard } from '@/components/crypto/CryptoPortfolioDashboard';
+import { BitcoinInfoCard } from '@/components/crypto/BitcoinInfoCard';
+import { useCryptoNotifications } from '@/hooks/useCryptoNotifications';
 import { CryptoPriceAlertForm } from '@/modules/crypto/components/CryptoPriceAlertForm';
 import { CascadeAlertWizard } from '@/modules/crypto/components/CascadeAlertWizard';
 import { CryptoComparativeDashboard } from '@/modules/crypto/components/CryptoComparativeDashboard';
@@ -51,6 +54,7 @@ import { Trash2, TrendingDown, BarChart3 } from 'lucide-react';
 
 export default function CryptoPagamentos() {
   const { clinicId } = useAuth();
+  const { connected: notificationsConnected, requestNotificationPermission } = useCryptoNotifications();
   
   const { 
     exchanges, 
@@ -154,6 +158,28 @@ export default function CryptoPagamentos() {
         description="Receba pagamentos em Bitcoin e outras criptomoedas de forma profissional e segura"
       />
 
+      {/* Indicador de conexão WebSocket */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <Badge variant={notificationsConnected ? 'success' : 'secondary'} className="gap-2">
+            <div className={`w-2 h-2 rounded-full ${notificationsConnected ? 'bg-success' : 'bg-muted-foreground'}`} />
+            {notificationsConnected ? 'Notificações em Tempo Real Ativas' : 'Notificações Desconectadas'}
+          </Badge>
+          {!notificationsConnected && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={requestNotificationPermission}
+            >
+              Ativar Notificações Push
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Card Informativo sobre Bitcoin */}
+      <BitcoinInfoCard />
+
       {!clinicId && (
         <Card variant="default" className="border-amber-500/50 bg-amber-500/5">
           <CardContent className="py-4">
@@ -229,7 +255,7 @@ export default function CryptoPagamentos() {
       </div>
 
       <Tabs defaultValue="transactions" className="mt-8">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9">
           <TabsTrigger value="transactions" data-tour="transactions-tab">
             <ArrowRightLeft className="h-4 w-4 mr-2" />
             Transações
@@ -241,6 +267,10 @@ export default function CryptoPagamentos() {
           <TabsTrigger value="exchanges" data-tour="exchange-tab">
             <Settings className="h-4 w-4 mr-2" />
             Exchanges
+          </TabsTrigger>
+          <TabsTrigger value="portfolio">
+            <Wallet className="h-4 w-4 mr-2" />
+            Portfolio
           </TabsTrigger>
           <TabsTrigger value="technical">
             <Activity className="h-4 w-4 mr-2" />
@@ -538,9 +568,9 @@ export default function CryptoPagamentos() {
           )}
         </TabsContent>
 
-        {/* Info Tab */}
-        <TabsContent value="info" className="space-y-4">
-          <BitcoinInfo />
+        {/* Portfolio Tab */}
+        <TabsContent value="portfolio" className="space-y-4">
+          <CryptoPortfolioDashboard wallets={wallets} transactions={transactions} />
         </TabsContent>
 
         {/* Exchanges Tab */}
