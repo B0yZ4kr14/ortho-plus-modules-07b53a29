@@ -146,6 +146,59 @@ export const tiposMovimentacao = [
   { value: 'PERDA', label: 'Perda', color: 'bg-gray-500' },
 ] as const;
 
+// Schema para Inventário
+export const inventarioSchema = z.object({
+  id: z.string().uuid().optional(),
+  numero: z.string().min(1, 'Número do inventário é obrigatório'),
+  data: z.string().min(1, 'Data é obrigatória'),
+  status: z.enum(['PLANEJADO', 'EM_ANDAMENTO', 'CONCLUIDO', 'CANCELADO']).default('PLANEJADO'),
+  tipo: z.enum(['GERAL', 'PARCIAL', 'CICLICO']),
+  responsavel: z.string().min(1, 'Responsável é obrigatório'),
+  observacoes: z.string().optional(),
+  totalItens: z.number().optional(),
+  itensContados: z.number().optional(),
+  divergenciasEncontradas: z.number().optional(),
+  valorDivergencias: z.number().optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+});
+
+export type Inventario = z.infer<typeof inventarioSchema>;
+
+// Schema para Item de Inventário
+export const inventarioItemSchema = z.object({
+  id: z.string().uuid().optional(),
+  inventarioId: z.string().uuid(),
+  produtoId: z.string().uuid(),
+  produtoNome: z.string().optional(),
+  quantidadeSistema: z.number().min(0),
+  quantidadeFisica: z.number().min(0).nullable(),
+  divergencia: z.number().optional(),
+  percentualDivergencia: z.number().optional(),
+  valorUnitario: z.number().min(0).optional(),
+  valorDivergencia: z.number().optional(),
+  lote: z.string().optional(),
+  dataValidade: z.string().optional(),
+  observacoes: z.string().optional(),
+  contadoPor: z.string().optional(),
+  dataContagem: z.string().optional(),
+});
+
+export type InventarioItem = z.infer<typeof inventarioItemSchema>;
+
+export const tiposInventario = [
+  { value: 'GERAL', label: 'Geral', description: 'Contagem completa de todos os itens' },
+  { value: 'PARCIAL', label: 'Parcial', description: 'Contagem de itens específicos' },
+  { value: 'CICLICO', label: 'Cíclico', description: 'Contagem periódica por categoria' },
+] as const;
+
+export const statusInventario = [
+  { value: 'PLANEJADO', label: 'Planejado', color: 'bg-blue-500' },
+  { value: 'EM_ANDAMENTO', label: 'Em Andamento', color: 'bg-yellow-500' },
+  { value: 'CONCLUIDO', label: 'Concluído', color: 'bg-green-500' },
+  { value: 'CANCELADO', label: 'Cancelado', color: 'bg-red-500' },
+] as const;
+
 // Schema para Pedido
 export const pedidoSchema = z.object({
   id: z.string().uuid().optional(),

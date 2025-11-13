@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, UserPlus, Calendar, Stethoscope, FileText, DollarSign, Settings, TrendingUp, ClipboardList, Shield, Activity, Package, CreditCard, BarChart3, FileBarChart, Bitcoin, FolderOpen, ShoppingCart, Webhook, LineChart, FileSignature, User, Video, Scan, UserCog, Award, Smartphone } from 'lucide-react';
+import { LayoutDashboard, Users, UserPlus, Calendar, Stethoscope, FileText, DollarSign, Settings, TrendingUp, ClipboardList, Shield, Activity, Package, CreditCard, BarChart3, FileBarChart, Bitcoin, FolderOpen, ShoppingCart, Webhook, LineChart, FileSignature, User, Video, Scan, UserCog, Award, Smartphone, ClipboardCheck } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -107,6 +107,10 @@ const menuGroups = [{
     title: 'Análise de Consumo',
     url: '/estoque/analise-consumo',
     icon: BarChart3
+  }, {
+    title: 'Inventário',
+    url: '/estoque/inventario',
+    icon: ClipboardCheck
   }, {
     title: 'Scanner Mobile',
     url: '/estoque/scanner-mobile',
@@ -240,6 +244,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
     '/estoque/integracoes': 'ESTOQUE',
     '/estoque/analise-pedidos': 'ESTOQUE',
     '/estoque/analise-consumo': 'ESTOQUE',
+    '/estoque/inventario': 'ESTOQUE',
     '/financeiro': 'FINANCEIRO',
     '/financeiro/transacoes': 'FINANCEIRO',
     '/financeiro/contas-receber': 'FINANCEIRO',
