@@ -119,7 +119,7 @@ export default function EstoqueDashboard() {
 
       {/* Cards de Métricas Principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card variant="metric" className="p-5 border-l-primary">
+        <Card variant="metric" depth="normal" className="p-6 border-l-primary">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
@@ -131,7 +131,7 @@ export default function EstoqueDashboard() {
           </div>
         </Card>
 
-        <Card variant="metric" className="p-5 border-l-orange-500">
+        <Card variant="metric" depth="normal" className="p-6 border-l-orange-500">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
@@ -143,7 +143,7 @@ export default function EstoqueDashboard() {
           </div>
         </Card>
 
-        <Card variant="metric" className="p-5 border-l-yellow-500">
+        <Card variant="metric" depth="normal" className="p-6 border-l-yellow-500">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
@@ -155,7 +155,7 @@ export default function EstoqueDashboard() {
           </div>
         </Card>
 
-        <Card variant="metric" className="p-5 border-l-green-500">
+        <Card variant="metric" depth="normal" className="p-6 border-l-green-500">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">

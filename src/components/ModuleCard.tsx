@@ -14,11 +14,12 @@ export function ModuleCard({ title, subtitle, icon: Icon, color, onClick }: Modu
   return (
     <Card
       variant="interactive"
-      className="p-6"
+      depth="normal"
+      className="p-6 hover:-translate-y-1 active:translate-y-0"
       onClick={onClick}
     >
-      <div className="flex flex-col items-center gap-3 text-center">
-        <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center shadow-md transition-transform duration-300 group-hover:scale-110", color)}>
+      <div className="flex flex-col items-center gap-4 text-center">
+        <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-110", color)}>
           <Icon className="h-8 w-8 text-white" />
         </div>
         <div>

@@ -24,7 +24,7 @@ export function StatCard({
   alert
 }: StatCardProps) {
   return (
-    <Card variant="metric" className={cn("p-5", borderColor)}>
+    <Card variant="metric" depth="normal" className={cn("p-6", borderColor)}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
@@ -49,10 +49,10 @@ export function StatCard({
           )}
         </div>
         <div className={cn(
-          "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
+          "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-lg",
           iconColor
         )}>
-          <Icon className="h-5 w-5 text-white" />
+          <Icon className="h-6 w-6 text-white" />
         </div>
       </div>
     </Card>

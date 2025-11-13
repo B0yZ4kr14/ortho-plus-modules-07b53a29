@@ -30,6 +30,7 @@ export function ActionCard({ title, subtitle, icon: Icon, bgColor, route }: Acti
   return (
     <Card 
       variant="interactive"
+      depth="normal"
       className="group overflow-hidden relative h-full min-h-[140px]"
       onClick={handleClick}
     >
@@ -40,10 +41,10 @@ export function ActionCard({ title, subtitle, icon: Icon, bgColor, route }: Acti
       
       <CardContent className="p-4 h-full relative flex flex-col items-center justify-center text-center gap-3">
         <div className={cn(
-          "p-3 rounded-lg transition-all duration-200 group-hover:scale-105",
+          "p-3.5 rounded-xl shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl group-hover:rotate-3",
           bgColor
         )}>
-          <Icon className="h-6 w-6 text-white" />
+          <Icon className="h-7 w-7 text-white" />
         </div>
         <div className="space-y-0.5">
           <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">

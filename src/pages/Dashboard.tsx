@@ -149,7 +149,7 @@ export default function Dashboard() {
       </div>
 
       {/* Action Cards - Ações Rápidas */}
-      <Card variant="gradient" data-tour="action-cards">
+      <Card variant="gradient" depth="intense" data-tour="action-cards">
         <CardHeader>
           <CardTitle>Ações Rápidas</CardTitle>
           <CardDescription>Acesse rapidamente as funcionalidades mais utilizadas</CardDescription>
@@ -216,7 +216,7 @@ export default function Dashboard() {
 
       {/* Tratamentos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card variant="elevated">
+        <Card variant="elevated" depth="normal">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-primary" />
@@ -229,7 +229,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card variant="elevated">
+        <Card variant="elevated" depth="normal">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -246,7 +246,7 @@ export default function Dashboard() {
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gráfico de Consultas */}
-        <Card variant="gradient">
+        <Card variant="gradient" depth="intense">
           <CardHeader>
             <CardTitle>Consultas da Semana</CardTitle>
             <CardDescription>Comparação entre agendadas e realizadas</CardDescription>
@@ -272,7 +272,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Gráfico de Receita */}
-        <Card variant="gradient">
+        <Card variant="gradient" depth="intense">
           <CardHeader>
             <CardTitle>Receita vs Despesas</CardTitle>
             <CardDescription>Últimos 6 meses</CardDescription>
@@ -314,7 +314,7 @@ export default function Dashboard() {
       </div>
 
       {/* Próximas Consultas */}
-      <Card variant="elevated">
+      <Card variant="elevated" depth="normal">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
