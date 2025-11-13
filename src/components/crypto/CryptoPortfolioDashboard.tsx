@@ -22,7 +22,10 @@ import {
   DollarSign,
   RefreshCw,
   Download,
+  FileText,
 } from 'lucide-react';
+import { generateCryptoPerformanceReport } from './CryptoPerformanceReport';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -215,6 +218,30 @@ export function CryptoPortfolioDashboard({ wallets, transactions }: CryptoPortfo
     link.click();
   };
 
+  const handleGeneratePDFReport = async () => {
+    if (!portfolioData) return;
+
+    toast.loading('Gerando relatório PDF...');
+    
+    try {
+      const now = new Date();
+      const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      await generateCryptoPerformanceReport(
+        portfolioData,
+        'Clínica',
+        startDate,
+        endDate
+      );
+
+      toast.success('Relatório PDF gerado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao gerar relatório:', error);
+      toast.error('Erro ao gerar relatório PDF');
+    }
+  };
+
   if (loading || !portfolioData) {
     return (
       <Card depth="normal">
@@ -349,15 +376,26 @@ export function CryptoPortfolioDashboard({ wallets, transactions }: CryptoPortfo
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Histórico de Conversões</CardTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={exportPortfolio}
-                className="gap-2"
-              >
-                <Download className="h-4 w-4" />
-                Exportar
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGeneratePDFReport}
+                  className="gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  Relatório PDF
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportPortfolio}
+                  className="gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  CSV
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
