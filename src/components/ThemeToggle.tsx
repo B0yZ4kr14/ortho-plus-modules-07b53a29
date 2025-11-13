@@ -43,7 +43,7 @@ export function ThemeToggle() {
           {getIcon()}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-96 p-0">
+      <DropdownMenuContent align="end" className="w-96 p-0 bg-popover shadow-xl z-[1000] border border-border">
         {/* Temas Section */}
         <div className="p-4 space-y-3">
           <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-0">
@@ -63,18 +63,18 @@ export function ThemeToggle() {
                 >
                   <CardContent className="p-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <Icon className={`h-4 w-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <Icon className={`h-4 w-4 ${isActive ? 'text-accent-foreground' : 'text-muted-foreground'}`} />
                       {t.badge && (
-                        <Badge variant="outline" className="text-[9px] px-1 py-0 h-4">
+                        <Badge variant={isActive ? 'secondary' : 'outline'} className={`text-[9px] px-1 py-0 h-4 ${isActive ? 'bg-accent-foreground text-accent border-transparent' : ''}`}>
                           {t.badge}
                         </Badge>
                       )}
                     </div>
                     <div>
-                      <p className={`text-xs font-medium ${isActive ? 'text-primary' : ''}`}>
+                      <p className={`text-xs font-medium ${isActive ? 'text-accent-foreground' : 'text-card-foreground'}`}>
                         {t.name}
                       </p>
-                      <p className="text-[10px] text-muted-foreground line-clamp-1">
+                      <p className={`text-[10px] line-clamp-1 ${isActive ? 'text-accent-foreground/80' : 'text-muted-foreground'}`}>
                         {t.description}
                       </p>
                     </div>
