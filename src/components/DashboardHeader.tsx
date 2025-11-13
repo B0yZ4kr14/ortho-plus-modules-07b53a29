@@ -1,5 +1,5 @@
-import { LogOut, Building2 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { LogOut, Building2, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { GlobalSearch } from "@/components/GlobalSearch";
@@ -85,7 +85,13 @@ export function DashboardHeader({ className, onMenuClick }: DashboardHeaderProps
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2 h-9 px-2" data-tour="user-menu">
-                  <Avatar className="h-7 w-7 bg-primary">
+                  <Avatar className="h-7 w-7 bg-primary border-2 border-primary/20">
+                    {user?.user_metadata?.avatar_url && (
+                      <AvatarImage 
+                        src={user.user_metadata.avatar_url} 
+                        alt={user?.user_metadata?.full_name || user?.email || 'Avatar'} 
+                      />
+                    )}
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                       {user?.email ? getInitials(user.email) : 'US'}
                     </AvatarFallback>
@@ -105,6 +111,13 @@ export function DashboardHeader({ className, onMenuClick }: DashboardHeaderProps
                     <p className="text-xs text-muted-foreground">{getRoleName(userRole)}</p>
                   </div>
                 </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <a href="/settings/profile" className="flex items-center">
+                    <User className="mr-2 h-4 w-4" />
+                    Meu Perfil
+                  </a>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />

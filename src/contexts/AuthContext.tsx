@@ -21,6 +21,7 @@ interface AuthContextType {
   switchClinic: (clinicId: string) => void;
   hasRole: (role: 'ADMIN' | 'MEMBER') => boolean;
   hasModuleAccess: (moduleKey: string) => boolean;
+  fetchUserMetadata: (userId: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -41,15 +42,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Fetch user role and clinics
   const fetchUserMetadata = async (userId: string) => {
     try {
-      // Get user role
+      // Get user role and profile including avatar
       const { data: roleData } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
         .single();
 
+      // Get profile data including avatar_url
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('avatar_url, full_name')
+        .eq('id', userId)
+        .single();
+
       if (roleData) {
         setUserRole(roleData.role as 'ADMIN' | 'MEMBER');
+        
+        // Update user object with avatar and full_name
+        setUser((currentUser) => {
+          if (!currentUser) return null;
+          return {
+            ...currentUser,
+            user_metadata: {
+              ...currentUser.user_metadata,
+              avatar_url: profileData?.avatar_url,
+              full_name: profileData?.full_name || currentUser.user_metadata?.full_name,
+            }
+          };
+        });
         
         // If ADMIN, grant access to all modules
         if (roleData.role === 'ADMIN') {
@@ -235,6 +256,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         switchClinic,
         hasRole,
         hasModuleAccess,
+        fetchUserMetadata,
         signUp,
         signIn,
         signOut,

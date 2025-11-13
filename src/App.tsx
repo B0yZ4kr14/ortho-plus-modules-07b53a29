@@ -21,7 +21,6 @@ import Procedimentos from "./pages/Procedimentos";
 import Financeiro from "./pages/Financeiro";
 import Resumo from "./pages/Resumo";
 import AgendaClinica from "./pages/AgendaClinica";
-import ModulesAdmin from './pages/settings/ModulesAdmin';
 import Configuracoes from './pages/Configuracoes';
 import PEP from './pages/PEP';
 // Lazy load rotas pesadas
@@ -29,6 +28,9 @@ const Relatorios = lazy(() => import('./pages/Relatorios'));
 const BusinessIntelligence = lazy(() => import('./pages/BusinessIntelligence'));
 const IARadiografia = lazy(() => import('@/pages/IARadiografia'));
 const UserBehaviorAnalytics = lazy(() => import("@/pages/UserBehaviorAnalytics"));
+const ModulesAdmin = lazy(() => import('./pages/settings/ModulesAdmin'));
+const ModulesSimple = lazy(() => import('./pages/settings/ModulesSimple'));
+const ProfileSettings = lazy(() => import('./pages/settings/ProfileSettings'));
 import Auth from './pages/Auth';
 import ReportTemplates from '@/pages/ReportTemplates';
 import AuditLogs from '@/pages/AuditLogs';
@@ -128,6 +130,9 @@ const App = () => (
                 <Route path="/configuracoes" element={<ProtectedRoute requireAdmin><AppLayout><Configuracoes /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/modules" element={<ProtectedRoute requireAdmin><AppLayout><ModulesAdmin /></AppLayout></ProtectedRoute>} />
                 <Route path="/test-notifications" element={<ProtectedRoute><AppLayout><TestNotifications /></AppLayout></ProtectedRoute>} />
+                <Route path="/settings/modules" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><ModulesAdmin /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/settings/modules-simple" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState />}><ModulesSimple /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/settings/profile" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState />}><ProfileSettings /></Suspense></AppLayout></ProtectedRoute>} />
                 
                 {/* 404 Route */}
                 <Route path="*" element={<NotFound />} />
