@@ -70,6 +70,8 @@ import { ProductTour } from './components/tour/ProductTour';
 import ScheduledBackupsManagement from './pages/settings/ScheduledBackupsManagement';
 import BackupExecutivePage from './pages/settings/BackupExecutivePage';
 import DashboardVendasPDV from './pages/financeiro/DashboardVendasPDV';
+import MetasGamificacao from './pages/pdv/MetasGamificacao';
+import DashboardExecutivoPDV from './pages/pdv/DashboardExecutivoPDV';
 
 const queryClient = new QueryClient();
 
@@ -147,6 +149,8 @@ const App = () => (
                 <Route path="/configuracoes/backup-executivo" element={<ProtectedRoute requireAdmin><AppLayout><BackupExecutivePage /></AppLayout></ProtectedRoute>} />
                 <Route path="/pdv" element={<ProtectedRoute><AppLayout><PDV /></AppLayout></ProtectedRoute>} />
                 <Route path="/pdv/dashboard" element={<ProtectedRoute><AppLayout><DashboardVendasPDV /></AppLayout></ProtectedRoute>} />
+                <Route path="/pdv/executivo" element={<ProtectedRoute requireAdmin><AppLayout><DashboardExecutivoPDV /></AppLayout></ProtectedRoute>} />
+                <Route path="/pdv/metas" element={<ProtectedRoute><AppLayout><MetasGamificacao /></AppLayout></ProtectedRoute>} />
                 <Route path="/relatorio-caixa" element={<ProtectedRoute><AppLayout><RelatorioCaixa /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/modules" element={<ProtectedRoute requireAdmin><AppLayout><ModulesAdmin /></AppLayout></ProtectedRoute>} />
                 <Route path="/test-notifications" element={<ProtectedRoute><AppLayout><TestNotifications /></AppLayout></ProtectedRoute>} />
