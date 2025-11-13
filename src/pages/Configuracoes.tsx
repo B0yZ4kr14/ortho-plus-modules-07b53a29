@@ -8,7 +8,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import ModulesSimple from './settings/ModulesSimple';
 import DatabaseBackupTab from '@/components/settings/DatabaseBackupTab';
-import { BackupStatsDashboard } from '@/components/settings/BackupStatsDashboard';
 import { UserManagementTab } from '@/components/settings/UserManagementTab';
 import { ModulePermissionsManager } from '@/components/settings/ModulePermissionsManager';
 import { PermissionTemplates } from '@/components/settings/PermissionTemplates';
@@ -142,7 +141,6 @@ export default function Configuracoes() {
             </CardContent>
           </Card>
           
-          <BackupStatsDashboard />
           <DatabaseBackupTab />
         </TabsContent>
 

@@ -1,15 +1,16 @@
-// @ts-nocheck
-import { PageHeader } from '@/components/shared/PageHeader'
-import BackupExecutiveDashboard from '@/components/settings/BackupExecutiveDashboard'
+import { PageHeader } from '@/components/shared/PageHeader';
+import { BackupDashboard } from '@/components/settings/BackupDashboard';
+import { Database } from 'lucide-react';
 
 export default function BackupExecutivePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Dashboard Executivo de Backups"
+        icon={Database}
+        title="Dashboard de Backups"
         description="Visão completa da saúde e confiabilidade do sistema de backups"
       />
-      <BackupExecutiveDashboard />
+      <BackupDashboard />
     </div>
-  )
+  );
 }
