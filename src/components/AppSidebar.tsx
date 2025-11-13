@@ -137,6 +137,11 @@ const menuGroups = [{
     url: '/financeiro',
     icon: BarChart3
   }, {
+    title: 'PDV',
+    url: '/pdv',
+    icon: ShoppingCart,
+    badge: 'Novo'
+  }, {
     title: 'Transações',
     url: '/financeiro/transacoes',
     icon: Activity
@@ -164,6 +169,10 @@ const menuGroups = [{
     title: 'Crypto Pagamentos',
     url: '/financeiro/crypto',
     icon: Bitcoin
+  }, {
+    title: 'Relatório de Caixa',
+    url: '/relatorio-caixa',
+    icon: FileText
   }]
 }, {
   label: 'Relatórios & BI',

@@ -62,6 +62,8 @@ import HistoricoTeleconsultas from './pages/HistoricoTeleconsultas';
 import CRMFunil from '@/pages/CRMFunil';
 import SplitPagamento from '@/pages/SplitPagamento';
 import ProgramaFidelidade from '@/pages/ProgramaFidelidade';
+import PDV from '@/pages/PDV';
+import RelatorioCaixa from '@/pages/RelatorioCaixa';
 import NotFound from './pages/NotFound';
 import TestNotifications from '@/pages/TestNotifications';
 import { ProductTour } from './components/tour/ProductTour';
@@ -138,6 +140,8 @@ const App = () => (
                 <Route path="/configuracoes" element={<ProtectedRoute requireAdmin><AppLayout><Configuracoes /></AppLayout></ProtectedRoute>} />
                 <Route path="/configuracoes/analytics" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><OnboardingAnalytics /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/configuracoes/backups-agendados" element={<ProtectedRoute requireAdmin><AppLayout><ScheduledBackupsManagement /></AppLayout></ProtectedRoute>} />
+                <Route path="/pdv" element={<ProtectedRoute><AppLayout><PDV /></AppLayout></ProtectedRoute>} />
+                <Route path="/relatorio-caixa" element={<ProtectedRoute><AppLayout><RelatorioCaixa /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/modules" element={<ProtectedRoute requireAdmin><AppLayout><ModulesAdmin /></AppLayout></ProtectedRoute>} />
                 <Route path="/test-notifications" element={<ProtectedRoute><AppLayout><TestNotifications /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/modules" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><ModulesAdmin /></Suspense></AppLayout></ProtectedRoute>} />
