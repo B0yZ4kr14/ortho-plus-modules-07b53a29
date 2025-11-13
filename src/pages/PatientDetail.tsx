@@ -13,22 +13,23 @@ import { TratamentosTab } from '@/components/patients/tabs/TratamentosTab';
 import { FinanceiroTab } from '@/components/patients/tabs/FinanceiroTab';
 import { DocumentosTab } from '@/components/patients/tabs/DocumentosTab';
 import { HistoricoTab } from '@/components/patients/tabs/HistoricoTab';
+import type { Patient } from '@/types/patient';
 
 export default function PatientDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { data: patient, isLoading } = useQuery({
+  const { data: patient, isLoading } = useQuery<Patient>({
     queryKey: ['patient', id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('patients')
+        .from('patients' as any)
         .select('*')
         .eq('id', id)
         .single();
 
       if (error) throw error;
-      return data;
+      return data as unknown as Patient;
     },
     enabled: !!id
   });

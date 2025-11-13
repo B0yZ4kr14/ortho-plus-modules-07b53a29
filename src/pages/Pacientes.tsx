@@ -9,28 +9,30 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, UserCircle, Phone, Calendar, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { RiskScoreBadge } from '@/components/patients/RiskScoreBadge';
+import type { Patient } from '@/types/patient';
 
 export default function Pacientes() {
   const { clinicId } = useAuth();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data: patients, isLoading } = useQuery({
+  const { data: patients, isLoading } = useQuery<Patient[]>({
     queryKey: ['patients', clinicId, searchTerm],
     queryFn: async () => {
-      let query = supabase
-        .from('patients')
+      const query = supabase
+        .from('patients' as any)
         .select('*')
         .eq('clinic_id', clinicId)
         .order('created_at', { ascending: false });
 
+      let finalQuery = query;
       if (searchTerm) {
-        query = query.or(`full_name.ilike.%${searchTerm}%,cpf.ilike.%${searchTerm}%,phone_primary.ilike.%${searchTerm}%`);
+        finalQuery = query.or(`full_name.ilike.%${searchTerm}%,cpf.ilike.%${searchTerm}%,phone_primary.ilike.%${searchTerm}%`);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await finalQuery;
       if (error) throw error;
-      return data;
+      return (data || []) as unknown as Patient[];
     },
     enabled: !!clinicId
   });

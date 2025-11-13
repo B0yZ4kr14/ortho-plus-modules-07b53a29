@@ -130,6 +130,12 @@ export const menuGroups: MenuGroup[] = [
       { title: 'Fluxo Digital', url: '/fluxo-digital', icon: Scan },
       { title: 'Criptomoedas', url: '/crypto', icon: Bitcoin }
     ]
+  },
+  {
+    label: 'Suporte',
+    items: [
+      { title: 'Central de Ajuda', url: '/ajuda', icon: BookOpen }
+    ]
   }
 ];
 
