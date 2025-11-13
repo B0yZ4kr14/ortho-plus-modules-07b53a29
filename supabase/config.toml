@@ -12,22 +12,7 @@ verify_jwt = true
 [functions.toggle-module-state]
 verify_jwt = true
 
-[functions.manual-backup]
-verify_jwt = true
-
-[functions.configure-auto-backup]
-verify_jwt = true
-
-[functions.scheduled-cleanup]
-verify_jwt = false
-
-[functions.download-backup]
-verify_jwt = true
-
-[functions.cleanup-old-backups]
-verify_jwt = false
-
-[functions.restore-backup]
+[functions.recommend-module-sequence]
 verify_jwt = true
 
 [functions.export-clinic-data]
@@ -42,16 +27,22 @@ verify_jwt = true
 [functions.configure-auto-backup]
 verify_jwt = true
 
+[functions.scheduled-cleanup]
+verify_jwt = false
+
 [functions.download-backup]
 verify_jwt = true
+
+[functions.cleanup-old-backups]
+verify_jwt = false
 
 [functions.restore-backup]
 verify_jwt = true
 
-[functions.cleanup-old-backups]
-verify_jwt = true
+[functions.upload-to-cloud]
+verify_jwt = false
 
-[functions.scheduled-cleanup]
+[functions.validate-backup-integrity]
 verify_jwt = false
 
 [functions.analyze-odontogram]
@@ -67,9 +58,6 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.suggest-modules]
-verify_jwt = true
-
-[functions.recommend-module-sequence]
 verify_jwt = true
 
 [functions.save-onboarding-analytics]

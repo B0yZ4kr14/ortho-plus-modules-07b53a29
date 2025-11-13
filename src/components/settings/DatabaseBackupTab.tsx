@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { BackupStatsDashboard } from "./BackupStatsDashboard";
+import { ScheduledBackupWizard } from "./ScheduledBackupWizard";
+import { BackupRestoreDialog } from "./BackupRestoreDialog";
 import {
   Download,
   FileJson,
@@ -35,6 +37,9 @@ export default function DatabaseBackupTab() {
   const [isExporting, setIsExporting] = useState(false);
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('json');
   const [backupHistory, setBackupHistory] = useState<BackupHistory[]>([]);
+  const [showScheduleWizard, setShowScheduleWizard] = useState(false);
+  const [showRestoreDialog, setShowRestoreDialog] = useState(false);
+  const [selectedBackupFile, setSelectedBackupFile] = useState<File>();
 
   const formats = [
     { value: 'json', label: 'JSON', icon: FileJson, description: 'Formato estruturado' },
@@ -127,6 +132,17 @@ export default function DatabaseBackupTab() {
   return (
     <div className="space-y-6">
       <BackupStatsDashboard />
+      
+      <ScheduledBackupWizard 
+        open={showScheduleWizard}
+        onClose={() => setShowScheduleWizard(false)}
+      />
+      
+      <BackupRestoreDialog
+        open={showRestoreDialog}
+        onClose={() => setShowRestoreDialog(false)}
+        backupFile={selectedBackupFile}
+      />
       <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
@@ -177,25 +193,45 @@ export default function DatabaseBackupTab() {
             })}
           </div>
 
-          {/* Botão de Exportação */}
-          <Button
-            onClick={handleExport}
-            disabled={isExporting}
-            size="lg"
-            className="w-full"
-          >
-            {isExporting ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Exportando...
-              </>
-            ) : (
-              <>
-                <Download className="mr-2 h-5 w-5" />
-                Exportar em {selectedFormat.toUpperCase()}
-              </>
-            )}
-          </Button>
+          {/* Botões de Ação */}
+          <div className="flex gap-3">
+            <Button
+              onClick={handleExport}
+              disabled={isExporting}
+              size="lg"
+              className="flex-1"
+            >
+              {isExporting ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Exportando...
+                </>
+              ) : (
+                <>
+                  <Download className="mr-2 h-5 w-5" />
+                  Exportar Agora
+                </>
+              )}
+            </Button>
+            
+            <Button 
+              onClick={() => setShowScheduleWizard(true)}
+              variant="outline"
+              size="lg"
+            >
+              <Calendar className="mr-2 h-5 w-5" />
+              Agendar
+            </Button>
+            
+            <Button 
+              onClick={() => setShowRestoreDialog(true)}
+              variant="secondary"
+              size="lg"
+            >
+              <Database className="mr-2 h-5 w-5" />
+              Restaurar
+            </Button>
+          </div>
         </div>
       </Card>
 
@@ -240,6 +276,25 @@ export default function DatabaseBackupTab() {
                   <span className="text-sm text-muted-foreground">
                     {formatFileSize(backup.file_size_bytes)}
                   </span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      supabase.functions.invoke('validate-backup-integrity', {
+                        body: { backupId: backup.id }
+                      }).then(({ data, error }) => {
+                        if (error) {
+                          toast({ title: 'Erro ao validar', variant: 'destructive' });
+                        } else if (data.isValid) {
+                          toast({ title: '✓ Backup íntegro', description: 'Checksums validados' });
+                        } else {
+                          toast({ title: '⚠ Backup corrompido', variant: 'destructive' });
+                        }
+                      });
+                    }}
+                  >
+                    Validar
+                  </Button>
                 </div>
               </div>
             ))}
