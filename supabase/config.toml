@@ -110,3 +110,9 @@ verify_jwt = false
 
 [functions.processar-pagamento-tef]
 verify_jwt = false
+
+[functions.enviar-dados-contabilidade]
+verify_jwt = false
+
+[functions.sincronizar-nfce-contingencia]
+verify_jwt = false
