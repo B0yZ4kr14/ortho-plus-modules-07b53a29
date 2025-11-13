@@ -15,9 +15,10 @@ import { cn } from "@/lib/utils";
 
 interface DashboardHeaderProps {
   className?: string;
+  onMenuClick?: () => void;
 }
 
-export function DashboardHeader({ className }: DashboardHeaderProps = {}) {
+export function DashboardHeader({ className, onMenuClick }: DashboardHeaderProps = {}) {
   const {
     user,
     signOut,
@@ -38,8 +39,24 @@ export function DashboardHeader({ className }: DashboardHeaderProps = {}) {
       <HotkeysHelp />
       <header className={cn("sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60", className)}>
         <div className="flex items-center justify-between h-14 px-6 gap-6">
+          {/* Mobile menu button - shown only on mobile */}
+          {onMenuClick && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onMenuClick}
+              className="md:hidden min-h-[44px] min-w-[44px]"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" x2="20" y1="12" y2="12" />
+                <line x1="4" x2="20" y1="6" y2="6" />
+                <line x1="4" x2="20" y1="18" y2="18" />
+              </svg>
+            </Button>
+          )}
+
           {/* Search - left aligned with max-width */}
-          <div className="flex-1 max-w-md" data-tour="search-bar">
+          <div className="flex-1 max-w-md hidden md:block" data-tour="search-bar">
             <GlobalSearch />
           </div>
 
