@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { LoadingState } from '@/components/shared/LoadingState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -16,11 +17,12 @@ import { CategoriaForm } from '@/modules/estoque/components/CategoriaForm';
 import { CategoriasList } from '@/modules/estoque/components/CategoriasList';
 import { BarcodeScannerDialog } from '@/modules/estoque/components/BarcodeScannerDialog';
 import type { Produto, Fornecedor, Categoria } from '@/modules/estoque/types/estoque.types';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 type ViewMode = 'list' | 'form';
 
 export default function EstoqueCadastros() {
+  const { toast } = useToast();
   const {
     produtos,
     fornecedores,
@@ -66,10 +68,10 @@ export default function EstoqueCadastros() {
   const handleSubmitProduto = (data: Produto) => {
     if (selectedProduto) {
       updateProduto(selectedProduto.id!, data);
-      toast.success('Produto atualizado com sucesso!');
+      toast({ title: 'Sucesso', description: 'Produto atualizado com sucesso!' });
     } else {
       addProduto(data);
-      toast.success('Produto cadastrado com sucesso!');
+      toast({ title: 'Sucesso', description: 'Produto cadastrado com sucesso!' });
     }
     setProdutoViewMode('list');
     setSelectedProduto(undefined);
@@ -95,15 +97,16 @@ export default function EstoqueCadastros() {
     try {
       if (selectedFornecedor) {
         await updateFornecedor(selectedFornecedor.id!, data);
-        toast.success('Fornecedor atualizado com sucesso!');
+        toast({ title: 'Sucesso', description: 'Fornecedor atualizado com sucesso!' });
       } else {
         await addFornecedor(data);
-        toast.success('Fornecedor cadastrado com sucesso!');
+        toast({ title: 'Sucesso', description: 'Fornecedor cadastrado com sucesso!' });
       }
       setFornecedorViewMode('list');
       setSelectedFornecedor(undefined);
     } catch (error) {
       console.error('Erro ao salvar fornecedor:', error);
+      toast({ title: 'Erro', description: 'Erro ao salvar fornecedor', variant: 'destructive' });
     }
   };
 
@@ -127,15 +130,16 @@ export default function EstoqueCadastros() {
     try {
       if (selectedCategoria) {
         await updateCategoria(selectedCategoria.id!, data);
-        toast.success('Categoria atualizada com sucesso!');
+        toast({ title: 'Sucesso', description: 'Categoria atualizada com sucesso!' });
       } else {
         await addCategoria(data);
-        toast.success('Categoria cadastrada com sucesso!');
+        toast({ title: 'Sucesso', description: 'Categoria cadastrada com sucesso!' });
       }
       setCategoriaViewMode('list');
       setSelectedCategoria(undefined);
     } catch (error) {
       console.error('Erro ao salvar categoria:', error);
+      toast({ title: 'Erro', description: 'Erro ao salvar categoria', variant: 'destructive' });
     }
   };
 
@@ -151,15 +155,15 @@ export default function EstoqueCadastros() {
       switch (itemToDelete.type) {
         case 'produto':
           await deleteProduto(itemToDelete.id);
-          toast.success('Produto excluído com sucesso!');
+          toast({ title: 'Sucesso', description: 'Produto excluído com sucesso!' });
           break;
         case 'fornecedor':
           await deleteFornecedor(itemToDelete.id);
-          toast.success('Fornecedor excluído com sucesso!');
+          toast({ title: 'Sucesso', description: 'Fornecedor excluído com sucesso!' });
           break;
         case 'categoria':
           await deleteCategoria(itemToDelete.id);
-          toast.success('Categoria excluída com sucesso!');
+          toast({ title: 'Sucesso', description: 'Categoria excluída com sucesso!' });
           break;
       }
 
@@ -167,6 +171,7 @@ export default function EstoqueCadastros() {
       setItemToDelete(null);
     } catch (error) {
       console.error('Erro ao excluir:', error);
+      toast({ title: 'Erro', description: 'Erro ao excluir item', variant: 'destructive' });
     }
   };
 
@@ -175,9 +180,9 @@ export default function EstoqueCadastros() {
     if (produto) {
       setSelectedProduto(produto);
       setProdutoViewMode('form');
-      toast.success(`Produto encontrado: ${produto.nome}`);
+      toast({ title: 'Sucesso', description: `Produto encontrado: ${produto.nome}` });
     } else {
-      toast.error('Produto não encontrado com este código de barras');
+      toast({ title: 'Erro', description: 'Produto não encontrado com este código de barras', variant: 'destructive' });
     }
   };
 
@@ -191,22 +196,35 @@ export default function EstoqueCadastros() {
     (f.cnpj && f.cnpj.toLowerCase().includes(searchFornecedor.toLowerCase()))
   );
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          icon={Package}
+          title="Cadastros de Estoque"
+          description="Gestão de produtos, fornecedores e categorias do estoque"
+        />
+        <LoadingState variant="spinner" size="lg" message="Carregando cadastros..." />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <PageHeader
           icon={Package}
           title="Cadastros de Estoque"
           description="Gestão de produtos, fornecedores e categorias do estoque"
         />
-        <Button onClick={() => setScannerOpen(true)} variant="outline">
+        <Button onClick={() => setScannerOpen(true)} variant="outline" className="hover-scale">
           <Scan className="mr-2 h-4 w-4" />
           Scanner de Código de Barras
         </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+        <Card variant="elevated" className="hover-scale">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Produtos Cadastrados</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
@@ -219,7 +237,7 @@ export default function EstoqueCadastros() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card variant="elevated" className="hover-scale">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Fornecedores</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -232,7 +250,7 @@ export default function EstoqueCadastros() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card variant="elevated" className="hover-scale">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Categorias</CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />

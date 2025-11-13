@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { LoadingState } from '@/components/shared/LoadingState';
 import { useEstoqueSupabase } from '@/modules/estoque/hooks/useEstoqueSupabase';
 import { EstoqueRelatorios } from '@/modules/estoque/components/EstoqueRelatorios';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
@@ -97,19 +98,19 @@ export default function EstoqueDashboard() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
-      <PageHeader
-        icon={BarChart3}
-        title="Dashboard do Estoque"
-        description="Métricas e indicadores do estoque"
-      />
-        <div className="text-center py-12">Carregando métricas...</div>
+      <div className="space-y-6">
+        <PageHeader
+          icon={BarChart3}
+          title="Dashboard do Estoque"
+          description="Métricas e indicadores do estoque"
+        />
+        <LoadingState variant="spinner" size="lg" message="Carregando métricas do estoque..." />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="space-y-6">
       <PageHeader
         icon={BarChart3}
         title="Dashboard do Estoque"
@@ -118,7 +119,7 @@ export default function EstoqueDashboard() {
 
       {/* Cards de Métricas Principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="p-6">
+        <Card variant="elevated" className="p-6 hover-scale">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Total de Produtos</p>
@@ -128,7 +129,7 @@ export default function EstoqueDashboard() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card variant="elevated" className="p-6 hover-scale">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Estoque Baixo</p>
@@ -138,7 +139,7 @@ export default function EstoqueDashboard() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card variant="elevated" className="p-6 hover-scale">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Requisições Pendentes</p>
@@ -148,7 +149,7 @@ export default function EstoqueDashboard() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card variant="elevated" className="p-6 hover-scale">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Valor Total</p>
@@ -163,7 +164,7 @@ export default function EstoqueDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gráfico de Produtos com Estoque Baixo */}
-        <Card className="p-6">
+        <Card variant="elevated" className="p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-orange-500" />
             Produtos com Estoque Baixo
@@ -189,7 +190,7 @@ export default function EstoqueDashboard() {
         </Card>
 
         {/* Gráfico de Distribuição de Requisições */}
-        <Card className="p-6">
+        <Card variant="elevated" className="p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-blue-500" />
             Requisições por Status
@@ -223,7 +224,7 @@ export default function EstoqueDashboard() {
       </div>
 
       {/* Gráfico de Movimentações Recentes */}
-      <Card className="p-6">
+      <Card variant="elevated" className="p-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-primary" />
           Movimentações dos Últimos 7 Dias
@@ -243,7 +244,7 @@ export default function EstoqueDashboard() {
 
       {/* Alertas Ativos */}
       {alertasAtivos.length > 0 && (
-        <Card className="p-6">
+        <Card variant="elevated" className="p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-orange-500" />
             Alertas Ativos ({alertasAtivos.length})

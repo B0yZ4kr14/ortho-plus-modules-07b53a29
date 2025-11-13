@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { LoadingState } from '@/components/shared/LoadingState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -10,10 +11,11 @@ import { TrendingUp, TrendingDown, ArrowRightLeft, Plus } from 'lucide-react';
 import { useEstoqueSupabase } from '@/modules/estoque/hooks/useEstoqueSupabase';
 import { MovimentacaoForm } from '@/modules/estoque/components/MovimentacaoForm';
 import { MovimentacoesList } from '@/modules/estoque/components/MovimentacoesList';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import type { Movimentacao } from '@/modules/estoque/types/estoque.types';
 
 export default function EstoqueMovimentacoes() {
+  const { toast } = useToast();
   const {
     produtos,
     fornecedores,
@@ -31,10 +33,11 @@ export default function EstoqueMovimentacoes() {
   const handleSubmit = async (data: Movimentacao) => {
     try {
       await addMovimentacao(data);
-      toast.success('Movimentação registrada com sucesso!');
+      toast({ title: 'Sucesso', description: 'Movimentação registrada com sucesso!' });
       setShowForm(false);
     } catch (error) {
       console.error('Erro ao registrar movimentação:', error);
+      toast({ title: 'Erro', description: 'Erro ao registrar movimentação', variant: 'destructive' });
     }
   };
 
@@ -57,8 +60,21 @@ export default function EstoqueMovimentacoes() {
   const totalEntradas = movimentacoesEntrada.reduce((sum, m) => sum + (m.valorTotal || 0), 0);
   const totalSaidas = movimentacoesSaida.reduce((sum, m) => sum + (m.valorTotal || 0), 0);
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          icon={ArrowRightLeft}
+          title="Movimentações de Estoque"
+          description="Histórico completo de entradas, saídas e ajustes de inventário"
+        />
+        <LoadingState variant="spinner" size="lg" message="Carregando movimentações..." />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-6">
       <PageHeader
         icon={ArrowRightLeft}
         title="Movimentações de Estoque"
@@ -66,7 +82,7 @@ export default function EstoqueMovimentacoes() {
       />
 
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card variant="elevated" className="hover-scale">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Movimentações</CardTitle>
             <ArrowRightLeft className="h-4 w-4 text-muted-foreground" />
@@ -79,7 +95,7 @@ export default function EstoqueMovimentacoes() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card variant="elevated" className="hover-scale">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Entradas</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-500" />
@@ -92,7 +108,7 @@ export default function EstoqueMovimentacoes() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card variant="elevated" className="hover-scale">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Saídas</CardTitle>
             <TrendingDown className="h-4 w-4 text-red-500" />
@@ -105,7 +121,7 @@ export default function EstoqueMovimentacoes() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card variant="elevated" className="hover-scale">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ajustes</CardTitle>
             <ArrowRightLeft className="h-4 w-4 text-blue-500" />
@@ -135,7 +151,7 @@ export default function EstoqueMovimentacoes() {
               Ajustes ({movimentacoesAjuste.length})
             </TabsTrigger>
           </TabsList>
-          <Button onClick={() => setShowForm(true)}>
+          <Button onClick={() => setShowForm(true)} className="hover-scale">
             <Plus className="h-4 w-4 mr-2" />
             Nova Movimentação
           </Button>
