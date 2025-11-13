@@ -33,11 +33,14 @@ export const CupomFiscal = ({ venda, items }: CupomFiscalProps) => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast({
         title: 'NFCe emitida com sucesso',
         description: `Chave: ${data.nfce.chave_acesso}`,
       });
+      
+      // Disparar impressão automática em SAT/MFe após emissão NFCe
+      await imprimirCupomFiscal();
     },
     onError: (error: any) => {
       toast({
@@ -47,6 +50,43 @@ export const CupomFiscal = ({ venda, items }: CupomFiscalProps) => {
       });
     },
   });
+
+  const imprimirCupomFiscal = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('imprimir-cupom-sat', {
+        body: {
+          vendaId: venda.id,
+          clinicId: clinicId,
+          items: items.map((item: any) => ({
+            descricao: item.descricao,
+            quantidade: item.quantidade,
+            valor_unitario: item.valor_unitario,
+            valor_total: item.valor_total,
+          })),
+          valorTotal: venda.valor_total,
+          formaPagamento: venda.forma_pagamento || 'DINHEIRO',
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: "Cupom fiscal impresso",
+          description: `Autorização: ${data.codigoAutorizacao}`,
+        });
+      } else {
+        throw new Error(data.mensagem || 'Erro ao imprimir cupom fiscal');
+      }
+    } catch (error: any) {
+      console.error('Error printing fiscal coupon:', error);
+      toast({
+        title: "Erro ao imprimir cupom fiscal",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   const handlePrint = () => {
     if (cupomRef.current) {

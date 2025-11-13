@@ -102,6 +102,9 @@ verify_jwt = true
 [functions.gerar-sped-fiscal]
 verify_jwt = true
 
+[functions.imprimir-cupom-sat]
+verify_jwt = false
+
 [functions.processar-metas-gamificacao]
 verify_jwt = false
 

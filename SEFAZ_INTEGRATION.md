@@ -61,7 +61,44 @@ Permite corrigir informações após autorização:
 - Código de produtos
 - Data de emissão
 
-### 4. Consulta de Status (Implementação Futura)
+### 4. Integração com Impressoras Fiscais SAT/MFe
+
+**Edge Function:** `imprimir-cupom-sat`
+**Tabelas:** `sat_mfe_config`, `sat_mfe_impressoes`
+
+Permite impressão automática de cupom fiscal diretamente em hardware homologado pela SEFAZ:
+- Suporte para equipamentos SAT e MFe
+- Comunicação via TCP/IP ou DLL nativa
+- Impressão automática após autorização da NFCe
+- Log completo de todas as impressões
+- Retry automático em caso de falha
+- Validação de equipamento ativo
+
+**Configuração do Equipamento:**
+- Tipo: SAT (Sistema Autenticador e Transmissor) ou MFe (Módulo Fiscal Eletrônico)
+- Número de série do equipamento
+- Código de ativação fornecido pela SEFAZ
+- Endereço IP e porta (para MFe em rede)
+- Modelo e fabricante
+- Versão do software
+
+**Fluxo de Impressão:**
+1. NFCe é autorizada na SEFAZ
+2. Sistema dispara automaticamente impressão em SAT/MFe
+3. XML do cupom fiscal é construído conforme layout CF-e-SAT
+4. Comunicação com equipamento via protocolo específico
+5. Retorno com código de autorização e chave de consulta
+6. Log da impressão no banco de dados
+7. Comprovante fiscal impresso automaticamente
+
+**Status de Impressão:**
+- `AGUARDANDO` - Aguardando processamento
+- `PROCESSANDO` - Enviando para equipamento
+- `SUCESSO` - Impresso com sucesso
+- `ERRO` - Falha na impressão
+- `CANCELADO` - Impressão cancelada
+
+### 5. Consulta de Status (Implementação Futura)
 
 Permite consultar situação da NFCe na SEFAZ:
 - Protocolo de autorização
@@ -166,10 +203,11 @@ if horario >= 18h AND valor_caixa > R$ 1200:
 ### Segurança
 
 - RLS policies por clinic_id
-- Audit logs de todas as operações
+- Audit logs de todas as operações (incluindo impressões SAT/MFe)
 - Certificado digital A1/A3 criptografado
 - CSC (Código de Segurança) hash
 - Validação de permissões ADMIN
+- Código de ativação SAT/MFe armazenado com segurança
 
 ### Auditoria
 
@@ -177,6 +215,8 @@ Todas as operações registram em `audit_logs`:
 - `NFCE_AUTORIZADA_SEFAZ`
 - `NUMERACAO_INUTILIZADA`
 - `CCE_REGISTRADA`
+- `CUPOM_FISCAL_IMPRESSO`
+- `ERRO_IMPRESSAO_CUPOM`
 - `SANGRIA_IA_SUGERIDA`
 - `SPED_FISCAL_GERADO`
 
@@ -186,7 +226,7 @@ Todas as operações registram em `audit_logs`:
 1. VENDA PDV
    └─> Emitir NFCe
        └─> Autorizar SEFAZ
-           └─> Imprimir Cupom
+           └─> Imprimir Cupom SAT/MFe (AUTOMÁTICO)
            
 2. FECHAMENTO CAIXA
    └─> Comparar PDV vs NFCe
@@ -206,6 +246,7 @@ Todas as operações registram em `audit_logs`:
 3. **Contingência FS-DA:** Emissão offline
 4. **Integração Contábil:** Envio automático para contabilidade
 5. **Dashboard Fiscal:** Analytics de impostos e carga tributária
+6. **Drivers Nativos SAT/MFe:** Comunicação direta com hardware via DLL
 
 ---
 
