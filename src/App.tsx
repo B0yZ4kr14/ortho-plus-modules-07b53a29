@@ -21,7 +21,6 @@ import Procedimentos from "./pages/Procedimentos";
 import Financeiro from "./pages/Financeiro";
 import Resumo from "./pages/Resumo";
 import AgendaClinica from "./pages/AgendaClinica";
-import GerenciamentoModulos from "./pages/GerenciamentoModulos";
 import ModulesAdmin from './pages/settings/ModulesAdmin';
 import Configuracoes from './pages/Configuracoes';
 import PEP from './pages/PEP';
@@ -124,7 +123,6 @@ const App = () => (
                 <Route path="/programa-fidelidade" element={<ProtectedRoute><AppLayout><ProgramaFidelidade /></AppLayout></ProtectedRoute>} />
                 <Route path="/report-templates" element={<ProtectedRoute requireAdmin><AppLayout><ReportTemplates /></AppLayout></ProtectedRoute>} />
                 <Route path="/audit-logs" element={<ProtectedRoute requireAdmin><AppLayout><AuditLogs /></AppLayout></ProtectedRoute>} />
-                <Route path="/modulos" element={<ProtectedRoute><AppLayout><GerenciamentoModulos /></AppLayout></ProtectedRoute>} />
                 <Route path="/configuracoes" element={<ProtectedRoute requireAdmin><AppLayout><Configuracoes /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/modules" element={<ProtectedRoute requireAdmin><AppLayout><ModulesAdmin /></AppLayout></ProtectedRoute>} />
                 <Route path="/test-notifications" element={<ProtectedRoute><AppLayout><TestNotifications /></AppLayout></ProtectedRoute>} />

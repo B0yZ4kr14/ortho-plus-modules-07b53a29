@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Settings, Info, AlertCircle, CheckCircle2, XCircle, Link2, Lock, Unlock, Loader2, Network, BookOpen } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ModuleDependencyGraph } from '@/components/modules/ModuleDependencyGraph';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
@@ -31,6 +31,7 @@ interface ModuleData {
 }
 
 export default function ModulesAdmin() {
+  const { toast } = useToast();
   const [modules, setModules] = useState<ModuleData[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
@@ -54,7 +55,11 @@ export default function ModulesAdmin() {
       setModules(data?.modules || []);
     } catch (error) {
       console.error('Error fetching modules:', error);
-      toast.error('Erro ao carregar módulos');
+      toast({ 
+        title: 'Erro', 
+        description: 'Erro ao carregar módulos', 
+        variant: 'destructive' 
+      });
     } finally {
       setLoading(false);
     }
@@ -76,9 +81,10 @@ export default function ModulesAdmin() {
         setTimeout(() => cardElement.classList.remove('animate-shake'), 500);
       }
       
-      toast.error('Módulo bloqueado', {
+      toast({ 
+        title: 'Módulo bloqueado', 
         description: `Este módulo não pode ser desativado pois é requerido por: ${module.blocking_dependencies.join(', ')}`,
-        duration: 5000,
+        variant: 'destructive'
       });
       setToggling(null);
       return;
@@ -114,12 +120,10 @@ export default function ModulesAdmin() {
         }
       }
       
-      toast.success(
-        newState ? 'Módulo ativado com sucesso!' : 'Módulo desativado com sucesso!',
-        {
-          description: `O módulo ${moduleKey} foi ${newState ? 'ativado' : 'desativado'}.`,
-        }
-      );
+      toast({ 
+        title: newState ? 'Módulo ativado!' : 'Módulo desativado!',
+        description: `O módulo ${moduleKey} foi ${newState ? 'ativado' : 'desativado'}.`
+      });
       await fetchModules();
     } catch (error: any) {
       console.error('Toggle error:', error);
@@ -133,9 +137,10 @@ export default function ModulesAdmin() {
       
       // Parse error message to show dependency info
       const errorMsg = error.message || 'Erro ao alterar estado do módulo';
-      toast.error('Não foi possível alterar o módulo', {
-        description: errorMsg,
-        duration: 5000,
+      toast({ 
+        title: 'Erro ao alterar módulo', 
+        description: errorMsg, 
+        variant: 'destructive' 
       });
     } finally {
       setToggling(null);
@@ -149,13 +154,16 @@ export default function ModulesAdmin() {
       });
 
       if (error) throw error;
-      toast.success('Solicitação enviada!', {
-        description: `Sua solicitação para o módulo ${moduleName} foi enviada ao time comercial.`,
+      toast({ 
+        title: 'Solicitação enviada!', 
+        description: `Sua solicitação para o módulo ${moduleName} foi enviada ao time comercial.`
       });
     } catch (error: any) {
       console.error('Request error:', error);
-      toast.error('Erro ao solicitar módulo', {
-        description: error.message || 'Tente novamente mais tarde.',
+      toast({ 
+        title: 'Erro ao solicitar módulo', 
+        description: error.message || 'Tente novamente mais tarde.', 
+        variant: 'destructive' 
       });
     }
   };
