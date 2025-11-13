@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Settings, Info, AlertCircle, CheckCircle2, XCircle, Link2, Lock, Unlock, Loader2, Network, BookOpen } from 'lucide-react';
+import { Settings, Info, AlertCircle, CheckCircle2, XCircle, Link2, Lock, Unlock, Loader2, Network, BookOpen, Download, Upload, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ModuleDependencyGraph } from '@/components/modules/ModuleDependencyGraph';
@@ -36,6 +36,8 @@ export default function ModulesAdmin() {
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   useEffect(() => {
@@ -168,6 +170,113 @@ export default function ModulesAdmin() {
     }
   };
 
+  const handleExportConfig = () => {
+    const activeModules = modules
+      .filter(m => m.is_active)
+      .map(m => ({
+        module_key: m.module_key,
+        name: m.name,
+        category: m.category,
+      }));
+
+    const config = {
+      exported_at: new Date().toISOString(),
+      total_modules: activeModules.length,
+      modules: activeModules,
+    };
+
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ortho-modules-config-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: 'Configuração exportada!',
+      description: `${activeModules.length} módulos exportados com sucesso.`,
+    });
+  };
+
+  const handleImportConfig = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const config = JSON.parse(text);
+
+      if (!config.modules || !Array.isArray(config.modules)) {
+        throw new Error('Formato de arquivo inválido');
+      }
+
+      toast({
+        title: 'Importando configuração...',
+        description: `Processando ${config.modules.length} módulos...`,
+      });
+
+      // Activate modules from config
+      let activated = 0;
+      for (const mod of config.modules) {
+        const existingModule = modules.find(m => m.module_key === mod.module_key);
+        if (existingModule && !existingModule.is_active && existingModule.can_activate) {
+          await supabase.functions.invoke('toggle-module-state', {
+            body: { module_key: mod.module_key },
+          });
+          activated++;
+        }
+      }
+
+      await fetchModules();
+      toast({
+        title: 'Importação concluída!',
+        description: `${activated} módulos ativados com sucesso.`,
+      });
+    } catch (error: any) {
+      console.error('Import error:', error);
+      toast({
+        title: 'Erro ao importar',
+        description: error.message || 'Verifique o formato do arquivo.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleGetSuggestions = async () => {
+    setLoadingSuggestions(true);
+    try {
+      const activeModulesList = modules.filter(m => m.is_active).map(m => m.name).join(', ');
+      const inactiveModulesList = modules.filter(m => !m.is_active).map(m => m.name).join(', ');
+
+      const { data, error } = await supabase.functions.invoke('suggest-modules', {
+        body: {
+          activeModules: activeModulesList,
+          inactiveModules: inactiveModulesList,
+        },
+      });
+
+      if (error) throw error;
+
+      setSuggestions(data.suggestions || []);
+      toast({
+        title: 'Sugestões geradas!',
+        description: 'Confira as recomendações de módulos abaixo.',
+      });
+    } catch (error: any) {
+      console.error('Suggestions error:', error);
+      toast({
+        title: 'Erro ao gerar sugestões',
+        description: error.message || 'Tente novamente mais tarde.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
   const getModuleStatusIcon = (module: ModuleData) => {
     if (!module.is_subscribed) return null;
     
@@ -249,7 +358,7 @@ export default function ModulesAdmin() {
           description="Gerencie quais módulos estão ativos na sua clínica"
         />
         
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Button 
             variant="outline" 
             size="lg" 
@@ -259,12 +368,59 @@ export default function ModulesAdmin() {
             <BookOpen className="h-5 w-5" />
             Guia de Onboarding
           </Button>
+
+          <Button
+            variant="outline"
+            size="lg"
+            className="gap-2"
+            onClick={handleGetSuggestions}
+            disabled={loadingSuggestions}
+          >
+            {loadingSuggestions ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Sparkles className="h-5 w-5" />
+            )}
+            Sugestões IA
+          </Button>
+
+          <Button
+            variant="outline"
+            size="lg"
+            className="gap-2"
+            onClick={handleExportConfig}
+          >
+            <Download className="h-5 w-5" />
+            Exportar Config
+          </Button>
+
+          <label>
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImportConfig}
+              className="hidden"
+              id="import-config"
+            />
+            <Button
+              variant="outline"
+              size="lg"
+              className="gap-2"
+              onClick={() => document.getElementById('import-config')?.click()}
+              asChild
+            >
+              <span>
+                <Upload className="h-5 w-5" />
+                Importar Config
+              </span>
+            </Button>
+          </label>
           
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" size="lg" className="gap-2">
                 <Network className="h-5 w-5" />
-                Visualizar Grafo de Dependências
+                Grafo de Dependências
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-[95vw] h-[90vh] p-0">
@@ -296,6 +452,23 @@ export default function ModulesAdmin() {
           quando há dependências que impedem ativação ou desativação.
         </AlertDescription>
       </Alert>
+
+      {suggestions.length > 0 && (
+        <Alert className="border-primary/50 bg-primary/5">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <AlertTitle>Sugestões Inteligentes de Módulos</AlertTitle>
+          <AlertDescription>
+            <div className="mt-2 space-y-2">
+              <p className="text-sm font-medium">Baseado no perfil da sua clínica, recomendamos:</p>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                {suggestions.map((suggestion, index) => (
+                  <li key={index}>{suggestion}</li>
+                ))}
+              </ul>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {Object.entries(groupedModules).map(([category, categoryModules]) => (
         <div key={category} className="space-y-4">

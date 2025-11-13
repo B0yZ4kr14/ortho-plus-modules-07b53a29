@@ -47,3 +47,15 @@ verify_jwt = false
 
 [functions.check-volatility-alerts]
 verify_jwt = false
+
+[functions.send-crypto-price-alerts]
+verify_jwt = true
+
+[functions.send-replenishment-alerts]
+verify_jwt = true
+
+[functions.send-stock-alerts]
+verify_jwt = true
+
+[functions.suggest-modules]
+verify_jwt = true
