@@ -30,20 +30,31 @@ export const useRadiografiaSupabase = () => {
 
       const { data: analisesData, error } = await supabase
         .from('analises_radiograficas')
-        .select(`
-          *,
-          pacientes:patient_id (
-            nome_completo
-          )
-        `)
+        .select('*')
         .eq('clinic_id', profile.clinic_id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
+      // Buscar dados dos pacientes separadamente
+      const patientIds = [...new Set(analisesData?.map(a => a.patient_id).filter(Boolean))];
+      
+      let patientsMap: Record<string, any> = {};
+      if (patientIds.length > 0) {
+        const { data: patientsData } = await supabase
+          .from('patients')
+          .select('id, nome_completo')
+          .in('id', patientIds);
+        
+        patientsMap = (patientsData || []).reduce((acc: any, patient: any) => {
+          acc[patient.id] = patient;
+          return acc;
+        }, {});
+      }
+
       const analisesFormatadas = analisesData?.map((analise: any) => ({
         ...analise,
-        patient_name: analise.pacientes?.nome_completo || 'Paciente não identificado',
+        patient_name: patientsMap[analise.patient_id]?.nome_completo || 'Paciente não identificado',
         problemas: analise.resultado_ia?.problemas_detectados || []
       })) || [];
 
