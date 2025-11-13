@@ -15,6 +15,7 @@ import { lazy, Suspense } from 'react';
 import Demo from "./pages/Demo";
 import Dashboard from "./pages/Dashboard";
 import Pacientes from "./pages/Pacientes";
+import PatientDetail from "./pages/PatientDetail";
 import Dentistas from "./pages/Dentistas";
 import Funcionarios from "./pages/Funcionarios";
 import Procedimentos from "./pages/Procedimentos";
@@ -101,6 +102,7 @@ const App = () => (
                 <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
                 <Route path="/resumo" element={<ProtectedRoute><AppLayout><Resumo /></AppLayout></ProtectedRoute>} />
                 <Route path="/pacientes" element={<ProtectedRoute><AppLayout><Pacientes /></AppLayout></ProtectedRoute>} />
+                <Route path="/pacientes/:id" element={<ProtectedRoute><AppLayout><PatientDetail /></AppLayout></ProtectedRoute>} />
                 <Route path="/dentistas" element={<ProtectedRoute><AppLayout><Dentistas /></AppLayout></ProtectedRoute>} />
                 <Route path="/funcionarios" element={<ProtectedRoute><AppLayout><Funcionarios /></AppLayout></ProtectedRoute>} />
                 <Route path="/procedimentos" element={<ProtectedRoute><AppLayout><Procedimentos /></AppLayout></ProtectedRoute>} />
