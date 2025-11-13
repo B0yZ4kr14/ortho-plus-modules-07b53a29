@@ -291,7 +291,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
             
             {group.collapsed ? (
               <Collapsible defaultOpen={false} className="group/collapsible">
-                <div className="rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-lg backdrop-blur-sm border border-sidebar-border/50 p-2">
+                <div className="rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-lg backdrop-blur-sm border border-sidebar-border/50 p-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl">
                   <SidebarGroup>
                     <SidebarGroupLabel className="text-sm font-bold text-sidebar-foreground px-3 py-2 drop-shadow-md">
                       <CollapsibleTrigger className="flex w-full items-center justify-between hover:text-primary transition-all duration-200">
@@ -328,7 +328,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
                 </div>
               </Collapsible>
             ) : (
-              <div className="rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-lg backdrop-blur-sm border border-sidebar-border/50 p-2">
+              <div className="rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-lg backdrop-blur-sm border border-sidebar-border/50 p-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl">
                 <SidebarGroup>
                   <SidebarGroupLabel className="text-sm font-bold text-sidebar-foreground px-3 py-2 drop-shadow-md">
                     {!collapsed && <span className="tracking-wide">{group.label}</span>}
@@ -398,7 +398,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
         {isAdmin && (
           <>
             <div 
-              className="rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-lg backdrop-blur-sm border border-sidebar-border/50 p-2 mt-3 animate-fade-in"
+              className="rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-lg backdrop-blur-sm border border-sidebar-border/50 p-2 mt-3 animate-fade-in transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
               style={{ animationDelay: `${menuGroups.length * 100}ms` }}
             >
               <SidebarGroup>
