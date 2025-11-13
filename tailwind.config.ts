@@ -178,6 +178,16 @@ export default {
           "0%": { transform: "scale(0)", opacity: "1" },
           "100%": { transform: "scale(4)", opacity: "0" }
         },
+        "pulse-border": {
+          "0%, 100%": { 
+            boxShadow: "0 0 0 0 hsl(var(--primary) / 0.4)",
+            borderColor: "hsl(var(--primary))"
+          },
+          "50%": { 
+            boxShadow: "0 0 0 4px hsl(var(--primary) / 0)",
+            borderColor: "hsl(var(--primary) / 0.8)"
+          }
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -190,6 +200,7 @@ export default {
         "shimmer": "shimmer 2s linear infinite",
         "shake": "shake 0.5s ease-in-out",
         "ripple": "ripple 0.6s ease-out",
+        "pulse-border": "pulse-border 2s ease-in-out infinite",
       },
     },
   },

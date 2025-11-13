@@ -7,6 +7,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useState, useRef } from 'react';
 const menuGroups = [{
   label: 'Visão Geral',
   items: [{
@@ -214,6 +216,20 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
   const location = useLocation();
   const { isAdmin, hasModuleAccess, userRole } = useAuth();
   const currentPath = location.pathname;
+  const [ripples, setRipples] = useState<{ x: number; y: number; id: number }[]>([]);
+  
+  const createRipple = (event: React.MouseEvent<HTMLElement>) => {
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const id = Date.now();
+    
+    setRipples(prev => [...prev, { x, y, id }]);
+    setTimeout(() => {
+      setRipples(prev => prev.filter(r => r.id !== id));
+    }, 600);
+  };
 
   // Module key mapping for permission checks
   const moduleKeyMap: Record<string, string> = {
@@ -268,7 +284,62 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
   const collapsed = state === 'collapsed';
   const isActive = (path: string) => currentPath === path;
   
-  return <Sidebar className={collapsed ? 'w-16' : 'w-64'} collapsible="icon">
+  const renderMenuItem = (item: any, isSubItem = false) => {
+    const ItemContent = (
+      <SidebarMenuButton 
+        asChild 
+        isActive={isActive(item.url)} 
+        className={`group/button my-1 rounded-xl hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-md transition-all duration-200 min-h-[44px] relative overflow-hidden ${
+          isActive(item.url) 
+            ? 'bg-primary/20 text-primary border-l-4 border-l-primary shadow-lg animate-pulse-border' 
+            : ''
+        }`}
+        onClick={createRipple}
+      >
+        <NavLink to={item.url} end={!isSubItem} className="flex items-center gap-3 px-3 py-2 relative z-10" onClick={onNavigate}>
+          <item.icon className={isSubItem ? "h-4 w-4" : "h-5 w-5 shrink-0"} />
+          {!collapsed && <span className={`${isSubItem ? 'text-sm' : 'text-sm flex-1'} font-medium`}>{item.title}</span>}
+          {!collapsed && item.badge && (
+            <Badge 
+              variant={item.badge === 'IA' ? 'default' : item.badge === 'Beta' ? 'secondary' : 'outline'} 
+              className="text-[10px] px-2 py-0.5 shadow-sm group-data-[active=true]/button:bg-primary group-data-[active=true]/button:text-primary-foreground group-data-[active=true]/button:border-transparent"
+            > 
+              {item.badge}
+            </Badge>
+          )}
+          {ripples.map((ripple) => (
+            <span
+              key={ripple.id}
+              className="absolute inset-0 bg-primary/30 rounded-full animate-ripple pointer-events-none"
+              style={{
+                left: ripple.x,
+                top: ripple.y,
+              }}
+            />
+          ))}
+        </NavLink>
+      </SidebarMenuButton>
+    );
+
+    if (collapsed) {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {ItemContent}
+          </TooltipTrigger>
+          <TooltipContent side="right" className="font-medium">
+            {item.title}
+            {item.badge && <Badge variant="outline" className="ml-2 text-[10px]">{item.badge}</Badge>}
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return ItemContent;
+  };
+  
+  return <TooltipProvider delayDuration={300}>
+    <Sidebar className={collapsed ? 'w-16' : 'w-64'} collapsible="icon">
       <SidebarHeader className="p-4 mb-2 mx-2 rounded-2xl bg-gradient-to-br from-sidebar-accent/50 to-sidebar-accent/30 shadow-xl backdrop-blur-sm border-0">
         {!collapsed ? (
           <div className="flex items-center justify-center py-3">
@@ -308,17 +379,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
                         <SidebarMenu>
                           {group.items.map(item => (
                             <SidebarMenuItem key={item.title}>
-                              <SidebarMenuButton asChild isActive={isActive(item.url)} className="group/button my-1 rounded-xl hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-md data-[active=true]:bg-primary/20 data-[active=true]:text-primary data-[active=true]:border-l-4 data-[active=true]:border-l-primary data-[active=true]:shadow-lg transition-all duration-200 min-h-[44px]">
-                                <NavLink to={item.url} end className="flex items-center gap-3 px-3 py-2" onClick={onNavigate}>
-                                  <item.icon className="h-5 w-5 shrink-0" />
-                                  {!collapsed && <span className="text-sm flex-1 font-medium">{item.title}</span>}
-                                  {!collapsed && item.badge && (
-                                    <Badge variant={item.badge === 'IA' ? 'default' : item.badge === 'Beta' ? 'secondary' : 'outline'} className="text-[10px] px-2 py-0.5 shadow-sm group-data-[active=true]/button:bg-primary group-data-[active=true]/button:text-primary-foreground group-data-[active=true]/button:border-transparent"> 
-                                      {item.badge}
-                                    </Badge>
-                                  )}
-                                </NavLink>
-                              </SidebarMenuButton>
+                              {renderMenuItem(item)}
                             </SidebarMenuItem>
                           ))}
                         </SidebarMenu>
@@ -360,12 +421,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
                               <SidebarMenuSub>
                                 {item.subItems.map(subItem => (
                                   <SidebarMenuSubItem key={subItem.title}>
-                                    <SidebarMenuSubButton asChild isActive={isActive(subItem.url)} className="rounded-lg hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground hover:shadow-sm data-[active=true]:bg-primary/20 data-[active=true]:text-primary data-[active=true]:shadow-md min-h-[44px]">
-                                      <NavLink to={subItem.url} className="flex items-center gap-2" onClick={onNavigate}>
-                                        <subItem.icon className="h-4 w-4" />
-                                        {!collapsed && <span className="text-sm font-medium">{subItem.title}</span>}
-                                      </NavLink>
-                                    </SidebarMenuSubButton>
+                                    {renderMenuItem(subItem, true)}
                                   </SidebarMenuSubItem>
                                 ))}
                               </SidebarMenuSub>
@@ -374,17 +430,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
                         </Collapsible>
                       ) : (
                         <SidebarMenuItem key={item.title}>
-                          <SidebarMenuButton asChild isActive={isActive(item.url)} className="group/button my-1 rounded-xl hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-md data-[active=true]:bg-primary/20 data-[active=true]:text-primary data-[active=true]:border-l-4 data-[active=true]:border-l-primary data-[active=true]:shadow-lg transition-all duration-200 min-h-[44px]">
-                            <NavLink to={item.url} end className="flex items-center gap-3 px-3 py-2" onClick={onNavigate}>
-                              <item.icon className="h-5 w-5 shrink-0" />
-                              {!collapsed && <span className="text-sm flex-1 font-medium">{item.title}</span>}
-                              {!collapsed && item.badge && (
-                                <Badge variant={item.badge === 'IA' ? 'default' : item.badge === 'Beta' ? 'secondary' : 'outline'} className="text-[10px] px-2 py-0.5 shadow-sm group-data-[active=true]/button:bg-primary group-data-[active=true]/button:text-primary-foreground group-data-[active=true]/button:border-transparent">
-                                  {item.badge}
-                                </Badge>
-                              )}
-                            </NavLink>
-                          </SidebarMenuButton>
+                          {renderMenuItem(item)}
                         </SidebarMenuItem>
                       ))}
                     </SidebarMenu>
@@ -408,12 +454,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
                 <SidebarGroupContent className="mt-1">
                   <SidebarMenu>
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild isActive={isActive('/configuracoes')} className="group/button my-1 rounded-xl hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-md data-[active=true]:bg-primary/20 data-[active=true]:text-primary data-[active=true]:border-l-4 data-[active=true]:border-l-primary data-[active=true]:shadow-lg transition-all duration-200 min-h-[44px]">
-                        <NavLink to="/configuracoes" className="flex items-center gap-3 px-3 py-2" onClick={onNavigate}>
-                          <Settings className="h-5 w-5 shrink-0" />
-                          {!collapsed && <span className="text-sm font-medium">Configurações</span>}
-                        </NavLink>
-                      </SidebarMenuButton>
+                      {renderMenuItem({ title: 'Configurações', url: '/configuracoes', icon: Settings })}
                     </SidebarMenuItem>
                   </SidebarMenu>
                 </SidebarGroupContent>
@@ -431,5 +472,6 @@ export function AppSidebar({ onNavigate }: AppSidebarProps = {}) {
           </div>
         )}
       </SidebarFooter>
-    </Sidebar>;
+    </Sidebar>
+  </TooltipProvider>;
 }
