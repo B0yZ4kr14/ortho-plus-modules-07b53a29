@@ -26,6 +26,7 @@ import AgendaClinica from "./pages/AgendaClinica";
 import Configuracoes from './pages/Configuracoes';
 import PEP from './pages/PEP';
 import HelpCenter from "./pages/HelpCenter";
+import Usuarios from "./pages/Usuarios";
 // Lazy load rotas pesadas
 const Relatorios = lazy(() => import('./pages/Relatorios'));
 const BusinessIntelligence = lazy(() => import('./pages/BusinessIntelligence'));
@@ -156,6 +157,7 @@ const App = () => (
                 <Route path="/audit-logs" element={<ProtectedRoute requireAdmin><AppLayout><AuditLogs /></AppLayout></ProtectedRoute>} />
                 <Route path="/configuracoes" element={<ProtectedRoute requireAdmin><AppLayout><Configuracoes /></AppLayout></ProtectedRoute>} />
                 <Route path="/configuracoes/modulos" element={<ProtectedRoute requireAdmin><AppLayout><ModulesPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/usuarios" element={<ProtectedRoute requireAdmin><AppLayout><Usuarios /></AppLayout></ProtectedRoute>} />
                 <Route path="/ajuda" element={<ProtectedRoute><AppLayout><HelpCenter /></AppLayout></ProtectedRoute>} />
                 <Route path="/configuracoes/analytics" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><OnboardingAnalytics /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/configuracoes/backups-agendados" element={<ProtectedRoute requireAdmin><AppLayout><ScheduledBackupsManagement /></AppLayout></ProtectedRoute>} />
