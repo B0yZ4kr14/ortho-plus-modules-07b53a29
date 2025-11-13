@@ -220,7 +220,7 @@ export default function Dashboard() {
                 subtitle="Gerenciar Backups"
                 icon={Database}
                 bgColor="bg-[hsl(var(--module-purple))]"
-                route="/configuracoes?tab=database"
+                route="/configuracoes?tab=backups"
               />
             </div>
             <div className="animate-fade-in" style={{ animationDelay: '700ms' }}>
