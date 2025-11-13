@@ -255,7 +255,7 @@ export default function CryptoPagamentos() {
       </div>
 
       <Tabs defaultValue="transactions" className="mt-8">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-11">
           <TabsTrigger value="transactions" data-tour="transactions-tab">
             <ArrowRightLeft className="h-4 w-4 mr-2" />
             Transações
@@ -291,6 +291,14 @@ export default function CryptoPagamentos() {
           <TabsTrigger value="alerts" data-tour="alerts-tab">
             <Bell className="h-4 w-4 mr-2" />
             Alertas
+          </TabsTrigger>
+          <TabsTrigger value="backtesting">
+            <TrendingUp className="h-4 w-4 mr-2" />
+            DCA
+          </TabsTrigger>
+          <TabsTrigger value="volatility">
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            Volatilidade
           </TabsTrigger>
         </TabsList>
 
@@ -934,6 +942,14 @@ export default function CryptoPagamentos() {
               })()}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="backtesting" className="space-y-6">
+          <DCABacktesting />
+        </TabsContent>
+
+        <TabsContent value="volatility" className="space-y-6">
+          <VolatilityAlerts />
         </TabsContent>
 
       </Tabs>

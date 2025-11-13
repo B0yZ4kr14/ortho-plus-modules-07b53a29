@@ -39,5 +39,8 @@ verify_jwt = true
 [functions.schedule-appointments]
 verify_jwt = true
 
-[functions.schedule-bi-export]
-verify_jwt = true
+[functions.webhook-crypto-transaction]
+verify_jwt = false
+
+[functions.check-volatility-alerts]
+verify_jwt = false
