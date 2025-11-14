@@ -92,8 +92,8 @@ export class Patient {
     return this.props.cpf;
   }
 
-  get phonePrimary(): Phone | undefined {
-    return this.props.phonePrimary;
+  get phone(): Phone | undefined {
+    return this.props.phone;
   }
 
   get birthDate(): Date | undefined {
@@ -120,12 +120,8 @@ export class Patient {
     return this.props.riskScoreOverall;
   }
 
-  get status(): string | undefined {
-    return this.props.status;
-  }
-  
   get isActive(): boolean {
-    return this.props.status !== 'INATIVO';
+    return this.props.isActive;
   }
 
   get age(): number | undefined {

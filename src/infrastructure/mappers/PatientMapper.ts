@@ -21,7 +21,7 @@ export class PatientMapper {
       riskScoreSurgical: 0,
       riskScoreAnesthetic: 0,
       riskScoreOverall: 0,
-      status: 'ATIVO',
+      isActive: true,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
     });

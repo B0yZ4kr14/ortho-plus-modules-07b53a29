@@ -103,7 +103,7 @@ export class SupabaseModuleRepository implements IModuleRepository {
         throw new InfrastructureError(`Erro ao buscar módulos por categoria: ${error.message}`, error);
       }
 
-      return data.map(ModuleMapper.toDomain);
+      return data.map(catalog => ModuleMapper.toDomain(catalog));
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
       throw new InfrastructureError('Erro inesperado ao buscar módulos por categoria', error);

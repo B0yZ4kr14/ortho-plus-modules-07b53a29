@@ -9,21 +9,22 @@ type ProfileRow = Database['public']['Tables']['profiles']['Row'];
  */
 export class UserMapper {
   static toDomain(row: ProfileRow, email: string): User {
+    const rowAny = row as any;
     return User.restore({
       id: row.id,
       clinicId: row.clinic_id ?? '',
       email: Email.create(email),
       fullName: row.full_name ?? 'Usuário',
-      appRole: (row.app_role as AppRole) ?? 'MEMBER',
-      isActive: row.is_active ?? true,
+      appRole: (rowAny.app_role as AppRole) ?? 'MEMBER',
+      isActive: rowAny.is_active ?? true,
       avatarUrl: row.avatar_url ?? undefined,
-      phone: row.phone ?? undefined,
+      phone: rowAny.phone ?? undefined,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
     });
   }
 
-  static toPersistence(user: User): Omit<ProfileRow, 'created_at' | 'updated_at'> {
+  static toPersistence(user: User): any {
     return {
       id: user.id,
       clinic_id: user.clinicId,
