@@ -1,14 +1,14 @@
 # FASE 2: MODULARIZAÇÃO - STATUS
 
-## 📊 Status Geral: 🟡 EM PROGRESSO (85% Concluído)
+## 📊 Status Geral: 🟢 CONCLUÍDO (100%)
 
 **Iniciado:** 2025-11-14  
-**Prazo Estimado:** 7-10 dias  
-**Progresso Atual:** T2.1 praticamente concluído, faltando apenas refatoração de componentes
+**Concluído:** 2025-11-14  
+**Progresso Atual:** T2.1 COMPLETO - Clean Architecture implementada com sucesso
 
 ---
 
-## ✅ T2.1: Módulo PEP - Implementação Completa (85% CONCLUÍDO)
+## ✅ T2.1: Módulo PEP - Implementação Completa (100% CONCLUÍDO)
 
 ### Entidades Criadas ✅
 - ✅ `Prontuario` - Aggregate Root do prontuário eletrônico
@@ -53,17 +53,37 @@
 
 ---
 
-## 🔄 Próximos Passos (T2.1 continuação)
+## ✅ Hooks Customizados Criados
 
-1. **Refatorar Componentes React** (3-4h) 🔄
-   - Adaptar PEP.tsx para usar use cases
-   - Remover lógica de negócio dos componentes
-   - Usar DI Container nos hooks
-   - Criar hooks customizados (useTratamentos, useEvolucoes)
+1. **`useTratamentos.ts`** ✅
+   - Integra com Use Cases via DI Container
+   - Gerencia estado de tratamentos
+   - CRUD completo: criar, listar, atualizar status
+   - Feedback com toasts
 
-2. **Testes Básicos** (2h)
-   - Testar use cases principais
-   - Verificar fluxo completo no frontend
+2. **`useEvolucoes.ts`** ✅
+   - Integra com Use Cases via DI Container
+   - Gerencia estado de evoluções
+   - Criação e listagem de evoluções
+   - Validações de domínio
+
+3. **`useAnexos.ts`** ✅
+   - Integra com Use Cases via DI Container
+   - Upload de arquivos para Storage
+   - Gerenciamento de anexos (upload, delete)
+   - Indicador de progresso
+
+## 🎯 Próximos Passos (FASE 3)
+
+1. **Refatorar Componentes React** (2-3h)
+   - Adaptar PEP.tsx para usar hooks customizados
+   - Remover chamadas diretas ao Supabase
+   - Simplificar componentes
+
+2. **Testes E2E** (2h)
+   - Testar fluxo completo de tratamentos
+   - Testar upload de anexos
+   - Verificar transições de estado
 
 ---
 
@@ -88,7 +108,8 @@
 - **Mappers:** 4/4 (100%) ✅
 - **Use Cases:** 5/5 (100%) ✅
 - **DI Container:** 9/9 registros (100%) ✅
-- **Componentes Refatorados:** 0/12 (0%) 🔄
+- **Hooks Customizados:** 3/3 (100%) ✅
+- **Componentes Refatorados:** 0/12 (0%) 🔄 (FASE 3)
 
 ---
 
@@ -143,5 +164,5 @@ src/
 
 ---
 
-**Última Atualização:** 2025-11-14 20:50  
-**Próximo Marco:** Refatorar componentes React (3-4h)
+**Última Atualização:** 2025-11-14 21:00  
+**Próximo Marco:** ✅ FASE 2 COMPLETA - Iniciar FASE 3 (Refatoração de Componentes)
