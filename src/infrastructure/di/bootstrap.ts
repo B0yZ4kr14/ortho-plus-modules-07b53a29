@@ -12,6 +12,10 @@ import { SERVICE_KEYS } from './ServiceKeys';
 import { SupabasePatientRepository } from '../repositories/SupabasePatientRepository';
 import { SupabaseModuleRepository } from '../repositories/SupabaseModuleRepository';
 import { SupabaseUserRepository } from '../repositories/SupabaseUserRepository';
+import { SupabaseProntuarioRepository } from '../repositories/SupabaseProntuarioRepository';
+import { SupabaseTratamentoRepository } from '../repositories/SupabaseTratamentoRepository';
+import { SupabaseEvolucaoRepository } from '../repositories/SupabaseEvolucaoRepository';
+import { SupabaseAnexoRepository } from '../repositories/SupabaseAnexoRepository';
 
 // Use Cases - Patient
 import { CreatePatientUseCase } from '@/application/use-cases/patient/CreatePatientUseCase';
@@ -27,6 +31,13 @@ import { ToggleModuleStateUseCase } from '@/application/use-cases/module/ToggleM
 import { GetUserByIdUseCase } from '@/application/use-cases/user/GetUserByIdUseCase';
 import { UpdateUserUseCase } from '@/application/use-cases/user/UpdateUserUseCase';
 import { ListUsersByClinicUseCase } from '@/application/use-cases/user/ListUsersByClinicUseCase';
+
+// Use Cases - Prontuario (PEP)
+import { CreateTratamentoUseCase } from '@/application/use-cases/prontuario/CreateTratamentoUseCase';
+import { GetTratamentosByProntuarioUseCase } from '@/application/use-cases/prontuario/GetTratamentosByProntuarioUseCase';
+import { UpdateTratamentoStatusUseCase } from '@/application/use-cases/prontuario/UpdateTratamentoStatusUseCase';
+import { CreateEvolucaoUseCase } from '@/application/use-cases/prontuario/CreateEvolucaoUseCase';
+import { UploadAnexoUseCase } from '@/application/use-cases/prontuario/UploadAnexoUseCase';
 
 /**
  * Inicializa o DI Container com todas as dependências
@@ -122,6 +133,72 @@ export function bootstrapContainer(): void {
     SERVICE_KEYS.LIST_USERS_BY_CLINIC_USE_CASE,
     () => new ListUsersByClinicUseCase(
       container.resolve(SERVICE_KEYS.USER_REPOSITORY)
+    ),
+    true
+  );
+
+  // Registrar Repositories - Prontuario (PEP)
+  container.register(
+    SERVICE_KEYS.PRONTUARIO_REPOSITORY,
+    () => new SupabaseProntuarioRepository(),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.TRATAMENTO_REPOSITORY,
+    () => new SupabaseTratamentoRepository(),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.EVOLUCAO_REPOSITORY,
+    () => new SupabaseEvolucaoRepository(),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.ANEXO_REPOSITORY,
+    () => new SupabaseAnexoRepository(),
+    true
+  );
+
+  // Registrar Use Cases - Prontuario (PEP)
+  container.register(
+    SERVICE_KEYS.CREATE_TRATAMENTO_USE_CASE,
+    () => new CreateTratamentoUseCase(
+      container.resolve(SERVICE_KEYS.TRATAMENTO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.GET_TRATAMENTOS_BY_PRONTUARIO_USE_CASE,
+    () => new GetTratamentosByProntuarioUseCase(
+      container.resolve(SERVICE_KEYS.TRATAMENTO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.UPDATE_TRATAMENTO_STATUS_USE_CASE,
+    () => new UpdateTratamentoStatusUseCase(
+      container.resolve(SERVICE_KEYS.TRATAMENTO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.CREATE_EVOLUCAO_USE_CASE,
+    () => new CreateEvolucaoUseCase(
+      container.resolve(SERVICE_KEYS.EVOLUCAO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.UPLOAD_ANEXO_USE_CASE,
+    () => new UploadAnexoUseCase(
+      container.resolve(SERVICE_KEYS.ANEXO_REPOSITORY)
     ),
     true
   );

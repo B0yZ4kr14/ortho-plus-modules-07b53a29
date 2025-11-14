@@ -11,6 +11,10 @@ export const SERVICE_KEYS = {
   PATIENT_REPOSITORY: 'IPatientRepository',
   MODULE_REPOSITORY: 'IModuleRepository',
   USER_REPOSITORY: 'IUserRepository',
+  PRONTUARIO_REPOSITORY: 'IProntuarioRepository',
+  TRATAMENTO_REPOSITORY: 'ITratamentoRepository',
+  EVOLUCAO_REPOSITORY: 'IEvolucaoRepository',
+  ANEXO_REPOSITORY: 'IAnexoRepository',
 
   // Use Cases - Patient
   CREATE_PATIENT_USE_CASE: 'CreatePatientUseCase',
@@ -26,6 +30,13 @@ export const SERVICE_KEYS = {
   GET_USER_BY_ID_USE_CASE: 'GetUserByIdUseCase',
   UPDATE_USER_USE_CASE: 'UpdateUserUseCase',
   LIST_USERS_BY_CLINIC_USE_CASE: 'ListUsersByClinicUseCase',
+
+  // Use Cases - Prontuario (PEP)
+  CREATE_TRATAMENTO_USE_CASE: 'CreateTratamentoUseCase',
+  GET_TRATAMENTOS_BY_PRONTUARIO_USE_CASE: 'GetTratamentosByProntuarioUseCase',
+  UPDATE_TRATAMENTO_STATUS_USE_CASE: 'UpdateTratamentoStatusUseCase',
+  CREATE_EVOLUCAO_USE_CASE: 'CreateEvolucaoUseCase',
+  UPLOAD_ANEXO_USE_CASE: 'UploadAnexoUseCase',
 } as const;
 
 export type ServiceKey = typeof SERVICE_KEYS[keyof typeof SERVICE_KEYS];

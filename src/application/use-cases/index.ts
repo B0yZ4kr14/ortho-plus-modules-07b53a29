@@ -12,3 +12,10 @@ export { ToggleModuleStateUseCase } from './module/ToggleModuleStateUseCase';
 export { GetUserByIdUseCase } from './user/GetUserByIdUseCase';
 export { UpdateUserUseCase } from './user/UpdateUserUseCase';
 export { ListUsersByClinicUseCase } from './user/ListUsersByClinicUseCase';
+
+// Prontuario (PEP) Use Cases
+export { CreateTratamentoUseCase } from './prontuario/CreateTratamentoUseCase';
+export { GetTratamentosByProntuarioUseCase } from './prontuario/GetTratamentosByProntuarioUseCase';
+export { UpdateTratamentoStatusUseCase } from './prontuario/UpdateTratamentoStatusUseCase';
+export { CreateEvolucaoUseCase } from './prontuario/CreateEvolucaoUseCase';
+export { UploadAnexoUseCase } from './prontuario/UploadAnexoUseCase';
