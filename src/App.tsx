@@ -66,6 +66,7 @@ import Teleodontologia from './pages/Teleodontologia';
 import HistoricoTeleconsultas from './pages/HistoricoTeleconsultas';
 import CRMFunil from '@/pages/CRMFunil';
 import SplitPagamento from '@/pages/SplitPagamento';
+import Inadimplencia from '@/pages/Inadimplencia';
 import ProgramaFidelidade from '@/pages/ProgramaFidelidade';
 import PDV from '@/pages/PDV';
 import RelatorioCaixa from '@/pages/RelatorioCaixa';
@@ -152,6 +153,7 @@ const App = () => (
                 <Route path="/crm" element={<ProtectedRoute><AppLayout><CRMFunil /></AppLayout></ProtectedRoute>} />
                 <Route path="/crm-funil" element={<ProtectedRoute><AppLayout><CRMFunil /></AppLayout></ProtectedRoute>} />
                 <Route path="/split-pagamento" element={<ProtectedRoute><AppLayout><SplitPagamento /></AppLayout></ProtectedRoute>} />
+                <Route path="/inadimplencia" element={<ProtectedRoute><AppLayout><Inadimplencia /></AppLayout></ProtectedRoute>} />
                 <Route path="/programa-fidelidade" element={<ProtectedRoute><AppLayout><ProgramaFidelidade /></AppLayout></ProtectedRoute>} />
                 <Route path="/report-templates" element={<ProtectedRoute requireAdmin><AppLayout><ReportTemplates /></AppLayout></ProtectedRoute>} />
                 <Route path="/audit-logs" element={<ProtectedRoute requireAdmin><AppLayout><AuditLogs /></AppLayout></ProtectedRoute>} />
