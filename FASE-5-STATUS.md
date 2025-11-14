@@ -264,6 +264,30 @@ Replicar o **Golden Pattern** validado na FASE 4 para implementar os módulos pr
 
 ---
 
+### T5.11: Módulo ASSINATURA_ICP ✅
+**Responsável:** Sistema  
+**Status:** ✅ **Concluído**
+
+**Escopo:**
+- Gestão de certificados digitais ICP-Brasil (A1, A3, e-CPF, e-CNPJ)
+- Assinatura digital de documentos (contratos, orçamentos, termos)
+- Solicitações de assinatura com rastreamento
+- Validação de assinaturas e certificados
+- Conformidade com padrões ICP-Brasil (PAdES, CAdES, XAdES)
+- Carimbo de tempo e auditoria completa
+
+**Dependências:**
+- `PEP` (para documentos clínicos)
+
+**Tabelas Criadas:**
+- `digital_certificates` (certificados digitais)
+- `signed_documents` (documentos assinados)
+- `document_signatures` (assinaturas individuais)
+- `signature_requests` (solicitações de assinatura)
+- `signature_validations` (log de validações)
+
+---
+
 ## 📊 Progresso Geral
 
 | Módulo | Status | Prioridade | Dependências | Progresso |
@@ -280,7 +304,7 @@ Replicar o **Golden Pattern** validado na FASE 4 para implementar os módulos pr
 | MARKETING_AUTO | ✅ Concluído | 3 | - | 100% |
 | BI | ✅ Concluído | 3 | Múltiplos | 100% |
 | LGPD | ✅ Concluído | 4 | - | 100% |
-| ASSINATURA_ICP | ⏳ Pendente | 4 | PEP | 0% |
+| ASSINATURA_ICP | ✅ Concluído | 4 | PEP | 100% |
 | TISS | ⏳ Pendente | 4 | PEP | 0% |
 | TELEODONTO | 🔧 Refatorar | 4 | - | 50% |
 | FLUXO_DIGITAL | ⏳ Pendente | 5 | PEP | 0% |

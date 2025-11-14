@@ -123,6 +123,7 @@ export const menuGroups: MenuGroup[] = [
     collapsed: true,
     items: [
       { title: 'LGPD', url: '/lgpd', icon: Shield, moduleKey: 'LGPD' },
+      { title: 'Assinatura Digital', url: '/assinatura-digital', icon: FileSignature, moduleKey: 'ASSINATURA_ICP' },
       { title: 'TISS', url: '/tiss', icon: FileText, moduleKey: 'TISS' }
     ]
   },
