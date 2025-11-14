@@ -3910,6 +3910,69 @@ export type Database = {
           },
         ]
       }
+      movimentacoes_estoque: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          id: string
+          motivo: string | null
+          observacoes: string | null
+          produto_id: string
+          quantidade: number
+          quantidade_anterior: number
+          quantidade_atual: number
+          tipo: string
+          usuario_id: string
+          valor_total: number
+          valor_unitario: number
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          id?: string
+          motivo?: string | null
+          observacoes?: string | null
+          produto_id: string
+          quantidade: number
+          quantidade_anterior: number
+          quantidade_atual: number
+          tipo: string
+          usuario_id: string
+          valor_total: number
+          valor_unitario: number
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          id?: string
+          motivo?: string | null
+          observacoes?: string | null
+          produto_id?: string
+          quantidade?: number
+          quantidade_anterior?: number
+          quantidade_atual?: number
+          tipo?: string
+          usuario_id?: string
+          valor_total?: number
+          valor_unitario?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimentacoes_estoque_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_estoque_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nfce_carta_correcao: {
         Row: {
           clinic_id: string
@@ -5982,6 +6045,71 @@ export type Database = {
             columns: ["analise_id"]
             isOneToOne: false
             referencedRelation: "analises_radiograficas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      produtos: {
+        Row: {
+          ativo: boolean
+          categoria: string
+          clinic_id: string
+          codigo_barras: string | null
+          created_at: string
+          descricao: string | null
+          fornecedor: string | null
+          id: string
+          localizacao: string | null
+          nome: string
+          observacoes: string | null
+          quantidade_atual: number
+          quantidade_minima: number
+          unidade_medida: string
+          updated_at: string
+          valor_unitario: number
+        }
+        Insert: {
+          ativo?: boolean
+          categoria: string
+          clinic_id: string
+          codigo_barras?: string | null
+          created_at?: string
+          descricao?: string | null
+          fornecedor?: string | null
+          id?: string
+          localizacao?: string | null
+          nome: string
+          observacoes?: string | null
+          quantidade_atual?: number
+          quantidade_minima?: number
+          unidade_medida: string
+          updated_at?: string
+          valor_unitario?: number
+        }
+        Update: {
+          ativo?: boolean
+          categoria?: string
+          clinic_id?: string
+          codigo_barras?: string | null
+          created_at?: string
+          descricao?: string | null
+          fornecedor?: string | null
+          id?: string
+          localizacao?: string | null
+          nome?: string
+          observacoes?: string | null
+          quantidade_atual?: number
+          quantidade_minima?: number
+          unidade_medida?: string
+          updated_at?: string
+          valor_unitario?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produtos_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
             referencedColumns: ["id"]
           },
         ]

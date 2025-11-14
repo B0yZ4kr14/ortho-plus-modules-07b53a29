@@ -66,6 +66,20 @@ export const SERVICE_KEYS = {
   UPDATE_TOOTH_STATUS_USE_CASE: 'UpdateToothStatusUseCase',
   UPDATE_TOOTH_SURFACE_USE_CASE: 'UpdateToothSurfaceUseCase',
   UPDATE_TOOTH_NOTES_USE_CASE: 'UpdateToothNotesUseCase',
+
+  // Repositories - Estoque
+  PRODUTO_REPOSITORY: 'IProdutoRepository',
+  MOVIMENTACAO_ESTOQUE_REPOSITORY: 'IMovimentacaoEstoqueRepository',
+
+  // Use Cases - Estoque
+  CREATE_PRODUTO_USE_CASE: 'CreateProdutoUseCase',
+  UPDATE_PRODUTO_USE_CASE: 'UpdateProdutoUseCase',
+  GET_PRODUTO_BY_ID_USE_CASE: 'GetProdutoByIdUseCase',
+  LIST_PRODUTOS_BY_CLINIC_USE_CASE: 'ListProdutosByClinicUseCase',
+  REGISTRAR_ENTRADA_USE_CASE: 'RegistrarEntradaUseCase',
+  REGISTRAR_SAIDA_USE_CASE: 'RegistrarSaidaUseCase',
+  AJUSTAR_ESTOQUE_USE_CASE: 'AjustarEstoqueUseCase',
+  GET_MOVIMENTACOES_BY_PRODUTO_USE_CASE: 'GetMovimentacoesByProdutoUseCase',
 } as const;
 
 export type ServiceKey = typeof SERVICE_KEYS[keyof typeof SERVICE_KEYS];

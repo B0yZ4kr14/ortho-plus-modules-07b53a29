@@ -64,6 +64,18 @@ import { UpdateToothStatusUseCase } from '@/application/use-cases/odontograma/Up
 import { UpdateToothSurfaceUseCase } from '@/application/use-cases/odontograma/UpdateToothSurfaceUseCase';
 import { UpdateToothNotesUseCase } from '@/application/use-cases/odontograma/UpdateToothNotesUseCase';
 
+// Estoque Module
+import { SupabaseProdutoRepository } from '@/infrastructure/repositories/SupabaseProdutoRepository';
+import { SupabaseMovimentacaoEstoqueRepository } from '@/infrastructure/repositories/SupabaseMovimentacaoEstoqueRepository';
+import { CreateProdutoUseCase } from '@/application/use-cases/estoque/CreateProdutoUseCase';
+import { UpdateProdutoUseCase } from '@/application/use-cases/estoque/UpdateProdutoUseCase';
+import { GetProdutoByIdUseCase } from '@/application/use-cases/estoque/GetProdutoByIdUseCase';
+import { ListProdutosByClinicUseCase } from '@/application/use-cases/estoque/ListProdutosByClinicUseCase';
+import { RegistrarEntradaUseCase } from '@/application/use-cases/estoque/RegistrarEntradaUseCase';
+import { RegistrarSaidaUseCase } from '@/application/use-cases/estoque/RegistrarSaidaUseCase';
+import { AjustarEstoqueUseCase } from '@/application/use-cases/estoque/AjustarEstoqueUseCase';
+import { GetMovimentacoesByProdutoUseCase } from '@/application/use-cases/estoque/GetMovimentacoesByProdutoUseCase';
+
 /**
  * Inicializa o DI Container com todas as dependências
  */
@@ -374,6 +386,87 @@ export function bootstrapContainer(): void {
     SERVICE_KEYS.UPDATE_TOOTH_NOTES_USE_CASE,
     () => new UpdateToothNotesUseCase(
       container.resolve(SERVICE_KEYS.ODONTOGRAMA_REPOSITORY)
+    ),
+    true
+  );
+
+  // Registrar Repositories - Estoque
+  container.register(
+    SERVICE_KEYS.PRODUTO_REPOSITORY,
+    () => new SupabaseProdutoRepository(),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.MOVIMENTACAO_ESTOQUE_REPOSITORY,
+    () => new SupabaseMovimentacaoEstoqueRepository(),
+    true
+  );
+
+  // Registrar Use Cases - Estoque
+  container.register(
+    SERVICE_KEYS.CREATE_PRODUTO_USE_CASE,
+    () => new CreateProdutoUseCase(
+      container.resolve(SERVICE_KEYS.PRODUTO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.UPDATE_PRODUTO_USE_CASE,
+    () => new UpdateProdutoUseCase(
+      container.resolve(SERVICE_KEYS.PRODUTO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.GET_PRODUTO_BY_ID_USE_CASE,
+    () => new GetProdutoByIdUseCase(
+      container.resolve(SERVICE_KEYS.PRODUTO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.LIST_PRODUTOS_BY_CLINIC_USE_CASE,
+    () => new ListProdutosByClinicUseCase(
+      container.resolve(SERVICE_KEYS.PRODUTO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.REGISTRAR_ENTRADA_USE_CASE,
+    () => new RegistrarEntradaUseCase(
+      container.resolve(SERVICE_KEYS.PRODUTO_REPOSITORY),
+      container.resolve(SERVICE_KEYS.MOVIMENTACAO_ESTOQUE_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.REGISTRAR_SAIDA_USE_CASE,
+    () => new RegistrarSaidaUseCase(
+      container.resolve(SERVICE_KEYS.PRODUTO_REPOSITORY),
+      container.resolve(SERVICE_KEYS.MOVIMENTACAO_ESTOQUE_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.AJUSTAR_ESTOQUE_USE_CASE,
+    () => new AjustarEstoqueUseCase(
+      container.resolve(SERVICE_KEYS.PRODUTO_REPOSITORY),
+      container.resolve(SERVICE_KEYS.MOVIMENTACAO_ESTOQUE_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.GET_MOVIMENTACOES_BY_PRODUTO_USE_CASE,
+    () => new GetMovimentacoesByProdutoUseCase(
+      container.resolve(SERVICE_KEYS.MOVIMENTACAO_ESTOQUE_REPOSITORY)
     ),
     true
   );
