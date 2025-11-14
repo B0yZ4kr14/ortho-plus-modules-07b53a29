@@ -3239,6 +3239,226 @@ export type Database = {
           },
         ]
       }
+      lgpd_consents: {
+        Row: {
+          accepted: boolean
+          accepted_at: string | null
+          accepted_by: string | null
+          clinic_id: string
+          consent_text: string
+          consent_type: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          patient_id: string
+          revoked: boolean | null
+          revoked_at: string | null
+          revoked_by: string | null
+          updated_at: string
+          user_agent: string | null
+          version: number
+        }
+        Insert: {
+          accepted?: boolean
+          accepted_at?: string | null
+          accepted_by?: string | null
+          clinic_id: string
+          consent_text: string
+          consent_type: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          patient_id: string
+          revoked?: boolean | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          version?: number
+        }
+        Update: {
+          accepted?: boolean
+          accepted_at?: string | null
+          accepted_by?: string | null
+          clinic_id?: string
+          consent_text?: string
+          consent_type?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          patient_id?: string
+          revoked?: boolean | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lgpd_consents_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lgpd_data_exports: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          download_count: number | null
+          downloaded_at: string | null
+          error_message: string | null
+          expires_at: string | null
+          export_type: string
+          file_format: string | null
+          file_path: string | null
+          file_size_bytes: number | null
+          generated_at: string | null
+          generated_by: string
+          id: string
+          metadata: Json | null
+          patient_id: string
+          request_id: string | null
+          status: string
+          tables_included: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          download_count?: number | null
+          downloaded_at?: string | null
+          error_message?: string | null
+          expires_at?: string | null
+          export_type: string
+          file_format?: string | null
+          file_path?: string | null
+          file_size_bytes?: number | null
+          generated_at?: string | null
+          generated_by: string
+          id?: string
+          metadata?: Json | null
+          patient_id: string
+          request_id?: string | null
+          status?: string
+          tables_included?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          download_count?: number | null
+          downloaded_at?: string | null
+          error_message?: string | null
+          expires_at?: string | null
+          export_type?: string
+          file_format?: string | null
+          file_path?: string | null
+          file_size_bytes?: number | null
+          generated_at?: string | null
+          generated_by?: string
+          id?: string
+          metadata?: Json | null
+          patient_id?: string
+          request_id?: string | null
+          status?: string
+          tables_included?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lgpd_data_exports_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lgpd_data_exports_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "lgpd_data_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lgpd_data_requests: {
+        Row: {
+          clinic_id: string
+          completed_at: string | null
+          created_at: string
+          data_export_id: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          patient_id: string
+          rejection_reason: string | null
+          request_type: string
+          requested_at: string
+          requested_by: string
+          responded_at: string | null
+          responded_by: string | null
+          response: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          completed_at?: string | null
+          created_at?: string
+          data_export_id?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          patient_id: string
+          rejection_reason?: string | null
+          request_type: string
+          requested_at?: string
+          requested_by: string
+          responded_at?: string | null
+          responded_by?: string | null
+          response?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          completed_at?: string | null
+          created_at?: string
+          data_export_id?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          patient_id?: string
+          rejection_reason?: string | null
+          request_type?: string
+          requested_at?: string
+          requested_by?: string
+          responded_at?: string | null
+          responded_by?: string | null
+          response?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lgpd_data_requests_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       login_attempts: {
         Row: {
           attempted_at: string

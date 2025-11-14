@@ -32,6 +32,7 @@ const routeLabels: Record<string, string> = {
   'split-pagamento': 'Split de Pagamento',
   'fidelidade': 'Programa de Fidelidade',
   'bi': 'Business Intelligence',
+  'lgpd': 'LGPD - Conformidade',
   'relatorios': 'Relatórios',
   'lgpd-compliance': 'Compliance LGPD',
   'teleodontologia': 'Teleodontologia',
