@@ -67,7 +67,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           .update({
             full_name: values.full_name,
             app_role: values.app_role,
-            // is_active: values.is_active, // TODO: adicionar campo na migration
+            is_active: values.is_active,
           })
           .eq('id', user.id);
 
@@ -105,7 +105,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             clinic_id: clinicId,
             full_name: values.full_name,
             app_role: values.app_role,
-            // is_active: values.is_active, // TODO: adicionar campo na migration
+            is_active: values.is_active,
           });
 
         if (profileError) throw profileError;
