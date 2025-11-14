@@ -13,9 +13,9 @@
 Domain Layer:        ██████████ 100% (2/2) ✅
 Application Layer:   ██████████ 100% (5/5) ✅
 Infrastructure Layer: ██████████ 100% (4/4) ✅
-Presentation Layer:  ░░░░░░░░░░  0% (0/2)
+Presentation Layer:  ██████████ 100% (2/2) ✅
 
-Total: ███████████████░░░░░ 75%
+Total: ████████████████████ 100% ✅
 ```
 
 ---
@@ -122,11 +122,23 @@ Total: ███████████████░░░░░ 75%
 
 ---
 
-## 🔄 Presentation Layer (0%)
+## ✅ Presentation Layer (100% - 2/2)
 
-### Hooks a Implementar
-- [ ] useOrcamentos
-- [ ] useItensOrcamento
+### Hooks Implementados
+- ✅ **useOrcamentos**
+  - Listagem de orçamentos (por clínica, paciente, status)
+  - Criação e atualização de orçamentos
+  - Aprovação e rejeição com validações
+  - Gerenciamento de seleção
+  - Cache otimizado com React Query
+  - Toast notifications
+
+- ✅ **useItensOrcamento**
+  - Listagem de itens por orçamento
+  - Adição de itens com recálculo automático
+  - Remoção de itens
+  - Cálculo de totais em tempo real
+  - Invalidação automática de cache do orçamento
 
 ---
 
@@ -136,10 +148,10 @@ Total: ███████████████░░░░░ 75%
 2. ✅ Implementar Use Cases
 3. ✅ Implementar Repositories Supabase
 4. ✅ Implementar Mappers
-5. 🔄 Criar Hooks customizados (PRÓXIMO)
-6. Refatorar componentes (opcional)
+5. ✅ Criar Hooks customizados
+6. 🎯 **MÓDULO COMPLETO!** Pronto para refatorar componentes (opcional)
 
 ---
 
-**Última Atualização:** 2025-11-14 23:20  
-**Status:** 🟢 75% COMPLETO - Domain + Application + Infrastructure Layers ✅
+**Última Atualização:** 2025-11-14 23:25  
+**Status:** 🎉 100% COMPLETO - Todas as Camadas Implementadas! ✅
