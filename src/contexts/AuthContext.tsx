@@ -59,92 +59,88 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Fetch user role and clinics
   const fetchUserMetadata = async (userId: string) => {
     try {
-      // Get user role and profile including avatar
-      const { data: roleData } = await supabase
+      // Get user role from user_roles table (novo sistema seguro)
+      const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      // Get profile data including avatar_url
+      // Get profile data including avatar_url and clinic_id
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('avatar_url, full_name')
+        .select('avatar_url, full_name, clinic_id')
         .eq('id', userId)
         .single();
 
-      if (roleData) {
-        setUserRole(roleData.role as 'ADMIN' | 'MEMBER');
-        setUserProfile(roleData.role as UserProfile);
+      if (profileData?.clinic_id) {
+        setClinicId(profileData.clinic_id);
         
-        // Update user object with avatar and full_name (only for User type)
-        setUser((currentUser) => {
-          if (!currentUser || 'role' in currentUser) return currentUser;
-          return {
-            ...currentUser,
-            user_metadata: {
-              ...(currentUser as User).user_metadata,
-              avatar_url: profileData?.avatar_url,
-              full_name: profileData?.full_name || (currentUser as User).user_metadata?.full_name,
-            }
-          };
-        });
+        // Fetch clinic info
+        const { data: clinicData } = await supabase
+          .from('clinics')
+          .select('*')
+          .eq('id', profileData.clinic_id)
+          .single();
         
-        // If ADMIN, grant access to all modules
-        if (roleData.role === 'ADMIN') {
-          setUserPermissions(['ALL']);
-        } else {
-          // Fetch user module permissions for MEMBER
-          const { data: permissionsData } = await supabase
-            .from('user_module_permissions')
-            .select(`
-              module_catalog_id,
-              can_view,
-              module_catalog!inner (
-                module_key
-              )
-            `)
-            .eq('user_id', userId)
-            .eq('can_view', true);
-
-          if (permissionsData) {
-            const moduleKeys = permissionsData.map((p: any) => 
-              p.module_catalog?.module_key?.toLowerCase()
-            ).filter(Boolean);
-            setUserPermissions(moduleKeys);
-          }
+        if (clinicData) {
+          setSelectedClinic(clinicData);
+          setAvailableClinics([clinicData]);
         }
       }
 
-      // Get all clinics the user has access to
-      const { data: clinicsData } = await supabase
-        .from('user_clinic_access')
-        .select(`
-          clinic_id,
-          is_default,
-          clinics (
-            id,
-            name
-          )
-        `)
-        .eq('user_id', userId);
-
-      if (clinicsData && clinicsData.length > 0) {
-        const clinics = clinicsData
-          .map((item: any) => item.clinics)
-          .filter(Boolean) as Clinic[];
+      // Definir role (ADMIN ou MEMBER)
+      const role = roleData?.role || 'MEMBER';
+      setUserRole(role as 'ADMIN' | 'MEMBER');
+      setUserProfile(role as UserProfile);
         
-        setAvailableClinics(clinics);
-
-        // Set selected clinic to default or first available
-        const defaultClinic = clinicsData.find((item: any) => item.is_default);
-        const clinic = defaultClinic?.clinics || clinics[0];
+      // Update user object with avatar and full_name (only for User type)
+      setUser((currentUser) => {
+        if (!currentUser || 'role' in currentUser) return currentUser;
+        return {
+          ...currentUser,
+          user_metadata: {
+            ...(currentUser as User).user_metadata,
+            avatar_url: profileData?.avatar_url,
+            full_name: profileData?.full_name || (currentUser as User).user_metadata?.full_name,
+          }
+        };
+      });
         
-        if (clinic) {
-          setSelectedClinic(clinic);
-          setClinicId(clinic.id);
-          // Fetch active modules for the clinic
-          await fetchActiveModules(clinic.id);
+      // If ADMIN, grant access to all modules
+      if (role === 'ADMIN') {
+        setUserPermissions(['ALL']);
+        
+        // Fetch active modules for admin
+        if (profileData?.clinic_id) {
+          await fetchActiveModules(profileData.clinic_id);
+        }
+      } else {
+        // Fetch user module permissions for MEMBER
+        const { data: permissionsData } = await supabase
+          .from('user_module_permissions')
+          .select(`
+            module_catalog_id,
+            can_view,
+            module_catalog!inner (
+              module_key
+            )
+          `)
+          .eq('user_id', userId)
+          .eq('can_view', true);
+
+        if (permissionsData) {
+          const moduleKeys = permissionsData.map((p: any) => 
+            p.module_catalog?.module_key?.toLowerCase()
+          ).filter(Boolean);
+          setUserPermissions(moduleKeys);
+        }
+        
+        // Fetch active modules for member
+        if (profileData?.clinic_id) {
+          await fetchActiveModules(profileData.clinic_id);
         }
       }
     } catch (error) {
