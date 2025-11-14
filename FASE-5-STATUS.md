@@ -237,8 +237,8 @@ Replicar o **Golden Pattern** validado na FASE 4 para implementar os módulos pr
 | ODONTOGRAMA | 🔧 Refatorar | 1 | - | 60% |
 | ESTOQUE | 🔧 Refatorar | 1 | - | 70% |
 | FINANCEIRO | ✅ Concluído | 2 | - | 100% |
-| SPLIT_PAGAMENTO | ⏳ Pendente | 2 | FINANCEIRO | 0% |
-| INADIMPLENCIA | ⏳ Pendente | 2 | FINANCEIRO | 0% |
+| SPLIT_PAGAMENTO | ✅ Concluído | 2 | FINANCEIRO | 100% |
+| INADIMPLENCIA | ✅ Concluído | 2 | FINANCEIRO | 100% |
 | CRM | ⏳ Pendente | 3 | - | 0% |
 | MARKETING_AUTO | ⏳ Pendente | 3 | - | 0% |
 | BI | ⏳ Pendente | 3 | Múltiplos | 0% |
@@ -291,7 +291,22 @@ Replicar o **Golden Pattern** validado na FASE 4 para implementar os módulos pr
 
 ## 🚀 Próximos Passos
 
-**Ação Imediata:** Implementar **T5.4 - Refatorar Módulo ODONTOGRAMA**
+**Ação Imediata:** Implementar **T5.6 - Módulo CRM**
+
+**Resumo de Progresso:**
+- ✅ T5.1 FINANCEIRO - Concluído
+- ✅ T5.2 AGENDA - Concluído
+- ✅ T5.3 ORÇAMENTOS - Concluído
+- ✅ T5.7 SPLIT_PAGAMENTO - Concluído
+- ✅ T5.8 INADIMPLENCIA - Concluído
+
+**Checklist T5.7 (SPLIT_PAGAMENTO) + T5.8 (INADIMPLENCIA) - ✅ Concluído:**
+- [x] Criar tabelas de split e inadimplência com RLS
+- [x] Criar página `/split-pagamento` (já existente e funcional)
+- [x] Criar página `/inadimplencia` seguindo Golden Pattern
+- [x] Adicionar rotas no App.tsx
+- [x] Integração com sistema de módulos
+- [x] Validar dependências (ambos dependem de FINANCEIRO)
 
 **Checklist T5.3 (ORÇAMENTOS) - ✅ Concluído:**
 - [x] Criar tabelas de orçamentos com RLS
@@ -322,4 +337,4 @@ Replicar o **Golden Pattern** validado na FASE 4 para implementar os módulos pr
 
 ---
 
-**Status Atual:** 🚧 **FASE 5 EM ANDAMENTO - Próximo: T5.4 (Refatorar ODONTOGRAMA)**
+**Status Atual:** 🚧 **FASE 5 EM ANDAMENTO - Próximo: T5.6 (CRM)**
