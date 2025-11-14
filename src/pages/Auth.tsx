@@ -184,7 +184,7 @@ export default function Auth() {
                     <p className="text-sm font-semibold text-center">Login Padrão de Administrador</p>
                     <div className="text-xs space-y-1">
                       <p><span className="font-medium">Email:</span> admin@orthoplus.com</p>
-                      <p><span className="font-medium">Senha:</span> Admin</p>
+                      <p><span className="font-medium">Senha:</span> Admin123!</p>
                     </div>
                   </div>
                 </form>

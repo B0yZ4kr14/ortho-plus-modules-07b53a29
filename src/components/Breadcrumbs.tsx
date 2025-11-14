@@ -34,6 +34,7 @@ const routeLabels: Record<string, string> = {
   'bi': 'Business Intelligence',
   'lgpd': 'LGPD - Conformidade',
   'marketing-auto': 'Automação de Marketing',
+  'inadimplencia': 'Inadimplência',
   'relatorios': 'Relatórios',
   'lgpd-compliance': 'Compliance LGPD',
   'teleodontologia': 'Teleodontologia',
