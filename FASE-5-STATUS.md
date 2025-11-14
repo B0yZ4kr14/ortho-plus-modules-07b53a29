@@ -49,9 +49,9 @@ Replicar o **Golden Pattern** validado na FASE 4 para implementar os módulos pr
 
 ## ✅ Tarefas Planejadas
 
-### T5.1: Módulo FINANCEIRO ⏳
+### T5.1: Módulo FINANCEIRO ✅
 **Responsável:** Sistema  
-**Status:** ⏳ **Próximo Passo**
+**Status:** ✅ **Concluído**
 
 **Escopo:**
 - Página principal com dashboard financeiro
@@ -72,9 +72,9 @@ Replicar o **Golden Pattern** validado na FASE 4 para implementar os módulos pr
 
 ---
 
-### T5.2: Módulo AGENDA ⏳
+### T5.2: Módulo AGENDA ✅
 **Responsável:** Sistema  
-**Status:** ⏳ Pendente
+**Status:** ✅ **Concluído**
 
 **Escopo:**
 - Agenda visual (calendar view)
@@ -232,11 +232,11 @@ Replicar o **Golden Pattern** validado na FASE 4 para implementar os módulos pr
 | Módulo | Status | Prioridade | Dependências | Progresso |
 |--------|--------|-----------|--------------|-----------|
 | PEP | ✅ Concluído | 1 | - | 100% |
-| AGENDA | ⏳ Pendente | 1 | - | 0% |
+| AGENDA | ✅ Concluído | 1 | - | 100% |
 | ORCAMENTOS | ⏳ Pendente | 1 | ODONTOGRAMA | 0% |
 | ODONTOGRAMA | 🔧 Refatorar | 1 | - | 60% |
 | ESTOQUE | 🔧 Refatorar | 1 | - | 70% |
-| FINANCEIRO | ⏳ Pendente | 2 | - | 0% |
+| FINANCEIRO | ✅ Concluído | 2 | - | 100% |
 | SPLIT_PAGAMENTO | ⏳ Pendente | 2 | FINANCEIRO | 0% |
 | INADIMPLENCIA | ⏳ Pendente | 2 | FINANCEIRO | 0% |
 | CRM | ⏳ Pendente | 3 | - | 0% |
@@ -291,17 +291,26 @@ Replicar o **Golden Pattern** validado na FASE 4 para implementar os módulos pr
 
 ## 🚀 Próximos Passos
 
-**Ação Imediata:** Implementar **T5.1 - Módulo FINANCEIRO**
+**Ação Imediata:** Implementar **T5.3 - Módulo ORÇAMENTOS**
 
-**Checklist:**
-- [ ] Criar tabelas financeiras com RLS
-- [ ] Criar página `/financeiro` seguindo Golden Pattern
-- [ ] Adicionar link na sidebar (`moduleKey: 'FINANCEIRO'`)
-- [ ] Implementar dashboard financeiro
-- [ ] Implementar fluxo de caixa
-- [ ] Implementar contas a pagar/receber
-- [ ] Validar integração com sistema de módulos
+**Checklist T5.1 (FINANCEIRO) - ✅ Concluído:**
+- [x] Criar tabelas financeiras com RLS
+- [x] Criar página `/financeiro` seguindo Golden Pattern
+- [x] Adicionar link na sidebar (`moduleKey: 'FINANCEIRO'`)
+- [x] Implementar dashboard financeiro
+- [x] Implementar fluxo de caixa
+- [x] Implementar contas a pagar/receber
+- [x] Validar integração com sistema de módulos
+
+**Checklist T5.2 (AGENDA) - ✅ Concluído:**
+- [x] Criar tabelas de agenda com RLS
+- [x] Criar página `/agenda-clinica` seguindo Golden Pattern
+- [x] Adicionar link na sidebar (`moduleKey: 'AGENDA'`)
+- [x] Implementar calendar view
+- [x] Implementar agendamento de consultas
+- [x] Integração com WhatsApp (estrutura pronta)
+- [x] Validar integração com sistema de módulos
 
 ---
 
-**Status Atual:** 🚧 **INICIANDO FASE 5 - T5.1 (FINANCEIRO)**
+**Status Atual:** 🚧 **FASE 5 EM ANDAMENTO - Próximo: T5.3 (ORÇAMENTOS)**
