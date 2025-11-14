@@ -1,0 +1,1 @@
+export { useOdontograma } from './useOdontograma';
