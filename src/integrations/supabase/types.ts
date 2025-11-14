@@ -6844,6 +6844,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      validate_password_strength: {
+        Args: { password: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "ADMIN" | "MEMBER"
