@@ -552,6 +552,306 @@ export type Database = {
           },
         ]
       }
+      bi_dashboards: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_default: boolean
+          is_public: boolean
+          layout: Json | null
+          name: string
+          refresh_interval_minutes: number | null
+          shared_with: string[] | null
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          is_public?: boolean
+          layout?: Json | null
+          name: string
+          refresh_interval_minutes?: number | null
+          shared_with?: string[] | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          is_public?: boolean
+          layout?: Json | null
+          name?: string
+          refresh_interval_minutes?: number | null
+          shared_with?: string[] | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bi_dashboards_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bi_data_cache: {
+        Row: {
+          cache_key: string
+          clinic_id: string
+          created_at: string
+          data: Json
+          expires_at: string
+          id: string
+          widget_id: string | null
+        }
+        Insert: {
+          cache_key: string
+          clinic_id: string
+          created_at?: string
+          data: Json
+          expires_at: string
+          id?: string
+          widget_id?: string | null
+        }
+        Update: {
+          cache_key?: string
+          clinic_id?: string
+          created_at?: string
+          data?: Json
+          expires_at?: string
+          id?: string
+          widget_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bi_data_cache_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bi_data_cache_widget_id_fkey"
+            columns: ["widget_id"]
+            isOneToOne: false
+            referencedRelation: "bi_widgets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bi_metrics: {
+        Row: {
+          aggregation_period: string
+          calculation_type: string
+          clinic_id: string
+          created_at: string
+          data_sources: string[] | null
+          description: string | null
+          formula: string | null
+          id: string
+          last_calculated_at: string | null
+          metadata: Json | null
+          metric_key: string
+          name: string
+          trend: number | null
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          aggregation_period?: string
+          calculation_type: string
+          clinic_id: string
+          created_at?: string
+          data_sources?: string[] | null
+          description?: string | null
+          formula?: string | null
+          id?: string
+          last_calculated_at?: string | null
+          metadata?: Json | null
+          metric_key: string
+          name: string
+          trend?: number | null
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          aggregation_period?: string
+          calculation_type?: string
+          clinic_id?: string
+          created_at?: string
+          data_sources?: string[] | null
+          description?: string | null
+          formula?: string | null
+          id?: string
+          last_calculated_at?: string | null
+          metadata?: Json | null
+          metric_key?: string
+          name?: string
+          trend?: number | null
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bi_metrics_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bi_reports: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          format: string
+          id: string
+          is_active: boolean
+          last_generated_at: string | null
+          name: string
+          next_generation_at: string | null
+          parameters: Json | null
+          recipients: string[] | null
+          report_type: string
+          schedule: Json | null
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          format?: string
+          id?: string
+          is_active?: boolean
+          last_generated_at?: string | null
+          name: string
+          next_generation_at?: string | null
+          parameters?: Json | null
+          recipients?: string[] | null
+          report_type: string
+          schedule?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          format?: string
+          id?: string
+          is_active?: boolean
+          last_generated_at?: string | null
+          name?: string
+          next_generation_at?: string | null
+          parameters?: Json | null
+          recipients?: string[] | null
+          report_type?: string
+          schedule?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bi_reports_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bi_widgets: {
+        Row: {
+          cache_duration_minutes: number | null
+          chart_type: string | null
+          clinic_id: string
+          created_at: string
+          dashboard_id: string
+          data_source: string
+          display_config: Json | null
+          height: number
+          id: string
+          name: string
+          position_x: number
+          position_y: number
+          query_config: Json
+          refresh_on_load: boolean
+          updated_at: string
+          widget_type: string
+          width: number
+        }
+        Insert: {
+          cache_duration_minutes?: number | null
+          chart_type?: string | null
+          clinic_id: string
+          created_at?: string
+          dashboard_id: string
+          data_source: string
+          display_config?: Json | null
+          height?: number
+          id?: string
+          name: string
+          position_x?: number
+          position_y?: number
+          query_config: Json
+          refresh_on_load?: boolean
+          updated_at?: string
+          widget_type: string
+          width?: number
+        }
+        Update: {
+          cache_duration_minutes?: number | null
+          chart_type?: string | null
+          clinic_id?: string
+          created_at?: string
+          dashboard_id?: string
+          data_source?: string
+          display_config?: Json | null
+          height?: number
+          id?: string
+          name?: string
+          position_x?: number
+          position_y?: number
+          query_config?: Json
+          refresh_on_load?: boolean
+          updated_at?: string
+          widget_type?: string
+          width?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bi_widgets_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bi_widgets_dashboard_id_fkey"
+            columns: ["dashboard_id"]
+            isOneToOne: false
+            referencedRelation: "bi_dashboards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budget_approvals: {
         Row: {
           acao: string
@@ -5996,6 +6296,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_bi_cache: { Args: never; Returns: number }
       cleanup_expired_patient_sessions: { Args: never; Returns: number }
       cleanup_old_backups: {
         Args: { p_clinic_id: string }

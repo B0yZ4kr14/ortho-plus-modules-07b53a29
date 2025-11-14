@@ -68,6 +68,7 @@ import CRMFunil from '@/pages/CRMFunil';
 import SplitPagamento from '@/pages/SplitPagamento';
 import Inadimplencia from '@/pages/Inadimplencia';
 import CRM from '@/pages/CRM';
+import BI from '@/pages/BI';
 import ProgramaFidelidade from '@/pages/ProgramaFidelidade';
 import PDV from '@/pages/PDV';
 import RelatorioCaixa from '@/pages/RelatorioCaixa';
@@ -152,6 +153,7 @@ const App = () => (
                 <Route path="/historico-teleconsultas" element={<ProtectedRoute><AppLayout><HistoricoTeleconsultas /></AppLayout></ProtectedRoute>} />
                 <Route path="/ia-radiografia" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando IA..." />}><IARadiografia /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/crm" element={<ProtectedRoute><AppLayout><CRM /></AppLayout></ProtectedRoute>} />
+                <Route path="/bi" element={<ProtectedRoute><AppLayout><BI /></AppLayout></ProtectedRoute>} />
                 <Route path="/crm-funil" element={<ProtectedRoute><AppLayout><CRMFunil /></AppLayout></ProtectedRoute>} />
                 <Route path="/split-pagamento" element={<ProtectedRoute><AppLayout><SplitPagamento /></AppLayout></ProtectedRoute>} />
                 <Route path="/inadimplencia" element={<ProtectedRoute><AppLayout><Inadimplencia /></AppLayout></ProtectedRoute>} />
