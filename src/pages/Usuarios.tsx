@@ -81,7 +81,7 @@ export default function Usuarios() {
             app_role: profile.app_role || 'MEMBER',
             clinic_id: profile.clinic_id,
             avatar_url: profile.avatar_url,
-            is_active: true, // TODO: adicionar campo is_active na tabela profiles
+            is_active: profile.is_active ?? true,
             last_sign_in_at: userData?.user?.last_sign_in_at,
             created_at: profile.created_at,
           } as User;
@@ -110,14 +110,15 @@ export default function Usuarios() {
     },
   });
 
-  // Toggle active status mutation (placeholder - needs is_active field in profiles table)
+  // Toggle active status mutation
   const toggleActiveMutation = useMutation({
     mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
-      // TODO: Adicionar campo is_active na tabela profiles via migration
-      toast.info('Funcionalidade em desenvolvimento', {
-        description: 'O campo is_active será adicionado em breve à tabela profiles',
-      });
-      return Promise.resolve();
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_active: !isActive })
+        .eq('id', userId);
+      
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', clinicId] });
