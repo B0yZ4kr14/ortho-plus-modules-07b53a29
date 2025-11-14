@@ -19,3 +19,10 @@ export { GetTratamentosByProntuarioUseCase } from './prontuario/GetTratamentosBy
 export { UpdateTratamentoStatusUseCase } from './prontuario/UpdateTratamentoStatusUseCase';
 export { CreateEvolucaoUseCase } from './prontuario/CreateEvolucaoUseCase';
 export { UploadAnexoUseCase } from './prontuario/UploadAnexoUseCase';
+
+// Agenda Use Cases
+export { CreateAgendamentoUseCase } from './agenda/CreateAgendamentoUseCase';
+export { UpdateAgendamentoUseCase } from './agenda/UpdateAgendamentoUseCase';
+export { CancelAgendamentoUseCase } from './agenda/CancelAgendamentoUseCase';
+export { SendConfirmacaoWhatsAppUseCase } from './agenda/SendConfirmacaoWhatsAppUseCase';
+export { GetAgendamentosByDateRangeUseCase } from './agenda/GetAgendamentosByDateRangeUseCase';

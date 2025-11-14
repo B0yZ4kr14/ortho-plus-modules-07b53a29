@@ -15,6 +15,8 @@ export const SERVICE_KEYS = {
   TRATAMENTO_REPOSITORY: 'ITratamentoRepository',
   EVOLUCAO_REPOSITORY: 'IEvolucaoRepository',
   ANEXO_REPOSITORY: 'IAnexoRepository',
+  AGENDAMENTO_REPOSITORY: 'IAgendamentoRepository',
+  CONFIRMACAO_REPOSITORY: 'IConfirmacaoRepository',
 
   // Use Cases - Patient
   CREATE_PATIENT_USE_CASE: 'CreatePatientUseCase',
@@ -37,6 +39,13 @@ export const SERVICE_KEYS = {
   UPDATE_TRATAMENTO_STATUS_USE_CASE: 'UpdateTratamentoStatusUseCase',
   CREATE_EVOLUCAO_USE_CASE: 'CreateEvolucaoUseCase',
   UPLOAD_ANEXO_USE_CASE: 'UploadAnexoUseCase',
+
+  // Use Cases - Agenda
+  CREATE_AGENDAMENTO_USE_CASE: 'CreateAgendamentoUseCase',
+  UPDATE_AGENDAMENTO_USE_CASE: 'UpdateAgendamentoUseCase',
+  CANCEL_AGENDAMENTO_USE_CASE: 'CancelAgendamentoUseCase',
+  SEND_CONFIRMACAO_WHATSAPP_USE_CASE: 'SendConfirmacaoWhatsAppUseCase',
+  GET_AGENDAMENTOS_BY_DATE_RANGE_USE_CASE: 'GetAgendamentosByDateRangeUseCase',
 } as const;
 
 export type ServiceKey = typeof SERVICE_KEYS[keyof typeof SERVICE_KEYS];

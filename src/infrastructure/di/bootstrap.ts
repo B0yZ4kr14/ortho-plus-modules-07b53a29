@@ -39,6 +39,15 @@ import { UpdateTratamentoStatusUseCase } from '@/application/use-cases/prontuari
 import { CreateEvolucaoUseCase } from '@/application/use-cases/prontuario/CreateEvolucaoUseCase';
 import { UploadAnexoUseCase } from '@/application/use-cases/prontuario/UploadAnexoUseCase';
 
+// Agenda Module
+import { SupabaseAgendamentoRepository } from '@/infrastructure/repositories/SupabaseAgendamentoRepository';
+import { SupabaseConfirmacaoRepository } from '@/infrastructure/repositories/SupabaseConfirmacaoRepository';
+import { CreateAgendamentoUseCase } from '@/application/use-cases/agenda/CreateAgendamentoUseCase';
+import { UpdateAgendamentoUseCase } from '@/application/use-cases/agenda/UpdateAgendamentoUseCase';
+import { CancelAgendamentoUseCase } from '@/application/use-cases/agenda/CancelAgendamentoUseCase';
+import { SendConfirmacaoWhatsAppUseCase } from '@/application/use-cases/agenda/SendConfirmacaoWhatsAppUseCase';
+import { GetAgendamentosByDateRangeUseCase } from '@/application/use-cases/agenda/GetAgendamentosByDateRangeUseCase';
+
 /**
  * Inicializa o DI Container com todas as dependências
  */
@@ -199,6 +208,61 @@ export function bootstrapContainer(): void {
     SERVICE_KEYS.UPLOAD_ANEXO_USE_CASE,
     () => new UploadAnexoUseCase(
       container.resolve(SERVICE_KEYS.ANEXO_REPOSITORY)
+    ),
+    true
+  );
+
+  // Registrar Repositories - Agenda
+  container.register(
+    SERVICE_KEYS.AGENDAMENTO_REPOSITORY,
+    () => new SupabaseAgendamentoRepository(),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.CONFIRMACAO_REPOSITORY,
+    () => new SupabaseConfirmacaoRepository(),
+    true
+  );
+
+  // Registrar Use Cases - Agenda
+  container.register(
+    SERVICE_KEYS.CREATE_AGENDAMENTO_USE_CASE,
+    () => new CreateAgendamentoUseCase(
+      container.resolve(SERVICE_KEYS.AGENDAMENTO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.UPDATE_AGENDAMENTO_USE_CASE,
+    () => new UpdateAgendamentoUseCase(
+      container.resolve(SERVICE_KEYS.AGENDAMENTO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.CANCEL_AGENDAMENTO_USE_CASE,
+    () => new CancelAgendamentoUseCase(
+      container.resolve(SERVICE_KEYS.AGENDAMENTO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.SEND_CONFIRMACAO_WHATSAPP_USE_CASE,
+    () => new SendConfirmacaoWhatsAppUseCase(
+      container.resolve(SERVICE_KEYS.CONFIRMACAO_REPOSITORY),
+      container.resolve(SERVICE_KEYS.AGENDAMENTO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.GET_AGENDAMENTOS_BY_DATE_RANGE_USE_CASE,
+    () => new GetAgendamentosByDateRangeUseCase(
+      container.resolve(SERVICE_KEYS.AGENDAMENTO_REPOSITORY)
     ),
     true
   );
