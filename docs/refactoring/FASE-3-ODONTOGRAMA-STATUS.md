@@ -3,7 +3,7 @@
 ## 📊 Progresso Geral
 
 ```
-[▓▓▓▓▓░░░░░] 50% - Camada de Aplicação (Completa)
+[▓▓▓▓▓▓▓▓░░] 75% - Camada de Infraestrutura (Completa)
 ```
 
 ---
@@ -69,18 +69,38 @@ Refatorar o módulo **ODONTOGRAMA** seguindo o "Golden Pattern" estabelecido nos
 
 ---
 
-### 3. Infrastructure Layer (0%)
+### 3. Infrastructure Layer ✅ (100%)
+
+#### Database
+- ✅ Tabela `odontogramas` criada com:
+  - Campos: id, prontuario_id, clinic_id, teeth (JSONB), history (JSONB), timestamps
+  - Constraint: unique por prontuário
+  - Índices: prontuario_id, clinic_id, updated_at
+  - Trigger: update_updated_at
+  - RLS Policies: SELECT, INSERT, UPDATE (clinic-scoped), DELETE (admin-only)
 
 #### Repositories
-- [ ] `SupabaseOdontogramaRepository`
+- ✅ `SupabaseOdontogramaRepository` - Implementação Supabase
+  - `findById()` - Buscar por ID
+  - `findByProntuarioId()` - Buscar por prontuário
+  - `findByClinicId()` - Buscar por clínica
+  - `save()` - Salvar novo (com clinic_id do prontuário)
+  - `update()` - Atualizar existente
+  - `delete()` - Remover
 
 #### Mappers
-- [ ] `OdontogramaMapper`
-- [ ] `HistoricoOdontogramaMapper`
+- ✅ `OdontogramaMapper` - Conversão Entity <-> Supabase
+  - `toDomain()` - Row → Entity
+  - `toSupabaseInsert()` - Entity → Insert
+  - Tratamento de JSONB (teeth e history)
 
 #### DI Container
-- [ ] Registrar repositórios
-- [ ] Registrar Use Cases
+- ✅ Registrados no `bootstrap.ts`:
+  - `ODONTOGRAMA_REPOSITORY`
+  - `GET_ODONTOGRAMA_USE_CASE`
+  - `UPDATE_TOOTH_STATUS_USE_CASE`
+  - `UPDATE_TOOTH_SURFACE_USE_CASE`
+  - `UPDATE_TOOTH_NOTES_USE_CASE`
 
 ---
 

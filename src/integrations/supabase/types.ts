@@ -4335,6 +4335,54 @@ export type Database = {
           },
         ]
       }
+      odontogramas: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          history: Json
+          id: string
+          last_updated: string
+          prontuario_id: string
+          teeth: Json
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          history?: Json
+          id?: string
+          last_updated?: string
+          prontuario_id: string
+          teeth?: Json
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          history?: Json
+          id?: string
+          last_updated?: string
+          prontuario_id?: string
+          teeth?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "odontogramas_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "odontogramas_prontuario_id_fkey"
+            columns: ["prontuario_id"]
+            isOneToOne: true
+            referencedRelation: "prontuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       onboarding_analytics: {
         Row: {
           clinic_id: string

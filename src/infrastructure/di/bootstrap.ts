@@ -57,6 +57,13 @@ import { AprovarOrcamentoUseCase } from '@/application/use-cases/orcamentos/Apro
 import { RejeitarOrcamentoUseCase } from '@/application/use-cases/orcamentos/RejeitarOrcamentoUseCase';
 import { AddItemOrcamentoUseCase } from '@/application/use-cases/orcamentos/AddItemOrcamentoUseCase';
 
+// Odontograma Module
+import { SupabaseOdontogramaRepository } from '@/infrastructure/repositories/SupabaseOdontogramaRepository';
+import { GetOdontogramaUseCase } from '@/application/use-cases/odontograma/GetOdontogramaUseCase';
+import { UpdateToothStatusUseCase } from '@/application/use-cases/odontograma/UpdateToothStatusUseCase';
+import { UpdateToothSurfaceUseCase } from '@/application/use-cases/odontograma/UpdateToothSurfaceUseCase';
+import { UpdateToothNotesUseCase } from '@/application/use-cases/odontograma/UpdateToothNotesUseCase';
+
 /**
  * Inicializa o DI Container com todas as dependências
  */
@@ -327,6 +334,46 @@ export function bootstrapContainer(): void {
     () => new AddItemOrcamentoUseCase(
       container.resolve(SERVICE_KEYS.ORCAMENTO_REPOSITORY),
       container.resolve(SERVICE_KEYS.ITEM_ORCAMENTO_REPOSITORY)
+    ),
+    true
+  );
+
+  // Registrar Repositories - Odontograma
+  container.register(
+    SERVICE_KEYS.ODONTOGRAMA_REPOSITORY,
+    () => new SupabaseOdontogramaRepository(),
+    true
+  );
+
+  // Registrar Use Cases - Odontograma
+  container.register(
+    SERVICE_KEYS.GET_ODONTOGRAMA_USE_CASE,
+    () => new GetOdontogramaUseCase(
+      container.resolve(SERVICE_KEYS.ODONTOGRAMA_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.UPDATE_TOOTH_STATUS_USE_CASE,
+    () => new UpdateToothStatusUseCase(
+      container.resolve(SERVICE_KEYS.ODONTOGRAMA_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.UPDATE_TOOTH_SURFACE_USE_CASE,
+    () => new UpdateToothSurfaceUseCase(
+      container.resolve(SERVICE_KEYS.ODONTOGRAMA_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.UPDATE_TOOTH_NOTES_USE_CASE,
+    () => new UpdateToothNotesUseCase(
+      container.resolve(SERVICE_KEYS.ODONTOGRAMA_REPOSITORY)
     ),
     true
   );
