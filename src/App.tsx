@@ -67,7 +67,6 @@ import HistoricoTeleconsultas from './pages/HistoricoTeleconsultas';
 import CRMFunil from '@/pages/CRMFunil';
 import SplitPagamento from '@/pages/SplitPagamento';
 import Inadimplencia from '@/pages/Inadimplencia';
-import CRM from '@/pages/CRM';
 import BI from '@/pages/BI';
 import LGPD from '@/pages/LGPD';
 import MarketingAuto from '@/pages/MarketingAuto';
@@ -155,7 +154,7 @@ const App = () => (
                 <Route path="/teleodontologia" element={<ProtectedRoute><AppLayout><Teleodontologia /></AppLayout></ProtectedRoute>} />
                 <Route path="/historico-teleconsultas" element={<ProtectedRoute><AppLayout><HistoricoTeleconsultas /></AppLayout></ProtectedRoute>} />
                 <Route path="/ia-radiografia" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando IA..." />}><IARadiografia /></Suspense></AppLayout></ProtectedRoute>} />
-                <Route path="/crm" element={<ProtectedRoute><AppLayout><CRM /></AppLayout></ProtectedRoute>} />
+                {/* <Route path="/crm" element={<ProtectedRoute><AppLayout><CRM /></AppLayout></ProtectedRoute>} /> */}
                 <Route path="/bi" element={<ProtectedRoute><AppLayout><BI /></AppLayout></ProtectedRoute>} />
                 <Route path="/lgpd" element={<ProtectedRoute><AppLayout><LGPD /></AppLayout></ProtectedRoute>} />
                 <Route path="/assinatura-digital" element={<ProtectedRoute><AppLayout><AssinaturaICP /></AppLayout></ProtectedRoute>} />

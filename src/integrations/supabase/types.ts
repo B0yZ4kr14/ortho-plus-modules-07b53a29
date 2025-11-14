@@ -2116,6 +2116,69 @@ export type Database = {
           },
         ]
       }
+      crm_activities: {
+        Row: {
+          activity_type: string
+          assigned_to: string
+          clinic_id: string
+          completed_date: string | null
+          created_at: string
+          description: string | null
+          id: string
+          lead_id: string
+          outcome: string | null
+          scheduled_date: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          activity_type: string
+          assigned_to: string
+          clinic_id: string
+          completed_date?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          lead_id: string
+          outcome?: string | null
+          scheduled_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          activity_type?: string
+          assigned_to?: string
+          clinic_id?: string
+          completed_date?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          lead_id?: string
+          outcome?: string | null
+          scheduled_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_activities_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_conversions: {
         Row: {
           assigned_to: string | null
@@ -2159,13 +2222,6 @@ export type Database = {
             columns: ["clinic_id"]
             isOneToOne: false
             referencedRelation: "clinics"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_conversions_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "crm_leads"
             referencedColumns: ["id"]
           },
         ]
@@ -2224,37 +2280,23 @@ export type Database = {
             referencedRelation: "clinics"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "crm_interactions_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "crm_leads"
-            referencedColumns: ["id"]
-          },
         ]
       }
       crm_leads: {
         Row: {
           assigned_to: string | null
           clinic_id: string
-          conversion_probability: number | null
-          converted_to_patient_id: string | null
-          cpf: string | null
           created_at: string
           created_by: string
           email: string | null
           estimated_value: number | null
-          full_name: string
           id: string
-          interest_procedure: string | null
-          last_contact_date: string | null
-          lost_reason: string | null
-          metadata: Json | null
-          next_follow_up_date: string | null
+          interest_description: string | null
+          name: string
+          next_contact_date: string | null
           notes: string | null
           phone: string | null
           source: string
-          stage_id: string | null
           status: string
           tags: string[] | null
           updated_at: string
@@ -2262,24 +2304,17 @@ export type Database = {
         Insert: {
           assigned_to?: string | null
           clinic_id: string
-          conversion_probability?: number | null
-          converted_to_patient_id?: string | null
-          cpf?: string | null
           created_at?: string
           created_by: string
           email?: string | null
           estimated_value?: number | null
-          full_name: string
           id?: string
-          interest_procedure?: string | null
-          last_contact_date?: string | null
-          lost_reason?: string | null
-          metadata?: Json | null
-          next_follow_up_date?: string | null
+          interest_description?: string | null
+          name: string
+          next_contact_date?: string | null
           notes?: string | null
           phone?: string | null
           source: string
-          stage_id?: string | null
           status?: string
           tags?: string[] | null
           updated_at?: string
@@ -2287,24 +2322,17 @@ export type Database = {
         Update: {
           assigned_to?: string | null
           clinic_id?: string
-          conversion_probability?: number | null
-          converted_to_patient_id?: string | null
-          cpf?: string | null
           created_at?: string
           created_by?: string
           email?: string | null
           estimated_value?: number | null
-          full_name?: string
           id?: string
-          interest_procedure?: string | null
-          last_contact_date?: string | null
-          lost_reason?: string | null
-          metadata?: Json | null
-          next_follow_up_date?: string | null
+          interest_description?: string | null
+          name?: string
+          next_contact_date?: string | null
           notes?: string | null
           phone?: string | null
           source?: string
-          stage_id?: string | null
           status?: string
           tags?: string[] | null
           updated_at?: string

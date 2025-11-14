@@ -5,11 +5,14 @@ import { LeadMapper } from '../mappers/LeadMapper';
 
 export class LeadRepositorySupabase implements ILeadRepository {
   async save(lead: Lead): Promise<Lead> {
-    const data = LeadMapper.toPersistence(lead);
+    const persistence = LeadMapper.toPersistence(lead);
     
     const { data: savedData, error } = await supabase
       .from('crm_leads')
-      .insert(data)
+      .insert({
+        ...persistence,
+        created_by: (await supabase.auth.getUser()).data.user?.id || ''
+      })
       .select()
       .single();
 

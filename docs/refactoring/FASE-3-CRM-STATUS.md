@@ -1,6 +1,6 @@
 # 📋 FASE 3: CRM (Funil de Vendas) - STATUS
 
-## 📊 Status Geral: 🔄 40% COMPLETO
+## 📊 Status Geral: 🔄 70% COMPLETO
 
 **Iniciado em:** 2025-11-14  
 **Previsão:** 4-5 horas  
@@ -53,16 +53,34 @@
 
 ---
 
-## ⏳ T3.6.3: Application Layer (0% - PRÓXIMO)
+---
 
-### Use Cases a Implementar
-- ⏳ `CreateLeadUseCase.ts`
-- ⏳ `UpdateLeadStatusUseCase.ts`
-- ⏳ `AtribuirResponsavelUseCase.ts`
-- ⏳ `GetLeadsByStatusUseCase.ts`
-- ⏳ `CreateAtividadeUseCase.ts`
-- ⏳ `ConcluirAtividadeUseCase.ts`
-- ⏳ `GetAtividadesPorLeadUseCase.ts`
+## ✅ T3.6.3: Application Layer (100% Completo)
+
+### Use Cases
+- ✅ `CreateLeadUseCase.ts`
+  - ✅ Validações de input
+  - ✅ Criação de entidade Lead
+  - ✅ Persistência via repository
+
+- ✅ `UpdateLeadStatusUseCase.ts`
+  - ✅ Busca lead existente
+  - ✅ Atualização de status
+  - ✅ Validação de lead não encontrado
+
+- ✅ `CreateAtividadeUseCase.ts`
+  - ✅ Validações de input
+  - ✅ Criação de entidade Atividade
+  - ✅ Status inicial AGENDADA
+
+- ✅ `GetLeadsByStatusUseCase.ts`
+  - ✅ Filtro por clínica e status
+  - ✅ Retorno de lista de leads
+
+- ✅ `ConcluirAtividadeUseCase.ts`
+  - ✅ Busca atividade existente
+  - ✅ Conclusão com resultado opcional
+  - ✅ Validações de estado
 
 ---
 
@@ -98,7 +116,7 @@
 
 ## 📈 Progresso Detalhado
 
-### Arquivos Criados: 8/20 (40%)
+### Arquivos Criados: 13/20 (65%)
 
 ```
 ✅ src/modules/crm/domain/entities/Lead.ts
@@ -109,6 +127,11 @@
 ✅ src/modules/crm/infrastructure/repositories/AtividadeRepositorySupabase.ts
 ✅ src/modules/crm/infrastructure/mappers/LeadMapper.ts
 ✅ src/modules/crm/infrastructure/mappers/AtividadeMapper.ts
+✅ src/modules/crm/application/use-cases/CreateLeadUseCase.ts
+✅ src/modules/crm/application/use-cases/UpdateLeadStatusUseCase.ts
+✅ src/modules/crm/application/use-cases/CreateAtividadeUseCase.ts
+✅ src/modules/crm/application/use-cases/GetLeadsByStatusUseCase.ts
+✅ src/modules/crm/application/use-cases/ConcluirAtividadeUseCase.ts
 ```
 
 ---

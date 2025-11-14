@@ -27,7 +27,7 @@ export class LeadMapper {
     return new Lead(props);
   }
 
-  static toPersistence(lead: Lead): LeadInsert {
+  static toPersistence(lead: Lead): Omit<LeadInsert, 'created_at' | 'created_by'> {
     const json = lead.toJSON();
     
     return {

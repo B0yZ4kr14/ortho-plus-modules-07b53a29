@@ -25,7 +25,7 @@ export class AtividadeMapper {
     return new Atividade(props);
   }
 
-  static toPersistence(atividade: Atividade): AtividadeInsert {
+  static toPersistence(atividade: Atividade): Omit<AtividadeInsert, 'created_at'> {
     const json = atividade.toJSON();
     
     return {
