@@ -46,19 +46,19 @@ export class LeadRepositorySupabase implements ILeadRepository {
 
     if (error) throw new Error(`Erro ao buscar leads: ${error.message}`);
 
-    return data ? data.map(LeadMapper.toDomain) : [];
+    return data?.map(LeadMapper.toDomain) ?? [];
   }
 
   async findByResponsavel(responsavelId: string): Promise<Lead[]> {
     const { data, error } = await supabase
       .from('crm_leads')
       .select('*')
-      .eq('responsavel_id', responsavelId)
+      .eq('assigned_to', responsavelId)
       .order('created_at', { ascending: false });
 
     if (error) throw new Error(`Erro ao buscar leads do responsável: ${error.message}`);
 
-    return data ? data.map(LeadMapper.toDomain) : [];
+    return data?.map(LeadMapper.toDomain) ?? [];
   }
 
   async findByStatus(clinicId: string, status: string): Promise<Lead[]> {
@@ -71,7 +71,7 @@ export class LeadRepositorySupabase implements ILeadRepository {
 
     if (error) throw new Error(`Erro ao buscar leads por status: ${error.message}`);
 
-    return data ? data.map(LeadMapper.toDomain) : [];
+    return data?.map(LeadMapper.toDomain) ?? [];
   }
 
   async update(lead: Lead): Promise<Lead> {

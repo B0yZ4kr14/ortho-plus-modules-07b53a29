@@ -99,6 +99,17 @@ export const SERVICE_KEYS = {
   REGISTRAR_SANGRIA_USE_CASE: 'RegistrarSangriaUseCase',
   REGISTRAR_INCIDENTE_CAIXA_USE_CASE: 'RegistrarIncidenteCaixaUseCase',
   GET_FLUXO_CAIXA_USE_CASE: 'GetFluxoCaixaUseCase',
+
+  // Repositories - CRM
+  LEAD_REPOSITORY: 'ILeadRepository',
+  ATIVIDADE_REPOSITORY: 'IAtividadeRepository',
+
+  // Use Cases - CRM
+  CREATE_LEAD_USE_CASE: 'CreateLeadUseCase',
+  UPDATE_LEAD_STATUS_USE_CASE: 'UpdateLeadStatusUseCase',
+  GET_LEADS_BY_STATUS_USE_CASE: 'GetLeadsByStatusUseCase',
+  CREATE_ATIVIDADE_USE_CASE: 'CreateAtividadeUseCase',
+  CONCLUIR_ATIVIDADE_USE_CASE: 'ConcluirAtividadeUseCase',
 } as const;
 
 export type ServiceKey = typeof SERVICE_KEYS[keyof typeof SERVICE_KEYS];

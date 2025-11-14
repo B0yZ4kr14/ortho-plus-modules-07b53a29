@@ -1,6 +1,6 @@
 # 📋 FASE 3: CRM (Funil de Vendas) - STATUS
 
-## 📊 Status Geral: 🔄 70% COMPLETO
+## 📊 Status Geral: 🔄 85% COMPLETO
 
 **Iniciado em:** 2025-11-14  
 **Previsão:** 4-5 horas  
@@ -84,11 +84,20 @@
 
 ---
 
-## ⏳ T3.6.4: Presentation Layer (0% - PENDENTE)
+## ✅ T3.6.4: Presentation Layer (100% Completo)
 
-### Hooks a Criar
-- ⏳ `useLeads.ts`
-- ⏳ `useAtividades.ts`
+### Hooks
+- ✅ `useLeads.ts`
+  - ✅ Query para buscar leads por status
+  - ✅ Mutation para criar lead
+  - ✅ Mutation para atualizar status
+  - ✅ Toast notifications
+
+- ✅ `useAtividades.ts`
+  - ✅ Query para buscar atividades do lead
+  - ✅ Mutation para criar atividade
+  - ✅ Mutation para concluir atividade
+  - ✅ Toast notifications
 
 ---
 
@@ -106,17 +115,17 @@
 
 ---
 
-## ⏳ T3.6.6: DI Container (0% - PENDENTE)
+## ✅ T3.6.6: DI Container (100% Completo)
 
-- ⏳ Registrar LeadRepository
-- ⏳ Registrar AtividadeRepository
-- ⏳ Registrar Use Cases
+- ✅ Registrado LeadRepository
+- ✅ Registrado AtividadeRepository
+- ✅ Registrados todos Use Cases (5)
 
 ---
 
 ## 📈 Progresso Detalhado
 
-### Arquivos Criados: 13/20 (65%)
+### Arquivos Criados: 18/21 (86%)
 
 ```
 ✅ src/modules/crm/domain/entities/Lead.ts
@@ -132,18 +141,24 @@
 ✅ src/modules/crm/application/use-cases/CreateAtividadeUseCase.ts
 ✅ src/modules/crm/application/use-cases/GetLeadsByStatusUseCase.ts
 ✅ src/modules/crm/application/use-cases/ConcluirAtividadeUseCase.ts
+✅ src/modules/crm/presentation/hooks/useLeads.ts
+✅ src/modules/crm/presentation/hooks/useAtividades.ts
+✅ src/infrastructure/di/ServiceKeys.ts (CRM keys added)
+✅ src/infrastructure/di/bootstrap.ts (CRM deps registered)
+⏳ src/components/crm/LeadCard.tsx
+⏳ src/components/crm/KanbanBoard.tsx
+⏳ src/components/crm/AtividadeList.tsx
+⏳ src/pages/CRM.tsx
 ```
 
 ---
 
 ## 🎯 Próximas Ações
 
-1. ⏳ Criar Use Cases (Application Layer)
-2. ⏳ Criar Hooks (Presentation Layer)
-3. ⏳ Criar Componentes UI
-4. ⏳ Criar Página CRM
-5. ⏳ Configurar DI Container
-6. ⏳ Adicionar link na Sidebar
+1. ⏳ Criar Componentes UI (LeadCard, KanbanBoard, AtividadeList)
+2. ⏳ Criar Página CRM
+3. ⏳ Adicionar link na Sidebar
+4. ⏳ Testar integração completa
 
 ---
 
@@ -164,6 +179,6 @@
 
 ---
 
-**Última Atualização:** 2025-11-14 22:30  
-**Próximo Milestone:** Completar Application Layer  
-**Status:** Domain + Infrastructure 100% completos, iniciando Application Layer
+**Última Atualização:** 2025-11-14 23:15  
+**Próximo Milestone:** Completar UI Layer (Componentes e Página)  
+**Status:** Domain + Infrastructure + Application + Presentation + DI 100% completos, faltam apenas UI Components

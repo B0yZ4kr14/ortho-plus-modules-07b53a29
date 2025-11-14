@@ -43,19 +43,19 @@ export class AtividadeRepositorySupabase implements IAtividadeRepository {
 
     if (error) throw new Error(`Erro ao buscar atividades do lead: ${error.message}`);
 
-    return data ? data.map(AtividadeMapper.toDomain) : [];
+    return data?.map(AtividadeMapper.toDomain) ?? [];
   }
 
   async findByResponsavel(responsavelId: string): Promise<Atividade[]> {
     const { data, error } = await supabase
       .from('crm_activities')
       .select('*')
-      .eq('responsavel_id', responsavelId)
-      .order('data_agendada', { ascending: true });
+      .eq('assigned_to', responsavelId)
+      .order('scheduled_date', { ascending: true });
 
     if (error) throw new Error(`Erro ao buscar atividades do responsável: ${error.message}`);
 
-    return data ? data.map(AtividadeMapper.toDomain) : [];
+    return data?.map(AtividadeMapper.toDomain) ?? [];
   }
 
   async findAgendadasPorData(clinicId: string, data: Date): Promise<Atividade[]> {
@@ -70,13 +70,13 @@ export class AtividadeRepositorySupabase implements IAtividadeRepository {
       .select('*')
       .eq('clinic_id', clinicId)
       .eq('status', 'AGENDADA')
-      .gte('data_agendada', startOfDay.toISOString())
-      .lte('data_agendada', endOfDay.toISOString())
-      .order('data_agendada', { ascending: true });
+      .gte('scheduled_date', startOfDay.toISOString())
+      .lte('scheduled_date', endOfDay.toISOString())
+      .order('scheduled_date', { ascending: true });
 
     if (error) throw new Error(`Erro ao buscar atividades agendadas: ${error.message}`);
 
-    return activities ? activities.map(AtividadeMapper.toDomain) : [];
+    return activities?.map(AtividadeMapper.toDomain) ?? [];
   }
 
   async update(atividade: Atividade): Promise<Atividade> {

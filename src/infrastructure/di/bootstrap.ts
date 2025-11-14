@@ -93,6 +93,15 @@ import { RegistrarSangriaUseCase } from '@/application/use-cases/financeiro/Regi
 import { RegistrarIncidenteCaixaUseCase } from '@/application/use-cases/financeiro/RegistrarIncidenteCaixaUseCase';
 import { GetFluxoCaixaUseCase } from '@/application/use-cases/financeiro/GetFluxoCaixaUseCase';
 
+// CRM Module
+import { LeadRepositorySupabase } from '@/modules/crm/infrastructure/repositories/LeadRepositorySupabase';
+import { AtividadeRepositorySupabase } from '@/modules/crm/infrastructure/repositories/AtividadeRepositorySupabase';
+import { CreateLeadUseCase } from '@/modules/crm/application/use-cases/CreateLeadUseCase';
+import { UpdateLeadStatusUseCase } from '@/modules/crm/application/use-cases/UpdateLeadStatusUseCase';
+import { GetLeadsByStatusUseCase } from '@/modules/crm/application/use-cases/GetLeadsByStatusUseCase';
+import { CreateAtividadeUseCase } from '@/modules/crm/application/use-cases/CreateAtividadeUseCase';
+import { ConcluirAtividadeUseCase } from '@/modules/crm/application/use-cases/ConcluirAtividadeUseCase';
+
 /**
  * Inicializa o DI Container com todas as dependências
  */
@@ -605,6 +614,61 @@ export function bootstrapContainer(): void {
       container.resolve(SERVICE_KEYS.CONTA_PAGAR_REPOSITORY),
       container.resolve(SERVICE_KEYS.CONTA_RECEBER_REPOSITORY),
       container.resolve(SERVICE_KEYS.MOVIMENTO_CAIXA_REPOSITORY)
+    ),
+    true
+  );
+
+  // ===== CRM MODULE =====
+  // Repositories
+  container.register(
+    SERVICE_KEYS.LEAD_REPOSITORY,
+    () => new LeadRepositorySupabase(),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.ATIVIDADE_REPOSITORY,
+    () => new AtividadeRepositorySupabase(),
+    true
+  );
+
+  // Use Cases - CRM
+  container.register(
+    SERVICE_KEYS.CREATE_LEAD_USE_CASE,
+    () => new CreateLeadUseCase(
+      container.resolve(SERVICE_KEYS.LEAD_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.UPDATE_LEAD_STATUS_USE_CASE,
+    () => new UpdateLeadStatusUseCase(
+      container.resolve(SERVICE_KEYS.LEAD_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.GET_LEADS_BY_STATUS_USE_CASE,
+    () => new GetLeadsByStatusUseCase(
+      container.resolve(SERVICE_KEYS.LEAD_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.CREATE_ATIVIDADE_USE_CASE,
+    () => new CreateAtividadeUseCase(
+      container.resolve(SERVICE_KEYS.ATIVIDADE_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.CONCLUIR_ATIVIDADE_USE_CASE,
+    () => new ConcluirAtividadeUseCase(
+      container.resolve(SERVICE_KEYS.ATIVIDADE_REPOSITORY)
     ),
     true
   );
