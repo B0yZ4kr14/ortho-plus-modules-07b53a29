@@ -83,7 +83,7 @@ export class SupabaseModuleRepository implements IModuleRepository {
         throw new InfrastructureError(`Erro ao buscar módulos ativos: ${error.message}`, error);
       }
 
-      return data.map((row: any) =>
+      return (data as any[]).map((row) =>
         ModuleMapper.toDomain(row.module_catalog, row)
       );
     } catch (error) {
