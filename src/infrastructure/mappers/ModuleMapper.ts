@@ -34,6 +34,8 @@ export class ModuleMapper {
       name: module.name,
       description: module.description ?? null,
       category: module.category,
+      icon: 'default', // Default icon
+      created_at: new Date().toISOString(),
     };
   }
 }
