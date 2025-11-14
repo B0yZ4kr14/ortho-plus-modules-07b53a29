@@ -70,6 +70,7 @@ import Inadimplencia from '@/pages/Inadimplencia';
 import CRM from '@/pages/CRM';
 import BI from '@/pages/BI';
 import LGPD from '@/pages/LGPD';
+import MarketingAuto from '@/pages/MarketingAuto';
 import ProgramaFidelidade from '@/pages/ProgramaFidelidade';
 import PDV from '@/pages/PDV';
 import RelatorioCaixa from '@/pages/RelatorioCaixa';
@@ -156,6 +157,7 @@ const App = () => (
                 <Route path="/crm" element={<ProtectedRoute><AppLayout><CRM /></AppLayout></ProtectedRoute>} />
                 <Route path="/bi" element={<ProtectedRoute><AppLayout><BI /></AppLayout></ProtectedRoute>} />
                 <Route path="/lgpd" element={<ProtectedRoute><AppLayout><LGPD /></AppLayout></ProtectedRoute>} />
+                <Route path="/marketing-auto" element={<ProtectedRoute><AppLayout><MarketingAuto /></AppLayout></ProtectedRoute>} />
                 <Route path="/crm-funil" element={<ProtectedRoute><AppLayout><CRMFunil /></AppLayout></ProtectedRoute>} />
                 <Route path="/split-pagamento" element={<ProtectedRoute><AppLayout><SplitPagamento /></AppLayout></ProtectedRoute>} />
                 <Route path="/inadimplencia" element={<ProtectedRoute><AppLayout><Inadimplencia /></AppLayout></ProtectedRoute>} />
