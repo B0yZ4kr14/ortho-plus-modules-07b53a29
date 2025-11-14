@@ -11,7 +11,7 @@ export class SupabasePatientRepository implements IPatientRepository {
         .from('prontuarios')
         .select('*')
         .eq('patient_id', id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code === 'PGRST116') return null; // Not found
@@ -63,7 +63,7 @@ export class SupabasePatientRepository implements IPatientRepository {
         .eq('clinic_id', clinicId)
         .ilike('patient_name', `%${cpf}%`)
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error) {
         if (error.code === 'PGRST116') return null;
