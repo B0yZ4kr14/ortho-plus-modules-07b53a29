@@ -218,6 +218,30 @@ Replicar o **Golden Pattern** validado na FASE 4 para implementar os módulos pr
 
 ---
 
+### T5.9: Módulo MARKETING_AUTO ✅
+**Responsável:** Sistema  
+**Status:** ✅ **Concluído**
+
+**Escopo:**
+- Campanhas de marketing automatizadas
+- Templates de mensagens (Email, SMS, WhatsApp)
+- Gatilhos automáticos (pós-consulta, recall, aniversário, inatividade)
+- Métricas de desempenho (taxa de abertura, conversão, ROI)
+- Segmentação de público
+- Agendamento inteligente
+
+**Dependências:**
+- Nenhuma (módulo independente)
+
+**Tabelas Criadas:**
+- `marketing_campaigns` (campanhas)
+- `campaign_triggers` (gatilhos automáticos)
+- `campaign_templates` (templates)
+- `campaign_sends` (envios individuais)
+- `campaign_metrics` (métricas agregadas)
+
+---
+
 ### T5.8: Módulo LGPD ✅
 **Responsável:** Sistema  
 **Status:** ✅ **Concluído**
@@ -253,7 +277,7 @@ Replicar o **Golden Pattern** validado na FASE 4 para implementar os módulos pr
 | SPLIT_PAGAMENTO | ✅ Concluído | 2 | FINANCEIRO | 100% |
 | INADIMPLENCIA | ✅ Concluído | 2 | FINANCEIRO | 100% |
 | CRM | ✅ Concluído | 3 | - | 100% |
-| MARKETING_AUTO | ⏳ Pendente | 3 | - | 0% |
+| MARKETING_AUTO | ✅ Concluído | 3 | - | 100% |
 | BI | ✅ Concluído | 3 | Múltiplos | 100% |
 | LGPD | ✅ Concluído | 4 | - | 100% |
 | ASSINATURA_ICP | ⏳ Pendente | 4 | PEP | 0% |
@@ -359,6 +383,7 @@ Replicar o **Golden Pattern** validado na FASE 4 para implementar os módulos pr
 - ✅ T5.6 CRM - Concluído
 - ✅ T5.7 BI - Concluído
 - ✅ T5.8 LGPD - Concluído
+- ✅ T5.9 MARKETING_AUTO - Concluído
 - ✅ Sistema de Roles Seguro - Implementado
 
 **Credenciais Admin Padrão:**

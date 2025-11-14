@@ -107,7 +107,7 @@ export const menuGroups: MenuGroup[] = [
     collapsed: true,
     items: [
       { title: 'CRM', url: '/crm', icon: Users, moduleKey: 'CRM' },
-      { title: 'Automação', url: '/automacao-marketing', icon: Activity, moduleKey: 'MARKETING_AUTO' },
+      { title: 'Marketing Auto', url: '/marketing-auto', icon: Activity, moduleKey: 'MARKETING_AUTO' },
       { title: 'Fidelidade', url: '/programa-fidelidade', icon: Award, moduleKey: 'CRM' }
     ]
   },

@@ -1206,6 +1206,242 @@ export type Database = {
           },
         ]
       }
+      campaign_metrics: {
+        Row: {
+          bounce_rate: number | null
+          campaign_id: string
+          click_rate: number | null
+          conversion_rate: number | null
+          created_at: string
+          id: string
+          metric_date: string
+          open_rate: number | null
+          revenue_generated: number | null
+          total_clicked: number | null
+          total_converted: number | null
+          total_delivered: number | null
+          total_errors: number | null
+          total_opened: number | null
+          total_sent: number | null
+          unsubscribe_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          bounce_rate?: number | null
+          campaign_id: string
+          click_rate?: number | null
+          conversion_rate?: number | null
+          created_at?: string
+          id?: string
+          metric_date: string
+          open_rate?: number | null
+          revenue_generated?: number | null
+          total_clicked?: number | null
+          total_converted?: number | null
+          total_delivered?: number | null
+          total_errors?: number | null
+          total_opened?: number | null
+          total_sent?: number | null
+          unsubscribe_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          bounce_rate?: number | null
+          campaign_id?: string
+          click_rate?: number | null
+          conversion_rate?: number | null
+          created_at?: string
+          id?: string
+          metric_date?: string
+          open_rate?: number | null
+          revenue_generated?: number | null
+          total_clicked?: number | null
+          total_converted?: number | null
+          total_delivered?: number | null
+          total_errors?: number | null
+          total_opened?: number | null
+          total_sent?: number | null
+          unsubscribe_count?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_metrics_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_sends: {
+        Row: {
+          campaign_id: string
+          clicked_at: string | null
+          converted_at: string | null
+          created_at: string
+          delivered_at: string | null
+          error_code: string | null
+          error_message: string | null
+          id: string
+          message_content: string | null
+          metadata: Json | null
+          opened_at: string | null
+          patient_id: string
+          recipient_contact: string
+          recipient_name: string
+          retry_count: number | null
+          scheduled_for: string
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          campaign_id: string
+          clicked_at?: string | null
+          converted_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          message_content?: string | null
+          metadata?: Json | null
+          opened_at?: string | null
+          patient_id: string
+          recipient_contact: string
+          recipient_name: string
+          retry_count?: number | null
+          scheduled_for: string
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          campaign_id?: string
+          clicked_at?: string | null
+          converted_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          message_content?: string | null
+          metadata?: Json | null
+          opened_at?: string | null
+          patient_id?: string
+          recipient_contact?: string
+          recipient_name?: string
+          retry_count?: number | null
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_sends_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_templates: {
+        Row: {
+          category: string | null
+          clinic_id: string
+          content: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          subject: string | null
+          template_type: string
+          updated_at: string
+          variables: Json | null
+        }
+        Insert: {
+          category?: string | null
+          clinic_id: string
+          content: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          subject?: string | null
+          template_type: string
+          updated_at?: string
+          variables?: Json | null
+        }
+        Update: {
+          category?: string | null
+          clinic_id?: string
+          content?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          subject?: string | null
+          template_type?: string
+          updated_at?: string
+          variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_templates_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_triggers: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          delay_days: number | null
+          delay_hours: number | null
+          id: string
+          is_active: boolean
+          trigger_condition: Json
+          trigger_type: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          delay_days?: number | null
+          delay_hours?: number | null
+          id?: string
+          is_active?: boolean
+          trigger_condition: Json
+          trigger_type: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          delay_days?: number | null
+          delay_hours?: number | null
+          id?: string
+          is_active?: boolean
+          trigger_condition?: Json
+          trigger_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_triggers_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campanha_envios: {
         Row: {
           aberto_em: string | null
@@ -3497,6 +3733,80 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: []
+      }
+      marketing_campaigns: {
+        Row: {
+          campaign_type: string
+          channel: string
+          clinic_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string | null
+          id: string
+          last_sent_at: string | null
+          metadata: Json | null
+          name: string
+          schedule_config: Json | null
+          send_immediately: boolean | null
+          start_date: string | null
+          status: string
+          target_audience: Json | null
+          template_id: string | null
+          trigger_config: Json | null
+          updated_at: string
+        }
+        Insert: {
+          campaign_type: string
+          channel: string
+          clinic_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          last_sent_at?: string | null
+          metadata?: Json | null
+          name: string
+          schedule_config?: Json | null
+          send_immediately?: boolean | null
+          start_date?: string | null
+          status?: string
+          target_audience?: Json | null
+          template_id?: string | null
+          trigger_config?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          campaign_type?: string
+          channel?: string
+          clinic_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          last_sent_at?: string | null
+          metadata?: Json | null
+          name?: string
+          schedule_config?: Json | null
+          send_immediately?: boolean | null
+          start_date?: string | null
+          status?: string
+          target_audience?: Json | null
+          template_id?: string | null
+          trigger_config?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_campaigns_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       module_catalog: {
         Row: {
