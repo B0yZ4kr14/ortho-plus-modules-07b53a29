@@ -3,7 +3,7 @@
 ## 📊 Progresso Geral
 
 ```
-[▓▓▓▓▓░░░░░] 50% - Domain Layer Completa | Application Layer Iniciando
+[▓▓▓▓▓▓▓░░░] 75% - Application Layer Completa | Infrastructure Iniciando
 ```
 
 ---
@@ -117,23 +117,20 @@ Refatorar o módulo **FINANCEIRO** seguindo o "Golden Pattern" estabelecido nos 
 
 ---
 
-### 2. Application Layer (0%)
+### 2. Application Layer ✅ (100%)
 
 #### Use Cases
-- [ ] `CreateContaPagarUseCase` - Criar conta a pagar
-- [ ] `UpdateContaPagarUseCase` - Atualizar conta a pagar
-- [ ] `PagarContaUseCase` - Registrar pagamento
-- [ ] `ListContasPagarUseCase` - Listar contas a pagar
-- [ ] `CreateContaReceberUseCase` - Criar conta a receber
-- [ ] `UpdateContaReceberUseCase` - Atualizar conta a receber
-- [ ] `ReceberContaUseCase` - Registrar recebimento
-- [ ] `ListContasReceberUseCase` - Listar contas a receber
-- [ ] `AbrirCaixaUseCase` - Abrir caixa
-- [ ] `FecharCaixaUseCase` - Fechar caixa
-- [ ] `RegistrarSangriaUseCase` - Registrar sangria
-- [ ] `ListMovimentosCaixaUseCase` - Listar movimentos
-- [ ] `RegistrarIncidenteCaixaUseCase` - Registrar incidente
-- [ ] `GetFluxoCaixaUseCase` - Obter fluxo de caixa (dashboard)
+- ✅ `CreateContaPagarUseCase` - Criar conta a pagar
+- ✅ `PagarContaUseCase` - Registrar pagamento (total/parcial)
+- ✅ `ListContasPagarUseCase` - Listar contas a pagar (com filtros)
+- ✅ `CreateContaReceberUseCase` - Criar conta a receber
+- ✅ `ReceberContaUseCase` - Registrar recebimento (total/parcial)
+- ✅ `ListContasReceberUseCase` - Listar contas a receber (com filtros)
+- ✅ `AbrirCaixaUseCase` - Abrir caixa
+- ✅ `FecharCaixaUseCase` - Fechar caixa (com cálculo de diferença)
+- ✅ `RegistrarSangriaUseCase` - Registrar sangria
+- ✅ `RegistrarIncidenteCaixaUseCase` - Registrar incidente
+- ✅ `GetFluxoCaixaUseCase` - Obter fluxo de caixa (dashboard)
 
 ---
 
