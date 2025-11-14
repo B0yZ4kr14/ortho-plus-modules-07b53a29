@@ -11,8 +11,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useTratamentos } from '@/modules/pep/hooks/useTratamentos';
+import { useAuth } from '@/contexts/AuthContext';
 
 const tratamentoSchema = z.object({
   titulo: z.string().min(3, 'Título deve ter no mínimo 3 caracteres').max(200, 'Título muito longo'),
@@ -34,6 +35,9 @@ interface TratamentoFormProps {
 }
 
 export function TratamentoForm({ prontuarioId, onSuccess, onCancel }: TratamentoFormProps) {
+  const { user, clinicId } = useAuth();
+  const { createTratamento } = useTratamentos(prontuarioId, clinicId || '');
+  
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<TratamentoFormData>({
     resolver: zodResolver(tratamentoSchema),
     defaultValues: {
@@ -46,14 +50,22 @@ export function TratamentoForm({ prontuarioId, onSuccess, onCancel }: Tratamento
   const dataConclusao = watch('data_conclusao');
 
   const onSubmit = async (data: TratamentoFormData) => {
+    if (!user) return;
+
     try {
-      // Aqui você faria a chamada para salvar no Supabase
-      console.log('Salvando tratamento:', { ...data, prontuarioId });
-      toast.success('Tratamento registrado com sucesso!');
+      await createTratamento({
+        titulo: data.titulo,
+        descricao: data.descricao,
+        denteCodigo: data.dente_codigo,
+        valorEstimado: data.valor_estimado ? parseFloat(data.valor_estimado) : undefined,
+        dataInicio: data.data_inicio,
+        createdBy: user.id,
+      });
+      
       onSuccess();
     } catch (error) {
       console.error('Erro ao salvar tratamento:', error);
-      toast.error('Erro ao salvar tratamento');
+      // Toast já exibido pelo hook
     }
   };
 

@@ -75,11 +75,14 @@
 
 ## 🎯 Próximos Passos (FASE 3)
 
-1. **Refatorar Componentes React** (2-3h) 🔄 EM ANDAMENTO
+1. **Refatorar Componentes React** (2-3h) 🔄 EM ANDAMENTO (33% COMPLETO)
    - ✅ PEP.tsx refatorado para usar hooks customizados
-   - 🔄 TratamentoForm.tsx (próximo)
-   - 🔄 EvolucoesTimeline.tsx
-   - 🔄 AnexosUpload.tsx
+   - ✅ TratamentoForm.tsx refatorado
+   - ✅ EvolucoesTimeline.tsx refatorado  
+   - ✅ AnexosUpload.tsx refatorado
+   - 🔄 HistoricoClinicoForm.tsx (próximo)
+   - 🔄 PrescricaoForm.tsx
+   - 🔄 ReceitaForm.tsx
 
 2. **Testes E2E** (2h)
    - Testar fluxo completo de tratamentos
@@ -110,11 +113,14 @@
 - **Use Cases:** 5/5 (100%) ✅
 - **DI Container:** 9/9 registros (100%) ✅
 - **Hooks Customizados:** 3/3 (100%) ✅
-- **Componentes Refatorados:** 1/12 (8%) 🔄
+- **Componentes Refatorados:** 4/12 (33%) 🔄
   - ✅ PEP.tsx (página principal)
-  - 🔄 TratamentoForm.tsx (próximo)
-  - 🔄 EvolucoesTimeline.tsx
-  - 🔄 AnexosUpload.tsx
+  - ✅ TratamentoForm.tsx
+  - ✅ EvolucoesTimeline.tsx
+  - ✅ AnexosUpload.tsx
+  - 🔄 HistoricoClinicoForm.tsx (próximo)
+  - 🔄 PrescricaoForm.tsx
+  - 🔄 ReceitaForm.tsx
 
 ---
 
@@ -169,5 +175,5 @@ src/
 
 ---
 
-**Última Atualização:** 2025-11-14 21:00  
-**Próximo Marco:** ✅ FASE 2 COMPLETA - Iniciar FASE 3 (Refatoração de Componentes)
+**Última Atualização:** 2025-11-14 21:20  
+**Próximo Marco:** ✅ FASE 2 COMPLETA + 4 COMPONENTES REFATORADOS - Iniciar FASE 3 (Componentes Secundários)

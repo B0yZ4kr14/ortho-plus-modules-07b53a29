@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useEvolucoes } from '@/modules/pep/hooks/useEvolucoes';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Evolucao {
   id: string;
@@ -22,41 +23,26 @@ interface EvolucoesTimelineProps {
 }
 
 export function EvolucoesTimeline({ prontuarioId }: EvolucoesTimelineProps) {
-  const [evolucoes, setEvolucoes] = useState<Evolucao[]>([]);
+  const { clinicId } = useAuth();
+  const { evolucoes: evolucoesData, isLoading } = useEvolucoes(prontuarioId, clinicId || '');
+  
   const [filteredEvolucoes, setFilteredEvolucoes] = useState<Evolucao[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTipo, setFilterTipo] = useState<string>('TODOS');
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchEvolucoes();
-  }, [prontuarioId]);
+  // Converter entidades de domínio para o formato do componente
+  const evolucoes = evolucoesData.map(e => ({
+    id: e.id,
+    data_evolucao: e.data.toISOString(),
+    tipo: 'PROCEDIMENTO',
+    descricao: e.descricao,
+    created_by: e.createdBy,
+    tratamento_id: e.tratamentoId,
+  }));
 
   useEffect(() => {
     filterEvolucoes();
   }, [evolucoes, searchTerm, filterTipo]);
-
-  const fetchEvolucoes = async () => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('pep_evolucoes')
-        .select(`
-          *,
-          pep_tratamentos!inner(prontuario_id)
-        `)
-        .eq('pep_tratamentos.prontuario_id', prontuarioId)
-        .order('data_evolucao', { ascending: false });
-
-      if (error) throw error;
-
-      setEvolucoes((data as any) || []);
-    } catch (error) {
-      console.error('Erro ao buscar evoluções:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const filterEvolucoes = () => {
     let filtered = [...evolucoes];

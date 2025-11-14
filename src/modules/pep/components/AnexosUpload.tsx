@@ -1,10 +1,12 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Upload, File, X, Eye, Download, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { useAnexos } from '@/modules/pep/hooks/useAnexos';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AnexoFile {
@@ -24,67 +26,42 @@ interface AnexosUploadProps {
 }
 
 export function AnexosUpload({ prontuarioId, historicoId, onUploadSuccess }: AnexosUploadProps) {
-  const [anexos, setAnexos] = useState<AnexoFile[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
+  const { user, clinicId } = useAuth();
+  const { anexos: anexosData, isUploading, uploadAnexo, deleteAnexo } = useAnexos(prontuarioId, clinicId || '');
   const [previewFile, setPreviewFile] = useState<AnexoFile | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Converter entidades de domínio para o formato do componente
+  const anexos = anexosData.map(a => ({
+    id: a.id,
+    nome_arquivo: a.nomeArquivo,
+    mime_type: a.mimeType,
+    tamanho_bytes: a.tamanhoBytes,
+    caminho_storage: a.storagePath,
+    tipo_arquivo: a.tipo as 'IMAGEM' | 'PDF' | 'DOCUMENTO' | 'OUTRO',
+    created_at: a.createdAt.toISOString(),
+  }));
+
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files || files.length === 0) return;
-
-    setIsUploading(true);
+    if (!files || files.length === 0 || !user) return;
 
     try {
       for (const file of Array.from(files)) {
-        // Validar tamanho (máximo 10MB)
-        if (file.size > 10 * 1024 * 1024) {
-          toast.error(`Arquivo ${file.name} é muito grande (máximo 10MB)`);
-          continue;
-        }
-
         // Determinar tipo de arquivo
-        let tipoArquivo: 'IMAGEM' | 'PDF' | 'DOCUMENTO' | 'OUTRO' = 'OUTRO';
+        let tipoArquivo: 'IMAGEM' | 'DOCUMENTO' | 'RAIO_X' | 'LAUDO' | 'EXAME' | 'RECEITA' | 'ATESTADO' | 'OUTRO' = 'OUTRO';
         if (file.type.startsWith('image/')) tipoArquivo = 'IMAGEM';
-        else if (file.type === 'application/pdf') tipoArquivo = 'PDF';
+        else if (file.type === 'application/pdf') tipoArquivo = 'DOCUMENTO';
         else if (file.type.includes('document') || file.type.includes('text')) tipoArquivo = 'DOCUMENTO';
 
-        // Upload para o storage
-        const fileName = `${prontuarioId}/${Date.now()}-${file.name}`;
-        const { error: uploadError } = await supabase.storage
-          .from('pep-anexos')
-          .upload(fileName, file);
-
-        if (uploadError) throw uploadError;
-
-        // Salvar metadados no banco
-        const { data: anexoData, error: dbError } = await supabase
-          .from('pep_anexos')
-          .insert({
-            prontuario_id: prontuarioId,
-            historico_id: historicoId,
-            nome_arquivo: file.name,
-            mime_type: file.type,
-            tamanho_bytes: file.size,
-            caminho_storage: fileName,
-            tipo_arquivo: tipoArquivo,
-            uploaded_by: (await supabase.auth.getUser()).data.user?.id
-          })
-          .select()
-          .single();
-
-        if (dbError) throw dbError;
-
-        setAnexos(prev => [...prev, anexoData as AnexoFile]);
-        toast.success(`Arquivo ${file.name} enviado com sucesso!`);
+        await uploadAnexo(file, tipoArquivo, undefined, user.id, historicoId);
       }
 
       onUploadSuccess?.();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro ao fazer upload:', error);
-      toast.error('Erro ao enviar arquivo(s)', { description: error.message });
+      // Toast já exibido pelo hook
     } finally {
-      setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -121,23 +98,15 @@ export function AnexosUpload({ prontuarioId, historicoId, onUploadSuccess }: Ane
     }
   };
 
-  const handleDelete = async (anexoId: string) => {
+  const handleDelete = async (anexoId: string, caminhoStorage: string) => {
     const confirmed = window.confirm('Tem certeza que deseja excluir este anexo?');
     if (!confirmed) return;
 
     try {
-      const { error } = await supabase
-        .from('pep_anexos')
-        .delete()
-        .eq('id', anexoId);
-
-      if (error) throw error;
-
-      setAnexos(prev => prev.filter(a => a.id !== anexoId));
-      toast.success('Anexo excluído com sucesso!');
+      await deleteAnexo(anexoId, caminhoStorage);
     } catch (error: any) {
       console.error('Erro ao excluir anexo:', error);
-      toast.error('Erro ao excluir anexo', { description: error.message });
+      // Toast já exibido pelo hook
     }
   };
 
@@ -239,7 +208,7 @@ export function AnexosUpload({ prontuarioId, historicoId, onUploadSuccess }: Ane
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleDelete(anexo.id)}
+                      onClick={() => handleDelete(anexo.id, anexo.caminho_storage)}
                     >
                       <X className="h-4 w-4" />
                     </Button>
