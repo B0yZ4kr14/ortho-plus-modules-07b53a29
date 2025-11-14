@@ -48,6 +48,15 @@ import { CancelAgendamentoUseCase } from '@/application/use-cases/agenda/CancelA
 import { SendConfirmacaoWhatsAppUseCase } from '@/application/use-cases/agenda/SendConfirmacaoWhatsAppUseCase';
 import { GetAgendamentosByDateRangeUseCase } from '@/application/use-cases/agenda/GetAgendamentosByDateRangeUseCase';
 
+// Orcamentos Module
+import { SupabaseOrcamentoRepository } from '@/infrastructure/repositories/SupabaseOrcamentoRepository';
+import { SupabaseItemOrcamentoRepository } from '@/infrastructure/repositories/SupabaseItemOrcamentoRepository';
+import { CreateOrcamentoUseCase } from '@/application/use-cases/orcamentos/CreateOrcamentoUseCase';
+import { UpdateOrcamentoUseCase } from '@/application/use-cases/orcamentos/UpdateOrcamentoUseCase';
+import { AprovarOrcamentoUseCase } from '@/application/use-cases/orcamentos/AprovarOrcamentoUseCase';
+import { RejeitarOrcamentoUseCase } from '@/application/use-cases/orcamentos/RejeitarOrcamentoUseCase';
+import { AddItemOrcamentoUseCase } from '@/application/use-cases/orcamentos/AddItemOrcamentoUseCase';
+
 /**
  * Inicializa o DI Container com todas as dependências
  */
@@ -263,6 +272,61 @@ export function bootstrapContainer(): void {
     SERVICE_KEYS.GET_AGENDAMENTOS_BY_DATE_RANGE_USE_CASE,
     () => new GetAgendamentosByDateRangeUseCase(
       container.resolve(SERVICE_KEYS.AGENDAMENTO_REPOSITORY)
+    ),
+    true
+  );
+
+  // Registrar Repositories - Orçamentos
+  container.register(
+    SERVICE_KEYS.ORCAMENTO_REPOSITORY,
+    () => new SupabaseOrcamentoRepository(),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.ITEM_ORCAMENTO_REPOSITORY,
+    () => new SupabaseItemOrcamentoRepository(),
+    true
+  );
+
+  // Registrar Use Cases - Orçamentos
+  container.register(
+    SERVICE_KEYS.CREATE_ORCAMENTO_USE_CASE,
+    () => new CreateOrcamentoUseCase(
+      container.resolve(SERVICE_KEYS.ORCAMENTO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.UPDATE_ORCAMENTO_USE_CASE,
+    () => new UpdateOrcamentoUseCase(
+      container.resolve(SERVICE_KEYS.ORCAMENTO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.APROVAR_ORCAMENTO_USE_CASE,
+    () => new AprovarOrcamentoUseCase(
+      container.resolve(SERVICE_KEYS.ORCAMENTO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.REJEITAR_ORCAMENTO_USE_CASE,
+    () => new RejeitarOrcamentoUseCase(
+      container.resolve(SERVICE_KEYS.ORCAMENTO_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.ADD_ITEM_ORCAMENTO_USE_CASE,
+    () => new AddItemOrcamentoUseCase(
+      container.resolve(SERVICE_KEYS.ORCAMENTO_REPOSITORY),
+      container.resolve(SERVICE_KEYS.ITEM_ORCAMENTO_REPOSITORY)
     ),
     true
   );

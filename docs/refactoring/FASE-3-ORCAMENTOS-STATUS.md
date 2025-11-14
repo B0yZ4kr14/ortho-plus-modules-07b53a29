@@ -12,10 +12,10 @@
 ```
 Domain Layer:        ██████████ 100% (2/2) ✅
 Application Layer:   ██████████ 100% (5/5) ✅
-Infrastructure Layer: ░░░░░░░░░░  0% (0/4)
+Infrastructure Layer: ██████████ 100% (4/4) ✅
 Presentation Layer:  ░░░░░░░░░░  0% (0/2)
 
-Total: ██████████░░░░░░░░░░ 50%
+Total: ███████████████░░░░░ 75%
 ```
 
 ---
@@ -88,20 +88,37 @@ Total: ██████████░░░░░░░░░░ 50%
 
 ---
 
-## 🔄 Infrastructure Layer (0%)
+## ✅ Infrastructure Layer (100% - 4/4)
 
-### Repositories a Implementar
-- [ ] SupabaseOrcamentoRepository
-- [ ] SupabaseItemOrcamentoRepository
+### Repositories Implementados
+- ✅ **SupabaseOrcamentoRepository**
+  - Implementa IOrcamentoRepository
+  - CRUD completo de orçamentos
+  - Queries otimizadas (findByStatus, findPendentes, findExpirados)
+  - Suporte a múltiplos filtros
 
-### Mappers a Implementar
-- [ ] OrcamentoMapper
-- [ ] ItemOrcamentoMapper
+- ✅ **SupabaseItemOrcamentoRepository**
+  - Implementa IItemOrcamentoRepository
+  - CRUD completo de itens
+  - Busca ordenada por ordem
+  - Deleção em lote por orçamento
+
+### Mappers Implementados
+- ✅ **OrcamentoMapper**
+  - Conversão bidirecional Entity <-> Supabase
+  - Mapeamento de status (RASCUNHO, PENDENTE, etc.)
+  - Mapeamento de tipos de pagamento
+  - Conversão de datas
+
+- ✅ **ItemOrcamentoMapper**
+  - Conversão bidirecional Entity <-> Supabase
+  - Preservação de campos opcionais
+  - Conversão de IDs e relacionamentos
 
 ### DI Container
-- [ ] Registrar repositories
-- [ ] Registrar use cases
-- [ ] Atualizar ServiceKeys
+- ✅ Repositories registrados no container
+- ✅ Use cases registrados com dependências
+- ✅ ServiceKeys atualizados
 
 ---
 
@@ -117,12 +134,12 @@ Total: ██████████░░░░░░░░░░ 50%
 
 1. ✅ Criar entidades Orcamento e ItemOrcamento + interfaces
 2. ✅ Implementar Use Cases
-3. 🔄 Implementar Repositories Supabase (PRÓXIMO)
-4. Implementar Mappers
-5. Criar Hooks customizados
+3. ✅ Implementar Repositories Supabase
+4. ✅ Implementar Mappers
+5. 🔄 Criar Hooks customizados (PRÓXIMO)
 6. Refatorar componentes (opcional)
 
 ---
 
-**Última Atualização:** 2025-11-14 23:15  
-**Status:** 🟡 50% COMPLETO - Domain + Application Layers ✅
+**Última Atualização:** 2025-11-14 23:20  
+**Status:** 🟢 75% COMPLETO - Domain + Application + Infrastructure Layers ✅
