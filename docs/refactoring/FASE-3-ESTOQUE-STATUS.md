@@ -3,7 +3,7 @@
 ## 📊 Progresso Geral
 
 ```
-[▓▓▓▓▓░░░░░] 50% - Camada de Aplicação (Em Progresso)
+[▓▓▓▓▓▓▓▓░░] 75% - Camada de Infraestrutura (Em Progresso)
 ```
 
 ---
@@ -70,18 +70,38 @@ Refatorar o módulo **ESTOQUE** seguindo o "Golden Pattern" estabelecido nos mó
 
 ---
 
-### 2. Application Layer (0%)
+### 2. Application Layer ✅ (100%)
 
 #### Use Cases
-- [ ] `CreateProdutoUseCase` - Criar novo produto
-- [ ] `UpdateProdutoUseCase` - Atualizar produto existente
-- [ ] `GetProdutoByIdUseCase` - Buscar produto por ID
-- [ ] `ListProdutosByClinicUseCase` - Listar produtos da clínica
-- [ ] `RegistrarEntradaUseCase` - Registrar entrada de estoque
-- [ ] `RegistrarSaidaUseCase` - Registrar saída de estoque
-- [ ] `AjustarEstoqueUseCase` - Ajustar estoque (correção)
-- [ ] `GetMovimentacoesByProdutoUseCase` - Buscar movimentações de um produto
-- [ ] `AlertarEstoqueBaixoUseCase` - Alertar produtos com estoque baixo
+- ✅ `CreateProdutoUseCase` - Criar novo produto
+  - Validação de código de barras único
+  - Validações de input e domínio
+- ✅ `UpdateProdutoUseCase` - Atualizar produto existente
+  - Validação de código de barras único (se alterado)
+  - Validações de input e domínio
+- ✅ `GetProdutoByIdUseCase` - Buscar produto por ID
+  - Validações de input
+- ✅ `ListProdutosByClinicUseCase` - Listar produtos da clínica
+  - Opção de filtrar apenas ativos
+  - Validações de input
+- ✅ `RegistrarEntradaUseCase` - Registrar entrada de estoque
+  - Cria movimentação ENTRADA
+  - Atualiza quantidade do produto
+  - Validação de produto ativo
+  - Usa valor unitário fornecido ou do produto
+- ✅ `RegistrarSaidaUseCase` - Registrar saída de estoque
+  - Cria movimentação SAIDA
+  - Atualiza quantidade do produto
+  - Validação de estoque disponível
+  - Validação de produto ativo
+- ✅ `AjustarEstoqueUseCase` - Ajustar estoque (correção)
+  - Cria movimentação AJUSTE
+  - Atualiza quantidade do produto
+  - Motivo obrigatório (auditoria)
+  - Validação de produto ativo
+- ✅ `GetMovimentacoesByProdutoUseCase` - Buscar movimentações de um produto
+  - Opção de filtrar por período
+  - Validação de datas
 
 ---
 
