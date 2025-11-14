@@ -5,7 +5,7 @@ import { SERVICE_KEYS } from '@/infrastructure/di/ServiceKeys';
 import type { GetFluxoCaixaUseCase, FluxoCaixaData } from '@/application/use-cases/financeiro';
 
 export function useFluxoCaixa() {
-  const { user } = useAuth();
+  const { clinicId, isPatient } = useAuth();
   const [fluxoCaixa, setFluxoCaixa] = useState<FluxoCaixaData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -17,22 +17,24 @@ export function useFluxoCaixa() {
 
   const loadFluxoCaixa = useCallback(
     async (dataInicio?: Date, dataFim?: Date) => {
-      if (!user || user.role === 'PATIENT' || !('clinicId' in user)) return;
+      if (!clinicId || isPatient) return;
 
       try {
         setLoading(true);
         setError(null);
         const result = await getFluxoCaixaUseCase.execute({
-          clinicId: user.clinicId,
+          clinicId,
+          startDate: dataInicio,
+          endDate: dataFim,
         });
-        setFluxoCaixa(result);
+        setFluxoCaixa(result.data);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Erro ao carregar fluxo de caixa'));
       } finally {
         setLoading(false);
       }
     },
-    [user, getFluxoCaixaUseCase]
+    [clinicId, isPatient, getFluxoCaixaUseCase]
   );
 
   useEffect(() => {

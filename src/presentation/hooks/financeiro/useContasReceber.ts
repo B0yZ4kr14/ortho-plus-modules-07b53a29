@@ -17,7 +17,7 @@ export interface ContasReceberFilters {
 }
 
 export function useContasReceber() {
-  const { user } = useAuth();
+  const { clinicId, isPatient } = useAuth();
   const [contas, setContas] = useState<ContaReceber[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -35,13 +35,13 @@ export function useContasReceber() {
 
   const loadContas = useCallback(
     async (filters?: ContasReceberFilters) => {
-      if (!user || user.role === 'PATIENT' || !('clinicId' in user)) return;
+      if (!clinicId || isPatient) return;
 
       try {
         setLoading(true);
         setError(null);
         const result = await listContasReceberUseCase.execute({
-          clinicId: user.clinicId,
+          clinicId,
           ...filters,
         });
         setContas(result.contas);
@@ -51,7 +51,7 @@ export function useContasReceber() {
         setLoading(false);
       }
     },
-    [user, listContasReceberUseCase]
+    [clinicId, isPatient, listContasReceberUseCase]
   );
 
   useEffect(() => {
@@ -68,21 +68,21 @@ export function useContasReceber() {
       parcelaNumero?: number;
       parcelaTotal?: number;
       observacoes?: string;
-    }) => {
-      if (!user || user.role === 'PATIENT' || !('clinicId' in user)) {
+    }, userId: string) => {
+      if (!clinicId || isPatient) {
         throw new Error('Usuário não autenticado');
       }
 
       await createContaReceberUseCase.execute({
         ...data,
-        clinicId: user.clinicId,
-        createdBy: user.id,
+        clinicId,
+        createdBy: userId,
         dataEmissao: data.dataEmissao || new Date(),
       });
 
       await loadContas();
     },
-    [user, createContaReceberUseCase, loadContas]
+    [clinicId, isPatient, createContaReceberUseCase, loadContas]
   );
 
   const receberConta = useCallback(
