@@ -115,7 +115,7 @@ export default function Usuarios() {
     mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
       const { error } = await supabase
         .from('profiles')
-        .update({ is_active: !isActive })
+        .update({ is_active: !isActive } as any) // Type will be regenerated after migration
         .eq('id', userId);
       
       if (error) throw error;

@@ -14,7 +14,7 @@ export function useModules() {
       setLoading(true);
       setError(null);
       
-      const { data, error: invokeError } = await supabase.functions.invoke('getMyModules');
+      const { data, error: invokeError } = await supabase.functions.invoke('get-my-modules');
 
       if (invokeError) {
         throw new Error(invokeError.message || 'Erro ao carregar módulos');
@@ -45,7 +45,7 @@ export function useModules() {
 
   const toggleModule = useCallback(async (moduleKey: string) => {
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('toggleModuleState', {
+      const { data, error: invokeError } = await supabase.functions.invoke('toggle-module-state', {
         body: { module_key: moduleKey },
       });
 
@@ -78,7 +78,7 @@ export function useModules() {
 
   const requestModule = useCallback(async (moduleKey: string) => {
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('requestNewModule', {
+      const { data, error: invokeError } = await supabase.functions.invoke('request-new-module', {
         body: { module_key: moduleKey },
       });
 
