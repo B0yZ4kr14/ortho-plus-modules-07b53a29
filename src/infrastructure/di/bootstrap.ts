@@ -76,6 +76,23 @@ import { RegistrarSaidaUseCase } from '@/application/use-cases/estoque/Registrar
 import { AjustarEstoqueUseCase } from '@/application/use-cases/estoque/AjustarEstoqueUseCase';
 import { GetMovimentacoesByProdutoUseCase } from '@/application/use-cases/estoque/GetMovimentacoesByProdutoUseCase';
 
+// Financeiro Module
+import { SupabaseContaPagarRepository } from '@/infrastructure/repositories/SupabaseContaPagarRepository';
+import { SupabaseContaReceberRepository } from '@/infrastructure/repositories/SupabaseContaReceberRepository';
+import { SupabaseMovimentoCaixaRepository } from '@/infrastructure/repositories/SupabaseMovimentoCaixaRepository';
+import { SupabaseIncidenteCaixaRepository } from '@/infrastructure/repositories/SupabaseIncidenteCaixaRepository';
+import { CreateContaPagarUseCase } from '@/application/use-cases/financeiro/CreateContaPagarUseCase';
+import { PagarContaUseCase } from '@/application/use-cases/financeiro/PagarContaUseCase';
+import { ListContasPagarUseCase } from '@/application/use-cases/financeiro/ListContasPagarUseCase';
+import { CreateContaReceberUseCase } from '@/application/use-cases/financeiro/CreateContaReceberUseCase';
+import { ReceberContaUseCase } from '@/application/use-cases/financeiro/ReceberContaUseCase';
+import { ListContasReceberUseCase } from '@/application/use-cases/financeiro/ListContasReceberUseCase';
+import { AbrirCaixaUseCase } from '@/application/use-cases/financeiro/AbrirCaixaUseCase';
+import { FecharCaixaUseCase } from '@/application/use-cases/financeiro/FecharCaixaUseCase';
+import { RegistrarSangriaUseCase } from '@/application/use-cases/financeiro/RegistrarSangriaUseCase';
+import { RegistrarIncidenteCaixaUseCase } from '@/application/use-cases/financeiro/RegistrarIncidenteCaixaUseCase';
+import { GetFluxoCaixaUseCase } from '@/application/use-cases/financeiro/GetFluxoCaixaUseCase';
+
 /**
  * Inicializa o DI Container com todas as dependências
  */
@@ -467,6 +484,127 @@ export function bootstrapContainer(): void {
     SERVICE_KEYS.GET_MOVIMENTACOES_BY_PRODUTO_USE_CASE,
     () => new GetMovimentacoesByProdutoUseCase(
       container.resolve(SERVICE_KEYS.MOVIMENTACAO_ESTOQUE_REPOSITORY)
+    ),
+    true
+  );
+
+  // ===== Financeiro Module =====
+  // Repositories
+  container.register(
+    SERVICE_KEYS.CONTA_PAGAR_REPOSITORY,
+    () => new SupabaseContaPagarRepository(),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.CONTA_RECEBER_REPOSITORY,
+    () => new SupabaseContaReceberRepository(),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.MOVIMENTO_CAIXA_REPOSITORY,
+    () => new SupabaseMovimentoCaixaRepository(),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.INCIDENTE_CAIXA_REPOSITORY,
+    () => new SupabaseIncidenteCaixaRepository(),
+    true
+  );
+
+  // Use Cases - Contas a Pagar
+  container.register(
+    SERVICE_KEYS.CREATE_CONTA_PAGAR_USE_CASE,
+    () => new CreateContaPagarUseCase(
+      container.resolve(SERVICE_KEYS.CONTA_PAGAR_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.PAGAR_CONTA_USE_CASE,
+    () => new PagarContaUseCase(
+      container.resolve(SERVICE_KEYS.CONTA_PAGAR_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.LIST_CONTAS_PAGAR_USE_CASE,
+    () => new ListContasPagarUseCase(
+      container.resolve(SERVICE_KEYS.CONTA_PAGAR_REPOSITORY)
+    ),
+    true
+  );
+
+  // Use Cases - Contas a Receber
+  container.register(
+    SERVICE_KEYS.CREATE_CONTA_RECEBER_USE_CASE,
+    () => new CreateContaReceberUseCase(
+      container.resolve(SERVICE_KEYS.CONTA_RECEBER_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.RECEBER_CONTA_USE_CASE,
+    () => new ReceberContaUseCase(
+      container.resolve(SERVICE_KEYS.CONTA_RECEBER_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.LIST_CONTAS_RECEBER_USE_CASE,
+    () => new ListContasReceberUseCase(
+      container.resolve(SERVICE_KEYS.CONTA_RECEBER_REPOSITORY)
+    ),
+    true
+  );
+
+  // Use Cases - Caixa
+  container.register(
+    SERVICE_KEYS.ABRIR_CAIXA_USE_CASE,
+    () => new AbrirCaixaUseCase(
+      container.resolve(SERVICE_KEYS.MOVIMENTO_CAIXA_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.FECHAR_CAIXA_USE_CASE,
+    () => new FecharCaixaUseCase(
+      container.resolve(SERVICE_KEYS.MOVIMENTO_CAIXA_REPOSITORY)
+    ),
+    true
+  );
+
+  container.register(
+    SERVICE_KEYS.REGISTRAR_SANGRIA_USE_CASE,
+    () => new RegistrarSangriaUseCase(
+      container.resolve(SERVICE_KEYS.MOVIMENTO_CAIXA_REPOSITORY)
+    ),
+    true
+  );
+
+  // Use Cases - Incidentes
+  container.register(
+    SERVICE_KEYS.REGISTRAR_INCIDENTE_CAIXA_USE_CASE,
+    () => new RegistrarIncidenteCaixaUseCase(
+      container.resolve(SERVICE_KEYS.INCIDENTE_CAIXA_REPOSITORY)
+    ),
+    true
+  );
+
+  // Use Cases - Dashboard
+  container.register(
+    SERVICE_KEYS.GET_FLUXO_CAIXA_USE_CASE,
+    () => new GetFluxoCaixaUseCase(
+      container.resolve(SERVICE_KEYS.CONTA_PAGAR_REPOSITORY),
+      container.resolve(SERVICE_KEYS.CONTA_RECEBER_REPOSITORY),
+      container.resolve(SERVICE_KEYS.MOVIMENTO_CAIXA_REPOSITORY)
     ),
     true
   );

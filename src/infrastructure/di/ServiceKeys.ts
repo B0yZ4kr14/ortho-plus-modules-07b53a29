@@ -80,6 +80,25 @@ export const SERVICE_KEYS = {
   REGISTRAR_SAIDA_USE_CASE: 'RegistrarSaidaUseCase',
   AJUSTAR_ESTOQUE_USE_CASE: 'AjustarEstoqueUseCase',
   GET_MOVIMENTACOES_BY_PRODUTO_USE_CASE: 'GetMovimentacoesByProdutoUseCase',
+
+  // Repositories - Financeiro
+  CONTA_PAGAR_REPOSITORY: 'IContaPagarRepository',
+  CONTA_RECEBER_REPOSITORY: 'IContaReceberRepository',
+  MOVIMENTO_CAIXA_REPOSITORY: 'IMovimentoCaixaRepository',
+  INCIDENTE_CAIXA_REPOSITORY: 'IIncidenteCaixaRepository',
+
+  // Use Cases - Financeiro
+  CREATE_CONTA_PAGAR_USE_CASE: 'CreateContaPagarUseCase',
+  PAGAR_CONTA_USE_CASE: 'PagarContaUseCase',
+  LIST_CONTAS_PAGAR_USE_CASE: 'ListContasPagarUseCase',
+  CREATE_CONTA_RECEBER_USE_CASE: 'CreateContaReceberUseCase',
+  RECEBER_CONTA_USE_CASE: 'ReceberContaUseCase',
+  LIST_CONTAS_RECEBER_USE_CASE: 'ListContasReceberUseCase',
+  ABRIR_CAIXA_USE_CASE: 'AbrirCaixaUseCase',
+  FECHAR_CAIXA_USE_CASE: 'FecharCaixaUseCase',
+  REGISTRAR_SANGRIA_USE_CASE: 'RegistrarSangriaUseCase',
+  REGISTRAR_INCIDENTE_CAIXA_USE_CASE: 'RegistrarIncidenteCaixaUseCase',
+  GET_FLUXO_CAIXA_USE_CASE: 'GetFluxoCaixaUseCase',
 } as const;
 
 export type ServiceKey = typeof SERVICE_KEYS[keyof typeof SERVICE_KEYS];
