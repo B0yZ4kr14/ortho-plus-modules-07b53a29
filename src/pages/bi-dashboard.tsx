@@ -3,8 +3,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, TrendingUp, Users, DollarSign } from "lucide-react";
 import { BIMetrics } from "@/modules/bi/presentation/components/BIMetrics";
 import { BICharts } from "@/modules/bi/presentation/components/BICharts";
+import { useBIDashboards } from "@/modules/bi/application/hooks/useBIDashboards";
 
 export default function BIDashboardPage() {
+  const { dashboards, metrics, isLoading } = useBIDashboards();
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">

@@ -1655,6 +1655,63 @@ export type Database = {
           },
         ]
       }
+      campanhas_inadimplencia: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          data_envio: string | null
+          id: string
+          inadimplente_id: string | null
+          mensagem_enviada: string | null
+          resposta_recebida: boolean | null
+          status: string
+          tipo_campanha: string
+          updated_at: string
+          valor_recuperado: number | null
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          data_envio?: string | null
+          id?: string
+          inadimplente_id?: string | null
+          mensagem_enviada?: string | null
+          resposta_recebida?: boolean | null
+          status?: string
+          tipo_campanha: string
+          updated_at?: string
+          valor_recuperado?: number | null
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          data_envio?: string | null
+          id?: string
+          inadimplente_id?: string | null
+          mensagem_enviada?: string | null
+          resposta_recebida?: boolean | null
+          status?: string
+          tipo_campanha?: string
+          updated_at?: string
+          valor_recuperado?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campanhas_inadimplencia_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campanhas_inadimplencia_inadimplente_id_fkey"
+            columns: ["inadimplente_id"]
+            isOneToOne: false
+            referencedRelation: "inadimplentes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campanhas_marketing: {
         Row: {
           clinic_id: string
@@ -3242,6 +3299,62 @@ export type Database = {
             columns: ["prontuario_id"]
             isOneToOne: false
             referencedRelation: "prontuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inadimplentes: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          dias_atraso: number
+          email: string | null
+          id: string
+          nome_paciente: string
+          observacoes: string | null
+          patient_id: string
+          status: string
+          telefone: string | null
+          ultima_cobranca: string | null
+          updated_at: string
+          valor_total_devido: number
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          dias_atraso?: number
+          email?: string | null
+          id?: string
+          nome_paciente: string
+          observacoes?: string | null
+          patient_id: string
+          status?: string
+          telefone?: string | null
+          ultima_cobranca?: string | null
+          updated_at?: string
+          valor_total_devido?: number
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          dias_atraso?: number
+          email?: string | null
+          id?: string
+          nome_paciente?: string
+          observacoes?: string | null
+          patient_id?: string
+          status?: string
+          telefone?: string | null
+          ultima_cobranca?: string | null
+          updated_at?: string
+          valor_total_devido?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inadimplentes_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
             referencedColumns: ["id"]
           },
         ]
@@ -7705,6 +7818,7 @@ export type Database = {
           batch_number: string
           clinic_id: string
           created_at: string
+          guide_ids: string[] | null
           id: string
           insurance_company: string
           processed_at: string | null
@@ -7717,6 +7831,7 @@ export type Database = {
           batch_number: string
           clinic_id: string
           created_at?: string
+          guide_ids?: string[] | null
           id?: string
           insurance_company: string
           processed_at?: string | null
@@ -7729,6 +7844,7 @@ export type Database = {
           batch_number?: string
           clinic_id?: string
           created_at?: string
+          guide_ids?: string[] | null
           id?: string
           insurance_company?: string
           processed_at?: string | null

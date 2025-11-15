@@ -6,9 +6,11 @@ import { Split, Settings, History, TrendingUp } from "lucide-react";
 import { SplitConfigForm } from "@/modules/split/presentation/components/SplitConfigForm";
 import { SplitHistory } from "@/modules/split/presentation/components/SplitHistory";
 import { SplitDashboard } from "@/modules/split/presentation/components/SplitDashboard";
+import { useSplitConfig } from "@/modules/split/application/hooks/useSplitConfig";
 
 export default function SplitPagamentoPage() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const { config, transactions, isLoading } = useSplitConfig();
 
   return (
     <div className="container mx-auto p-6 space-y-6">

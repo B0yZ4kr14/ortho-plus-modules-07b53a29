@@ -5,9 +5,11 @@ import { FileText, Send, History, CheckCircle } from "lucide-react";
 import { TISSBatchList } from "@/modules/tiss/presentation/components/TISSBatchList";
 import { TISSGuideForm } from "@/modules/tiss/presentation/components/TISSGuideForm";
 import { TISSDashboard } from "@/modules/tiss/presentation/components/TISSDashboard";
+import { useTISSGuides } from "@/modules/tiss/application/hooks/useTISSGuides";
 
 export default function TISSPage() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const { guides, batches, isLoading } = useTISSGuides();
 
   return (
     <div className="container mx-auto p-6 space-y-6">
