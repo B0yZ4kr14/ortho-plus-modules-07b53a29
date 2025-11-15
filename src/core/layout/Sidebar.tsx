@@ -131,11 +131,11 @@ const MODULE_ROUTES: Record<string, string> = {
   CRYPTO: '/crypto-payment',
   CRM: '/crm-kanban',
   MARKETING_AUTO: '/marketing',
-  BI: '/business-intelligence',
+  BI: '/bi-dashboard',
   LGPD: '/lgpd',
   ASSINATURA_ICP: '/assinatura-digital',
   TISS: '/tiss',
-  TELEODONTO: '/teleodontologia',
+  TELEODONTO: '/teleodonto',
   FLUXO_DIGITAL: '/fluxo-digital',
   IA: '/radiografia',
 };

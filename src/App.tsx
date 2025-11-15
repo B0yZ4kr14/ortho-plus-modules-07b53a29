@@ -73,10 +73,12 @@ import CRMFunil from '@/pages/CRMFunil';
 import CRMPage from '@/pages/crm';
 import RadiografiaPage from '@/pages/radiografia';
 import CryptoPaymentPage from '@/pages/crypto-payment';
-import SplitPagamento from '@/pages/SplitPagamento';
-import Inadimplencia from '@/pages/Inadimplencia';
-import BI from '@/pages/BI';
-import LGPD from '@/pages/LGPD';
+import TeleodontoPage from '@/pages/teleodonto';
+import SplitPagamentoPage from '@/pages/split-pagamento';
+import InadimplenciaPage from '@/pages/inadimplencia';
+import BIDashboardPage from '@/pages/bi-dashboard';
+import LGPDPage from '@/pages/lgpd';
+import TISSPage from '@/pages/tiss';
 import MarketingAuto from '@/pages/MarketingAuto';
 import AssinaturaICP from '@/pages/AssinaturaICP';
 import { AgendaPage } from '@/modules/agenda/ui/pages/AgendaPage';
@@ -174,13 +176,15 @@ const App = () => (
                 <Route path="/crm-kanban" element={<ProtectedRoute><AppLayout><CRMPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/radiografia" element={<ProtectedRoute><AppLayout><RadiografiaPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/crypto-payment" element={<ProtectedRoute><AppLayout><CryptoPaymentPage /></AppLayout></ProtectedRoute>} />
-                <Route path="/bi" element={<ProtectedRoute><AppLayout><BI /></AppLayout></ProtectedRoute>} />
-                <Route path="/lgpd" element={<ProtectedRoute><AppLayout><LGPD /></AppLayout></ProtectedRoute>} />
+                <Route path="/teleodonto" element={<ProtectedRoute><AppLayout><TeleodontoPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/bi-dashboard" element={<ProtectedRoute><AppLayout><BIDashboardPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/lgpd" element={<ProtectedRoute><AppLayout><LGPDPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/tiss" element={<ProtectedRoute><AppLayout><TISSPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/assinatura-digital" element={<ProtectedRoute><AppLayout><AssinaturaICP /></AppLayout></ProtectedRoute>} />
                 <Route path="/marketing-auto" element={<ProtectedRoute><AppLayout><MarketingAuto /></AppLayout></ProtectedRoute>} />
                 <Route path="/crm-funil" element={<ProtectedRoute><AppLayout><CRMFunil /></AppLayout></ProtectedRoute>} />
-                <Route path="/split-pagamento" element={<ProtectedRoute><AppLayout><SplitPagamento /></AppLayout></ProtectedRoute>} />
-                <Route path="/inadimplencia" element={<ProtectedRoute><AppLayout><Inadimplencia /></AppLayout></ProtectedRoute>} />
+                <Route path="/split-pagamento" element={<ProtectedRoute><AppLayout><SplitPagamentoPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/inadimplencia" element={<ProtectedRoute><AppLayout><InadimplenciaPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/programa-fidelidade" element={<ProtectedRoute><AppLayout><ProgramaFidelidade /></AppLayout></ProtectedRoute>} />
                 <Route path="/report-templates" element={<ProtectedRoute requireAdmin><AppLayout><ReportTemplates /></AppLayout></ProtectedRoute>} />
                 <Route path="/audit-logs" element={<ProtectedRoute requireAdmin><AppLayout><AuditLogs /></AppLayout></ProtectedRoute>} />
