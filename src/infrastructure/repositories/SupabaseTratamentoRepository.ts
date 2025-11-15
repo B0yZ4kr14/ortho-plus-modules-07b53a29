@@ -25,9 +25,17 @@ export class SupabaseTratamentoRepository implements ITratamentoRepository {
 
   async findByProntuarioId(prontuarioId: string): Promise<Tratamento[]> {
     try {
+      // ✅ OTIMIZAÇÃO FASE 3: JOIN para evitar N+1 queries
       const { data, error } = await supabase
         .from('pep_tratamentos')
-        .select('*')
+        .select(`
+          *,
+          prontuarios!inner(
+            id,
+            clinic_id,
+            patient_id
+          )
+        `)
         .eq('prontuario_id', prontuarioId)
         .order('data_inicio', { ascending: false });
 

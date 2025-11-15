@@ -58,15 +58,3 @@ export function useGlobalHotkeys() {
 
   return { showCheatsheet, setShowCheatsheet };
 }
-    { key: 'Ctrl+1', description: 'Ir para Dashboard', action: () => {}, category: 'Navegação' },
-    { key: 'Ctrl+2', description: 'Ir para Agenda', action: () => {}, category: 'Navegação' },
-    { key: 'Ctrl+3', description: 'Ir para Pacientes', action: () => {}, category: 'Navegação' },
-    { key: 'Ctrl+4', description: 'Ir para Prontuário', action: () => {}, category: 'Navegação' },
-    { key: 'Ctrl+5', description: 'Ir para Financeiro', action: () => {}, category: 'Navegação' },
-    { key: 'Ctrl+P', description: 'Busca Rápida de Pacientes', action: () => {}, category: 'Busca' },
-    { key: 'Ctrl+K', description: 'Command Palette', action: () => {}, category: 'Busca' },
-    { key: 'Shift+?', description: 'Exibir Atalhos', action: () => {}, category: 'Ajuda' },
-  ];
-
-  return { hotkeys };
-}
