@@ -1,0 +1,52 @@
+name: Quality Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Type Check
+        run: npm run type-check
+      
+      - name: Lint
+        run: npm run lint
+      
+      - name: Format Check
+        run: npm run format:check
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Test
+        run: npm test
+      
+      - name: Quality Validation
+        run: npm run validate:quality
+      
+      - name: Bundle Size Check
+        run: |
+          npm run build
+          SIZE=$(du -sh dist | cut -f1)
+          echo "Bundle size: $SIZE"
+          if [ "$SIZE" \> "1M" ]; then
+            echo "❌ Bundle size exceeds 1MB"
+            exit 1
+          fi
+          echo "✅ Bundle size is acceptable"
