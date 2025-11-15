@@ -2,7 +2,7 @@ import { LogOut, Building2, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { GlobalSearch } from "@/components/GlobalSearch";
+import GlobalSearch from "@/components/GlobalSearch";
 import { HotkeysHelp } from "@/components/HotkeysHelp";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
