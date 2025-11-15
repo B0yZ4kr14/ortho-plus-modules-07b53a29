@@ -1,17 +1,12 @@
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-
-interface HotkeyConfig {
-  key: string;
-  description: string;
-  action: () => void;
-  category: string;
-}
+import { useState } from 'react';
 
 export function useGlobalHotkeys() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [showCheatsheet, setShowCheatsheet] = useState(false);
 
   // Navegação rápida
   useHotkeys('ctrl+1', (e) => {
@@ -44,30 +39,25 @@ export function useGlobalHotkeys() {
     toast({ title: 'Financeiro', description: 'Ctrl+5' });
   });
 
-  // Quick Search (implementar depois)
+  // Quick Search
   useHotkeys('ctrl+p', (e) => {
     e.preventDefault();
-    // TODO: Abrir modal de busca rápida de pacientes
     toast({ title: 'Busca Rápida', description: 'Em breve!' });
   });
 
   useHotkeys('ctrl+k', (e) => {
     e.preventDefault();
-    // TODO: Command palette (estilo VS Code)
     toast({ title: 'Command Palette', description: 'Em breve!' });
   });
 
-  // Help
+  // Help - Cheatsheet
   useHotkeys('shift+?', (e) => {
     e.preventDefault();
-    // TODO: Abrir modal de atalhos
-    toast({ title: 'Atalhos de Teclado', description: 'Pressione ? para ver todos' });
+    setShowCheatsheet(true);
   });
-}
 
-// Hook para exibir cheatsheet
-export function useHotkeyCheatsheet() {
-  const hotkeys: HotkeyConfig[] = [
+  return { showCheatsheet, setShowCheatsheet };
+}
     { key: 'Ctrl+1', description: 'Ir para Dashboard', action: () => {}, category: 'Navegação' },
     { key: 'Ctrl+2', description: 'Ir para Agenda', action: () => {}, category: 'Navegação' },
     { key: 'Ctrl+3', description: 'Ir para Pacientes', action: () => {}, category: 'Navegação' },

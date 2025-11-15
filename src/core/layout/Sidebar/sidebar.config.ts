@@ -23,7 +23,7 @@ import {
   BookOpen, LucideIcon, Terminal, Github, Database,
   HardDrive, Wrench, BookText, FileCode, Code2,
   ScrollText, GitBranch, CheckCheck, Receipt,
-  ArrowLeftRight, Wallet, Banknote
+  ArrowLeftRight, Wallet, Banknote, Bell, FileHeart, Layout
 } from 'lucide-react';
 
 export interface MenuSubItem {
@@ -63,13 +63,14 @@ export const menuGroups: MenuGroup[] = [
   // ========= 2. ATENDIMENTO (CORE CLINICAL) =========
   {
     label: 'Atendimento',
-    collapsed: false, // Always expanded - most accessed
+    collapsed: false,
     items: [
       { title: 'Agenda', url: '/agenda', icon: Calendar, moduleKey: 'AGENDA' },
       { title: 'Pacientes', url: '/pacientes', icon: Users, moduleKey: 'PEP' },
       { title: 'Prontuário (PEP)', url: '/pep', icon: FileText, moduleKey: 'PEP' },
       { title: 'Odontograma', url: '/odontograma', icon: Scan, moduleKey: 'ODONTOGRAMA' },
       { title: 'Tratamentos', url: '/tratamentos', icon: Activity, moduleKey: 'PEP' },
+      { title: 'Recall', url: '/recall', icon: AlertCircle, moduleKey: 'AGENDA' },
       { title: 'Teleodontologia', url: '/teleodonto', icon: Video, moduleKey: 'TELEODONTO' }
     ]
   },
@@ -131,6 +132,7 @@ export const menuGroups: MenuGroup[] = [
         ]
       },
       { title: 'Procedimentos', url: '/procedimentos', icon: Stethoscope, moduleKey: 'PEP' },
+      { title: 'Templates', url: '/templates-procedimentos', icon: Layout, moduleKey: 'PEP' },
       { title: 'Contratos', url: '/contratos', icon: FileSignature, moduleKey: 'ORCAMENTOS' },
       { 
         title: 'Estoque',
