@@ -353,6 +353,88 @@ export type Database = {
           },
         ]
       }
+      architecture_decision_records: {
+        Row: {
+          adr_number: number
+          alternatives_considered: string | null
+          clinic_id: string
+          consequences: string
+          context: string
+          created_at: string
+          created_by: string
+          decided_at: string | null
+          decided_by: string | null
+          decision: string
+          id: string
+          status: string
+          superseded_by_adr_id: string | null
+          supersedes_adr_id: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          adr_number: number
+          alternatives_considered?: string | null
+          clinic_id: string
+          consequences: string
+          context: string
+          created_at?: string
+          created_by: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision: string
+          id?: string
+          status?: string
+          superseded_by_adr_id?: string | null
+          supersedes_adr_id?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          adr_number?: number
+          alternatives_considered?: string | null
+          clinic_id?: string
+          consequences?: string
+          context?: string
+          created_at?: string
+          created_by?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision?: string
+          id?: string
+          status?: string
+          superseded_by_adr_id?: string | null
+          supersedes_adr_id?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "architecture_decision_records_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "architecture_decision_records_superseded_by_adr_id_fkey"
+            columns: ["superseded_by_adr_id"]
+            isOneToOne: false
+            referencedRelation: "architecture_decision_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "architecture_decision_records_supersedes_adr_id_fkey"
+            columns: ["supersedes_adr_id"]
+            isOneToOne: false
+            referencedRelation: "architecture_decision_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -3254,6 +3336,41 @@ export type Database = {
             foreignKeyName: "fiscal_config_clinic_id_fkey"
             columns: ["clinic_id"]
             isOneToOne: true
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      github_events: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          event_data: Json
+          event_type: string
+          id: string
+          triggered_by: string | null
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          event_data: Json
+          event_type: string
+          id?: string
+          triggered_by?: string | null
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          event_data?: Json
+          event_type?: string
+          id?: string
+          triggered_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "github_events_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
             referencedRelation: "clinics"
             referencedColumns: ["id"]
           },
@@ -7515,6 +7632,44 @@ export type Database = {
           },
         ]
       }
+      system_health_metrics: {
+        Row: {
+          clinic_id: string
+          id: string
+          metadata: Json | null
+          metric_type: string
+          recorded_at: string
+          unit: string | null
+          value: number
+        }
+        Insert: {
+          clinic_id: string
+          id?: string
+          metadata?: Json | null
+          metric_type: string
+          recorded_at?: string
+          unit?: string | null
+          value: number
+        }
+        Update: {
+          clinic_id?: string
+          id?: string
+          metadata?: Json | null
+          metric_type?: string
+          recorded_at?: string
+          unit?: string | null
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_health_metrics_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teleconsultas: {
         Row: {
           appointment_id: string | null
@@ -7813,6 +7968,50 @@ export type Database = {
           },
         ]
       }
+      terminal_command_history: {
+        Row: {
+          clinic_id: string
+          command: string
+          duration_ms: number | null
+          executed_at: string
+          exit_code: number | null
+          id: string
+          output: string | null
+          user_id: string
+          was_successful: boolean | null
+        }
+        Insert: {
+          clinic_id: string
+          command: string
+          duration_ms?: number | null
+          executed_at?: string
+          exit_code?: number | null
+          id?: string
+          output?: string | null
+          user_id: string
+          was_successful?: boolean | null
+        }
+        Update: {
+          clinic_id?: string
+          command?: string
+          duration_ms?: number | null
+          executed_at?: string
+          exit_code?: number | null
+          id?: string
+          output?: string | null
+          user_id?: string
+          was_successful?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terminal_command_history_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tiss_batches: {
         Row: {
           batch_number: string
@@ -8069,6 +8268,113 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      wiki_page_versions: {
+        Row: {
+          change_summary: string | null
+          changed_by: string
+          content: string
+          created_at: string
+          id: string
+          page_id: string
+          title: string
+          version: number
+        }
+        Insert: {
+          change_summary?: string | null
+          changed_by: string
+          content: string
+          created_at?: string
+          id?: string
+          page_id: string
+          title: string
+          version: number
+        }
+        Update: {
+          change_summary?: string | null
+          changed_by?: string
+          content?: string
+          created_at?: string
+          id?: string
+          page_id?: string
+          title?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wiki_page_versions_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "wiki_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wiki_pages: {
+        Row: {
+          category: string
+          clinic_id: string
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          is_published: boolean
+          parent_id: string | null
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          category?: string
+          clinic_id: string
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_published?: boolean
+          parent_id?: string | null
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          category?: string
+          clinic_id?: string
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_published?: boolean
+          parent_id?: string | null
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wiki_pages_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wiki_pages_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "wiki_pages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
