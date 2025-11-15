@@ -3,6 +3,7 @@ import { useService } from '@/infrastructure/di';
 import { SERVICE_KEYS } from '@/infrastructure/di/ServiceKeys';
 import { UpdateLeadStatusUseCase } from '../../application/use-cases/UpdateLeadStatusUseCase';
 import { GetLeadsByStatusUseCase } from '../../application/use-cases/GetLeadsByStatusUseCase';
+import { ILeadRepository } from '../../domain/repositories/ILeadRepository';
 import { Lead, LeadStatus, LeadSource } from '../../domain/entities/Lead';
 import { toast } from 'sonner';
 
@@ -50,7 +51,7 @@ export function useLeads(clinicId: string, status?: string) {
         updatedAt: new Date(),
       });
 
-      const leadRepo = useService(SERVICE_KEYS.LEAD_REPOSITORY);
+      const leadRepo = useService<ILeadRepository>(SERVICE_KEYS.LEAD_REPOSITORY);
       return await leadRepo.save(lead);
     },
     onSuccess: () => {

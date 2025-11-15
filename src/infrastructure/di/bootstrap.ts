@@ -631,14 +631,7 @@ export function bootstrapContainer(): void {
     true
   );
 
-  // Use Cases - CRM
-  container.register(
-    SERVICE_KEYS.CREATE_LEAD_USE_CASE,
-    () => new CreateLeadUseCase(
-      container.resolve(SERVICE_KEYS.LEAD_REPOSITORY)
-    ),
-    true
-  );
+  // Use Cases - CRM (removed CreateLeadUseCase - using direct repository)
 
   container.register(
     SERVICE_KEYS.UPDATE_LEAD_STATUS_USE_CASE,
