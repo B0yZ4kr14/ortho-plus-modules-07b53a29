@@ -24,6 +24,7 @@ import Financeiro from "./pages/Financeiro";
 import { FinanceiroPage } from "./modules/financeiro/ui/pages/FinanceiroPage";
 import { MarketingAutoPage } from './modules/marketing-auto/ui/pages/MarketingAutoPage';
 import { OrcamentosPage } from './modules/orcamentos/ui/pages/OrcamentosPage';
+import { EstoquePage } from './modules/estoque/ui/pages/EstoquePage';
 import Resumo from "./pages/Resumo";
 import AgendaClinica from "./pages/AgendaClinica";
 import Configuracoes from './pages/Configuracoes';
