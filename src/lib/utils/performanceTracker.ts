@@ -67,7 +67,7 @@ class PerformanceTracker {
   /**
    * Marca início de medição
    */
-  start(name: string): () => void {
+  start(name: string): (type?: PerformanceMetric['type'], metadata?: Record<string, any>) => void {
     const startTime = performance.now();
     
     return (type: PerformanceMetric['type'] = 'operation', metadata?: Record<string, any>) => {
