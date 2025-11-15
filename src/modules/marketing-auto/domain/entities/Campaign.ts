@@ -77,6 +77,32 @@ export class Campaign {
   get createdAt(): Date { return this.props.createdAt; }
   get updatedAt(): Date { return this.props.updatedAt; }
 
+  // Getters para métricas
+  getTotalSent(): number { return this.props.metrics?.totalSent || 0; }
+  getTotalDelivered(): number { return this.props.metrics?.totalDelivered || 0; }
+  getTotalOpened(): number { return this.props.metrics?.totalOpened || 0; }
+  getTotalClicked(): number { return this.props.metrics?.totalClicked || 0; }
+  getTotalConverted(): number { return this.props.metrics?.totalConverted || 0; }
+  getTotalErrors(): number { return this.props.metrics?.totalErrors || 0; }
+
+  getOpenRate(): number {
+    const sent = this.getTotalSent();
+    if (sent === 0) return 0;
+    return (this.getTotalOpened() / sent) * 100;
+  }
+
+  getClickRate(): number {
+    const opened = this.getTotalOpened();
+    if (opened === 0) return 0;
+    return (this.getTotalClicked() / opened) * 100;
+  }
+
+  getConversionRate(): number {
+    const clicked = this.getTotalClicked();
+    if (clicked === 0) return 0;
+    return (this.getTotalConverted() / clicked) * 100;
+  }
+
   // Domain Methods
 
   isDraft(): boolean {
@@ -197,21 +223,6 @@ export class Campaign {
     };
     
     this.props.updatedAt = new Date();
-  }
-
-  getOpenRate(): number {
-    if (!this.props.metrics || this.props.metrics.totalDelivered === 0) return 0;
-    return (this.props.metrics.totalOpened / this.props.metrics.totalDelivered) * 100;
-  }
-
-  getClickRate(): number {
-    if (!this.props.metrics || this.props.metrics.totalOpened === 0) return 0;
-    return (this.props.metrics.totalClicked / this.props.metrics.totalOpened) * 100;
-  }
-
-  getConversionRate(): number {
-    if (!this.props.metrics || this.props.metrics.totalClicked === 0) return 0;
-    return (this.props.metrics.totalConverted / this.props.metrics.totalClicked) * 100;
   }
 
   getErrorRate(): number {

@@ -8,8 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { LayoutDashboard, Users, Calendar, DollarSign, TrendingUp, Activity, CheckCircle2, BarChart3, FileText, Database, ShoppingCart } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Button } from '@/components/ui/button';
-import { MarketRatesWidget } from '@/components/dashboard/MarketRatesWidget';
-import { CryptoRatesWidget } from '@/components/CryptoRatesWidget';
+import { DashboardChartsMemo } from '@/components/dashboard/DashboardChartsMemo';
+import { DashboardWidgetsMemo } from '@/components/dashboard/DashboardWidgetsMemo';
+import { StatCardMemo } from '@/components/dashboard/StatCardMemo';
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -150,8 +151,14 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Widget de Cotações do Mercado */}
-      <MarketRatesWidget />
+      {/* Gráficos Memoizados */}
+      <DashboardChartsMemo 
+        appointmentsData={appointmentsData}
+        revenueData={revenueData}
+      />
+
+      {/* Widgets de Cotações Memoizados */}
+      <DashboardWidgetsMemo />
 
       {/* Action Cards - Ações Rápidas */}
       <Card variant="gradient" depth="intense" data-tour="action-cards">
@@ -336,37 +343,32 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Crypto Rates Widget */}
-        <CryptoRatesWidget />
-
-        {/* Próximas Consultas */}
-        <Card variant="elevated" depth="normal">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Próximas Consultas Hoje
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {stats.todayAppointments > 0 ? (
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Você tem {stats.todayAppointments} consulta(s) agendada(s) para hoje
-                </p>
-                <Button variant="outline" className="w-full">
-                  Ver Agenda Completa
-                </Button>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>Nenhuma consulta agendada para hoje</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      {/* Próximas Consultas */}
+      <Card variant="elevated" depth="normal">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Próximas Consultas Hoje
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {stats.todayAppointments > 0 ? (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Você tem {stats.todayAppointments} consulta(s) agendada(s) para hoje
+              </p>
+              <Button variant="outline" className="w-full">
+                Ver Agenda Completa
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
+              <p>Nenhuma consulta agendada para hoje</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
