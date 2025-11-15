@@ -16,7 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 interface User {
   id: string;
   full_name: string | null;
-  role: 'ADMIN' | 'MEMBER';
+  role: 'ADMIN' | 'MEMBER' | 'ROOT';
   clinic_id: string;
   created_at: string;
 }
@@ -41,7 +41,7 @@ export const UserManagementTab = () => {
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserName, setNewUserName] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
-  const [newUserRole, setNewUserRole] = useState<'ADMIN' | 'MEMBER'>('MEMBER');
+  const [newUserRole, setNewUserRole] = useState<'ADMIN' | 'MEMBER' | 'ROOT'>('MEMBER');
   const [userPermissions, setUserPermissions] = useState<ModulePermission[]>([]);
 
   useEffect(() => {

@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      abuse_reports: {
+        Row: {
+          abuse_type: string
+          auto_blocked: boolean | null
+          created_at: string
+          details: Json | null
+          endpoint: string
+          id: number
+          ip_address: unknown
+          resolved: boolean | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          user_id: string | null
+        }
+        Insert: {
+          abuse_type: string
+          auto_blocked?: boolean | null
+          created_at?: string
+          details?: Json | null
+          endpoint: string
+          id?: number
+          ip_address: unknown
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+          user_id?: string | null
+        }
+        Update: {
+          abuse_type?: string
+          auto_blocked?: boolean | null
+          created_at?: string
+          details?: Json | null
+          endpoint?: string
+          id?: number
+          ip_address?: unknown
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       analises_radiograficas: {
         Row: {
           clinic_id: string
@@ -6277,6 +6322,72 @@ export type Database = {
           },
         ]
       }
+      rate_limit_config: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          endpoint: string
+          id: number
+          max_requests_per_ip: number
+          max_requests_per_user: number
+          updated_at: string
+          window_minutes: number
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          endpoint: string
+          id?: number
+          max_requests_per_ip?: number
+          max_requests_per_user?: number
+          updated_at?: string
+          window_minutes?: number
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          endpoint?: string
+          id?: number
+          max_requests_per_ip?: number
+          max_requests_per_user?: number
+          updated_at?: string
+          window_minutes?: number
+        }
+        Relationships: []
+      }
+      rate_limit_log: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: number
+          ip_address: unknown
+          request_count: number | null
+          updated_at: string
+          user_id: string | null
+          window_start: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: number
+          ip_address: unknown
+          request_count?: number | null
+          updated_at?: string
+          user_id?: string | null
+          window_start?: string
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: number
+          ip_address?: unknown
+          request_count?: number | null
+          updated_at?: string
+          user_id?: string | null
+          window_start?: string
+        }
+        Relationships: []
+      }
       room_availability: {
         Row: {
           capacity: number
@@ -6323,6 +6434,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      root_actions_log: {
+        Row: {
+          action: string
+          details: Json | null
+          executed_at: string
+          id: number
+          ip_address: unknown
+          root_user_id: string
+          target_record_id: string | null
+          target_table: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          details?: Json | null
+          executed_at?: string
+          id?: number
+          ip_address?: unknown
+          root_user_id: string
+          target_record_id?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          details?: Json | null
+          executed_at?: string
+          id?: number
+          ip_address?: unknown
+          root_user_id?: string
+          target_record_id?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
       }
       sat_mfe_config: {
         Row: {
@@ -7122,8 +7269,10 @@ export type Database = {
           freed_bytes: number
         }[]
       }
+      cleanup_old_rate_limit_logs: { Args: never; Returns: number }
       create_default_admin_user: { Args: never; Returns: undefined }
       create_root_user: { Args: never; Returns: undefined }
+      detect_suspicious_patterns: { Args: never; Returns: undefined }
       get_user_clinic_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -7133,13 +7282,14 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      is_root_user: { Args: never; Returns: boolean }
       validate_password_strength: {
         Args: { password: string }
         Returns: boolean
       }
     }
     Enums: {
-      app_role: "ADMIN" | "MEMBER"
+      app_role: "ADMIN" | "MEMBER" | "ROOT"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -7267,7 +7417,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["ADMIN", "MEMBER"],
+      app_role: ["ADMIN", "MEMBER", "ROOT"],
     },
   },
 } as const
