@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1'
 import { corsHeaders } from '../_shared/cors.ts'
+import { checkRateLimit } from '../_shared/rateLimiter.ts'
 
 console.log('toggle-module-state function started')
 
@@ -25,6 +26,25 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Rate limiting
+    const ipAddress = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                      req.headers.get('x-real-ip') || 
+                      'unknown'
+    
+    const rateLimitResult = await checkRateLimit(supabase, user.id, ipAddress, 'toggle-module-state')
+    
+    if (!rateLimitResult.allowed) {
+      console.warn(`[toggle-module-state] Rate limit exceeded for user ${user.id}`)
+      return new Response(
+        JSON.stringify({ 
+          error: 'Rate limit exceeded', 
+          reason: rateLimitResult.reason,
+          reset_at: rateLimitResult.reset_at 
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
