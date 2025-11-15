@@ -7,25 +7,25 @@
  * - Yapi: ✅ Financial operations prominence
  * - Open Dental: ✅ Patient-centric navigation
  * 
- * Total Categories: 6 (vs 10 legacy)
- * Total Links: 32 (vs 47 legacy)
- * Reduction: 40% categories, 32% links
+ * Total Categories: 7 (vs 10 legacy)
+ * Total Links: 35 (vs 47 legacy)
+ * Reduction: 30% categories, 26% links
  */
 
 import { 
   LayoutDashboard, Users, Calendar, FileText, TrendingUp, Package, 
-  Settings, Video, UserPlus, UserCog, Shield, AlertCircle, Award,
+  Settings, Video, UserPlus, UserCog, AlertCircle, Award,
   Building2, BookOpen, Terminal, Database, HardDrive, Wrench, 
   GitBranch, Code2, ScrollText, FileCode, BookText, Github,
   LucideIcon, Sparkles, Zap, BriefcaseBusiness, Coins,
-  Receipt, ShoppingCart, CreditCard, FileSpreadsheet,
+  Receipt, ShoppingCart, FileSpreadsheet,
   Clipboard, ClipboardCheck, ClipboardList, BadgeCheck,
-  Clock, Bell, MessageSquare, BarChart3, TrendingDown,
-  PieChart, LineChart, Target, Megaphone, Mail, Share2,
-  Lock, FileCheck, FileSignature, ShieldCheck, Eye,
+  Bell, BarChart3, TrendingDown,
+  PieChart, LineChart, Target, Megaphone, Mail,
+  Lock, FileCheck, FileSignature, Eye,
   Cpu, Workflow, ScanLine, Stethoscope, HeartPulse,
   Pill, Activity, ClipboardPlus, Wallet, ArrowLeftRight,
-  ChevronRight, Boxes, PackagePlus
+  Boxes, PackagePlus
 } from 'lucide-react';
 
 export interface MenuSubItem {
@@ -233,9 +233,8 @@ export const adminMenuItems: MenuItem[] = [
     collapsed: false,
     subItems: [
       { title: "Terminal Shell", url: "/admin/terminal", icon: Terminal },
-      { title: "GitHub Manager", url: "/admin/github", icon: Github },
-      { title: "System Logs", url: "/admin/logs", icon: ScrollText },
-      { title: "Monitoring", url: "/admin/monitoring", icon: Activity }
+      { title: "Edge Functions", url: "/admin/edge-functions", icon: Cpu },
+      { title: "CI/CD", url: "/admin/cicd", icon: Github }
     ]
   },
   {
@@ -243,14 +242,14 @@ export const adminMenuItems: MenuItem[] = [
     icon: BookText,
     collapsed: false,
     subItems: [
-      { title: "Wiki Interna", url: "/admin/wiki", icon: BookText },
-      { title: "ADRs", url: "/admin/adrs", icon: FileCode },
-      { title: "API Docs", url: "/admin/api-docs", icon: Code2 }
+      { title: "Docs Wiki", url: "/admin/docs", icon: BookOpen },
+      { title: "ADRs", url: "/admin/adrs", icon: ScrollText },
+      { title: "API Docs", url: "/admin/api-docs", icon: FileCode }
     ]
   },
   {
     title: "Configurações",
     url: "/configuracoes",
     icon: Settings,
-  },
+  }
 ];
