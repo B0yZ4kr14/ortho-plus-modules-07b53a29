@@ -3,10 +3,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Split, Settings, History, TrendingUp } from "lucide-react";
-import { SplitConfigForm } from "@/modules/split/presentation/components/SplitConfigForm";
-import { SplitHistory } from "@/modules/split/presentation/components/SplitHistory";
-import { SplitDashboard } from "@/modules/split/presentation/components/SplitDashboard";
-import { useSplitConfig } from "@/modules/split/application/hooks/useSplitConfig";
+import { SplitConfigForm } from "@/modules/split-pagamento/presentation/components/SplitConfigForm";
+import { SplitHistory } from "@/modules/split-pagamento/presentation/components/SplitHistory";
+import { SplitDashboard } from "@/modules/split-pagamento/presentation/components/SplitDashboard";
+import { useSplitConfig } from "@/modules/split-pagamento/application/hooks/useSplitConfig";
 
 export default function SplitPagamentoPage() {
   const [activeTab, setActiveTab] = useState("dashboard");

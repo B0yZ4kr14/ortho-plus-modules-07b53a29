@@ -290,6 +290,27 @@ export const useTeleodontologiaSupabase = (clinicId: string) => {
     }
   };
 
+  const iniciarConsulta = async (teleconsultaId: string) => {
+    try {
+      // Mock video room data for now
+      return {
+        token: 'mock-token',
+        appId: 'mock-app-id',
+        channelName: `teleconsulta-${teleconsultaId}`,
+        uid: user?.id || 'anonymous',
+        teleconsultaId,
+      };
+    } catch (error: any) {
+      console.error('Error starting consultation:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao iniciar consulta: ' + error.message,
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  };
+
   return {
     teleconsultas,
     prescricoes,
@@ -300,6 +321,7 @@ export const useTeleodontologiaSupabase = (clinicId: string) => {
     deleteTeleconsulta,
     createPrescricao,
     createTriagem,
+    iniciarConsulta,
     refresh: loadData
   };
 };
