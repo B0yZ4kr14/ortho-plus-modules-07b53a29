@@ -9,6 +9,7 @@ interface CreateLeadInput {
   origem: string;
   interesseDescricao?: string;
   valorEstimado?: number;
+  responsavelId?: string;
 }
 
 export class CreateLeadUseCase {
@@ -39,6 +40,7 @@ export class CreateLeadUseCase {
       status: 'NOVO',
       interesseDescricao: input.interesseDescricao?.trim(),
       valorEstimado: input.valorEstimado,
+      responsavelId: input.responsavelId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

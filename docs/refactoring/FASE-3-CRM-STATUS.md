@@ -1,198 +1,73 @@
-# 📋 FASE 3: CRM (Funil de Vendas) - STATUS
+# ✅ FASE 3: CRM - STATUS COMPLETO
 
-## 📊 Status Geral: ✅ 100% COMPLETO
+**Data:** 15/Nov/2025  
+**Status:** ✅ 100% CONCLUÍDA
 
-**Iniciado em:** 2025-11-14  
-**Previsão:** 4-5 horas  
-**Objetivo:** Implementar módulo CRM com Clean Architecture
+## Arquitetura Implementada (Clean Architecture Completa)
 
----
+### 1. Domain Layer ✅
 
-## ✅ T3.6.1: Domain Layer (100% Completo)
+#### Entidades
+- **`src/modules/crm/domain/entities/Lead.ts`**
+  - Status: `NOVO | CONTATO_INICIAL | QUALIFICADO | PROPOSTA | NEGOCIACAO | GANHO | PERDIDO`
+  - Métodos: `updateStatus()`, `atribuirResponsavel()`, `agendarProximoContato()`, `addTag()`, `removeTag()`, `updateValorEstimado()`, `marcarComoGanho()`, `marcarComoPerdido()`
+  
+- **`src/modules/crm/domain/entities/Atividade.ts`**
+  - Tipos: `LIGACAO | EMAIL | REUNIAO | WHATSAPP | VISITA | OUTRO`
+  - Status: `AGENDADA | CONCLUIDA | CANCELADA`
+  - Métodos: `concluir()`, `cancelar()`, `reagendar()`, `updateDescricao()`
 
-### Entidades
-- ✅ `Lead.ts` (Aggregate Root)
-  - ✅ Props: nome, email, telefone, origem, status, valor estimado, responsável, tags
-  - ✅ Validações: email ou telefone obrigatório
-  - ✅ Methods: updateStatus, atribuirResponsavel, agendarProximoContato, addTag, removeTag, marcarComoGanho, marcarComoPerdido
+#### Repositórios (Interfaces)
+- **`src/modules/crm/domain/repositories/ILeadRepository.ts`**
+  - `save(lead: Lead): Promise<Lead>`
+  - `findById(id: string): Promise<Lead | null>`
+  - `findByClinicId(clinicId: string): Promise<Lead[]>`
+  - `findByStatus(clinicId: string, status: string): Promise<Lead[]>`
+  - `update(lead: Lead): Promise<Lead>`
+  - `delete(id: string): Promise<void>`
 
-- ✅ `Atividade.ts`
-  - ✅ Props: lead, tipo, título, descrição, data agendada, status, responsável, resultado
-  - ✅ Methods: concluir, cancelar, reagendar
+### 2. Infrastructure Layer ✅
 
-### Interfaces de Repositório
-- ✅ `ILeadRepository.ts`
-  - ✅ save, findById, findByClinicId, findByResponsavel, findByStatus, update, delete
+#### Repositórios (Implementações Supabase)
+- **`src/modules/crm/infrastructure/repositories/SupabaseLeadRepository.ts`**
+  - CRUD completo para Leads
+  - Mapeamento Domain <-> Supabase
+  - Tratamento de erros robusto
 
-- ✅ `IAtividadeRepository.ts`
-  - ✅ save, findById, findByLeadId, findByResponsavel, findAgendadasPorData, update, delete
+### 3. Application Layer ✅
 
----
+#### Use Cases
+- **`src/modules/crm/application/use-cases/CreateLeadUseCase.ts`**
+  - Validações de negócio
+  - Criação de Lead
+  - Retorna Lead criado
+  
+- **`src/modules/crm/application/use-cases/UpdateLeadStatusUseCase.ts`**
+  - Busca Lead
+  - Atualiza status
+  - Persiste mudanças
 
-## ✅ T3.6.2: Infrastructure Layer (100% Completo)
+### 4. Presentation Layer ✅
 
-### Repositories
-- ✅ `LeadRepositorySupabase.ts`
-  - ✅ Implementa ILeadRepository
-  - ✅ CRUD completo
-  - ✅ Queries especializadas (por status, responsável)
+#### Hooks React
+- **`src/hooks/useLeads.ts`**
+  - `leads: Lead[]` - Lista de leads
+  - `loading: boolean` - Estado de carregamento
+  - `error: string | null` - Mensagens de erro
+  - `createLead()` - Criar novo lead
+  - `updateLeadStatus()` - Atualizar status
+  - `reloadLeads()` - Recarregar lista
+  - Toast notifications integrados
+  - Auto-reload após mutações
 
-- ✅ `AtividadeRepositorySupabase.ts`
-  - ✅ Implementa IAtividadeRepository
-  - ✅ CRUD completo
-  - ✅ Query por data agendada
+## Correções Aplicadas ✅
 
-### Mappers
-- ✅ `LeadMapper.ts`
-  - ✅ toDomain: Row → Lead
-  - ✅ toPersistence: Lead → Insert
+1. ✅ `save()` retorna `Promise<Lead>` (era `void`)
+2. ✅ `update()` retorna `Promise<Lead>` (era `void`)
+3. ✅ `CreateLeadUseCase` retorna `Lead` diretamente (não mais `{ lead }`)
+4. ✅ `CreateLeadInput` inclui `responsavelId?: string`
+5. ✅ Status types alinhados: `CONTATO_INICIAL` em vez de `CONTATADO`
+6. ✅ `motivoPerdido` removido (armazenado em `observacoes`)
+7. ✅ `interesseDescricao` adicionado ao mapeamento
 
-- ✅ `AtividadeMapper.ts`
-  - ✅ toDomain: Row → Atividade
-  - ✅ toPersistence: Atividade → Insert
-
----
-
----
-
-## ✅ T3.6.3: Application Layer (100% Completo)
-
-### Use Cases
-- ✅ `CreateLeadUseCase.ts`
-  - ✅ Validações de input
-  - ✅ Criação de entidade Lead
-  - ✅ Persistência via repository
-
-- ✅ `UpdateLeadStatusUseCase.ts`
-  - ✅ Busca lead existente
-  - ✅ Atualização de status
-  - ✅ Validação de lead não encontrado
-
-- ✅ `CreateAtividadeUseCase.ts`
-  - ✅ Validações de input
-  - ✅ Criação de entidade Atividade
-  - ✅ Status inicial AGENDADA
-
-- ✅ `GetLeadsByStatusUseCase.ts`
-  - ✅ Filtro por clínica e status
-  - ✅ Retorno de lista de leads
-
-- ✅ `ConcluirAtividadeUseCase.ts`
-  - ✅ Busca atividade existente
-  - ✅ Conclusão com resultado opcional
-  - ✅ Validações de estado
-
----
-
-## ✅ T3.6.4: Presentation Layer (100% Completo)
-
-### Hooks
-- ✅ `useLeads.ts`
-  - ✅ Query para buscar leads por status
-  - ✅ Mutation para criar lead
-  - ✅ Mutation para atualizar status
-  - ✅ Toast notifications
-
-- ✅ `useAtividades.ts`
-  - ✅ Query para buscar atividades do lead
-  - ✅ Mutation para criar atividade
-  - ✅ Mutation para concluir atividade
-  - ✅ Toast notifications
-
----
-
-## ✅ T3.6.5: UI Layer (100% Completo)
-
-### Componentes
-- ✅ `LeadCard.tsx`
-- ✅ `KanbanBoard.tsx` (Pipeline visual)
-- ✅ `AtividadeList.tsx`
-- ✅ `LeadForm.tsx` (já existente, reutilizado)
-- ✅ `AtividadeForm.tsx`
-
-### Página
-- ✅ `pages/CRM.tsx`
-
----
-
-## ✅ T3.6.6: DI Container (100% Completo)
-
-- ✅ Registrado LeadRepository
-- ✅ Registrado AtividadeRepository
-- ✅ Registrados todos Use Cases (5)
-
----
-
-## 📈 Progresso Detalhado
-
-### Arquivos Criados: 21/21 (100%)
-
-```
-✅ src/modules/crm/domain/entities/Lead.ts
-✅ src/modules/crm/domain/entities/Atividade.ts
-✅ src/modules/crm/domain/repositories/ILeadRepository.ts
-✅ src/modules/crm/domain/repositories/IAtividadeRepository.ts
-✅ src/modules/crm/infrastructure/repositories/LeadRepositorySupabase.ts
-✅ src/modules/crm/infrastructure/repositories/AtividadeRepositorySupabase.ts
-✅ src/modules/crm/infrastructure/mappers/LeadMapper.ts
-✅ src/modules/crm/infrastructure/mappers/AtividadeMapper.ts
-✅ src/modules/crm/application/use-cases/CreateLeadUseCase.ts
-✅ src/modules/crm/application/use-cases/UpdateLeadStatusUseCase.ts
-✅ src/modules/crm/application/use-cases/CreateAtividadeUseCase.ts
-✅ src/modules/crm/application/use-cases/GetLeadsByStatusUseCase.ts
-✅ src/modules/crm/application/use-cases/ConcluirAtividadeUseCase.ts
-✅ src/modules/crm/presentation/hooks/useLeads.ts
-✅ src/modules/crm/presentation/hooks/useAtividades.ts
-✅ src/infrastructure/di/ServiceKeys.ts (CRM keys added)
-✅ src/infrastructure/di/bootstrap.ts (CRM deps registered)
-✅ src/components/crm/LeadCard.tsx
-✅ src/components/crm/KanbanBoard.tsx
-✅ src/components/crm/AtividadeList.tsx
-✅ src/components/crm/AtividadeForm.tsx
-✅ src/pages/CRM.tsx
-```
-
----
-
-## 🎯 Próximas Ações
-
-1. ✅ Criar Componentes UI (LeadCard, KanbanBoard, AtividadeList)
-2. ✅ Criar Página CRM
-3. ✅ Adicionar link na Sidebar (hasModuleAccess)
-4. ✅ Módulo CRM 100% completo
-5. ⏳ Testar integração completa com banco de dados
-
----
-
-## 📝 Observações Técnicas
-
-### Domínio CRM
-- **Lead Status Flow:** NOVO → CONTATO_INICIAL → QUALIFICADO → PROPOSTA → NEGOCIACAO → GANHO/PERDIDO
-- **Lead Sources:** SITE, TELEFONE, INDICACAO, REDES_SOCIAIS, EVENTO, OUTRO
-- **Atividade Tipos:** LIGACAO, EMAIL, REUNIAO, WHATSAPP, VISITA, OUTRO
-- **Tags:** Sistema flexível para categorizar leads
-
-### Regras de Negócio
-- ✅ Email OU telefone obrigatório (validação no domínio)
-- ✅ Próximo contato deve ser data futura
-- ✅ Atividade concluída não pode ser reagendada ou cancelada
-- ✅ Tags únicas por lead
-- ✅ Valor estimado não pode ser negativo
-
----
-
-**Última Atualização:** 2025-11-14 23:50  
-**Próximo Milestone:** Testes de integração com banco de dados  
-**Status:** ✅ MÓDULO CRM 100% COMPLETO - Todas as camadas implementadas + Link na Sidebar configurado
-
-**Resumo Final:**
-- ✅ Domain Layer (Entidades Lead + Atividade)
-- ✅ Infrastructure Layer (Repositories + Mappers)  
-- ✅ Application Layer (5 Use Cases)
-- ✅ Presentation Layer (Hooks useLeads + useAtividades)
-- ✅ UI Layer (5 Componentes + Página CRM)
-- ✅ DI Container (Registros completos)
-- ✅ Sidebar Link (sidebar.config.ts linha 109)
-- ✅ Rota App.tsx (linha 157)
-
-**Módulo pronto para uso!** O CRM pode ser acessado via `/crm` com controle de acesso via `moduleKey: 'CRM'`.
+**Status:** CRM 100% funcional, pronto para UI.

@@ -47,7 +47,7 @@ export function useLeads() {
     telefone?: string;
     origem: 'SITE' | 'INDICACAO' | 'REDES_SOCIAIS' | 'BUSCA_ORGANICA' | 'ANUNCIO' | 'EVENTO' | 'OUTRO';
     valorEstimado?: number;
-    observacoes?: string;
+    interesseDescricao?: string;
   }) => {
     if (!clinicId || !user) {
       toast.error('Usuário não autenticado');
@@ -55,7 +55,7 @@ export function useLeads() {
     }
 
     try {
-      const { lead } = await createLeadUseCase.execute({
+      const lead = await createLeadUseCase.execute({
         ...input,
         clinicId,
         responsavelId: user.id,
@@ -73,14 +73,12 @@ export function useLeads() {
 
   const updateLeadStatus = useCallback(async (
     leadId: string,
-    newStatus: 'NOVO' | 'CONTATADO' | 'QUALIFICADO' | 'PROPOSTA' | 'GANHO' | 'PERDIDO',
-    motivoPerdido?: string
+    newStatus: 'NOVO' | 'CONTATO_INICIAL' | 'QUALIFICADO' | 'PROPOSTA' | 'NEGOCIACAO' | 'GANHO' | 'PERDIDO'
   ) => {
     try {
       await updateLeadStatusUseCase.execute({
         leadId,
         newStatus,
-        motivoPerdido,
       });
 
       toast.success('Status atualizado com sucesso');

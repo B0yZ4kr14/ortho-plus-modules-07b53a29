@@ -50,7 +50,7 @@ export class SupabaseLeadRepository implements ILeadRepository {
     return data.map(row => this.toDomain(row));
   }
 
-  async save(lead: Lead): Promise<void> {
+  async save(lead: Lead): Promise<Lead> {
     const insert = this.toSupabaseInsert(lead);
 
     const { error } = await supabase
@@ -60,9 +60,11 @@ export class SupabaseLeadRepository implements ILeadRepository {
     if (error) {
       throw new Error(`Erro ao salvar lead: ${error.message}`);
     }
+    
+    return lead;
   }
 
-  async update(lead: Lead): Promise<void> {
+  async update(lead: Lead): Promise<Lead> {
     const insert = this.toSupabaseInsert(lead);
 
     const { error } = await supabase
@@ -73,6 +75,8 @@ export class SupabaseLeadRepository implements ILeadRepository {
     if (error) {
       throw new Error(`Erro ao atualizar lead: ${error.message}`);
     }
+    
+    return lead;
   }
 
   async delete(id: string): Promise<void> {
@@ -100,7 +104,7 @@ export class SupabaseLeadRepository implements ILeadRepository {
       proximoContato: row.proximo_contato ? new Date(row.proximo_contato) : undefined,
       observacoes: row.observacoes,
       tags: row.tags || [],
-      motivoPerdido: row.motivo_perdido,
+      interesseDescricao: row.interesse_descricao,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
     };
@@ -122,7 +126,7 @@ export class SupabaseLeadRepository implements ILeadRepository {
       proximo_contato: lead.proximoContato?.toISOString(),
       observacoes: lead.observacoes,
       tags: lead.tags,
-      motivo_perdido: lead.motivoPerdido,
+      interesse_descricao: lead.interesseDescricao,
       created_at: lead.createdAt.toISOString(),
       updated_at: lead.updatedAt.toISOString(),
     };
