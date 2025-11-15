@@ -36,6 +36,7 @@ const OnboardingAnalytics = lazy(() => import('./pages/settings/OnboardingAnalyt
 const ModulesAdmin = lazy(() => import('./pages/settings/ModulesAdmin'));
 const ModulesSimple = lazy(() => import('./pages/settings/ModulesSimple'));
 const ProfileSettings = lazy(() => import('./pages/settings/ProfileSettings'));
+const CRM = lazy(() => import('./pages/CRM'));
 import Auth from './pages/Auth';
 import ReportTemplates from '@/pages/ReportTemplates';
 import AuditLogs from '@/pages/AuditLogs';
@@ -154,7 +155,7 @@ const App = () => (
                 <Route path="/teleodontologia" element={<ProtectedRoute><AppLayout><Teleodontologia /></AppLayout></ProtectedRoute>} />
                 <Route path="/historico-teleconsultas" element={<ProtectedRoute><AppLayout><HistoricoTeleconsultas /></AppLayout></ProtectedRoute>} />
                 <Route path="/ia-radiografia" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando IA..." />}><IARadiografia /></Suspense></AppLayout></ProtectedRoute>} />
-                {/* <Route path="/crm" element={<ProtectedRoute><AppLayout><CRM /></AppLayout></ProtectedRoute>} /> */}
+                <Route path="/crm" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando CRM..." />}><CRM /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/bi" element={<ProtectedRoute><AppLayout><BI /></AppLayout></ProtectedRoute>} />
                 <Route path="/lgpd" element={<ProtectedRoute><AppLayout><LGPD /></AppLayout></ProtectedRoute>} />
                 <Route path="/assinatura-digital" element={<ProtectedRoute><AppLayout><AssinaturaICP /></AppLayout></ProtectedRoute>} />
