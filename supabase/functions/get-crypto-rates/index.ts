@@ -18,15 +18,26 @@ const CRYPTO_SYMBOLS = ['BTC', 'ETH', 'USDT', 'BNB', 'SOL', 'XRP', 'ADA', 'DOGE'
 async function fetchCoinGeckoRates(): Promise<CryptoRate[]> {
   try {
     const ids = 'bitcoin,ethereum,tether,binancecoin,solana,ripple,cardano,dogecoin'
+    
+    console.log('🔄 Fetching crypto rates from CoinGecko...')
+    
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000) // 5s timeout
+    
     const response = await fetch(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=brl,usd&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true`
+      `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=brl,usd&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true`,
+      { signal: controller.signal }
     )
     
+    clearTimeout(timeoutId)
+    
     if (!response.ok) {
-      throw new Error('CoinGecko API error')
+      console.error('❌ CoinGecko API returned error:', response.status)
+      throw new Error(`CoinGecko API error: ${response.status}`)
     }
 
     const data = await response.json()
+    console.log('✅ Successfully fetched data from CoinGecko')
     
     const cryptoMap: Record<string, string> = {
       bitcoin: 'BTC',
@@ -67,9 +78,10 @@ async function fetchCoinGeckoRates(): Promise<CryptoRate[]> {
       }
     }
 
+    console.log(`✅ Processed ${rates.length} crypto rates`)
     return rates
   } catch (error) {
-    console.error('Error fetching from CoinGecko:', error)
+    console.error('❌ Error fetching from CoinGecko:', error)
     throw error
   }
 }
@@ -105,30 +117,40 @@ function generateMockRates(): CryptoRate[] {
 }
 
 Deno.serve(async (req) => {
+  console.log('📥 Received request to get-crypto-rates')
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
     let rates: CryptoRate[]
+    let source = 'mock'
 
     try {
       // Tentar API real primeiro
+      console.log('🔄 Attempting to fetch from CoinGecko API...')
       rates = await fetchCoinGeckoRates()
-      console.log('Successfully fetched rates from CoinGecko')
+      source = 'coingecko'
+      console.log('✅ Successfully fetched rates from CoinGecko')
     } catch (error) {
       // Fallback para dados mock
-      console.warn('Failed to fetch from CoinGecko, using mock data:', error)
+      console.warn('⚠️ Failed to fetch from CoinGecko, using mock data:', error)
       rates = generateMockRates()
+      source = 'mock'
     }
 
+    const response = {
+      success: true,
+      rates,
+      source,
+      timestamp: new Date().toISOString()
+    }
+
+    console.log(`📤 Returning ${rates.length} rates from source: ${source}`)
+
     return new Response(
-      JSON.stringify({
-        success: true,
-        rates,
-        source: rates.length > 0 ? 'coingecko' : 'mock',
-        timestamp: new Date().toISOString()
-      }),
+      JSON.stringify(response),
       { 
         status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -136,7 +158,7 @@ Deno.serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error in get-crypto-rates:', error)
+    console.error('❌ Critical error in get-crypto-rates:', error)
     
     // Retornar dados mock em caso de erro total
     const mockRates = generateMockRates()

@@ -2,10 +2,11 @@ import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import { SidebarMenuButton, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Circle } from 'lucide-react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { MenuItem } from './sidebar.config';
+import { Badge } from '@/components/ui/badge';
 
 interface SidebarMenuItemProps {
   item: MenuItem;
@@ -37,6 +38,9 @@ export function SidebarMenuItem({ item, isSubItem = false, onNavigate }: Sidebar
     onNavigate?.();
   };
 
+  // Get icon with fallback
+  const IconComponent = item.icon || Circle;
+
   // Menu item com subitems
   if (item.subItems && !isSubItem) {
     return (
@@ -44,7 +48,7 @@ export function SidebarMenuItem({ item, isSubItem = false, onNavigate }: Sidebar
         <CollapsibleTrigger asChild>
           <SidebarMenuButton className="group/button my-1 rounded-xl hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-lg transition-all duration-200">
             <div className="flex items-center gap-3 px-3 py-2 w-full">
-              <item.icon className="h-5 w-5 shrink-0" />
+              <IconComponent className="h-5 w-5 shrink-0" />
               {!collapsed && (
                 <>
                   <span className="text-sm flex-1 font-medium transition-opacity duration-300">
@@ -85,11 +89,13 @@ export function SidebarMenuItem({ item, isSubItem = false, onNavigate }: Sidebar
         }`}
       >
         <div className={`flex items-center gap-3 ${isSubItem ? 'px-4 py-1.5' : 'px-3 py-2'} w-full`}>
-          <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} shrink-0`} />
+          <IconComponent className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} shrink-0`} />
           {!collapsed && (
-            <span className={`${isSubItem ? 'text-xs' : 'text-sm'} font-medium transition-opacity duration-300`}>
-              {item.title}
-            </span>
+            <>
+              <span className={`${isSubItem ? 'text-xs' : 'text-sm'} font-medium transition-opacity duration-300 flex-1`}>
+                {item.title}
+              </span>
+            </>
           )}
         </div>
       </NavLink>
