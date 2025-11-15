@@ -25,6 +25,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { generateCryptoPerformanceReport } from './CryptoPerformanceReport';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -140,7 +141,7 @@ export function CryptoPortfolioDashboard({ wallets, transactions }: CryptoPortfo
         conversionsHistory,
       });
     } catch (error) {
-      console.error('Erro ao calcular portfolio:', error);
+      logger.error('Erro ao calcular portfolio', error);
     } finally {
       setLoading(false);
     }
@@ -166,7 +167,7 @@ export function CryptoPortfolioDashboard({ wallets, transactions }: CryptoPortfo
         USDC: data['usd-coin']?.brl || 5.5,
       };
     } catch (error) {
-      console.error('Erro ao buscar cotações:', error);
+      logger.error('Erro ao buscar cotações', error);
       // Fallback para valores simulados
       return {
         BTC: 350000,
@@ -237,7 +238,7 @@ export function CryptoPortfolioDashboard({ wallets, transactions }: CryptoPortfo
 
       toast.success('Relatório PDF gerado com sucesso!');
     } catch (error) {
-      console.error('Erro ao gerar relatório:', error);
+      logger.error('Erro ao gerar relatório', error);
       toast.error('Erro ao gerar relatório PDF');
     }
   };

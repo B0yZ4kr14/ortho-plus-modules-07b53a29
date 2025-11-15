@@ -10,10 +10,12 @@ declare global {
   }
 }
 
+import { logger } from './logger';
+
 // Web Vitals Monitoring
 export function reportWebVitals(metric: any) {
-  // Log metrics para analytics
-  console.log(metric);
+  // Log metrics para analytics (only in dev)
+  logger.info('Web Vitals', { metric });
   
   // Integração com analytics (Google Analytics, etc)
   if (window.gtag) {
@@ -32,7 +34,7 @@ export function observeLongTasks() {
     try {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          console.warn('Long Task detected:', {
+          logger.warn('Long Task detected', {
             duration: entry.duration,
             startTime: entry.startTime,
           });
@@ -54,7 +56,7 @@ export function measureRender(componentName: string, callback: () => void) {
   const duration = endTime - startTime;
   
   if (duration > 16) { // > 60fps threshold
-    console.warn(`Slow render detected: ${componentName} took ${duration.toFixed(2)}ms`);
+    logger.warn(`Slow render detected: ${componentName} took ${duration.toFixed(2)}ms`);
   }
 }
 
@@ -68,7 +70,7 @@ export function monitorResourceLoading() {
           
           // Alerta para recursos lentos (> 1s)
           if (resourceEntry.duration > 1000) {
-            console.warn('Slow resource:', {
+            logger.warn('Slow resource', {
               name: resourceEntry.name,
               duration: resourceEntry.duration,
               type: resourceEntry.initiatorType,
@@ -196,7 +198,7 @@ export function checkPerformanceBudget(
   }
   
   if (violations.length > 0) {
-    console.warn('Performance Budget Violations:', violations);
+    logger.warn('Performance Budget Violations', { violations });
     return false;
   }
   
@@ -214,7 +216,7 @@ export function initPerformanceMonitoring() {
     setInterval(() => {
       const memory = monitorMemoryUsage();
       if (memory) {
-        console.log('Memory Usage:', memory);
+        logger.info('Memory Usage', memory);
       }
     }, 30000); // Every 30 seconds
   }
