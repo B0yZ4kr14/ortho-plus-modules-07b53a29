@@ -2596,6 +2596,80 @@ export type Database = {
         }
         Relationships: []
       }
+      crypto_payments: {
+        Row: {
+          amount_brl: number
+          checkout_link: string | null
+          clinic_id: string
+          confirmations: number | null
+          confirmed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          crypto_amount: number | null
+          crypto_currency: string | null
+          currency: string
+          expires_at: string | null
+          id: string
+          invoice_id: string
+          metadata: Json | null
+          order_id: string
+          qr_code_data: string | null
+          status: string
+          transaction_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount_brl: number
+          checkout_link?: string | null
+          clinic_id: string
+          confirmations?: number | null
+          confirmed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          crypto_amount?: number | null
+          crypto_currency?: string | null
+          currency?: string
+          expires_at?: string | null
+          id?: string
+          invoice_id: string
+          metadata?: Json | null
+          order_id: string
+          qr_code_data?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount_brl?: number
+          checkout_link?: string | null
+          clinic_id?: string
+          confirmations?: number | null
+          confirmed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          crypto_amount?: number | null
+          crypto_currency?: string | null
+          currency?: string
+          expires_at?: string | null
+          id?: string
+          invoice_id?: string
+          metadata?: Json | null
+          order_id?: string
+          qr_code_data?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crypto_payments_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crypto_price_alerts: {
         Row: {
           alert_type: string

@@ -134,3 +134,12 @@ verify_jwt = true
 
 [functions.backup-immutability]
 verify_jwt = true
+
+[functions.analyze-radiografia]
+verify_jwt = true
+
+[functions.crypto-webhook]
+verify_jwt = false
+
+[functions.create-crypto-invoice]
+verify_jwt = true
