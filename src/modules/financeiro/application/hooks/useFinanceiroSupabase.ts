@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import type { ContaReceber, ContaPagar, NotaFiscal, DashboardFinanceiroData } from '../types/financeiro-completo.types';
+import type { ContaReceber, ContaPagar, NotaFiscal, DashboardFinanceiroData } from '../../types/financeiro-completo.types';
 
 export function useFinanceiroSupabase() {
   const { user, selectedClinic } = useAuth();

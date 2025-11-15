@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DollarSign, Plus, Search, Filter, Download, Calendar, AlertCircle, CheckCircle2, Clock, CreditCard, Mail, Send } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useFinanceiroSupabase } from '@/modules/financeiro/hooks/useFinanceiroSupabase';
+import { useFinanceiroSupabase } from '@/modules/financeiro/application/hooks/useFinanceiroSupabase';
 import { PaymentDialog } from '@/components/financeiro/PaymentDialog';
 import type { ContaReceber } from '@/modules/financeiro/types/financeiro-completo.types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
