@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Plus, Video, Calendar, Clock, User, FileText, Pill, ClipboardList } from 'lucide-react';
-import { useTeleodontologiaSupabase } from '@/modules/teleodontologia/hooks/useTeleodontologiaSupabase';
-import { VideoRoom } from '@/modules/teleodontologia/components/VideoRoom';
-import { TeleconsultaForm } from '@/modules/teleodontologia/components/TeleconsultaForm';
-import { PrescricaoRemotaForm } from '@/modules/teleodontologia/components/PrescricaoRemotaForm';
-import { TriagemForm } from '@/modules/teleodontologia/components/TriagemForm';
+import { useTeleodontologiaSupabase } from '@/modules/teleodonto/application/hooks/useTeleodontologiaSupabase';
+import { VideoRoom } from '@/modules/teleodonto/presentation/components/VideoRoom';
+import { TeleconsultaForm } from '@/modules/teleodonto/presentation/components/TeleconsultaForm';
+import { PrescricaoRemotaForm } from '@/modules/teleodonto/presentation/components/PrescricaoRemotaForm';
+import { TriagemForm } from '@/modules/teleodonto/presentation/components/TriagemForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/shared/PageHeader';

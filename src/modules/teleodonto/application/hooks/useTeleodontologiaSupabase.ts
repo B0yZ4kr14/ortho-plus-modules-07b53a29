@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import type { TeleconsultaComplete, PrescricaoRemota, Triagem } from '../types/teleodontologia.types';
+import type { TeleconsultaComplete, PrescricaoRemota, Triagem } from '../../domain/types/teleodontologia.types';
 
 export const useTeleodontologiaSupabase = (clinicId: string) => {
   const [teleconsultas, setTeleconsultas] = useState<TeleconsultaComplete[]>([]);
@@ -149,145 +149,143 @@ export const useTeleodontologiaSupabase = (clinicId: string) => {
     }
   }, [clinicId]);
 
-  const createTeleconsulta = async (data: Partial<Teleconsulta>) => {
+  const createTeleconsulta = async (teleconsulta: any) => {
     try {
-      const { data: newTeleconsulta, error } = await supabase
+      const { data, error } = await supabase
         .from('teleconsultas')
-        .insert([{ ...data, clinic_id: clinicId }])
+        .insert([{ ...teleconsulta, clinic_id: clinicId }])
         .select()
         .single();
 
       if (error) throw error;
 
       toast({
-        title: 'Teleconsulta agendada',
-        description: 'A teleconsulta foi agendada com sucesso.',
+        title: 'Sucesso',
+        description: 'Teleconsulta criada com sucesso!',
       });
 
-      return newTeleconsulta;
+      await loadData();
+      return data;
     } catch (error: any) {
       console.error('Error creating teleconsulta:', error);
       toast({
-        title: 'Erro ao agendar teleconsulta',
-        description: error.message,
+        title: 'Erro',
+        description: 'Erro ao criar teleconsulta: ' + error.message,
         variant: 'destructive',
       });
       throw error;
     }
   };
 
-  const updateTeleconsulta = async (id: string, data: Partial<Teleconsulta>) => {
+  const updateTeleconsulta = async (id: string, updates: any) => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('teleconsultas')
-        .update(data)
-        .eq('id', id);
+        .update(updates)
+        .eq('id', id)
+        .eq('clinic_id', clinicId)
+        .select()
+        .single();
 
       if (error) throw error;
 
       toast({
-        title: 'Teleconsulta atualizada',
-        description: 'Os dados foram atualizados com sucesso.',
+        title: 'Sucesso',
+        description: 'Teleconsulta atualizada com sucesso!',
       });
+
+      await loadData();
+      return data;
     } catch (error: any) {
       console.error('Error updating teleconsulta:', error);
       toast({
-        title: 'Erro ao atualizar teleconsulta',
-        description: error.message,
+        title: 'Erro',
+        description: 'Erro ao atualizar teleconsulta: ' + error.message,
         variant: 'destructive',
       });
       throw error;
     }
   };
 
-  const createPrescricao = async (data: Partial<PrescricaoRemota>) => {
+  const deleteTeleconsulta = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('prescricoes_remotas')
-        .insert([data]);
+        .from('teleconsultas')
+        .delete()
+        .eq('id', id)
+        .eq('clinic_id', clinicId);
 
       if (error) throw error;
 
       toast({
-        title: 'Prescrição criada',
-        description: 'A prescrição foi criada com sucesso.',
+        title: 'Sucesso',
+        description: 'Teleconsulta excluída com sucesso!',
       });
+
+      await loadData();
+    } catch (error: any) {
+      console.error('Error deleting teleconsulta:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao excluir teleconsulta: ' + error.message,
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  };
+
+  const createPrescricao = async (prescricao: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('prescricoes_remotas')
+        .insert([prescricao])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: 'Sucesso',
+        description: 'Prescrição criada com sucesso!',
+      });
+
+      await loadData();
+      return data;
     } catch (error: any) {
       console.error('Error creating prescricao:', error);
       toast({
-        title: 'Erro ao criar prescrição',
-        description: error.message,
+        title: 'Erro',
+        description: 'Erro ao criar prescrição: ' + error.message,
         variant: 'destructive',
       });
       throw error;
     }
   };
 
-  const createTriagem = async (data: Partial<Triagem>) => {
+  const createTriagem = async (triagem: any) => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('triagem_teleconsulta')
-        .insert([data]);
+        .insert([triagem])
+        .select()
+        .single();
 
       if (error) throw error;
 
       toast({
-        title: 'Triagem registrada',
-        description: 'A triagem foi registrada com sucesso.',
+        title: 'Sucesso',
+        description: 'Triagem criada com sucesso!',
       });
+
+      await loadData();
+      return data;
     } catch (error: any) {
       console.error('Error creating triagem:', error);
       toast({
-        title: 'Erro ao registrar triagem',
-        description: error.message,
+        title: 'Erro',
+        description: 'Erro ao criar triagem: ' + error.message,
         variant: 'destructive',
       });
-      throw error;
-    }
-  };
-
-  const iniciarConsulta = async (teleconsultaId: string) => {
-    try {
-      // Generate video token via Edge Function
-      const { data, error } = await supabase.functions.invoke('generate-video-token', {
-        body: { teleconsultaId },
-      });
-
-      if (error) throw error;
-
-      // Update status to EM_ANDAMENTO
-      await updateTeleconsulta(teleconsultaId, { status: 'EM_ANDAMENTO' });
-
-      return {
-        ...data,
-        teleconsultaId, // Pass teleconsultaId for recording
-      };
-    } catch (error: any) {
-      console.error('Error starting consultation:', error);
-      toast({
-        title: 'Erro ao iniciar consulta',
-        description: error.message,
-        variant: 'destructive',
-      });
-      throw error;
-    }
-  };
-
-  const finalizarConsulta = async (
-    teleconsultaId: string,
-    diagnostico: string,
-    conduta: string,
-    observacoes?: string
-  ) => {
-    try {
-      await updateTeleconsulta(teleconsultaId, {
-        status: 'CONCLUIDA',
-        diagnostico,
-        conduta,
-        observacoes,
-      });
-    } catch (error: any) {
-      console.error('Error finalizing consultation:', error);
       throw error;
     }
   };
@@ -299,10 +297,9 @@ export const useTeleodontologiaSupabase = (clinicId: string) => {
     loading,
     createTeleconsulta,
     updateTeleconsulta,
+    deleteTeleconsulta,
     createPrescricao,
     createTriagem,
-    iniciarConsulta,
-    finalizarConsulta,
-    reload: loadData,
+    refresh: loadData
   };
 };
