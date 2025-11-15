@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTeleodontologiaSupabase } from '@/modules/teleodontologia/hooks/useTeleodontologiaSupabase';
+import { useTeleodontologiaSupabase } from '@/modules/teleodonto/application/hooks/useTeleodontologiaSupabase';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Video, FileText, ClipboardList, Calendar, User, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { statusLabels, tipoLabels } from '@/modules/teleodontologia/types/teleodontologia.types';
+import { statusLabels, tipoLabels } from '@/modules/teleodonto/domain/types/teleodontologia.types';
 
 export default function HistoricoTeleconsultas() {
   const { user } = useAuth();
