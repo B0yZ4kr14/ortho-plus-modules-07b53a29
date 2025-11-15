@@ -252,29 +252,41 @@ export type Database = {
       audit_logs: {
         Row: {
           action: string
+          action_type: string | null
+          affected_records: Json | null
           clinic_id: string | null
           created_at: string
           details: Json | null
           id: number
+          ip_address: unknown
           target_module_id: number | null
+          user_agent: string | null
           user_id: string | null
         }
         Insert: {
           action: string
+          action_type?: string | null
+          affected_records?: Json | null
           clinic_id?: string | null
           created_at?: string
           details?: Json | null
           id?: number
+          ip_address?: unknown
           target_module_id?: number | null
+          user_agent?: string | null
           user_id?: string | null
         }
         Update: {
           action?: string
+          action_type?: string | null
+          affected_records?: Json | null
           clinic_id?: string | null
           created_at?: string
           details?: Json | null
           id?: number
+          ip_address?: unknown
           target_module_id?: number | null
+          user_agent?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -6609,6 +6621,36 @@ export type Database = {
           },
         ]
       }
+      security_audit_log: {
+        Row: {
+          description: string
+          id: number
+          issue_type: string
+          migration_version: string
+          resolution: string
+          resolved_at: string
+          severity: string | null
+        }
+        Insert: {
+          description: string
+          id?: number
+          issue_type: string
+          migration_version: string
+          resolution: string
+          resolved_at?: string
+          severity?: string | null
+        }
+        Update: {
+          description?: string
+          id?: number
+          issue_type?: string
+          migration_version?: string
+          resolution?: string
+          resolved_at?: string
+          severity?: string | null
+        }
+        Relationships: []
+      }
       split_payment_details: {
         Row: {
           created_at: string
@@ -7081,6 +7123,7 @@ export type Database = {
         }[]
       }
       create_default_admin_user: { Args: never; Returns: undefined }
+      create_root_user: { Args: never; Returns: undefined }
       get_user_clinic_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -7089,6 +7132,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin: { Args: never; Returns: boolean }
       validate_password_strength: {
         Args: { password: string }
         Returns: boolean
