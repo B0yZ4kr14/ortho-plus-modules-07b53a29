@@ -3805,6 +3805,50 @@ export type Database = {
           },
         ]
       }
+      lgpd_data_consents: {
+        Row: {
+          clinic_id: string
+          consent_type: string
+          created_at: string
+          expires_at: string | null
+          granted: boolean
+          granted_at: string | null
+          id: string
+          patient_id: string
+          revoked_at: string | null
+        }
+        Insert: {
+          clinic_id: string
+          consent_type: string
+          created_at?: string
+          expires_at?: string | null
+          granted?: boolean
+          granted_at?: string | null
+          id?: string
+          patient_id: string
+          revoked_at?: string | null
+        }
+        Update: {
+          clinic_id?: string
+          consent_type?: string
+          created_at?: string
+          expires_at?: string | null
+          granted?: boolean
+          granted_at?: string | null
+          id?: string
+          patient_id?: string
+          revoked_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lgpd_data_consents_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lgpd_data_exports: {
         Row: {
           clinic_id: string
@@ -7035,6 +7079,47 @@ export type Database = {
         }
         Relationships: []
       }
+      split_payment_config: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          percentage: number
+          procedure_type: string | null
+          professional_id: string
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          percentage: number
+          procedure_type?: string | null
+          professional_id: string
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          percentage?: number
+          procedure_type?: string | null
+          professional_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "split_payment_config_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       split_payment_details: {
         Row: {
           created_at: string
@@ -7263,6 +7348,56 @@ export type Database = {
             columns: ["transaction_id"]
             isOneToOne: false
             referencedRelation: "financial_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      split_transactions: {
+        Row: {
+          clinic_amount: number
+          clinic_id: string
+          created_at: string
+          id: string
+          percentage: number
+          processed_at: string | null
+          professional_amount: number
+          professional_id: string
+          status: string
+          total_amount: number
+          transaction_id: string
+        }
+        Insert: {
+          clinic_amount: number
+          clinic_id: string
+          created_at?: string
+          id?: string
+          percentage: number
+          processed_at?: string | null
+          professional_amount: number
+          professional_id: string
+          status?: string
+          total_amount: number
+          transaction_id: string
+        }
+        Update: {
+          clinic_amount?: number
+          clinic_id?: string
+          created_at?: string
+          id?: string
+          percentage?: number
+          processed_at?: string | null
+          professional_amount?: number
+          professional_id?: string
+          status?: string
+          total_amount?: number
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "split_transactions_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
             referencedColumns: ["id"]
           },
         ]
@@ -7558,6 +7693,122 @@ export type Database = {
           },
           {
             foreignKeyName: "teleodonto_sessions_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tiss_batches: {
+        Row: {
+          batch_number: string
+          clinic_id: string
+          created_at: string
+          id: string
+          insurance_company: string
+          processed_at: string | null
+          sent_at: string | null
+          status: string
+          total_amount: number
+          total_guides: number
+        }
+        Insert: {
+          batch_number: string
+          clinic_id: string
+          created_at?: string
+          id?: string
+          insurance_company: string
+          processed_at?: string | null
+          sent_at?: string | null
+          status?: string
+          total_amount?: number
+          total_guides?: number
+        }
+        Update: {
+          batch_number?: string
+          clinic_id?: string
+          created_at?: string
+          id?: string
+          insurance_company?: string
+          processed_at?: string | null
+          sent_at?: string | null
+          status?: string
+          total_amount?: number
+          total_guides?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tiss_batches_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tiss_guides: {
+        Row: {
+          amount: number
+          batch_id: string | null
+          clinic_id: string
+          created_at: string
+          guide_number: string
+          id: string
+          insurance_company: string
+          patient_id: string
+          procedure_code: string
+          procedure_name: string
+          response_date: string | null
+          service_date: string
+          status: string
+          submission_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          batch_id?: string | null
+          clinic_id: string
+          created_at?: string
+          guide_number: string
+          id?: string
+          insurance_company: string
+          patient_id: string
+          procedure_code: string
+          procedure_name: string
+          response_date?: string | null
+          service_date: string
+          status?: string
+          submission_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          batch_id?: string | null
+          clinic_id?: string
+          created_at?: string
+          guide_number?: string
+          id?: string
+          insurance_company?: string
+          patient_id?: string
+          procedure_code?: string
+          procedure_name?: string
+          response_date?: string | null
+          service_date?: string
+          status?: string
+          submission_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tiss_guides_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "tiss_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tiss_guides_clinic_id_fkey"
             columns: ["clinic_id"]
             isOneToOne: false
             referencedRelation: "clinics"
