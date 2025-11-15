@@ -10,6 +10,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { ForgotPassword } from '@/components/auth/ForgotPassword';
+import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import orthoLogo from '@/assets/ortho-logo-main.png';
 
 const loginSchema = z.object({
@@ -20,7 +21,12 @@ const loginSchema = z.object({
 const signupSchema = z.object({
   fullName: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
   email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
+  password: z.string()
+    .min(12, 'Senha deve ter no mínimo 12 caracteres')
+    .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
+    .regex(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
+    .regex(/\d/, 'Senha deve conter pelo menos um número')
+    .regex(/[@$!%*?&#]/, 'Senha deve conter pelo menos um símbolo (@$!%*?&#)'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'As senhas não coincidem',
@@ -243,6 +249,7 @@ export default function Auth() {
                             disabled={isLoading}
                           />
                         </FormControl>
+                        <PasswordStrengthIndicator password={field.value} />
                         <FormMessage />
                       </FormItem>
                     )}

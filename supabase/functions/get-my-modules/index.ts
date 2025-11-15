@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1'
 import { corsHeaders } from '../_shared/cors.ts'
+import { checkRateLimit } from '../_shared/rateLimiter.ts'
 
 console.log('get-my-modules function started')
 
@@ -30,6 +31,25 @@ Deno.serve(async (req) => {
     }
 
     console.log('User authenticated:', user.id)
+
+    // Rate limiting
+    const ipAddress = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                      req.headers.get('x-real-ip') || 
+                      'unknown'
+    
+    const rateLimitResult = await checkRateLimit(supabase, user.id, ipAddress, 'get-my-modules')
+    
+    if (!rateLimitResult.allowed) {
+      console.warn(`[get-my-modules] Rate limit exceeded for user ${user.id}`)
+      return new Response(
+        JSON.stringify({ 
+          error: 'Rate limit exceeded', 
+          reason: rateLimitResult.reason,
+          reset_at: rateLimitResult.reset_at 
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     // Buscar clinic_id do usuário
     const { data: profile, error: profileError } = await supabase
