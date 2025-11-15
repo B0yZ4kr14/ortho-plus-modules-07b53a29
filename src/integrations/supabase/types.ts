@@ -492,6 +492,59 @@ export type Database = {
           },
         ]
       }
+      audit_trail: {
+        Row: {
+          action: string
+          clinic_id: string | null
+          entity_id: string | null
+          entity_type: string
+          id: number
+          ip_address: unknown
+          new_values: Json | null
+          old_values: Json | null
+          sensitivity_level: string
+          timestamp: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          clinic_id?: string | null
+          entity_id?: string | null
+          entity_type: string
+          id?: number
+          ip_address?: unknown
+          new_values?: Json | null
+          old_values?: Json | null
+          sensitivity_level?: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          clinic_id?: string | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: number
+          ip_address?: unknown
+          new_values?: Json | null
+          old_values?: Json | null
+          sensitivity_level?: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_trail_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       backup_history: {
         Row: {
           backup_type: string
@@ -6582,6 +6635,62 @@ export type Database = {
           },
         ]
       }
+      procedimento_templates: {
+        Row: {
+          categoria: string
+          clinic_id: string | null
+          created_at: string
+          created_by: string
+          descricao: string | null
+          id: string
+          is_public: boolean | null
+          nome: string
+          steps: Json
+          tags: string[] | null
+          tempo_estimado_minutos: number
+          updated_at: string
+          valor_sugerido: number
+        }
+        Insert: {
+          categoria: string
+          clinic_id?: string | null
+          created_at?: string
+          created_by: string
+          descricao?: string | null
+          id?: string
+          is_public?: boolean | null
+          nome: string
+          steps: Json
+          tags?: string[] | null
+          tempo_estimado_minutos: number
+          updated_at?: string
+          valor_sugerido: number
+        }
+        Update: {
+          categoria?: string
+          clinic_id?: string | null
+          created_at?: string
+          created_by?: string
+          descricao?: string | null
+          id?: string
+          is_public?: boolean | null
+          nome?: string
+          steps?: Json
+          tags?: string[] | null
+          tempo_estimado_minutos?: number
+          updated_at?: string
+          valor_sugerido?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "procedimento_templates_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       produtos: {
         Row: {
           ativo: boolean
@@ -6898,6 +7007,59 @@ export type Database = {
           window_start?: string
         }
         Relationships: []
+      }
+      recalls: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          created_by: string | null
+          data_prevista: string
+          id: string
+          mensagem_personalizada: string | null
+          metodo_notificacao: string | null
+          notificacao_enviada: boolean | null
+          patient_id: string
+          status: string
+          tipo_recall: string
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          created_by?: string | null
+          data_prevista: string
+          id?: string
+          mensagem_personalizada?: string | null
+          metodo_notificacao?: string | null
+          notificacao_enviada?: boolean | null
+          patient_id: string
+          status?: string
+          tipo_recall: string
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          created_by?: string | null
+          data_prevista?: string
+          id?: string
+          mensagem_personalizada?: string | null
+          metodo_notificacao?: string | null
+          notificacao_enviada?: boolean | null
+          patient_id?: string
+          status?: string
+          tipo_recall?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recalls_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       room_availability: {
         Row: {

@@ -13,6 +13,11 @@ import { useHotkeys } from "@/hooks/useHotkeys";
 import { LoadingState } from '@/components/shared/LoadingState';
 import { lazy, Suspense } from 'react';
 import Demo from "./pages/Demo";
+
+// ✅ FASE 1 & 2: Lazy loading para páginas do V4.0
+const AuditTrailViewer = lazy(() => import('./pages/AuditTrailViewer'));
+const QuickChart = lazy(() => import('./pages/QuickChart'));
+const RecallPage = lazy(() => import('./pages/Recall'));
 import Dashboard from "./pages/Dashboard";
 import Pacientes from "./pages/Pacientes";
 import PatientDetail from "./pages/PatientDetail";
@@ -213,6 +218,11 @@ const App = () => (
                 <Route path="/settings/modules" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><ModulesAdmin /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/modules-simple" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState />}><ModulesSimple /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/profile" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState />}><ProfileSettings /></Suspense></AppLayout></ProtectedRoute>} />
+                
+                {/* V4.0 Routes - Audit Trail, Quick Chart, Recall */}
+                <Route path="/admin/audit-trail" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><AuditTrailViewer /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/quick-chart/:patientId" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState />}><QuickChart /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/recall" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState />}><RecallPage /></Suspense></AppLayout></ProtectedRoute>} />
                 
                 {/* Admin Routes - Enterprise Tools */}
                 <Route path="/admin/terminal" element={<ProtectedRoute requireAdmin><AppLayout><TerminalPage /></AppLayout></ProtectedRoute>} />

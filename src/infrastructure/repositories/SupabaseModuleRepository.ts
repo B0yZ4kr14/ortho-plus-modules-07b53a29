@@ -143,4 +143,53 @@ export class SupabaseModuleRepository implements IModuleRepository {
       throw new InfrastructureError('Erro inesperado ao desativar módulo', error);
     }
   }
+
+  async findDependencies(moduleKey: string): Promise<Array<{ module_key: string; depends_on_module_key: string; depends_on_module_name: string }>> {
+    try {
+      const { data, error } = await supabase
+        .from('module_dependencies')
+        .select(`
+          module_id,
+          depends_on_module_id,
+          module_catalog!module_dependencies_module_id_fkey(module_key),
+          dep_module:module_catalog!module_dependencies_depends_on_module_id_fkey(module_key, name)
+        `)
+        .eq('module_catalog.module_key', moduleKey);
+
+      if (error) throw new InfrastructureError(`Erro ao buscar dependências: ${error.message}`, error);
+      
+      return (data || []).map(d => ({
+        module_key: moduleKey,
+        depends_on_module_key: (d as any).dep_module?.module_key || '',
+        depends_on_module_name: (d as any).dep_module?.name || ''
+      }));
+    } catch (error) {
+      if (error instanceof InfrastructureError) throw error;
+      throw new InfrastructureError('Erro ao buscar dependências', error);
+    }
+  }
+
+  async findDependentsActive(moduleKey: string, clinicId: string): Promise<Array<{ module_key: string; name: string }>> {
+    try {
+      const { data, error } = await supabase
+        .from('module_dependencies')
+        .select(`
+          module_catalog!module_dependencies_module_id_fkey(module_key, name),
+          clinic_modules!inner(is_active)
+        `)
+        .eq('dep_module.module_key', moduleKey)
+        .eq('clinic_modules.clinic_id', clinicId)
+        .eq('clinic_modules.is_active', true);
+
+      if (error) throw new InfrastructureError(`Erro ao buscar dependentes: ${error.message}`, error);
+      
+      return (data || []).map(d => ({
+        module_key: (d as any).module_catalog?.module_key || '',
+        name: (d as any).module_catalog?.name || ''
+      }));
+    } catch (error) {
+      if (error instanceof InfrastructureError) throw error;
+      throw new InfrastructureError('Erro ao buscar dependentes ativos', error);
+    }
+  }
 }
