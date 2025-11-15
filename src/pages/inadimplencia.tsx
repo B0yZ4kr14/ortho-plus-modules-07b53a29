@@ -5,9 +5,11 @@ import { AlertCircle, Settings, History, TrendingDown } from "lucide-react";
 import { InadimplenciaList } from "@/modules/inadimplencia/presentation/components/InadimplenciaList";
 import { CobrancaAutomation } from "@/modules/inadimplencia/presentation/components/CobrancaAutomation";
 import { InadimplenciaDashboard } from "@/modules/inadimplencia/presentation/components/InadimplenciaDashboard";
+import { useInadimplentes } from "@/modules/inadimplencia/application/hooks/useInadimplentes";
 
 export default function InadimplenciaPage() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const { inadimplentes, campanhas, isLoading } = useInadimplentes();
 
   return (
     <div className="container mx-auto p-6 space-y-6">

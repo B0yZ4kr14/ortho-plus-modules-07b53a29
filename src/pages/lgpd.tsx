@@ -5,9 +5,11 @@ import { Shield, FileText, History, Settings } from "lucide-react";
 import { LGPDRequests } from "@/modules/lgpd/presentation/components/LGPDRequests";
 import { LGPDConsents } from "@/modules/lgpd/presentation/components/LGPDConsents";
 import { LGPDAuditTrail } from "@/modules/lgpd/presentation/components/LGPDAuditTrail";
+import { useLGPDRequests } from "@/modules/lgpd/application/hooks/useLGPDRequests";
 
 export default function LGPDPage() {
   const [activeTab, setActiveTab] = useState("requests");
+  const { requests, consents, isLoading } = useLGPDRequests();
 
   return (
     <div className="container mx-auto p-6 space-y-6">

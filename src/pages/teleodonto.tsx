@@ -6,9 +6,11 @@ import { Video, Calendar, FileText, Users } from "lucide-react";
 import { TeleodontoSessionList } from "@/modules/teleodonto/presentation/components/TeleodontoSessionList";
 import { TeleodontoScheduler } from "@/modules/teleodonto/presentation/components/TeleodontoScheduler";
 import { TeleodontoDashboard } from "@/modules/teleodonto/presentation/components/TeleodontoDashboard";
+import { useTeleconsultas } from "@/modules/teleodonto/application/hooks/useTeleconsultas";
 
 export default function TeleodontoPage() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const { teleconsultas, isLoading } = useTeleconsultas();
 
   return (
     <div className="container mx-auto p-6 space-y-6">
