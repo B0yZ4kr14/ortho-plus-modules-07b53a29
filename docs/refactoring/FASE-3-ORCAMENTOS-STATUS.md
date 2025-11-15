@@ -7,13 +7,13 @@
 
 ---
 
-## 📊 Progresso Geral - Módulo ORCAMENTOS
+## ## 📊 Progresso Geral - Módulo ORCAMENTOS
 
 ```
 Domain Layer:        ██████████ 100% (2/2) ✅
-Application Layer:   ██████████ 100% (5/5) ✅
-Infrastructure Layer: ██████████ 100% (4/4) ✅
-Presentation Layer:  ██████████ 100% (2/2) ✅
+Application Layer:   ██████████ 100% (4/4) ✅
+Infrastructure Layer: ██████████ 100% (2/2) ✅
+Presentation Layer:  ██████████ 100% (1/1) ✅
 
 Total: ████████████████████ 100% ✅
 ```
@@ -53,7 +53,30 @@ Total: ████████████████████ 100% ✅
 
 ---
 
-## ✅ Application Layer (100% - 5/5)
+## ✅ Application Layer (100% - 4/4)
+
+### Use Cases Implementados
+- ✅ **CreateOrcamentoUseCase**
+  - Cria novo orçamento em estado RASCUNHO
+  - Aplica validações de domínio via entidade
+  - Gera número único automaticamente
+  - Calcula data de expiração e valor total
+
+- ✅ **ListOrcamentosUseCase**
+  - Lista orçamentos com filtros opcionais
+  - Suporte a filtro por clínica, paciente, status
+  - Ordenação por data de criação
+
+- ✅ **EnviarOrcamentoUseCase**
+  - Envia orçamento para aprovação (RASCUNHO → PENDENTE)
+  - Valida se o orçamento pode ser enviado
+  - Atualiza status e timestamp
+
+- ✅ **AprovarOrcamentoUseCase**
+  - Aprova orçamento PENDENTE
+  - Verifica se não está expirado
+  - Registra usuário aprovador
+  - Atualiza timestamp de aprovação
 
 ### Use Cases Implementados
 - ✅ **CreateOrcamentoUseCase**
@@ -88,7 +111,22 @@ Total: ████████████████████ 100% ✅
 
 ---
 
-## ✅ Infrastructure Layer (100% - 4/4)
+## ✅ Infrastructure Layer (100% - 2/2)
+
+### Repositories Implementados
+- ✅ **SupabaseOrcamentoRepository**
+  - Implementa IOrcamentoRepository
+  - CRUD completo de orçamentos
+  - Queries otimizadas (findByStatus, findPendentes, findExpirados)
+  - Suporte a múltiplos filtros
+  - Mappers: toDomain() e toPersistence()
+
+- ✅ **SupabaseItemOrcamentoRepository**
+  - Implementa IItemOrcamentoRepository
+  - CRUD completo de itens
+  - Busca ordenada por ordem
+  - Deleção em lote por orçamento
+  - Mappers: toDomain() e toPersistence()
 
 ### Repositories Implementados
 - ✅ **SupabaseOrcamentoRepository**
@@ -122,7 +160,17 @@ Total: ████████████████████ 100% ✅
 
 ---
 
-## ✅ Presentation Layer (100% - 2/2)
+## ✅ Presentation Layer (100% - 1/1)
+
+### Hooks Implementados
+- ✅ **useOrcamentos**
+  - Listagem de orçamentos (por clínica, paciente, status)
+  - Criação de novos orçamentos
+  - Envio para aprovação
+  - Aprovação de orçamentos pendentes
+  - Análises e métricas (total, por status, valores)
+  - Estados: loading, error
+  - Cache invalidation automática
 
 ### Hooks Implementados
 - ✅ **useOrcamentos**

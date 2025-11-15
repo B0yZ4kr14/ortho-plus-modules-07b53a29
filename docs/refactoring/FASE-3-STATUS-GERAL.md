@@ -8,7 +8,20 @@
 
 ---
 
-## ✅ MÓDULOS IMPLEMENTADOS (5/17 completos)
+## ✅ MÓDULOS IMPLEMENTADOS (6/17 completos)
+
+### 6. ✅ ORCAMENTOS (Orçamentos e Contratos Digitais) - 100%
+- **Status:** Implementado com Clean Architecture ✅
+- **Entidades:** Orcamento, ItemOrcamento
+- **Use Cases:** 4 (Create/List/Enviar/Aprovar Orçamento)
+- **Hooks:** useOrcamentos
+- **Componentes:** OrcamentosPage (com tabs e métricas)
+- **Rota:** `/orcamentos`
+- **Module Key:** `ORCAMENTOS`
+- **Tabelas DB:** `budgets`, `budget_items` (existentes)
+- **Documentação:** `FASE-3-ORCAMENTOS-STATUS.md`
+
+## ✅ MÓDULOS ANTERIORES (5/17 completos)
 
 ### 5. ✅ MARKETING_AUTO (Automação de Marketing) - 100%
 - **Status:** Implementado com Clean Architecture ✅
@@ -71,8 +84,8 @@
 
 ## ⏳ MÓDULOS PENDENTES (13/17)
 
-### 📅 Gestão e Operação (3 módulos)
-- ⏳ **ORCAMENTOS** - Orçamentos e Contratos Digitais
+### 📅 Gestão e Operação (2 módulos)
+- ✅ **ORCAMENTOS** - Orçamentos e Contratos Digitais (COMPLETO)
 - ⏳ **ODONTOGRAMA** - Odontograma (2D e 3D)
 - ⏳ **ESTOQUE** - Controle de Estoque Avançado
 
