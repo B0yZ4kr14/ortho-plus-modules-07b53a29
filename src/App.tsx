@@ -28,7 +28,6 @@ import PatientForm from "./pages/PatientForm";
 import Dentistas from "./pages/Dentistas";
 import Funcionarios from "./pages/Funcionarios";
 import Procedimentos from "./pages/Procedimentos";
-import Financeiro from "./pages/Financeiro";
 import { FinanceiroPage } from "./modules/financeiro/ui/pages/FinanceiroPage";
 import { MarketingAutoPage } from './modules/marketing-auto/ui/pages/MarketingAutoPage';
 import { OrcamentosPage } from './modules/orcamentos/ui/pages/OrcamentosPage';
@@ -162,7 +161,6 @@ const App = () => (
                 <Route path="/procedimentos" element={<ProtectedRoute><AppLayout><Procedimentos /></AppLayout></ProtectedRoute>} />
                 {/* FINANCEIRO Module - Clean Architecture */}
                 <Route path="/financeiro" element={<ProtectedRoute><AppLayout><FinanceiroPage /></AppLayout></ProtectedRoute>} />
-                <Route path="/financeiro/legacy" element={<ProtectedRoute><AppLayout><Financeiro /></AppLayout></ProtectedRoute>} />
                 {/* MARKETING_AUTO Module - Clean Architecture */}
                 <Route path="/marketing-auto" element={<ProtectedRoute><AppLayout><MarketingAutoPage /></AppLayout></ProtectedRoute>} />
                 {/* ORCAMENTOS Module - Clean Architecture */}

@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 interface CryptoRate {
   symbol: string;
@@ -30,7 +31,7 @@ export function CryptoRatesWidget() {
       setRates(data.rates.slice(0, 4)); // Top 4 cryptos
       setLastUpdate(new Date());
     } catch (error) {
-      console.error('Error fetching crypto rates:', error);
+      logger.error('Error fetching crypto rates:', error);
     } finally {
       setLoading(false);
     }
