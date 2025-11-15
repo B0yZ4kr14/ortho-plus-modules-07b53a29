@@ -72,6 +72,7 @@ import BI from '@/pages/BI';
 import LGPD from '@/pages/LGPD';
 import MarketingAuto from '@/pages/MarketingAuto';
 import AssinaturaICP from '@/pages/AssinaturaICP';
+import { AgendaPage } from '@/modules/agenda/ui/pages/AgendaPage';
 import ProgramaFidelidade from '@/pages/ProgramaFidelidade';
 import PDV from '@/pages/PDV';
 import RelatorioCaixa from '@/pages/RelatorioCaixa';
@@ -129,8 +130,8 @@ const App = () => (
                 <Route path="/financeiro/conciliacao-bancaria" element={<ProtectedRoute><AppLayout><ConciliacaoBancaria /></AppLayout></ProtectedRoute>} />
                 <Route path="/financeiro/dashboard-vendas" element={<ProtectedRoute><AppLayout><DashboardVendasPDV /></AppLayout></ProtectedRoute>} />
                 <Route path="/pdv/metas" element={<ProtectedRoute><AppLayout><MetasGamificacao /></AppLayout></ProtectedRoute>} />
-                <Route path="/agenda" element={<ProtectedRoute><AppLayout><AgendaClinica /></AppLayout></ProtectedRoute>} />
-                <Route path="/agenda-clinica" element={<ProtectedRoute><AppLayout><AgendaClinica /></AppLayout></ProtectedRoute>} />
+                <Route path="/agenda" element={<ProtectedRoute><AppLayout><AgendaPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/agenda-clinica" element={<ProtectedRoute><AppLayout><AgendaPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/pep" element={<ProtectedRoute><AppLayout><PEP /></AppLayout></ProtectedRoute>} />
                 <Route path="/relatorios" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando relatórios..." />}><Relatorios /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/business-intelligence" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando BI..." />}><BusinessIntelligence /></Suspense></AppLayout></ProtectedRoute>} />
