@@ -70,7 +70,7 @@ export function monitorResourceLoading() {
           
           // Alerta para recursos lentos (> 1s)
           if (resourceEntry.duration > 1000) {
-            logger.warn('Slow resource', {
+            logger.warn('Slow resource |', {
               name: resourceEntry.name,
               duration: resourceEntry.duration,
               type: resourceEntry.initiatorType,

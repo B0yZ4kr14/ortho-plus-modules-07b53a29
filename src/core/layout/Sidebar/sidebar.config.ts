@@ -98,9 +98,9 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ========= 2. GESTÃO E OPERAÇÃO =========
+  // ===== 2. ATENDIMENTO CLÍNICO (era: GESTÃO E OPERAÇÃO) =====
   {
-    label: 'GESTÃO E OPERAÇÃO',
+    label: 'ATENDIMENTO CLÍNICO',
     collapsed: false,
     items: [
       { 
@@ -116,52 +116,52 @@ export const menuGroups: MenuGroup[] = [
         moduleKey: 'PEP' 
       },
       { 
-        title: 'Prontuário (PEP)', 
+        title: 'Prontuário Eletrônico', 
         url: '/pep', 
-        icon: ClipboardPlus, 
+        icon: FileText, 
         moduleKey: 'PEP' 
       },
       { 
-        title: 'Odontograma', 
+        title: 'Odontograma Digital', 
         url: '/odontograma', 
         icon: Activity, 
         moduleKey: 'ODONTOGRAMA' 
       },
       { 
-        title: 'Tratamentos', 
+        title: 'Planos de Tratamento', 
         url: '/tratamentos', 
         icon: HeartPulse, 
         moduleKey: 'PEP' 
       },
       { 
-        title: 'Recall', 
+        title: 'Recall Automatizado', 
         url: '/recall', 
         icon: Bell, 
         moduleKey: 'AGENDA' 
       },
       { 
-        title: 'Equipe',
+        title: 'Equipe Clínica',
         icon: Users,
         moduleKey: 'PEP',
         collapsed: true,
         subItems: [
-          { title: 'Dentistas', url: '/dentistas', icon: Stethoscope },
-          { title: 'Funcionários', url: '/funcionarios', icon: UserCog }
+          { title: 'Profissionais', url: '/dentistas', icon: Stethoscope },
+          { title: 'Auxiliares', url: '/funcionarios', icon: UserCog }
         ]
       },
       { 
-        title: 'Procedimentos', 
+        title: 'Tabela de Procedimentos', 
         url: '/procedimentos', 
-        icon: Pill, 
+        icon: ClipboardList, 
         moduleKey: 'PEP' 
       },
       { 
-        title: 'Estoque',
+        title: 'Materiais e Insumos',
         icon: Boxes,
         moduleKey: 'ESTOQUE',
         collapsed: true,
         subItems: [
-          { title: 'Visão Geral', url: '/estoque', icon: BarChart3 },
+          { title: 'Controle de Estoque', url: '/estoque', icon: BarChart3 },
           { title: 'Produtos', url: '/estoque/cadastros', icon: PackagePlus },
           { title: 'Requisições', url: '/estoque/requisicoes', icon: Clipboard },
           { title: 'Inventário', url: '/estoque/inventario', icon: ClipboardCheck }
@@ -170,9 +170,9 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ========= 3. FINANCEIRO =========
+  // ===== 3. GESTÃO FINANCEIRA (era: FINANCEIRO) =====
   {
-    label: 'FINANCEIRO',
+    label: 'GESTÃO FINANCEIRA',
     collapsed: true,
     items: [
       { 
@@ -236,43 +236,43 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ========= 4. CRESCIMENTO =========
+  // ===== 4. RELACIONAMENTO & VENDAS (era: CRESCIMENTO) =====
   {
-    label: 'CRESCIMENTO',
+    label: 'RELACIONAMENTO & VENDAS',
     collapsed: true,
     items: [
       { 
-        title: 'CRM', 
+        title: 'CRM Odontológico', 
         url: '/crm', 
-        icon: BriefcaseBusiness, 
+        icon: Users, 
         moduleKey: 'CRM' 
       },
       { 
-        title: 'Funil de Vendas', 
+        title: 'Funil de Captação', 
         url: '/crm/funil', 
         icon: Target, 
         moduleKey: 'CRM' 
       },
       { 
-        title: 'Campanhas', 
+        title: 'Campanhas de Marketing', 
         url: '/marketing-auto', 
         icon: Megaphone, 
         moduleKey: 'MARKETING_AUTO' 
       },
       { 
-        title: 'E-mail Marketing', 
+        title: 'Automação de E-mails', 
         url: '/email-marketing', 
         icon: Mail, 
         moduleKey: 'MARKETING_AUTO' 
       },
       { 
-        title: 'Programa Fidelidade', 
+        title: 'Programa de Fidelidade', 
         url: '/programa-fidelidade', 
         icon: Award, 
         moduleKey: 'CRM' 
       },
       { 
-        title: 'Analytics', 
+        title: 'Análise de Desempenho', 
         url: '/bi', 
         icon: BarChart3, 
         moduleKey: 'BI' 
@@ -280,31 +280,31 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ========= 5. COMPLIANCE =========
+  // ===== 5. CONFORMIDADE & LEGAL (era: COMPLIANCE) =====
   {
-    label: 'COMPLIANCE',
+    label: 'CONFORMIDADE & LEGAL',
     collapsed: true,
     items: [
       { 
-        title: 'LGPD', 
+        title: 'LGPD e Privacidade', 
         url: '/lgpd', 
         icon: Lock, 
         moduleKey: 'LGPD' 
       },
       { 
-        title: 'Assinatura Digital', 
+        title: 'Assinatura Digital ICP', 
         url: '/assinatura-digital', 
         icon: FileSignature, 
         moduleKey: 'ASSINATURA_ICP' 
       },
       { 
-        title: 'TISS', 
+        title: 'Faturamento TISS', 
         url: '/tiss', 
         icon: FileText, 
         moduleKey: 'TISS' 
       },
       { 
-        title: 'Auditoria', 
+        title: 'Auditoria e Logs', 
         url: '/auditoria', 
         icon: Eye, 
         moduleKey: 'LGPD' 
@@ -318,19 +318,19 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ========= 6. INOVAÇÃO =========
+  // ===== 6. TECNOLOGIAS AVANÇADAS (era: INOVAÇÃO) =====
   {
-    label: 'INOVAÇÃO',
+    label: 'TECNOLOGIAS AVANÇADAS',
     collapsed: true,
     items: [
       { 
-        title: 'IA Diagnóstico', 
+        title: 'IA para Diagnóstico', 
         url: '/ia-radiografia', 
         icon: Sparkles, 
         moduleKey: 'IA' 
       },
       { 
-        title: 'Fluxo Digital', 
+        title: 'Fluxo Digital (CAD/CAM)', 
         url: '/fluxo-digital', 
         icon: Workflow, 
         moduleKey: 'FLUXO_DIGITAL' 

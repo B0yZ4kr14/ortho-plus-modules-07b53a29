@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Users, Calendar, FileText, Stethoscope, User, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 import {
   CommandDialog,
   CommandEmpty,
@@ -107,7 +108,7 @@ export function GlobalSearch() {
 
         setResults(newResults);
       } catch (error) {
-        console.error('Erro ao buscar:', error);
+        logger.error('Erro ao buscar:', error);
       } finally {
         setIsLoading(false);
       }
