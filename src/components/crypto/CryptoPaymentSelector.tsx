@@ -3,7 +3,7 @@
  * Seletor de pagamento crypto para integração em PaymentDialog e PDV
  */
 
-import { useState } from 'react';
+import { useState, useMemo, memo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,7 +19,7 @@ interface CryptoPaymentSelectorProps {
   onPaymentConfirmed: (txHash: string, cryptoCurrency: string) => void;
 }
 
-export function CryptoPaymentSelector({ amount, onPaymentConfirmed }: CryptoPaymentSelectorProps) {
+export const CryptoPaymentSelector = memo(function CryptoPaymentSelector({ amount, onPaymentConfirmed }: CryptoPaymentSelectorProps) {
   const { wallets, offlineWallets, loading: loadingData } = useCryptoSupabase();
   const [selectedWallet, setSelectedWallet] = useState<string>('');
   const [selectedCoin, setSelectedCoin] = useState<string>('BTC');
@@ -27,10 +27,11 @@ export function CryptoPaymentSelector({ amount, onPaymentConfirmed }: CryptoPaym
   const [paymentData, setPaymentData] = useState<any>(null);
   const [generatingAddress, setGeneratingAddress] = useState(false);
 
-  const allWallets = [
+  // ✅ FASE 2: Memoizar lista combinada de wallets
+  const allWallets = useMemo(() => [
     ...wallets.map(w => ({ ...w, type: 'exchange' })),
     ...offlineWallets.map(w => ({ ...w, type: 'offline' })),
-  ];
+  ], [wallets, offlineWallets]);
 
   const handleGeneratePayment = async () => {
     if (!selectedWallet) {
@@ -168,4 +169,4 @@ export function CryptoPaymentSelector({ amount, onPaymentConfirmed }: CryptoPaym
       )}
     </div>
   );
-}
+});
