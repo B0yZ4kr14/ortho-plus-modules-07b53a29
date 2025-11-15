@@ -45,7 +45,7 @@ export function useLeads() {
     nome: string;
     email?: string;
     telefone?: string;
-    origem: 'SITE' | 'INDICACAO' | 'REDES_SOCIAIS' | 'BUSCA_ORGANICA' | 'ANUNCIO' | 'EVENTO' | 'OUTRO';
+    origem: 'SITE' | 'TELEFONE' | 'INDICACAO' | 'REDES_SOCIAIS' | 'EVENTO' | 'OUTRO';
     valorEstimado?: number;
     interesseDescricao?: string;
   }) => {
