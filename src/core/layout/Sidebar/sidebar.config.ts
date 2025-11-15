@@ -20,7 +20,10 @@ import {
   ShieldCheck, Eye, Brain, Workflow, Building2,
   ClipboardList, ClipboardCheck, Filter, Activity,
   ArrowDownToLine, ArrowUpFromLine, ShoppingCart, CreditCard,
-  BookOpen, LucideIcon
+  BookOpen, LucideIcon, Terminal, Github, Database,
+  HardDrive, Wrench, BookText, FileCode, Code2,
+  ScrollText, GitBranch, CheckCheck, Receipt,
+  ArrowLeftRight, Wallet, Banknote
 } from 'lucide-react';
 
 export interface MenuSubItem {
@@ -76,20 +79,36 @@ export const menuGroups: MenuGroup[] = [
     label: 'Financeiro',
     collapsed: true,
     items: [
-      { title: 'Visão Geral', url: '/financeiro', icon: LayoutDashboard, moduleKey: 'FINANCEIRO' },
+      { 
+        title: 'Dashboard',
+        url: '/financeiro',
+        icon: BarChart3,
+        moduleKey: 'FINANCEIRO'
+      },
+      { 
+        title: 'Movimentações',
+        icon: ArrowLeftRight,
+        moduleKey: 'FINANCEIRO',
+        collapsed: true,
+        subItems: [
+          { title: 'Contas a Receber', url: '/financeiro/contas-receber', icon: ArrowDownToLine },
+          { title: 'Contas a Pagar', url: '/financeiro/contas-pagar', icon: ArrowUpFromLine },
+          { title: 'Transações', url: '/financeiro/transacoes', icon: Activity },
+          { title: 'Conciliação', url: '/financeiro/conciliacao', icon: CheckCheck }
+        ]
+      },
       { title: 'Caixa', url: '/fluxo-caixa', icon: TrendingUp, moduleKey: 'FINANCEIRO' },
       { title: 'Orçamentos', url: '/orcamentos', icon: FileText, moduleKey: 'ORCAMENTOS' },
-      { title: 'Contas a Receber', url: '/financeiro/contas-receber', icon: ArrowDownToLine, moduleKey: 'FINANCEIRO' },
-      { title: 'Contas a Pagar', url: '/financeiro/contas-pagar', icon: ArrowUpFromLine, moduleKey: 'FINANCEIRO' },
       { title: 'PDV', url: '/pdv', icon: ShoppingCart, moduleKey: 'FINANCEIRO' },
+      { title: 'Notas Fiscais', url: '/notas-fiscais', icon: Receipt, moduleKey: 'TISS' },
       { 
         title: 'Pagamentos Avançados',
-        icon: CreditCard,
+        icon: Wallet,
         moduleKey: 'SPLIT_PAGAMENTO',
         collapsed: true,
         subItems: [
-          { title: 'Split', url: '/split-pagamento', icon: Split },
-          { title: 'Crypto', url: '/crypto', icon: Bitcoin },
+          { title: 'Split de Pagamento', url: '/split-pagamento', icon: Split },
+          { title: 'Crypto Payments', url: '/crypto', icon: Bitcoin },
           { title: 'Inadimplência', url: '/inadimplencia', icon: AlertCircle }
         ]
       }
@@ -173,12 +192,60 @@ export const menuGroups: MenuGroup[] = [
 ];
 
 /**
- * ADMIN MENU - Role-Based Access Control (RBAC)
- * Only visible to users with app_role = 'ADMIN'
+ * ADMIN MENU - Enterprise Administration Tools
+ * DevOps, Database, Documentation and System Management
  */
 export const adminMenuItems: MenuItem[] = [
-  { title: 'Clínicas', url: '/clinicas', icon: Building2 },
-  { title: 'Usuários', url: '/usuarios', icon: Users },
-  { title: 'Módulos', url: '/configuracoes/modulos', icon: Package },
-  { title: 'Configurações', url: '/configuracoes', icon: Settings }
+  {
+    title: "Clínicas",
+    url: "/clinicas",
+    icon: Building2,
+  },
+  {
+    title: "Usuários",
+    url: "/usuarios",
+    icon: Users,
+  },
+  {
+    title: "Módulos",
+    url: "/configuracoes/modulos",
+    icon: Package,
+  },
+  {
+    title: "Database",
+    icon: Database,
+    collapsed: false,
+    subItems: [
+      { title: "Backups", url: "/admin/backups", icon: HardDrive },
+      { title: "Manutenção DB", url: "/admin/database-maintenance", icon: Wrench },
+      { title: "Migrations", url: "/admin/migrations", icon: GitBranch },
+      { title: "SQL Query", url: "/admin/sql-query", icon: Code2 }
+    ]
+  },
+  {
+    title: "DevOps",
+    icon: Terminal,
+    collapsed: false,
+    subItems: [
+      { title: "Terminal Shell", url: "/admin/terminal", icon: Terminal },
+      { title: "GitHub Manager", url: "/admin/github", icon: Github },
+      { title: "System Logs", url: "/admin/logs", icon: ScrollText },
+      { title: "Monitoring", url: "/admin/monitoring", icon: Activity }
+    ]
+  },
+  {
+    title: "Documentação",
+    icon: BookText,
+    collapsed: false,
+    subItems: [
+      { title: "Wiki Interna", url: "/admin/wiki", icon: BookText },
+      { title: "ADRs", url: "/admin/adrs", icon: FileCode },
+      { title: "API Docs", url: "/admin/api-docs", icon: Code2 }
+    ]
+  },
+  {
+    title: "Configurações",
+    url: "/configuracoes",
+    icon: Settings,
+  },
 ];
