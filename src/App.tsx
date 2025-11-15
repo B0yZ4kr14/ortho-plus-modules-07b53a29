@@ -11,7 +11,9 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
 import { useHotkeys } from "@/hooks/useHotkeys";
 import { LoadingState } from '@/components/shared/LoadingState';
-import { lazy, Suspense } from 'react';
+import { PerformanceMonitor } from '@/components/PerformanceMonitor';
+import { initPerformanceMonitoring } from '@/lib/performance';
+import { lazy, Suspense, useEffect } from 'react';
 import Demo from "./pages/Demo";
 
 // ✅ FASE 1 & 2: Lazy loading para páginas do V4.0
@@ -110,7 +112,20 @@ import MonitoringPage from './pages/admin/MonitoringPage';
 import SystemLogsPage from './pages/admin/SystemLogsPage';
 import ApiDocsPage from './pages/admin/ApiDocsPage';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
+
+// Initialize performance monitoring
+if (typeof window !== 'undefined') {
+  initPerformanceMonitoring();
+}
 
 function HotkeysManager() {
   useHotkeys();
@@ -123,6 +138,7 @@ const App = () => (
       <ThemeProvider>
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <HotkeysManager />
+          <PerformanceMonitor />
           <AuthProvider>
             <ModulesProvider>
               <Toaster />
