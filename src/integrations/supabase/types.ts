@@ -852,6 +852,47 @@ export type Database = {
           },
         ]
       }
+      blocked_times: {
+        Row: {
+          clinic_id: string
+          created_at: string | null
+          created_by: string
+          dentist_id: string
+          end_datetime: string
+          id: string
+          reason: string
+          start_datetime: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string | null
+          created_by: string
+          dentist_id: string
+          end_datetime: string
+          id?: string
+          reason: string
+          start_datetime: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string | null
+          created_by?: string
+          dentist_id?: string
+          end_datetime?: string
+          id?: string
+          reason?: string
+          start_datetime?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocked_times_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budget_approvals: {
         Row: {
           acao: string
