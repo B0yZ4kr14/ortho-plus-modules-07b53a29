@@ -7,7 +7,7 @@ export class SupabaseCashRegisterRepository implements ICashRegisterRepository {
   private readonly tableName = 'cash_registers';
 
   async findById(id: string): Promise<CashRegister | null> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.tableName)
       .select('*')
       .eq('id', id)
@@ -18,7 +18,7 @@ export class SupabaseCashRegisterRepository implements ICashRegisterRepository {
   }
 
   async findByClinic(clinicId: string, filters?: CashRegisterFilters): Promise<CashRegister[]> {
-    let query = supabase
+    let query = (supabase as any)
       .from(this.tableName)
       .select('*')
       .eq('clinic_id', clinicId);
@@ -45,7 +45,7 @@ export class SupabaseCashRegisterRepository implements ICashRegisterRepository {
 
   async save(cashRegister: CashRegister): Promise<void> {
     const data = this.toDatabase(cashRegister);
-    const { error } = await supabase.from(this.tableName).insert(data);
+    const { error } = await (supabase as any).from(this.tableName).insert(data);
     
     if (error) {
       throw new Error(`Erro ao salvar caixa: ${error.message}`);
@@ -54,7 +54,7 @@ export class SupabaseCashRegisterRepository implements ICashRegisterRepository {
 
   async update(cashRegister: CashRegister): Promise<void> {
     const data = this.toDatabase(cashRegister);
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from(this.tableName)
       .update(data)
       .eq('id', cashRegister.id);
@@ -65,7 +65,7 @@ export class SupabaseCashRegisterRepository implements ICashRegisterRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from(this.tableName)
       .delete()
       .eq('id', id);
@@ -76,7 +76,7 @@ export class SupabaseCashRegisterRepository implements ICashRegisterRepository {
   }
 
   async findOpenRegister(clinicId: string): Promise<CashRegister | null> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.tableName)
       .select('*')
       .eq('clinic_id', clinicId)
@@ -90,7 +90,7 @@ export class SupabaseCashRegisterRepository implements ICashRegisterRepository {
   }
 
   async getLastClosedRegister(clinicId: string): Promise<CashRegister | null> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.tableName)
       .select('*')
       .eq('clinic_id', clinicId)

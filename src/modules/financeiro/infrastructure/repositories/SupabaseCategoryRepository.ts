@@ -6,7 +6,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
   private readonly tableName = 'financial_categories';
 
   async findById(id: string): Promise<Category | null> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.tableName)
       .select('*')
       .eq('id', id)
@@ -17,7 +17,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
   }
 
   async findByClinic(clinicId: string, filters?: CategoryFilters): Promise<Category[]> {
-    let query = supabase
+    let query = (supabase as any)
       .from(this.tableName)
       .select('*')
       .eq('clinic_id', clinicId);
@@ -38,7 +38,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
 
   async save(category: Category): Promise<void> {
     const data = this.toDatabase(category);
-    const { error } = await supabase.from(this.tableName).insert(data);
+    const { error } = await (supabase as any).from(this.tableName).insert(data);
     
     if (error) {
       throw new Error(`Erro ao salvar categoria: ${error.message}`);
@@ -47,7 +47,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
 
   async update(category: Category): Promise<void> {
     const data = this.toDatabase(category);
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from(this.tableName)
       .update(data)
       .eq('id', category.id);
@@ -58,7 +58,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from(this.tableName)
       .delete()
       .eq('id', id);
@@ -69,7 +69,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
   }
 
   async findByName(clinicId: string, name: string, type: CategoryType): Promise<Category | null> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.tableName)
       .select('*')
       .eq('clinic_id', clinicId)

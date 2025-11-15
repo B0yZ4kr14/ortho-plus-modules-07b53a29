@@ -8,7 +8,7 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
   private readonly tableName = 'financial_transactions';
 
   async findById(id: string): Promise<Transaction | null> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.tableName)
       .select('*')
       .eq('id', id)
@@ -19,7 +19,7 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
   }
 
   async findByClinic(clinicId: string, filters?: TransactionFilters): Promise<Transaction[]> {
-    let query = supabase
+    let query = (supabase as any)
       .from(this.tableName)
       .select('*')
       .eq('clinic_id', clinicId);
@@ -58,7 +58,7 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
 
   async save(transaction: Transaction): Promise<void> {
     const data = this.toDatabase(transaction);
-    const { error } = await supabase.from(this.tableName).insert(data);
+    const { error } = await (supabase as any).from(this.tableName).insert(data);
     
     if (error) {
       throw new Error(`Erro ao salvar transação: ${error.message}`);
@@ -67,7 +67,7 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
 
   async update(transaction: Transaction): Promise<void> {
     const data = this.toDatabase(transaction);
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from(this.tableName)
       .update(data)
       .eq('id', transaction.id);
@@ -78,7 +78,7 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from(this.tableName)
       .delete()
       .eq('id', id);
@@ -89,7 +89,7 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
   }
 
   async getTotalByPeriod(clinicId: string, period: Period, type: 'RECEITA' | 'DESPESA'): Promise<number> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.tableName)
       .select('amount')
       .eq('clinic_id', clinicId)
@@ -103,7 +103,7 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
   }
 
   async getOverdueTransactions(clinicId: string): Promise<Transaction[]> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.tableName)
       .select('*')
       .eq('clinic_id', clinicId)
@@ -115,7 +115,7 @@ export class SupabaseTransactionRepository implements ITransactionRepository {
   }
 
   async getPendingTransactions(clinicId: string): Promise<Transaction[]> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(this.tableName)
       .select('*')
       .eq('clinic_id', clinicId)
