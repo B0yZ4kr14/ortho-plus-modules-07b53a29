@@ -62,11 +62,11 @@ const moduleIcons: Record<string, any> = {
 };
 
 const categoryLabels: Record<string, string> = {
-  'Gestão e Operação': 'Gestão',
-  'Financeiro': 'Financeiro',
-  'Crescimento e Marketing': 'Marketing',
-  'Compliance': 'Compliance',
-  'Inovação': 'Inovação',
+  'Atendimento Clínico': 'Clínico',
+  'Gestão Financeira': 'Financeiro',
+  'Relacionamento & Vendas': 'Vendas',
+  'Conformidade & Legal': 'Legal',
+  'Tecnologias Avançadas': 'Tech',
 };
 
 export function SidebarPreview({ modules }: SidebarPreviewProps) {

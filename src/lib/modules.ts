@@ -22,11 +22,11 @@ export interface ModuleCategory {
 }
 
 export const MODULE_CATEGORIES = {
-  'Gestão e Operação': 'Gestão',
-  'Financeiro': 'Financeiro',
-  'Crescimento e Marketing': 'Marketing',
-  'Compliance': 'Compliance',
-  'Inovação': 'Inovação',
+  'Atendimento Clínico': 'Clínico',
+  'Gestão Financeira': 'Financeiro',
+  'Relacionamento & Vendas': 'Vendas',
+  'Conformidade & Legal': 'Legal',
+  'Tecnologias Avançadas': 'Tech',
 } as const;
 
 export function groupModulesByCategory(modules: Module[]): ModuleCategory[] {

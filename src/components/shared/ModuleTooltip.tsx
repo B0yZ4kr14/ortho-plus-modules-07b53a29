@@ -25,7 +25,7 @@ interface ModuleInfo {
 const MODULE_DATA: Record<string, ModuleInfo> = {
   PEP: {
     name: 'Prontuário Eletrônico do Paciente',
-    category: 'Gestão e Operação',
+    category: 'Atendimento Clínico',
     description: 'Sistema completo de gestão de prontuários digitais com histórico clínico, anamnese, evoluções e anexos.',
     dependencies: [],
     benefits: [
@@ -37,7 +37,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   AGENDA: {
     name: 'Agenda Inteligente',
-    category: 'Gestão e Operação',
+    category: 'Atendimento Clínico',
     description: 'Agenda visual com confirmação automática via WhatsApp, lembretes e otimização de horários.',
     dependencies: [],
     benefits: [
@@ -49,7 +49,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   FINANCEIRO: {
     name: 'Gestão Financeira',
-    category: 'Financeiro',
+    category: 'Gestão Financeira',
     description: 'Controle completo de fluxo de caixa, contas a pagar e receber, DRE e relatórios financeiros.',
     dependencies: [],
     benefits: [
@@ -61,7 +61,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   CRYPTO: {
     name: 'Pagamentos em Criptomoedas',
-    category: 'Financeiro',
+    category: 'Gestão Financeira',
     description: 'Aceite Bitcoin, USDT e outras criptomoedas. Conversão automática para BRL e integração com exchanges.',
     dependencies: ['FINANCEIRO'],
     benefits: [
@@ -73,7 +73,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   SPLIT_PAGAMENTO: {
     name: 'Split de Pagamento',
-    category: 'Financeiro',
+    category: 'Gestão Financeira',
     description: 'Divisão automática de pagamentos entre dentistas e clínica com otimização tributária.',
     dependencies: ['FINANCEIRO'],
     benefits: [
@@ -85,7 +85,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   INADIMPLENCIA: {
     name: 'Controle de Inadimplência',
-    category: 'Financeiro',
+    category: 'Gestão Financeira',
     description: 'Cobrança automatizada via WhatsApp e e-mail com escalonamento inteligente.',
     dependencies: ['FINANCEIRO'],
     benefits: [
@@ -97,7 +97,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   ORCAMENTOS: {
     name: 'Orçamentos e Contratos',
-    category: 'Gestão e Operação',
+    category: 'Atendimento Clínico',
     description: 'Criação de orçamentos profissionais, contratos digitais e assinatura eletrônica.',
     dependencies: ['ODONTOGRAMA'],
     benefits: [
@@ -109,7 +109,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   ODONTOGRAMA: {
     name: 'Odontograma 2D e 3D',
-    category: 'Gestão e Operação',
+    category: 'Atendimento Clínico',
     description: 'Odontograma interativo 2D e visualização 3D com marcação de procedimentos realizados e planejados.',
     dependencies: [],
     benefits: [
@@ -121,7 +121,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   ESTOQUE: {
     name: 'Controle de Estoque Avançado',
-    category: 'Gestão e Operação',
+    category: 'Atendimento Clínico',
     description: 'Gestão completa de estoque com scanner mobile, pedidos automáticos e análise de consumo.',
     dependencies: [],
     benefits: [
@@ -133,7 +133,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   CRM: {
     name: 'CRM - Funil de Vendas',
-    category: 'Crescimento e Marketing',
+    category: 'Relacionamento & Vendas',
     description: 'Gestão de leads e oportunidades com funil visual e automação de follow-up.',
     dependencies: [],
     benefits: [
@@ -145,7 +145,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   MARKETING_AUTO: {
     name: 'Automação de Marketing',
-    category: 'Crescimento e Marketing',
+    category: 'Relacionamento & Vendas',
     description: 'Campanhas automatizadas de recall, pós-consulta, aniversário e segmentação de pacientes.',
     dependencies: [],
     benefits: [
@@ -157,7 +157,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   BI: {
     name: 'Business Intelligence',
-    category: 'Crescimento e Marketing',
+    category: 'Relacionamento & Vendas',
     description: 'Dashboards personalizados, relatórios automatizados e análise de indicadores-chave.',
     dependencies: [],
     benefits: [
@@ -169,7 +169,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   LGPD: {
     name: 'Segurança e Conformidade LGPD',
-    category: 'Compliance',
+    category: 'Conformidade & Legal',
     description: 'Gestão de consentimentos, solicitações de dados, logs de auditoria e conformidade com LGPD.',
     dependencies: [],
     benefits: [
@@ -181,7 +181,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   ASSINATURA_ICP: {
     name: 'Assinatura Digital Qualificada',
-    category: 'Compliance',
+    category: 'Conformidade & Legal',
     description: 'Assinatura digital com certificado ICP-Brasil (validade jurídica plena).',
     dependencies: ['PEP'],
     benefits: [
@@ -193,7 +193,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   TISS: {
     name: 'Faturamento de Convênios',
-    category: 'Compliance',
+    category: 'Conformidade & Legal',
     description: 'Geração de guias TISS (XML), envio para operadoras e rastreamento de reembolsos.',
     dependencies: ['PEP'],
     benefits: [
@@ -205,7 +205,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   TELEODONTO: {
     name: 'Teleodontologia',
-    category: 'Compliance',
+    category: 'Conformidade & Legal',
     description: 'Teleconsultas com vídeo, gravação automática e conformidade com CFO.',
     dependencies: [],
     benefits: [
@@ -217,7 +217,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   FLUXO_DIGITAL: {
     name: 'Integração Fluxo Digital',
-    category: 'Inovação',
+    category: 'Tecnologias Avançadas',
     description: 'Integração com scanners intraorais e envio automático para laboratórios CAD/CAM.',
     dependencies: ['PEP'],
     benefits: [
@@ -229,7 +229,7 @@ const MODULE_DATA: Record<string, ModuleInfo> = {
   },
   IA: {
     name: 'Inteligência Artificial',
-    category: 'Inovação',
+    category: 'Tecnologias Avançadas',
     description: 'Análise automática de raio-X, detecção de problemas e sugestões de diagnóstico.',
     dependencies: ['PEP', 'FLUXO_DIGITAL'],
     benefits: [

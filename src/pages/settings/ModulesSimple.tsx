@@ -200,7 +200,7 @@ export default function ModulesSimple() {
     return acc;
   }, {} as Record<string, Module[]>);
 
-  const categoryOrder = ['Gestão e Operação', 'Financeiro', 'Crescimento e Marketing', 'Compliance', 'Inovação', 'Outros'];
+  const categoryOrder = ['Atendimento Clínico', 'Gestão Financeira', 'Relacionamento & Vendas', 'Conformidade & Legal', 'Tecnologias Avançadas', 'Outros'];
   const sortedCategories = Object.keys(groupedModules).sort((a, b) => {
     const indexA = categoryOrder.indexOf(a);
     const indexB = categoryOrder.indexOf(b);

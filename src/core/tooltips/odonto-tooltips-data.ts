@@ -259,7 +259,7 @@ export const odontoTooltipsData: Record<string, OdontoTooltip> = {
       'Integrar com WhatsApp e redes sociais',
       'Mensurar taxa de conversão por etapa'
     ],
-    category: 'marketing',
+    category: 'financeiro',
     riskLevel: 'baixo'
   },
 
@@ -286,7 +286,7 @@ export const odontoTooltipsData: Record<string, OdontoTooltip> = {
       'Oferecer canal direto para dúvidas',
       'Integrar com PEP para timing ideal'
     ],
-    category: 'marketing',
+    category: 'financeiro',
     riskLevel: 'baixo'
   },
 
@@ -313,7 +313,7 @@ export const odontoTooltipsData: Record<string, OdontoTooltip> = {
       'Usar visualizações claras e objetivas',
       'Treinar equipe em interpretação de dados'
     ],
-    category: 'marketing',
+    category: 'financeiro',
     riskLevel: 'baixo'
   },
 
