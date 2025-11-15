@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card } from '@/components/ui/card';
@@ -82,7 +82,7 @@ interface Module {
   blocking_dependents?: string[];
 }
 
-export default function ModulesSimple() {
+const ModulesSimple = memo(function ModulesSimple() {
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
@@ -92,6 +92,16 @@ export default function ModulesSimple() {
   const [showRoadmap, setShowRoadmap] = useState(false);
   const [roadmapData, setRoadmapData] = useState<any>(null);
   const [loadingRoadmap, setLoadingRoadmap] = useState(false);
+
+  // ✅ FASE 2: Memoizar categorias agrupadas
+  const modulesByCategory = useMemo(() => {
+    const grouped: Record<string, Module[]> = {};
+    modules.forEach(mod => {
+      if (!grouped[mod.category]) grouped[mod.category] = [];
+      grouped[mod.category].push(mod);
+    });
+    return grouped;
+  }, [modules]);
 
   const fetchModules = async () => {
     try {
@@ -414,4 +424,6 @@ export default function ModulesSimple() {
       </Dialog>
     </div>
   );
-}
+});
+
+export default ModulesSimple;
