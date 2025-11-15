@@ -62,6 +62,7 @@ const ReportTemplates = lazy(() => import('@/pages/ReportTemplates'));
 const AuditLogs = lazy(() => import('@/pages/AuditLogs'));
 const LGPDCompliance = lazy(() => import("@/pages/LGPDCompliance"));
 const Cobranca = lazy(() => import('@/pages/Cobranca'));
+const BI = lazy(() => import('@/pages/BI'));
 const ScheduledBackupsManagement = lazy(() => import('./pages/settings/ScheduledBackupsManagement'));
 const BackupExecutivePage = lazy(() => import('./pages/settings/BackupExecutivePage'));
 const ModulesPage = lazy(() => import('./pages/settings/ModulesPage'));
@@ -180,6 +181,7 @@ const App = () => (
                 <Route path="/pep" element={<ProtectedRoute><AppLayout><PEP /></AppLayout></ProtectedRoute>} />
                 <Route path="/relatorios" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando relatórios..." />}><Relatorios /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/business-intelligence" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando BI..." />}><BusinessIntelligence /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/bi" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando BI..." />}><BI /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/analise-comportamental" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando analytics..." />}><UserBehaviorAnalytics /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/lgpd-compliance" element={<ProtectedRoute><AppLayout><LGPDCompliance /></AppLayout></ProtectedRoute>} />
                 <Route path="/cobranca" element={<ProtectedRoute><AppLayout><Cobranca /></AppLayout></ProtectedRoute>} />
