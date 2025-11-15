@@ -7656,6 +7656,7 @@ export type Database = {
       create_default_admin_user: { Args: never; Returns: undefined }
       create_root_user: { Args: never; Returns: undefined }
       detect_suspicious_patterns: { Args: never; Returns: undefined }
+      ensure_all_modules_active: { Args: never; Returns: undefined }
       get_user_clinic_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
