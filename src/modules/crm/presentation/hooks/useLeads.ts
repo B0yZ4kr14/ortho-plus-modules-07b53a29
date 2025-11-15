@@ -1,10 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useService } from '@/infrastructure/di';
 import { SERVICE_KEYS } from '@/infrastructure/di/ServiceKeys';
-import { CreateLeadUseCase } from '../../application/use-cases/CreateLeadUseCase';
 import { UpdateLeadStatusUseCase } from '../../application/use-cases/UpdateLeadStatusUseCase';
 import { GetLeadsByStatusUseCase } from '../../application/use-cases/GetLeadsByStatusUseCase';
-import { Lead, LeadStatus } from '../../domain/entities/Lead';
+import { Lead, LeadStatus, LeadSource } from '../../domain/entities/Lead';
 import { toast } from 'sonner';
 
 export function useLeads(clinicId: string, status?: string) {
@@ -27,23 +26,32 @@ export function useLeads(clinicId: string, status?: string) {
   });
 
   // Mutation para criar lead
-  const createLeadUseCase = useService<CreateLeadUseCase>(
-    SERVICE_KEYS.CREATE_LEAD_USE_CASE
-  );
-
   const createLeadMutation = useMutation({
     mutationFn: async (input: {
       nome: string;
       email?: string;
       telefone?: string;
-      origem: string;
+      origem: LeadSource;
       interesseDescricao?: string;
       valorEstimado?: number;
     }) => {
-      return await createLeadUseCase.execute({
+      // Criar lead diretamente
+      const lead = new Lead({
+        id: crypto.randomUUID(),
         clinicId,
-        ...input,
+        nome: input.nome,
+        email: input.email,
+        telefone: input.telefone,
+        origem: input.origem,
+        status: 'NOVO' as LeadStatus,
+        interesseDescricao: input.interesseDescricao,
+        valorEstimado: input.valorEstimado,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
+
+      const leadRepo = useService(SERVICE_KEYS.LEAD_REPOSITORY);
+      return await leadRepo.save(lead);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] });

@@ -4,14 +4,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Lead } from '@/modules/crm/domain/entities/Lead';
+import { Lead, LeadSource, LeadStatus } from '@/modules/crm/domain/entities/Lead';
 import { SupabaseLeadRepository } from '@/modules/crm/infrastructure/repositories/SupabaseLeadRepository';
-import { CreateLeadUseCase } from '@/modules/crm/application/use-cases/CreateLeadUseCase';
 import { UpdateLeadStatusUseCase } from '@/modules/crm/application/use-cases/UpdateLeadStatusUseCase';
 import { toast } from 'sonner';
 
 const leadRepository = new SupabaseLeadRepository();
-const createLeadUseCase = new CreateLeadUseCase(leadRepository);
 const updateLeadStatusUseCase = new UpdateLeadStatusUseCase(leadRepository);
 
 export function useLeads() {
@@ -45,7 +43,7 @@ export function useLeads() {
     nome: string;
     email?: string;
     telefone?: string;
-    origem: 'SITE' | 'TELEFONE' | 'INDICACAO' | 'REDES_SOCIAIS' | 'EVENTO' | 'OUTRO';
+    origem: LeadSource;
     valorEstimado?: number;
     interesseDescricao?: string;
   }) => {
@@ -55,15 +53,27 @@ export function useLeads() {
     }
 
     try {
-      const lead = await createLeadUseCase.execute({
-        ...input,
+      // Criar diretamente usando entidade de domínio
+      const lead = new Lead({
+        id: crypto.randomUUID(),
         clinicId,
+        nome: input.nome,
+        email: input.email,
+        telefone: input.telefone,
+        origem: input.origem,
+        status: 'NOVO' as LeadStatus,
+        interesseDescricao: input.interesseDescricao,
+        valorEstimado: input.valorEstimado,
         responsavelId: user.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
+
+      const savedLead = await leadRepository.save(lead);
 
       toast.success('Lead criado com sucesso');
       await loadLeads();
-      return lead;
+      return savedLead;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao criar lead';
       toast.error(errorMessage);

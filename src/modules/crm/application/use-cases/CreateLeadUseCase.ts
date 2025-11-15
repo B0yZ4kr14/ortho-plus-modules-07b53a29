@@ -1,23 +1,32 @@
-import { Lead } from '../../domain/entities/Lead';
+import { Lead, LeadSource } from '../../domain/entities/Lead';
 import { ILeadRepository } from '../../domain/repositories/ILeadRepository';
 
-interface CreateLeadInput {
+export interface CreateLeadInput {
   clinicId: string;
   nome: string;
   email?: string;
   telefone?: string;
-  origem: string;
+  origem: LeadSource;
   interesseDescricao?: string;
   valorEstimado?: number;
   responsavelId?: string;
 }
 
+/**
+ * Use Case: Criar Lead no CRM
+ * 
+ * Cria um novo lead no funil de vendas da clínica.
+ * Validações de domínio aplicadas pela entidade.
+ */
 export class CreateLeadUseCase {
-  constructor(private leadRepository: ILeadRepository) {}
+  constructor(private readonly leadRepository: ILeadRepository) {}
 
   async execute(input: CreateLeadInput): Promise<Lead> {
-    // Validações
-    if (!input.nome || input.nome.trim().length === 0) {
+    if (!input.clinicId?.trim()) {
+      throw new Error('ID da clínica é obrigatório');
+    }
+
+    if (!input.nome?.trim()) {
       throw new Error('Nome do lead é obrigatório');
     }
 
@@ -25,27 +34,25 @@ export class CreateLeadUseCase {
       throw new Error('Email ou telefone é obrigatório');
     }
 
-    if (!input.clinicId) {
-      throw new Error('ID da clínica é obrigatório');
-    }
-
-    // Criar entidade Lead
+    // Criar entidade de domínio
     const lead = new Lead({
       id: crypto.randomUUID(),
       clinicId: input.clinicId,
-      nome: input.nome.trim(),
-      email: input.email?.trim(),
-      telefone: input.telefone?.trim(),
-      origem: input.origem as any,
-      status: 'NOVO',
-      interesseDescricao: input.interesseDescricao?.trim(),
+      nome: input.nome,
+      email: input.email,
+      telefone: input.telefone,
+      origem: input.origem,
+      status: 'NOVO', // Status inicial
+      interesseDescricao: input.interesseDescricao,
       valorEstimado: input.valorEstimado,
       responsavelId: input.responsavelId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
 
-    // Persistir
-    return await this.leadRepository.save(lead);
+    // Persistir no repositório
+    const savedLead = await this.leadRepository.save(lead);
+
+    return savedLead;
   }
 }

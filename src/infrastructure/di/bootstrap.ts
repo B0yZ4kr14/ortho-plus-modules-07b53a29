@@ -96,7 +96,6 @@ import { GetFluxoCaixaUseCase } from '@/application/use-cases/financeiro/GetFlux
 // CRM Module
 import { LeadRepositorySupabase } from '@/modules/crm/infrastructure/repositories/LeadRepositorySupabase';
 import { AtividadeRepositorySupabase } from '@/modules/crm/infrastructure/repositories/AtividadeRepositorySupabase';
-import { CreateLeadUseCase } from '@/modules/crm/application/use-cases/CreateLeadUseCase';
 import { UpdateLeadStatusUseCase } from '@/modules/crm/application/use-cases/UpdateLeadStatusUseCase';
 import { GetLeadsByStatusUseCase } from '@/modules/crm/application/use-cases/GetLeadsByStatusUseCase';
 import { CreateAtividadeUseCase } from '@/modules/crm/application/use-cases/CreateAtividadeUseCase';
