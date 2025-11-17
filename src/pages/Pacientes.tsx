@@ -6,18 +6,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, UserCircle, Phone, Calendar, AlertTriangle } from 'lucide-react';
+import { Plus, UserCircle, Phone, Calendar, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { RiskScoreBadge } from '@/components/patients/RiskScoreBadge';
+import { TableFilter } from '@/components/shared/TableFilter';
 import type { Patient } from '@/types/patient';
 
 export default function Pacientes() {
   const { clinicId } = useAuth();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const { data: patients, isLoading } = useQuery<Patient[]>({
-    queryKey: ['patients', clinicId, searchTerm],
+    queryKey: ['patients', clinicId],
     queryFn: async () => {
       const query = supabase
         .from('patients' as any)
@@ -25,17 +27,23 @@ export default function Pacientes() {
         .eq('clinic_id', clinicId)
         .order('created_at', { ascending: false });
 
-      let finalQuery = query;
-      if (searchTerm) {
-        finalQuery = query.or(`full_name.ilike.%${searchTerm}%,cpf.ilike.%${searchTerm}%,phone_primary.ilike.%${searchTerm}%`);
-      }
-
-      const { data, error } = await finalQuery;
+      const { data, error } = await query;
       if (error) throw error;
       return (data || []) as unknown as Patient[];
     },
     enabled: !!clinicId
   });
+
+  const filteredPatients = patients?.filter(patient => {
+    const matchesSearch = !searchTerm || 
+      patient.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.cpf?.includes(searchTerm) ||
+      patient.phone_primary?.includes(searchTerm);
+    
+    const matchesStatus = statusFilter === 'all' || patient.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  }) || [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -73,18 +81,29 @@ export default function Pacientes() {
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nome, CPF ou telefone..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
+      {/* Filters */}
+      <TableFilter
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Buscar por nome, CPF ou telefone..."
+        filters={[
+          {
+            label: 'Status',
+            value: statusFilter,
+            options: [
+              { label: 'Todos', value: 'all' },
+              { label: 'Ativos', value: 'ativo' },
+              { label: 'Inativos', value: 'inativo' },
+              { label: 'Arquivados', value: 'arquivado' },
+            ],
+            onChange: setStatusFilter,
+          },
+        ]}
+        onClear={() => {
+          setSearchTerm('');
+          setStatusFilter('all');
+        }}
+      />
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -95,7 +114,7 @@ export default function Pacientes() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total</p>
-              <p className="text-2xl font-bold">{patients?.length || 0}</p>
+              <p className="text-2xl font-bold">{filteredPatients?.length || 0}</p>
             </div>
           </div>
         </Card>
@@ -107,7 +126,7 @@ export default function Pacientes() {
             <div>
               <p className="text-sm text-muted-foreground">Ativos</p>
               <p className="text-2xl font-bold">
-                {patients?.filter(p => p.status === 'ativo').length || 0}
+                {filteredPatients?.filter(p => p.status === 'ativo').length || 0}
               </p>
             </div>
           </div>
@@ -120,7 +139,7 @@ export default function Pacientes() {
             <div>
               <p className="text-sm text-muted-foreground">Alto Risco</p>
               <p className="text-2xl font-bold">
-                {patients?.filter(p => p.risk_level === 'alto' || p.risk_level === 'critico').length || 0}
+                {filteredPatients?.filter(p => p.risk_level === 'alto' || p.risk_level === 'critico').length || 0}
               </p>
             </div>
           </div>
@@ -133,7 +152,7 @@ export default function Pacientes() {
             <div>
               <p className="text-sm text-muted-foreground">Este Mês</p>
               <p className="text-2xl font-bold">
-                {patients?.filter(p => {
+                {filteredPatients?.filter(p => {
                   const created = new Date(p.created_at);
                   const now = new Date();
                   return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();

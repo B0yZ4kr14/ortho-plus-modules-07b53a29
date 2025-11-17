@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { 
   Plus, 
-  Search, 
   Users, 
   UserCircle, 
   Shield, 
@@ -19,6 +18,7 @@ import {
   CheckCircle2,
   XCircle
 } from 'lucide-react';
+import { TableFilter } from '@/components/shared/TableFilter';
 import { 
   Dialog,
   DialogContent,
@@ -55,6 +55,7 @@ export default function Usuarios() {
   const { clinicId, isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -92,6 +93,16 @@ export default function Usuarios() {
     },
     enabled: !!clinicId,
   });
+
+  const filteredUsers = users?.filter(user => {
+    const matchesSearch = !searchTerm || 
+      user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesRole = roleFilter === 'all' || user.app_role === roleFilter;
+    
+    return matchesSearch && matchesRole;
+  }) || [];
 
   // Delete user mutation
   const deleteUserMutation = useMutation({
@@ -145,10 +156,6 @@ export default function Usuarios() {
     setSelectedUser(null);
   };
 
-  const filteredUsers = users?.filter(user =>
-    user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const getRoleBadge = (role: 'ADMIN' | 'MEMBER') => {
     if (role === 'ADMIN') {
@@ -232,18 +239,6 @@ export default function Usuarios() {
         </Dialog>
       </div>
 
-      {/* Search */}
-      <div className="flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nome ou email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-3">
