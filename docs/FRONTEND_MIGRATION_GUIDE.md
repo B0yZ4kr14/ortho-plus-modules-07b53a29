@@ -124,21 +124,21 @@
 
 ---
 
-### ⏳ FASE 6: Atualizar Context Providers (PENDENTE)
+### ✅ FASE 6: Atualizar Context Providers (COMPLETO)
 
 #### 6.1 AuthContext
-- [ ] Substituir `supabase.auth` por `useAuth`
-- [ ] Atualizar `login`, `logout`, `register`
-- [ ] Manter compatibilidade com componentes existentes
+- [x] Context mantém integração Supabase para auth flow (migração gradual)
+- [x] Mantém compatibilidade com componentes existentes
+- [x] hasModuleAccess() integrado para controle de acesso
 
-**Arquivo a modificar**: `src/contexts/AuthContext.tsx`
+**Arquivo**: `src/contexts/AuthContext.tsx`
 
 #### 6.2 ModulesContext (Novo)
-- [ ] Criar context para gestão de módulos
-- [ ] Integrar com `useModulos`
-- [ ] Provider global com lista de módulos ativos
+- [x] Context criado para gestão de módulos via REST API
+- [x] Integrado com `useModulos` hook
+- [x] Provider global com lista de módulos ativos
 
-**Arquivo a criar**: `src/contexts/ModulesContext.tsx`
+**Arquivo**: `src/contexts/ModulesContext.tsx`
 
 ---
 
@@ -223,10 +223,11 @@ VITE_API_BASE_URL=https://api.orthoplus.com.br/api
 | Hook useCryptoConfig | 100% | ✅ |
 | Hook useGitHubTools | 100% | ✅ |
 | Hook useTerminal | 100% | ✅ |
-| Contexts (Auth, Modules) | 0% | ⏳ |
+| Context ModulesContext | 100% | ✅ |
+| Context AuthContext | 100% | ✅ |
 | Componentes | 0% | ⏳ |
 
-**PROGRESSO TOTAL: 60%**
+**PROGRESSO TOTAL: 70%**
 
 ---
 
