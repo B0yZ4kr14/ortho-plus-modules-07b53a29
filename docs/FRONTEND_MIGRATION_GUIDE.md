@@ -2,6 +2,8 @@
 
 **Objetivo**: Migrar chamadas do frontend de Supabase Edge Functions para REST API Node.js
 
+**Status Atual**: 90% Completo ✅ - Data Adapters (DTOs) implementados e prontos para uso
+
 ---
 
 ## 📋 CHECKLIST DE MIGRAÇÃO
@@ -48,6 +50,129 @@
 - [x] Criar transações, marcar como paga
 - [x] `useCashFlow` - Fluxo de caixa por período
 - [x] Filtros de transações pendentes/vencidas
+
+**Arquivo**: `src/hooks/api/useFinanceiro.ts`
+
+---
+
+### ✅ FASE 7: Data Adapters (DTOs) - COMPLETO
+
+Camada de adaptação de dados criada para harmonizar formatos entre backend e frontend.
+
+#### Adaptadores Implementados:
+
+1. **PatientAdapter** (`src/lib/adapters/patientAdapter.ts`)
+   - Converte `nome` ↔ `full_name`
+   - Converte `dataNascimento` ↔ `birth_date`
+   - Converte `telefone` ↔ `phone_primary`
+
+2. **TransactionAdapter** (`src/lib/adapters/transactionAdapter.ts`)
+   - Converte `tipo` ↔ `type`
+   - Converte `valor` ↔ `amount`
+   - Converte `descricao` ↔ `description`
+   - Converte `dataVencimento` ↔ `due_date`
+
+3. **OrcamentoAdapter** (`src/lib/adapters/orcamentoAdapter.ts`)
+   - Converte `numeroOrcamento` ↔ `numero_orcamento`
+   - Converte campos de valores e datas
+   - Suporte completo para conversão de listas
+
+#### Padrão de Uso:
+
+```typescript
+// Backend API → Frontend
+const frontendData = PatientAdapter.toFrontend(apiData);
+
+// Frontend → Backend API  
+const apiPayload = PatientAdapter.toAPI(frontendData);
+
+// Listas
+const frontendList = PatientAdapter.toFrontendList(apiList);
+```
+
+---
+
+### 🚧 FASE 8: Migração de Componentes (PENDENTE)
+
+Componentes a migrar usando os adaptadores criados:
+
+1. **Pacientes**
+   - `src/pages/Pacientes.tsx`
+   - `src/pages/PatientDetail.tsx`
+   - `src/pages/PatientForm.tsx`
+   - Usar: `PatientAdapter` ✅
+
+2. **Inventário**
+   - `src/pages/estoque/*.tsx`
+   - Criar adapter quando necessário
+
+3. **Financeiro**
+   - `src/pages/financeiro/*.tsx`
+   - Usar: `TransactionAdapter` ✅
+
+4. **Orçamentos**
+   - `src/modules/orcamentos/**/*.tsx`
+   - Usar: `OrcamentoAdapter` ✅
+
+---
+
+## 📊 Progresso Global
+
+| Fase | Status | % |
+|------|--------|---|
+| Infraestrutura Base | ✅ Completo | 100% |
+| Auth Hooks | ✅ Completo | 100% |
+| Core Module Hooks | ✅ Completo | 100% |
+| Admin Hooks | ✅ Completo | 100% |
+| Remaining Hooks | ✅ Completo | 100% |
+| Context Providers | ✅ Completo | 100% |
+| **Data Adapters (DTOs)** | ✅ **Completo** | **100%** |
+| Component Migration | 🚧 Pendente | 0% |
+
+### **Progresso Total: 90% ✅**
+
+---
+
+## 🎯 Próximos Passos
+
+1. ✅ ~~Criar todos os hooks REST API~~ - COMPLETO
+2. ✅ ~~Atualizar Context Providers~~ - COMPLETO
+3. ✅ ~~Criar camada de adaptação (DTOs)~~ - COMPLETO
+4. 🚧 **Migrar componentes página por página** - PRÓXIMA FASE
+5. ⏳ Remover dependências Supabase do frontend - AGUARDANDO
+
+---
+
+## 🔧 Environment Variables
+
+```bash
+# Development
+VITE_API_BASE_URL=http://localhost:3001/api
+
+# Production
+VITE_API_BASE_URL=https://api.orthoplus.com.br/api
+```
+
+---
+
+## ⚠️ Breaking Changes
+
+### Autenticação
+- ❌ `supabase.auth.signIn()` 
+- ✅ `useAuth().login()`
+
+### Queries
+- ❌ `supabase.from('table').select()` 
+- ✅ `usePacientes().patients` (com adapter)
+
+### Adaptação de Dados
+- ✅ Use sempre os adaptadores correspondentes
+- ✅ Backend (camelCase) → Adapter → Frontend (snake_case)
+- ✅ Frontend (snake_case) → Adapter → Backend (camelCase)
+
+---
+
+**Status Final**: ✅ 90% Completo - Data Adapters implementados, pronto para migração de componentes
 
 **Arquivo**: `src/hooks/api/useFinanceiro.ts`
 
