@@ -229,12 +229,16 @@ VITE_API_BASE_URL=https://api.orthoplus.com.br/api
 | Hook useTerminal | 100% | ✅ |
 | Context ModulesContext | 100% | ✅ |
 | Context AuthContext | 100% | ✅ |
-| Adaptadores de Dados | 0% | ⏳ |
-| Componentes | 0% | ⏳ |
+| Adaptadores de Dados (DTOs) | 100% | ✅ |
+| Docker Swarm Orchestration | 100% | ✅ |
+| Prometheus Metrics | 100% | ✅ |
+| Testes E2E (Módulos) | 100% | ✅ |
+| Testes E2E (Financeiro) | 100% | ✅ |
+| Componentes (Migração Gradual) | 30% | ⏳ |
 
-**PROGRESSO TOTAL: 70%**
+**PROGRESSO TOTAL: 90%**
 
-**BLOQUEADOR IDENTIFICADO:** Migração de componentes requer camada de adaptação de dados entre API REST (snake_case) e Frontend (camelCase). Necessário criar DTOs/Adapters.
+**DESBLOQUEADO:** Adaptadores criados (PatientAdapter, TransactionAdapter, ModuleAdapter). Migração de componentes agora pode prosseguir gradualmente.
 
 ---
 

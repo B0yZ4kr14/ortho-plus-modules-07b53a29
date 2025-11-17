@@ -1,0 +1,90 @@
+# Prometheus Configuration for Ortho+
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'orthoplus-production'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Load rules
+rule_files:
+  # - "alerts.yml"
+
+scrape_configs:
+  # Backend API Metrics
+  - job_name: 'orthoplus-backend'
+    dns_sd_configs:
+      - names:
+          - 'tasks.backend'
+        type: 'A'
+        port: 3000
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # PostgreSQL Databases
+  - job_name: 'postgres-inventario'
+    static_configs:
+      - targets: ['db_inventario:5432']
+        labels:
+          module: 'inventario'
+
+  - job_name: 'postgres-pdv'
+    static_configs:
+      - targets: ['db_pdv:5432']
+        labels:
+          module: 'pdv'
+
+  - job_name: 'postgres-financeiro'
+    static_configs:
+      - targets: ['db_financeiro:5432']
+        labels:
+          module: 'financeiro'
+
+  - job_name: 'postgres-clinica'
+    static_configs:
+      - targets: ['db_clinica:5432']
+        labels:
+          module: 'clinica'
+
+  - job_name: 'postgres-pep'
+    static_configs:
+      - targets: ['db_pep:5432']
+        labels:
+          module: 'pep'
+
+  - job_name: 'postgres-faturamento'
+    static_configs:
+      - targets: ['db_faturamento:5432']
+        labels:
+          module: 'faturamento'
+
+  - job_name: 'postgres-configuracoes'
+    static_configs:
+      - targets: ['db_configuracoes:5432']
+        labels:
+          module: 'configuracoes'
+
+  # Redis Cache
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+
+  # Node Exporter (System Metrics)
+  - job_name: 'node-exporter'
+    dns_sd_configs:
+      - names:
+          - 'tasks.node-exporter'
+        type: 'A'
+        port: 9100
+
+  # Prometheus Self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
