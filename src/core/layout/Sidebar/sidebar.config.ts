@@ -1,6 +1,6 @@
 /**
- * SIDEBAR CONFIGURATION V4.0 - Ortho+
- * Categorização Profissional para Clínicas Odontológicas
+ * SIDEBAR CONFIGURATION V5.0 - Ortho+ (OTIMIZADO)
+ * Terminologia intuitiva para profissionais de odontologia
  */
 
 import { 
@@ -61,7 +61,8 @@ import {
   BadgeCheck,
   Scan,
   Brain,
-  ScanLine
+  ScanLine,
+  Shield
 } from 'lucide-react';
 
 export interface MenuItem {
@@ -100,9 +101,9 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ===== 2. ATENDIMENTO CLÍNICO (era: GESTÃO E OPERAÇÃO) =====
+  // ===== 2. CLÍNICA =====
   {
-    label: 'ATENDIMENTO CLÍNICO',
+    label: 'CLÍNICA',
     collapsed: false,
     items: [
       { 
@@ -152,39 +153,51 @@ export const menuGroups: MenuGroup[] = [
         ]
       },
       { 
-        title: 'Tabela de Procedimentos', 
-        url: '/procedimentos', 
-        icon: ClipboardList, 
-        moduleKey: 'PEP' 
-      },
-      { 
-        title: 'Materiais e Insumos',
-        icon: Boxes,
-        moduleKey: 'ESTOQUE',
-        collapsed: true,
-        subItems: [
-          { title: 'Controle de Estoque', url: '/estoque', icon: BarChart3 },
-          { title: 'Produtos', url: '/estoque/cadastros', icon: PackagePlus },
-          { title: 'Requisições', url: '/estoque/requisicoes', icon: Clipboard },
-          { title: 'Inventário', url: '/estoque/inventario', icon: ClipboardCheck }
-        ]
+        title: 'Recall Automatizado', 
+        url: '/recall', 
+        icon: Bell, 
+        moduleKey: 'AGENDA' 
       }
     ]
   },
 
-  // ===== 3. GESTÃO FINANCEIRA (era: FINANCEIRO) =====
+  // ===== 3. EQUIPE =====
+  {
+    label: 'EQUIPE',
+    collapsed: true,
+    items: [
+      { 
+        title: 'Dentistas e Auxiliares',
+        icon: Stethoscope,
+        moduleKey: 'PEP',
+        collapsed: true,
+        subItems: [
+          { title: 'Profissionais', url: '/dentistas', icon: Stethoscope },
+          { title: 'Auxiliares', url: '/funcionarios', icon: UserCog }
+        ]
+      },
+      { 
+        title: 'Tabela de Procedimentos', 
+        url: '/procedimentos', 
+        icon: ClipboardList, 
+        moduleKey: 'PEP' 
+      }
+    ]
+  },
+
+  // ===== 4. GESTÃO FINANCEIRA =====
   {
     label: 'GESTÃO FINANCEIRA',
     collapsed: true,
     items: [
       { 
-        title: 'Dashboard',
+        title: 'Dashboard Financeiro',
         url: '/financeiro',
         icon: PieChart,
         moduleKey: 'FINANCEIRO'
       },
       { 
-        title: 'Movimentações',
+        title: 'Receitas e Despesas',
         icon: ArrowLeftRight,
         moduleKey: 'FINANCEIRO',
         collapsed: true,
@@ -238,9 +251,30 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ===== 4. RELACIONAMENTO & VENDAS (era: CRESCIMENTO) =====
+  // ===== 5. ESTOQUE =====
   {
-    label: 'RELACIONAMENTO & VENDAS',
+    label: 'ESTOQUE',
+    collapsed: true,
+    items: [
+      { 
+        title: 'Controle de Estoque',
+        icon: Boxes,
+        moduleKey: 'ESTOQUE',
+        collapsed: true,
+        subItems: [
+          { title: 'Dashboard', url: '/estoque/dashboard', icon: BarChart3 },
+          { title: 'Produtos', url: '/estoque/cadastros', icon: PackagePlus },
+          { title: 'Requisições', url: '/estoque/requisicoes', icon: Clipboard },
+          { title: 'Inventário', url: '/estoque/inventario', icon: ClipboardCheck },
+          { title: 'Scanner Mobile', url: '/estoque/scanner-mobile', icon: ScanLine }
+        ]
+      }
+    ]
+  },
+
+  // ===== 6. CRESCIMENTO =====
+  {
+    label: 'CRESCIMENTO',
     collapsed: true,
     items: [
       { 
@@ -282,9 +316,9 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ===== 5. CONFORMIDADE & LEGAL (era: COMPLIANCE) =====
+  // ===== 7. REGULAMENTAÇÃO =====
   {
-    label: 'CONFORMIDADE & LEGAL',
+    label: 'REGULAMENTAÇÃO',
     collapsed: true,
     items: [
       { 
@@ -320,27 +354,7 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ===== 6. TECNOLOGIAS AVANÇADAS (era: INOVAÇÃO) =====
-  {
-    label: 'TECNOLOGIAS AVANÇADAS',
-    collapsed: true,
-    items: [
-      { 
-        title: 'IA para Diagnóstico', 
-        url: '/ia-radiografia', 
-        icon: Sparkles, 
-        moduleKey: 'IA' 
-      },
-      { 
-        title: 'Fluxo Digital (CAD/CAM)', 
-        url: '/fluxo-digital', 
-        icon: Workflow, 
-        moduleKey: 'FLUXO_DIGITAL' 
-      }
-    ]
-  },
-
-  // ========= 7. SUPORTE =========
+  // ========= 8. SUPORTE =========
   {
     label: 'SUPORTE',
     items: [
@@ -354,7 +368,7 @@ export const menuGroups: MenuGroup[] = [
 ];
 
 /**
- * MENU ADMINISTRAÇÃO (ADMIN ONLY)
+ * MENU ADMINISTRAÇÃO (ADMIN ONLY) - OTIMIZADO
  */
 export const adminMenuItems: MenuItem[] = [
   {
@@ -373,7 +387,18 @@ export const adminMenuItems: MenuItem[] = [
     icon: Package,
   },
   {
-    title: "Database",
+    title: "Infraestrutura",
+    icon: Wrench,
+    collapsed: false,
+    subItems: [
+      { title: "GitHub", url: "/admin/github", icon: Github },
+      { title: "Autenticação", url: "/admin/authentication", icon: Shield },
+      { title: "Modelos de IA", url: "/admin/ai-models", icon: Brain },
+      { title: "Pagamentos Digitais", url: "/configuracoes/crypto", icon: Wallet }
+    ]
+  },
+  {
+    title: "Dados & Backups",
     icon: Database,
     collapsed: false,
     subItems: [
@@ -389,8 +414,7 @@ export const adminMenuItems: MenuItem[] = [
     collapsed: false,
     subItems: [
       { title: "Decisões (ADR)", url: "/admin/adrs", icon: ScrollText },
-      { title: "Código Fonte", url: "/admin/codebase", icon: FileCode },
-      { title: "GitHub", url: "/admin/github", icon: Github }
+      { title: "Código Fonte", url: "/admin/codebase", icon: FileCode }
     ]
   },
   {
