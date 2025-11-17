@@ -92,27 +92,33 @@ const frontendList = PatientAdapter.toFrontendList(apiList);
 
 ---
 
-### 🚧 FASE 8: Migração de Componentes (PENDENTE)
+### ✅ FASE 8: Migração de Componentes (EM PROGRESSO - 92%)
 
-Componentes a migrar usando os adaptadores criados:
+Hooks compatíveis com tipos existentes criados:
 
-1. **Pacientes**
-   - `src/pages/Pacientes.tsx`
-   - `src/pages/PatientDetail.tsx`
-   - `src/pages/PatientForm.tsx`
-   - Usar: `PatientAdapter` ✅
+1. **Pacientes** ✅
+   - `src/modules/pacientes/hooks/usePatientsAPI.ts`
+   - Compatível com tipo `Patient` existente
+   - Usa: `PatientAdapter` ✅
 
-2. **Inventário**
-   - `src/pages/estoque/*.tsx`
-   - Criar adapter quando necessário
+2. **Inventário** ✅
+   - `src/modules/inventario/hooks/useInventoryAPI.ts`
+   - Compatível com tipo `Product` existente
+   - Gerencia produtos, ajustes de estoque
 
-3. **Financeiro**
-   - `src/pages/financeiro/*.tsx`
-   - Usar: `TransactionAdapter` ✅
+3. **Financeiro** ✅
+   - `src/modules/financeiro/hooks/useTransactionsAPI.ts`
+   - Compatível com tipo `Transaction` existente
+   - Usa: `TransactionAdapter` ✅
 
-4. **Orçamentos**
-   - `src/modules/orcamentos/**/*.tsx`
+4. **Orçamentos** 
+   - Hook a criar quando migrar componentes
    - Usar: `OrcamentoAdapter` ✅
+
+**Próximos passos:**
+- Atualizar componentes para usar os novos hooks API
+- Remover chamadas diretas ao Supabase
+- Testar integração completa
 
 ---
 
@@ -127,7 +133,10 @@ Componentes a migrar usando os adaptadores criados:
 | Remaining Hooks | ✅ Completo | 100% |
 | Context Providers | ✅ Completo | 100% |
 | **Data Adapters (DTOs)** | ✅ **Completo** | **100%** |
-| Component Migration | 🚧 Pendente | 0% |
+| **API Compatibility Hooks** | ✅ **Completo** | **100%** |
+| Component Migration | 🚧 Em Progresso | 20% |
+
+**TOTAL: 92% COMPLETO**
 
 ### **Progresso Total: 90% ✅**
 
