@@ -45,6 +45,11 @@ import Auth from './pages/Auth';
 import ResetPassword from './pages/ResetPassword';
 import NotFound from './pages/NotFound';
 
+// Dashboards de Categoria
+import ClinicaDashboard from './pages/dashboards/ClinicaDashboard';
+import FinanceiroDashboard from './pages/dashboards/FinanceiroDashboard';
+import ComercialDashboard from './pages/dashboards/ComercialDashboard';
+
 // ✅ FASE 2: Lazy load páginas pesadas
 const Relatorios = lazy(() => import('./pages/Relatorios'));
 const BusinessIntelligence = lazy(() => import('./pages/bi'));
@@ -181,6 +186,10 @@ const App = () => (
                 <Route path="/relatorios" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando relatórios..." />}><Relatorios /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/business-intelligence" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando BI..." />}><BusinessIntelligence /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/bi" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando BI..." />}><BusinessIntelligence /></Suspense></AppLayout></ProtectedRoute>} />
+                {/* Dashboards de Categoria */}
+                <Route path="/dashboards/clinica" element={<ProtectedRoute><AppLayout><ClinicaDashboard /></AppLayout></ProtectedRoute>} />
+                <Route path="/dashboards/financeiro" element={<ProtectedRoute><AppLayout><FinanceiroDashboard /></AppLayout></ProtectedRoute>} />
+                <Route path="/dashboards/comercial" element={<ProtectedRoute><AppLayout><ComercialDashboard /></AppLayout></ProtectedRoute>} />
                 <Route path="/analise-comportamental" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando analytics..." />}><UserBehaviorAnalytics /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/lgpd" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando..." />}><LGPDCompliance /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/cobranca" element={<ProtectedRoute><AppLayout><Cobranca /></AppLayout></ProtectedRoute>} />

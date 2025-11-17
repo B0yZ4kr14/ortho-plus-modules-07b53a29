@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { StatCard } from '@/components/StatCard';
+import { StatsCard } from '@/components/shared/StatsCard';
 import { ActionCard } from '@/components/dashboard/ActionCard';
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LayoutDashboard, Users, Calendar, DollarSign, TrendingUp, Activity, CheckCircle2, BarChart3, FileText, Database, ShoppingCart } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, DollarSign, TrendingUp, Activity, CheckCircle2, BarChart3, FileText, Database, ShoppingCart, AlertTriangle } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { DashboardChartsMemo } from '@/components/dashboard/DashboardChartsMemo';
 import { DashboardWidgetsMemo } from '@/components/dashboard/DashboardWidgetsMemo';
-import { StatCardMemo } from '@/components/dashboard/StatCardMemo';
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalPatients: 0,
     todayAppointments: 0,
@@ -111,45 +112,123 @@ export default function Dashboard() {
         description="Estatísticas em tempo real da sua clínica"
       />
 
-      {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" data-tour="dashboard-stats">
-        <StatCard
-          label="Pacientes Ativos"
-          value={stats.totalPatients.toString()}
+      {/* TOP 6 KPIs Críticos */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-tour="dashboard-stats">
+        <StatsCard
+          title="Pacientes Ativos"
+          value={stats.totalPatients}
           icon={Users}
-          trend={`+12%`}
-          trendPositive={true}
-          iconColor="bg-blue-500"
-          borderColor="border-l-blue-500"
+          variant="primary"
+          trend={{ value: 12, label: 'vs mês anterior', isPositive: true }}
         />
-        <StatCard
-          label="Consultas Hoje"
-          value={stats.todayAppointments.toString()}
+        <StatsCard
+          title="Consultas Hoje"
+          value={stats.todayAppointments}
           icon={Calendar}
-          trend={`${stats.todayAppointments} agendadas`}
-          trendPositive={true}
-          iconColor="bg-purple-500"
-          borderColor="border-l-purple-500"
+          variant="default"
         />
-        <StatCard
-          label="Receita Mensal"
-          value={`R$ ${stats.monthlyRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+        <StatsCard
+          title="Receita Mensal"
+          value={`R$ ${stats.monthlyRevenue.toLocaleString('pt-BR')}`}
           icon={DollarSign}
-          trend="+15%"
-          trendPositive={true}
-          iconColor="bg-green-500"
-          borderColor="border-l-green-500"
+          variant="success"
+          trend={{ value: 15, label: 'vs mês anterior', isPositive: true }}
         />
-        <StatCard
-          label="Taxa de Ocupação"
+        <StatsCard
+          title="Taxa de Ocupação"
           value={`${stats.occupancyRate.toFixed(1)}%`}
           icon={TrendingUp}
-          trend={stats.occupancyRate > 50 ? "Boa ocupação" : "Baixa ocupação"}
-          trendPositive={stats.occupancyRate > 50}
-          iconColor="bg-orange-500"
-          borderColor="border-l-orange-500"
+          variant={stats.occupancyRate > 50 ? 'success' : 'warning'}
+        />
+        <StatsCard
+          title="Tratamentos Pendentes"
+          value={stats.pendingTreatments}
+          icon={Activity}
+          variant="warning"
+        />
+        <StatsCard
+          title="Tratamentos Concluídos"
+          value={stats.completedTreatments}
+          icon={CheckCircle2}
+          variant="success"
         />
       </div>
+
+      {/* Dashboards de Categoria - Links Rápidos */}
+      <Card depth="normal">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Dashboards por Categoria
+          </CardTitle>
+          <CardDescription>Acesse análises detalhadas por área</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Button
+              variant="outline"
+              className="h-24 flex-col gap-2 hover:shadow-lg transition-all"
+              onClick={() => navigate('/dashboards/clinica')}
+            >
+              <Activity className="h-6 w-6 text-primary" />
+              <div className="text-center">
+                <p className="font-semibold">Dashboard Clínico</p>
+                <p className="text-xs text-muted-foreground">Pacientes, Consultas, Ocupação</p>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-24 flex-col gap-2 hover:shadow-lg transition-all"
+              onClick={() => navigate('/dashboards/financeiro')}
+            >
+              <DollarSign className="h-6 w-6 text-success" />
+              <div className="text-center">
+                <p className="font-semibold">Dashboard Financeiro</p>
+                <p className="text-xs text-muted-foreground">Receitas, Despesas, Fluxo</p>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-24 flex-col gap-2 hover:shadow-lg transition-all"
+              onClick={() => navigate('/dashboards/comercial')}
+            >
+              <TrendingUp className="h-6 w-6 text-warning" />
+              <div className="text-center">
+                <p className="font-semibold">Dashboard Comercial</p>
+                <p className="text-xs text-muted-foreground">CRM, Leads, Marketing</p>
+              </div>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Alertas Críticos */}
+      <Card depth="normal" className="border-l-4 border-l-warning">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-warning">
+            <AlertTriangle className="h-5 w-5" />
+            Alertas Críticos
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-warning/10">
+              <AlertTriangle className="h-4 w-4 text-warning" />
+              <div>
+                <p className="font-medium">5 consultas não confirmadas para hoje</p>
+                <p className="text-sm text-muted-foreground">Ligue para confirmar presença</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-danger/10">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+              <div>
+                <p className="font-medium">3 produtos com estoque baixo</p>
+                <p className="text-sm text-muted-foreground">Realize pedido de reposição</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Gráficos Memoizados */}
       <DashboardChartsMemo 

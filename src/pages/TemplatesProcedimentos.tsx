@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Plus, Clock, DollarSign, Tag, Globe, Lock, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { TableFilter } from '@/components/shared/TableFilter';
 
 interface ProcedimentoTemplate {
   id: string;
@@ -126,37 +127,33 @@ export default function TemplatesProcedimentosPage() {
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              placeholder="Buscar templates..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as categorias</SelectItem>
-                <SelectItem value="RESTAURACAO">Restauração</SelectItem>
-                <SelectItem value="ENDODONTIA">Endodontia</SelectItem>
-                <SelectItem value="PROTESE">Prótese</SelectItem>
-                <SelectItem value="ORTODONTIA">Ortodontia</SelectItem>
-                <SelectItem value="CIRURGIA">Cirurgia</SelectItem>
-                <SelectItem value="PERIODONTIA">Periodontia</SelectItem>
-                <SelectItem value="ESTETICA">Estética</SelectItem>
-                <SelectItem value="PREVENTIVA">Preventiva</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <TableFilter
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Buscar templates..."
+        filters={[
+          {
+            label: 'Categoria',
+            value: categoryFilter,
+            options: [
+              { label: 'Todas as categorias', value: 'all' },
+              { label: 'Restauração', value: 'RESTAURACAO' },
+              { label: 'Endodontia', value: 'ENDODONTIA' },
+              { label: 'Prótese', value: 'PROTESE' },
+              { label: 'Ortodontia', value: 'ORTODONTIA' },
+              { label: 'Cirurgia', value: 'CIRURGIA' },
+              { label: 'Periodontia', value: 'PERIODONTIA' },
+              { label: 'Estética', value: 'ESTETICA' },
+              { label: 'Preventiva', value: 'PREVENTIVA' },
+            ],
+            onChange: setCategoryFilter,
+          },
+        ]}
+        onClear={() => {
+          setSearchTerm('');
+          setCategoryFilter('all');
+        }}
+      />
 
       {/* Templates Grid */}
       {isLoading ? (

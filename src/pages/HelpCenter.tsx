@@ -3,10 +3,11 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, BookOpen, AlertTriangle, CheckCircle, Shield, Info } from 'lucide-react';
+import { BookOpen, AlertTriangle, CheckCircle, Shield, Info, Search } from 'lucide-react';
 import { odontoTooltipsData, type OdontoTooltip } from '@/core/tooltips/odonto-tooltips-data';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { TableFilter } from '@/components/shared/TableFilter';
 
 export default function HelpCenter() {
   const [searchTerm, setSearchTerm] = useState('');
