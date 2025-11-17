@@ -1,0 +1,339 @@
+# Ortho+ Docker Swarm Stack
+# Arquitetura Modular com Database-per-Module
+version: '3.8'
+
+networks:
+  frontend_net:
+    driver: overlay
+    attachable: true
+  backend_net:
+    driver: overlay
+    attachable: true
+  db_net:
+    driver: overlay
+    attachable: true
+  proxy_net:
+    driver: overlay
+    attachable: true
+
+secrets:
+  db_inventario_password:
+    external: true
+  db_pdv_password:
+    external: true
+  db_financeiro_password:
+    external: true
+  db_pacientes_password:
+    external: true
+  db_pep_password:
+    external: true
+  db_faturamento_password:
+    external: true
+  db_configuracoes_password:
+    external: true
+  jwt_secret:
+    external: true
+
+configs:
+  backend_config:
+    file: ./backend/config/production.json
+  nginx_config:
+    file: ./nginx-swarm.conf
+
+services:
+  # Frontend (React + Vite)
+  frontend:
+    image: orthoplus-frontend:${VERSION:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - frontend_net
+      - proxy_net
+    environment:
+      - NODE_ENV=production
+      - VITE_API_GATEWAY_URL=http://backend:3001
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == worker
+
+  # Backend Node.js (API Gateway + Módulos)
+  backend:
+    image: orthoplus-backend:${VERSION:-latest}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    networks:
+      - backend_net
+      - db_net
+      - proxy_net
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      # Database connections per module
+      - DB_INVENTARIO_HOST=db_inventario
+      - DB_PDV_HOST=db_pdv
+      - DB_FINANCEIRO_HOST=db_financeiro
+      - DB_PACIENTES_HOST=db_pacientes
+      - DB_PEP_HOST=db_pep
+      - DB_FATURAMENTO_HOST=db_faturamento
+      - DB_CONFIGURACOES_HOST=db_configuracoes
+      - DB_PORT=5432
+      - DB_USER=orthoplus
+      # Redis for EventBus (future)
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    secrets:
+      - db_inventario_password
+      - db_pdv_password
+      - db_financeiro_password
+      - db_pacientes_password
+      - db_pep_password
+      - db_faturamento_password
+      - db_configuracoes_password
+      - jwt_secret
+    configs:
+      - source: backend_config
+        target: /app/config/production.json
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # PostgreSQL - Schema Inventário
+  db_inventario:
+    image: postgres:16-alpine
+    networks:
+      - db_net
+    environment:
+      - POSTGRES_DB=inventario
+      - POSTGRES_USER=orthoplus
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_inventario_password
+    secrets:
+      - db_inventario_password
+    volumes:
+      - inventario_data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.db == true
+
+  # PostgreSQL - Schema PDV
+  db_pdv:
+    image: postgres:16-alpine
+    networks:
+      - db_net
+    environment:
+      - POSTGRES_DB=pdv
+      - POSTGRES_USER=orthoplus
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_pdv_password
+    secrets:
+      - db_pdv_password
+    volumes:
+      - pdv_data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.db == true
+
+  # PostgreSQL - Schema Financeiro
+  db_financeiro:
+    image: postgres:16-alpine
+    networks:
+      - db_net
+    environment:
+      - POSTGRES_DB=financeiro
+      - POSTGRES_USER=orthoplus
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_financeiro_password
+    secrets:
+      - db_financeiro_password
+    volumes:
+      - financeiro_data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.db == true
+
+  # PostgreSQL - Schema Pacientes
+  db_pacientes:
+    image: postgres:16-alpine
+    networks:
+      - db_net
+    environment:
+      - POSTGRES_DB=pacientes
+      - POSTGRES_USER=orthoplus
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_pacientes_password
+    secrets:
+      - db_pacientes_password
+    volumes:
+      - pacientes_data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.db == true
+
+  # PostgreSQL - Schema PEP
+  db_pep:
+    image: postgres:16-alpine
+    networks:
+      - db_net
+    environment:
+      - POSTGRES_DB=pep
+      - POSTGRES_USER=orthoplus
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_pep_password
+    secrets:
+      - db_pep_password
+    volumes:
+      - pep_data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.db == true
+
+  # PostgreSQL - Schema Faturamento
+  db_faturamento:
+    image: postgres:16-alpine
+    networks:
+      - db_net
+    environment:
+      - POSTGRES_DB=faturamento
+      - POSTGRES_USER=orthoplus
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_faturamento_password
+    secrets:
+      - db_faturamento_password
+    volumes:
+      - faturamento_data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.db == true
+
+  # PostgreSQL - Schema Configurações
+  db_configuracoes:
+    image: postgres:16-alpine
+    networks:
+      - db_net
+    environment:
+      - POSTGRES_DB=configuracoes
+      - POSTGRES_USER=orthoplus
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_configuracoes_password
+    secrets:
+      - db_configuracoes_password
+    volumes:
+      - configuracoes_data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.db == true
+
+  # Redis (EventBus Future)
+  redis:
+    image: redis:7-alpine
+    networks:
+      - backend_net
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.cache == true
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    networks:
+      - proxy_net
+      - frontend_net
+    ports:
+      - "80:80"
+      - "443:443"
+    configs:
+      - source: nginx_config
+        target: /etc/nginx/nginx.conf
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+      placement:
+        constraints:
+          - node.role == worker
+
+  # Prometheus (Observability)
+  prometheus:
+    image: prom/prometheus:latest
+    networks:
+      - backend_net
+    volumes:
+      - prometheus_data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+  # Grafana (Dashboards)
+  grafana:
+    image: grafana/grafana:latest
+    networks:
+      - backend_net
+      - proxy_net
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD_FILE=/run/secrets/jwt_secret
+    secrets:
+      - jwt_secret
+    volumes:
+      - grafana_data:/var/lib/grafana
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+volumes:
+  inventario_data:
+  pdv_data:
+  financeiro_data:
+  pacientes_data:
+  pep_data:
+  faturamento_data:
+  configuracoes_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
