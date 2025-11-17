@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePatients } from '@/modules/pacientes/hooks/usePatientsUnified';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -18,21 +17,8 @@ export default function Pacientes() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const { data: patients, isLoading } = useQuery<Patient[]>({
-    queryKey: ['patients', clinicId],
-    queryFn: async () => {
-      const query = supabase
-        .from('patients' as any)
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .order('created_at', { ascending: false });
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return (data || []) as unknown as Patient[];
-    },
-    enabled: !!clinicId
-  });
+  // Use unified hook (switches between Supabase and REST API)
+  const { patients, loading: isLoading } = usePatients();
 
   const filteredPatients = patients?.filter(patient => {
     const matchesSearch = !searchTerm || 
