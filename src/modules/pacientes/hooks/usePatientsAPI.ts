@@ -8,11 +8,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/lib/api/apiClient';
 import { PatientAdapter } from '@/lib/adapters/patientAdapter';
 import { toast } from 'sonner';
-import type { Patient } from '../types/patient.types';
+import type { Patient as ModulePatient } from '../types/patient.types';
+import type { Patient as GlobalPatient } from '@/types/patient';
 
 export function usePatientsAPI() {
   const { clinicId } = useAuth();
-  const [patients, setPatients] = useState<Patient[]>([]);
+  const [patients, setPatients] = useState<GlobalPatient[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadPatients = useCallback(async () => {
@@ -25,39 +26,21 @@ export function usePatientsAPI() {
       setLoading(true);
       const response = await apiClient.get<{ patients: any[] }>('/pacientes');
       
-      // Converter dados da API para formato do sistema
-      const transformedPatients: Patient[] = response.patients.map((apiPatient: any) => {
+      // Converter dados da API para formato global do sistema
+      const transformedPatients: GlobalPatient[] = response.patients.map((apiPatient: any) => {
         const frontendPatient = PatientAdapter.toFrontend(apiPatient);
         
-        // Mapear para o tipo Patient do sistema
+        // Mapear para o tipo GlobalPatient esperado pelo sistema
         return {
-          id: frontendPatient.id,
-          prontuarioId: frontendPatient.id, // Usar o mesmo ID por enquanto
-          nome: frontendPatient.full_name,
-          cpf: frontendPatient.cpf,
-          rg: '',
-          dataNascimento: frontendPatient.birth_date,
-          sexo: 'M' as const,
-          telefone: frontendPatient.phone_primary,
-          celular: frontendPatient.phone_primary,
-          email: frontendPatient.email || '',
-          endereco: {
-            cep: '',
-            logradouro: '',
-            numero: '',
-            complemento: '',
-            bairro: '',
-            cidade: '',
-            estado: '',
-          },
-          convenio: {
-            temConvenio: false,
-          },
-          observacoes: '',
-          status: frontendPatient.status as 'Ativo' | 'Inativo' | 'Pendente',
-          createdAt: frontendPatient.created_at,
-          updatedAt: frontendPatient.created_at,
-        } as Patient;
+          ...frontendPatient,
+          // Garantir todos os campos do tipo GlobalPatient
+          patient_code: frontendPatient.patient_code || `PAC-${frontendPatient.id.slice(0, 8)}`,
+          full_name: frontendPatient.full_name,
+          phone_primary: frontendPatient.phone_primary,
+          birth_date: frontendPatient.birth_date,
+          status: frontendPatient.status,
+          created_at: frontendPatient.created_at,
+        } as GlobalPatient;
       });
 
       setPatients(transformedPatients);
@@ -73,7 +56,7 @@ export function usePatientsAPI() {
     loadPatients();
   }, [loadPatients]);
 
-  const addPatient = async (patientData: Omit<Patient, 'id' | 'prontuarioId' | 'createdAt' | 'updatedAt'>) => {
+  const addPatient = async (patientData: Omit<ModulePatient, 'id' | 'prontuarioId' | 'createdAt' | 'updatedAt'>) => {
     if (!clinicId) {
       toast.error('Nenhuma clínica selecionada');
       return;
@@ -98,7 +81,7 @@ export function usePatientsAPI() {
     }
   };
 
-  const updatePatient = async (patientId: string, patientData: Partial<Patient>) => {
+  const updatePatient = async (patientId: string, patientData: Partial<ModulePatient>) => {
     try {
       await apiClient.patch(`/pacientes/${patientId}/status`, {
         newStatus: patientData.status,
