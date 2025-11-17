@@ -144,9 +144,13 @@
 
 ### ⏳ FASE 7: Atualizar Componentes (PENDENTE)
 
+**NOTA:** A migração de componentes requer alinhamento dos tipos de dados entre backend e frontend. 
+O backend Node.js retorna campos diferentes dos esperados pelos componentes Supabase (ex: `nome` vs `full_name`).
+Necessário criar camada de adaptação ou padronizar nomenclatura antes de migrar componentes.
+
 #### 7.1 Componentes de Pacientes
-- [ ] `PatientsList.tsx` - usar `usePacientes`
-- [ ] `PatientForm.tsx` - usar `createPatient`
+- [ ] `Pacientes.tsx` - requer mapeamento de tipos
+- [ ] `PatientForm.tsx` - usar `createPatient` 
 - [ ] `PatientDetails.tsx` - usar `usePatient(id)`
 
 #### 7.2 Componentes de Inventário
@@ -225,9 +229,12 @@ VITE_API_BASE_URL=https://api.orthoplus.com.br/api
 | Hook useTerminal | 100% | ✅ |
 | Context ModulesContext | 100% | ✅ |
 | Context AuthContext | 100% | ✅ |
+| Adaptadores de Dados | 0% | ⏳ |
 | Componentes | 0% | ⏳ |
 
 **PROGRESSO TOTAL: 70%**
+
+**BLOQUEADOR IDENTIFICADO:** Migração de componentes requer camada de adaptação de dados entre API REST (snake_case) e Frontend (camelCase). Necessário criar DTOs/Adapters.
 
 ---
 
