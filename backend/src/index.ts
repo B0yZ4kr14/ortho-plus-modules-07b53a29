@@ -21,6 +21,11 @@ import { createPdvRouter } from '@/modules/pdv/api/router';
 import { createFinanceiroRouter } from '@/modules/financeiro/api/router';
 import { createPepRouter } from '@/modules/pep/api/router';
 import { createFaturamentoRouter } from '@/modules/faturamento/api/router';
+import { createDatabaseAdminRouter } from '@/modules/database_admin/api/router';
+import { createBackupsRouter } from '@/modules/backups/api/router';
+import { createCryptoConfigRouter } from '@/modules/crypto_config/api/router';
+import { createGitHubToolsRouter } from '@/modules/github_tools/api/router';
+import { createTerminalRouter } from '@/modules/terminal/api/router';
 
 async function bootstrap() {
   try {
@@ -40,6 +45,11 @@ async function bootstrap() {
       'pep',
       'faturamento',
       'configuracoes',
+      'database_admin',
+      'backups',
+      'crypto_config',
+      'github_tools',
+      'terminal',
     ];
 
     for (const schema of schemas) {

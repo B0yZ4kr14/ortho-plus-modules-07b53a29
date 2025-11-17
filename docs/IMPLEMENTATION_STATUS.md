@@ -26,6 +26,11 @@
 - ✅ Schema `pep` (Migration 005)
 - ✅ Schema `faturamento` (Migration 006)
 - ✅ Schema `configuracoes` (Migration 007)
+- ✅ Schema `database_admin` (Migration 008) - ADMINISTRAÇÃO & DEVOPS
+- ✅ Schema `backups` (Migration 009) - ADMINISTRAÇÃO & DEVOPS
+- ✅ Schema `crypto_config` (Migration 010) - ADMINISTRAÇÃO & DEVOPS
+- ✅ Schema `github_tools` (Migration 011) - ADMINISTRAÇÃO & DEVOPS
+- ✅ Schema `terminal` (Migration 012) - ADMINISTRAÇÃO & DEVOPS
 
 ### FASE 3: Módulo PACIENTES - Golden Pattern (100%)
 - ✅ Entidade `Patient` com 15 STATUS canônicos
@@ -56,6 +61,13 @@
 - ✅ **PEP**: Entidade Prontuario, Controller, REST API (/api/pep/prontuarios, /assinar)
 - ✅ **FATURAMENTO**: Entidade NFe, Controller, REST API (/api/faturamento/nfes, /autorizar, /cancelar)
 
+### FASE 6.5: Módulos ADMINISTRAÇÃO & DEVOPS (100%) 🆕
+- ✅ **DATABASE_ADMIN**: Entidade DatabaseHealth, monitoramento saúde do banco, slow queries, manutenção (VACUUM/ANALYZE)
+- ✅ **BACKUPS**: Entidade BackupJob, suporte FULL/INCREMENTAL/DIFFERENTIAL, múltiplos destinos (S3/GCS/AZURE/STORJ)
+- ✅ **CRYPTO_CONFIG**: Entidade ExchangeConfig, integração exchanges, portfolio consolidado, estratégias DCA
+- ✅ **GITHUB_TOOLS**: Entidade GitHubRepository, gestão repos/branches/PRs, workflows CI/CD, webhooks
+- ✅ **TERMINAL**: Entidade TerminalSession, web shell seguro, whitelist comandos, rate limiting, auditoria
+
 ### FASE 7: Frontend Integration (IN PROGRESS)
 - ⏳ Adaptar componentes React para consumir backend Node.js
 - ⏳ Substituir chamadas Supabase Edge Functions por REST API
@@ -85,7 +97,7 @@
 | Categoria | Progresso | Status |
 |-----------|-----------|--------|
 | Infraestrutura | 100% | ✅ |
-| Database Schemas | 100% | ✅ |
+| Database Schemas (13 schemas) | 100% | ✅ |
 | Módulo PACIENTES | 100% | ✅ |
 | Módulo INVENTÁRIO | 100% | ✅ |
 | Módulo CONFIGURAÇÕES | 100% | ✅ |
@@ -93,11 +105,16 @@
 | Módulo FINANCEIRO | 100% | ✅ |
 | Módulo PEP | 100% | ✅ |
 | Módulo FATURAMENTO | 100% | ✅ |
+| Módulo DATABASE_ADMIN | 100% | ✅ 🆕 |
+| Módulo BACKUPS | 100% | ✅ 🆕 |
+| Módulo CRYPTO_CONFIG | 100% | ✅ 🆕 |
+| Módulo GITHUB_TOOLS | 100% | ✅ 🆕 |
+| Módulo TERMINAL | 100% | ✅ 🆕 |
 | Frontend Integration | 20% | ⏳ |
 | Observabilidade | 75% | ⏳ |
 | Testes | 25% | ⏳ |
 
-**PROGRESSO TOTAL: 75%** (9 de 12 categorias concluídas)
+**PROGRESSO TOTAL: 85%** (13 de 15 categorias concluídas)
 
 ---
 
