@@ -147,7 +147,43 @@ async function bootstrap() {
       requiresAuth: true,
     });
 
-    logger.info('All modules registered successfully');
+    // ADMINISTRAÇÃO & DEVOPS modules
+    apiGateway.registerModule({
+      moduleName: 'database_admin',
+      basePath: '/api/database-admin',
+      router: createDatabaseAdminRouter(),
+      requiresAuth: true,
+    });
+
+    apiGateway.registerModule({
+      moduleName: 'backups',
+      basePath: '/api/backups',
+      router: createBackupsRouter(),
+      requiresAuth: true,
+    });
+
+    apiGateway.registerModule({
+      moduleName: 'crypto_config',
+      basePath: '/api/crypto-config',
+      router: createCryptoConfigRouter(),
+      requiresAuth: true,
+    });
+
+    apiGateway.registerModule({
+      moduleName: 'github_tools',
+      basePath: '/api/github-tools',
+      router: createGitHubToolsRouter(),
+      requiresAuth: true,
+    });
+
+    apiGateway.registerModule({
+      moduleName: 'terminal',
+      basePath: '/api/terminal',
+      router: createTerminalRouter(),
+      requiresAuth: true,
+    });
+
+    logger.info('All 13 modules registered successfully');
 
 // ========== EVENT BUS SUBSCRIBERS ==========
 
