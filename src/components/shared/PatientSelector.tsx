@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { usePatientsSupabase } from '@/modules/pacientes/hooks/usePatientsSupabase';
-import { Patient } from '@/modules/pacientes/types/patient.types';
+import { usePatients } from '@/modules/pacientes/hooks/usePatientsUnified';
+import type { Patient } from '@/types/patient';
 
 interface PatientSelectorProps {
   onSelect: (patient: Patient) => void;
@@ -21,7 +21,7 @@ export function PatientSelector({
   placeholder = "Buscar paciente...",
   compact = false 
 }: PatientSelectorProps) {
-  const { patients, loading } = usePatientsSupabase();
+  const { patients, loading } = usePatients();
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
 
@@ -33,9 +33,9 @@ export function PatientSelector({
 
     const term = searchTerm.toLowerCase();
     const filtered = patients.filter(patient => 
-      patient.nome?.toLowerCase().includes(term) ||
+      patient.full_name?.toLowerCase().includes(term) ||
       patient.cpf?.includes(term) ||
-      patient.celular?.includes(term) ||
+      patient.phone_primary?.includes(term) ||
       patient.email?.toLowerCase().includes(term)
     );
     setFilteredPatients(filtered);
@@ -61,7 +61,7 @@ export function PatientSelector({
           <User className="h-5 w-5 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{selectedPatient.nome}</p>
+          <p className="text-sm font-medium truncate">{selectedPatient.full_name}</p>
           <p className="text-xs text-muted-foreground truncate">
             CPF: {selectedPatient.cpf || 'Não informado'}
           </p>
@@ -99,13 +99,13 @@ export function PatientSelector({
                 <User className="h-6 w-6 text-primary" />
               </div>
               <div className="flex-1 min-w-0 space-y-1">
-                <p className="font-semibold text-lg">{selectedPatient.nome}</p>
+                <p className="font-semibold text-lg">{selectedPatient.full_name}</p>
                 <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
                   {selectedPatient.cpf && (
                     <span>CPF: {selectedPatient.cpf}</span>
                   )}
-                  {selectedPatient.celular && (
-                    <span>• {selectedPatient.celular}</span>
+                  {selectedPatient.phone_primary && (
+                    <span>• {selectedPatient.phone_primary}</span>
                   )}
                   {selectedPatient.email && (
                     <span>• {selectedPatient.email}</span>
@@ -154,10 +154,10 @@ export function PatientSelector({
                         <User className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{patient.nome}</p>
+                        <p className="font-medium truncate">{patient.full_name}</p>
                         <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mt-1">
                           {patient.cpf && <span>CPF: {patient.cpf}</span>}
-                          {patient.celular && <span>• {patient.celular}</span>}
+                          {patient.phone_primary && <span>• {patient.phone_primary}</span>}
                         </div>
                       </div>
                       <Check className="h-5 w-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />

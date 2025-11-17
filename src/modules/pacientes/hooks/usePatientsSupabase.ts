@@ -2,9 +2,14 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Patient } from '../types/patient.types';
+import type { Patient } from '@/types/patient';
+import type { UsePatientsReturn } from './usePatientsUnified';
 
-export function usePatientsSupabase() {
+/**
+ * Hook para gerenciar pacientes via Supabase (Legacy)
+ * Busca direto da tabela `patients` que está no formato global snake_case
+ */
+export function usePatientsSupabase(): UsePatientsReturn {
   const { clinicId } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,50 +23,14 @@ export function usePatientsSupabase() {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('prontuarios')
-        .select(`
-          *,
-          patients:patient_id (
-            nome,
-            cpf,
-            rg,
-            data_nascimento,
-            sexo,
-            telefone,
-            celular,
-            email,
-            endereco,
-            convenio,
-            observacoes,
-            status
-          )
-        `)
+        .from('patients' as any)
+        .select('*')
         .eq('clinic_id', clinicId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Transformar dados do Supabase para formato Patient
-      const transformedPatients: Patient[] = (data || []).map((prontuario: any) => ({
-        id: prontuario.patient_id,
-        prontuarioId: prontuario.id,
-        nome: prontuario.patients?.nome || '',
-        cpf: prontuario.patients?.cpf || '',
-        rg: prontuario.patients?.rg || '',
-        dataNascimento: prontuario.patients?.data_nascimento || '',
-        sexo: prontuario.patients?.sexo || 'M',
-        telefone: prontuario.patients?.telefone || '',
-        celular: prontuario.patients?.celular || '',
-        email: prontuario.patients?.email || '',
-        endereco: prontuario.patients?.endereco || {},
-        convenio: prontuario.patients?.convenio || { temConvenio: false },
-        observacoes: prontuario.patients?.observacoes || '',
-        status: prontuario.patients?.status || 'Ativo',
-        createdAt: prontuario.created_at,
-        updatedAt: prontuario.updated_at,
-      }));
-
-      setPatients(transformedPatients);
+      setPatients((data || []) as unknown as Patient[]);
     } catch (error: any) {
       console.error('Error loading patients:', error);
       toast.error('Erro ao carregar pacientes: ' + error.message);
@@ -77,13 +46,13 @@ export function usePatientsSupabase() {
     if (!clinicId) return;
 
     const subscription = supabase
-      .channel('prontuarios_changes')
+      .channel('patients_changes')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'prontuarios',
+          table: 'patients',
           filter: `clinic_id=eq.${clinicId}`,
         },
         () => {
@@ -97,51 +66,24 @@ export function usePatientsSupabase() {
     };
   }, [clinicId]);
 
-  const addPatient = async (patientData: Omit<Patient, 'id' | 'prontuarioId' | 'createdAt' | 'updatedAt'>) => {
+  const addPatient = async (patientData: Partial<Patient>) => {
     if (!clinicId) {
       toast.error('Nenhuma clínica selecionada');
       return;
     }
 
     try {
-      // Criar registro em profiles com dados básicos
-      // @ts-ignore - Campos adicionais via migration
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          full_name: patientData.nome,
-          clinic_id: clinicId,
-        } as any)
-        .select()
-        .single();
-
-      if (profileError) throw profileError;
-
-      // Criar prontuário vinculado ao profile
-      // @ts-ignore - Tabela criada via migration
-      const { data: prontuarioData, error: prontuarioError } = await supabase
-        .from('prontuarios')
+      const { error } = await supabase
+        .from('patients' as any)
         .insert([{
-          patient_id: profileData.id,
-          patient_name: patientData.nome,
+          ...patientData,
           clinic_id: clinicId,
-          created_by: profileData.id,
-        }])
-        .select()
-        .single();
+        }]);
 
-      if (prontuarioError) throw prontuarioError;
+      if (error) throw error;
 
       toast.success('Paciente cadastrado com sucesso!');
       await loadPatients();
-      
-      return {
-        ...patientData,
-        id: profileData.id,
-        prontuarioId: prontuarioData.id,
-        createdAt: profileData.created_at,
-        updatedAt: profileData.updated_at,
-      };
     } catch (error: any) {
       console.error('Error adding patient:', error);
       toast.error('Erro ao cadastrar paciente: ' + error.message);
@@ -151,15 +93,10 @@ export function usePatientsSupabase() {
 
   const updatePatient = async (patientId: string, patientData: Partial<Patient>) => {
     try {
-      // Atualizar dados do paciente
       const { error } = await supabase
-        .from('prontuarios')
-        .update({
-          updated_at: new Date().toISOString(),
-          // Adicionar campos que podem ser atualizados
-        })
-        .eq('patient_id', patientId)
-        .eq('clinic_id', clinicId);
+        .from('patients' as any)
+        .update(patientData)
+        .eq('id', patientId);
 
       if (error) throw error;
 
@@ -175,10 +112,9 @@ export function usePatientsSupabase() {
   const deletePatient = async (patientId: string) => {
     try {
       const { error } = await supabase
-        .from('prontuarios')
+        .from('patients' as any)
         .delete()
-        .eq('patient_id', patientId)
-        .eq('clinic_id', clinicId);
+        .eq('id', patientId);
 
       if (error) throw error;
 

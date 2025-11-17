@@ -87,7 +87,7 @@ export default function AgendaClinica() {
     );
   }
 
-  const pacientesOptions = patients.map(p => ({ id: p.id!, nome: p.nome }));
+  const pacientesOptions = patients.map(p => ({ id: p.id!, nome: p.full_name }));
 
   return (
     <div className="p-8 space-y-6">

@@ -9,8 +9,9 @@ import { apiClient } from '@/lib/api/apiClient';
 import { PatientAdapter } from '@/lib/adapters/patientAdapter';
 import { toast } from 'sonner';
 import type { Patient } from '@/types/patient';
+import type { UsePatientsReturn } from './usePatientsUnified';
 
-export function usePatientsAPI() {
+export function usePatientsAPI(): UsePatientsReturn {
   const { clinicId } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);

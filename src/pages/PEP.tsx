@@ -21,7 +21,7 @@ import { ProntuarioPDF } from '@/modules/pep/components/ProntuarioPDF';
 import { useOdontogramaSupabase } from '@/modules/pep/hooks/useOdontogramaSupabase';
 import { useTratamentos } from '@/modules/pep/hooks/useTratamentos';
 import { PatientSelector } from '@/components/shared/PatientSelector';
-import { Patient } from '@/modules/pacientes/types/patient.types';
+import type { Patient } from '@/types/patient';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,7 +37,8 @@ export default function PEP() {
   const [isPrescricaoDialogOpen, setIsPrescricaoDialogOpen] = useState(false);
   const [isReceitaDialogOpen, setIsReceitaDialogOpen] = useState(false);
   
-  const prontuarioId = selectedPatient?.prontuarioId || null;
+  // Use patient id as prontuario id (simpler approach)
+  const prontuarioId = selectedPatient?.id || null;
 
   // Custom Hooks com Clean Architecture
   const { createTratamento } = useTratamentos(prontuarioId, clinicId || '');
