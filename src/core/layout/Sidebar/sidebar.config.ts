@@ -62,7 +62,8 @@ import {
   Scan,
   Brain,
   ScanLine,
-  Shield
+  Shield,
+  DollarSign
 } from 'lucide-react';
 
 export interface MenuItem {
@@ -142,21 +143,15 @@ export const menuGroups: MenuGroup[] = [
         icon: Bell, 
         moduleKey: 'AGENDA' 
       },
-      { 
-        title: 'Equipe Clínica',
-        icon: Users,
-        moduleKey: 'PEP',
+      {
+        title: 'Diagnóstico Avançado',
+        icon: Brain,
+        moduleKey: 'IA',
         collapsed: true,
         subItems: [
-          { title: 'Profissionais', url: '/dentistas', icon: Stethoscope },
-          { title: 'Auxiliares', url: '/funcionarios', icon: UserCog }
+          { title: 'IA para Diagnóstico', url: '/ia-radiografia', icon: Brain },
+          { title: 'Fluxo Digital (CAD/CAM)', url: '/fluxo-digital', icon: Scan }
         ]
-      },
-      { 
-        title: 'Recall Automatizado', 
-        url: '/recall', 
-        icon: Bell, 
-        moduleKey: 'AGENDA' 
       }
     ]
   },
@@ -272,51 +267,60 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ===== 6. CRESCIMENTO =====
+  // ===== 6. GESTÃO COMERCIAL =====
   {
-    label: 'CRESCIMENTO',
+    label: 'GESTÃO COMERCIAL',
     collapsed: true,
     items: [
-      { 
-        title: 'CRM Odontológico', 
-        url: '/crm', 
-        icon: Users, 
-        moduleKey: 'CRM' 
+      {
+        title: 'CRM e Relacionamento',
+        icon: Users,
+        moduleKey: 'CRM',
+        collapsed: true,
+        subItems: [
+          { title: 'CRM Odontológico', url: '/crm', icon: Users },
+          { title: 'Funil de Captação', url: '/crm/funil', icon: Target },
+          { title: 'Programa de Fidelidade', url: '/programa-fidelidade', icon: Award }
+        ]
       },
-      { 
-        title: 'Funil de Captação', 
-        url: '/crm/funil', 
-        icon: Target, 
-        moduleKey: 'CRM' 
-      },
-      { 
-        title: 'Campanhas de Marketing', 
-        url: '/marketing-auto', 
-        icon: Megaphone, 
-        moduleKey: 'MARKETING_AUTO' 
-      },
-      { 
-        title: 'Automação de E-mails', 
-        url: '/email-marketing', 
-        icon: Mail, 
-        moduleKey: 'MARKETING_AUTO' 
-      },
-      { 
-        title: 'Programa de Fidelidade', 
-        url: '/programa-fidelidade', 
-        icon: Award, 
-        moduleKey: 'CRM' 
-      },
-      { 
-        title: 'Análise de Desempenho', 
-        url: '/bi', 
-        icon: BarChart3, 
-        moduleKey: 'BI' 
+      {
+        title: 'Marketing e Comunicação',
+        icon: Megaphone,
+        moduleKey: 'MARKETING_AUTO',
+        collapsed: true,
+        subItems: [
+          { title: 'Campanhas de Marketing', url: '/marketing-auto', icon: Megaphone },
+          { title: 'Automação de E-mails', url: '/email-marketing', icon: Mail }
+        ]
       }
     ]
   },
 
-  // ===== 7. REGULAMENTAÇÃO =====
+  // ===== 7. INTELIGÊNCIA & RELATÓRIOS =====
+  {
+    label: 'INTELIGÊNCIA & RELATÓRIOS',
+    collapsed: true,
+    items: [
+      { 
+        title: 'Business Intelligence', 
+        url: '/bi', 
+        icon: BarChart3, 
+        moduleKey: 'BI' 
+      },
+      {
+        title: 'Dashboards por Categoria',
+        icon: LayoutDashboard,
+        collapsed: true,
+        subItems: [
+          { title: 'Dashboard Clínico', url: '/dashboards/clinica', icon: Activity },
+          { title: 'Dashboard Financeiro', url: '/dashboards/financeiro', icon: DollarSign },
+          { title: 'Dashboard Comercial', url: '/dashboards/comercial', icon: Target }
+        ]
+      }
+    ]
+  },
+
+  // ===== 8. REGULAMENTAÇÃO =====
   {
     label: 'REGULAMENTAÇÃO',
     collapsed: true,

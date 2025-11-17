@@ -10,7 +10,7 @@ interface SearchResult {
   id: string;
   title: string;
   subtitle: string;
-  type: 'patient' | 'appointment' | 'procedure';
+  type: 'patient' | 'appointment' | 'procedure' | 'transaction' | 'product';
   route: string;
   icon: any;
 }
@@ -46,8 +46,63 @@ const GlobalSearch = memo(function GlobalSearch() {
       const searchResults: SearchResult[] = [];
       try {
         const query = debouncedSearch.toLowerCase();
-        const { data: patients } = await supabase.from('patients' as any).select('id, full_name, cpf').eq('clinic_id', clinicId).or(`full_name.ilike.%${query}%,cpf.ilike.%${query}%`).limit(5);
-        if (patients) searchResults.push(...patients.map((p: any) => ({ id: p.id, title: p.full_name, subtitle: p.cpf, type: 'patient' as const, route: `/pacientes/${p.id}`, icon: User })));
+        
+        // Buscar pacientes
+        const { data: patients } = await supabase
+          .from('patients' as any)
+          .select('id, full_name, cpf')
+          .eq('clinic_id', clinicId)
+          .or(`full_name.ilike.%${query}%,cpf.ilike.%${query}%`)
+          .limit(3);
+        
+        if (patients) {
+          searchResults.push(...patients.map((p: any) => ({ 
+            id: p.id, 
+            title: p.full_name, 
+            subtitle: p.cpf, 
+            type: 'patient' as const, 
+            route: `/pacientes/${p.id}`, 
+            icon: User 
+          })));
+        }
+
+        // Buscar agendamentos
+        const { data: appointments } = await supabase
+          .from('appointments')
+          .select('id, title, start_time')
+          .eq('clinic_id', clinicId)
+          .ilike('title', `%${query}%`)
+          .limit(3);
+        
+        if (appointments) {
+          searchResults.push(...appointments.map((a: any) => ({ 
+            id: a.id, 
+            title: a.title, 
+            subtitle: new Date(a.start_time).toLocaleDateString('pt-BR'), 
+            type: 'appointment' as const, 
+            route: `/agenda`, 
+            icon: Calendar 
+          })));
+        }
+
+        // Buscar procedimentos
+        const { data: procedures } = await supabase
+          .from('procedimentos_odontologicos' as any)
+          .select('id, nome, codigo')
+          .ilike('nome', `%${query}%`)
+          .limit(3);
+        
+        if (procedures) {
+          searchResults.push(...procedures.map((p: any) => ({ 
+            id: p.id, 
+            title: p.nome, 
+            subtitle: p.codigo || 'Procedimento', 
+            type: 'procedure' as const, 
+            route: `/procedimentos`, 
+            icon: FileText 
+          })));
+        }
+
         setResults(searchResults);
       } catch (error) {
         console.error('Erro ao buscar:', error);
@@ -70,8 +125,49 @@ const GlobalSearch = memo(function GlobalSearch() {
         <CommandInput placeholder="Buscar..." value={search} onValueChange={setSearch} />
         <CommandList>
           {loading && <div className="flex items-center justify-center py-6"><Loader2 className="h-6 w-6 animate-spin" /></div>}
-          {!loading && results.length === 0 && search && <CommandEmpty>Nenhum resultado.</CommandEmpty>}
-          {results.length > 0 && <CommandGroup heading="Pacientes">{results.map((r) => <CommandItem key={r.id} onSelect={() => { navigate(r.route); setOpen(false); }}><User className="mr-2 h-4 w-4" /><div><span>{r.title}</span><span className="text-xs text-muted-foreground">{r.subtitle}</span></div></CommandItem>)}</CommandGroup>}
+          {!loading && results.length === 0 && search && <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>}
+          
+          {results.filter(r => r.type === 'patient').length > 0 && (
+            <CommandGroup heading="Pacientes">
+              {results.filter(r => r.type === 'patient').map((r) => (
+                <CommandItem key={r.id} onSelect={() => { navigate(r.route); setOpen(false); }}>
+                  <User className="mr-2 h-4 w-4" />
+                  <div className="flex flex-col">
+                    <span>{r.title}</span>
+                    <span className="text-xs text-muted-foreground">{r.subtitle}</span>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+
+          {results.filter(r => r.type === 'appointment').length > 0 && (
+            <CommandGroup heading="Agendamentos">
+              {results.filter(r => r.type === 'appointment').map((r) => (
+                <CommandItem key={r.id} onSelect={() => { navigate(r.route); setOpen(false); }}>
+                  <Calendar className="mr-2 h-4 w-4" />
+                  <div className="flex flex-col">
+                    <span>{r.title}</span>
+                    <span className="text-xs text-muted-foreground">{r.subtitle}</span>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+
+          {results.filter(r => r.type === 'procedure').length > 0 && (
+            <CommandGroup heading="Procedimentos">
+              {results.filter(r => r.type === 'procedure').map((r) => (
+                <CommandItem key={r.id} onSelect={() => { navigate(r.route); setOpen(false); }}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  <div className="flex flex-col">
+                    <span>{r.title}</span>
+                    <span className="text-xs text-muted-foreground">{r.subtitle}</span>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
         </CommandList>
       </CommandDialog>
     </>
