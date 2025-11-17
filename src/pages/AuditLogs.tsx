@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { TableFilter } from '@/components/shared/TableFilter';
 import { Shield, Calendar as CalendarIcon, User, Filter, Download, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';

@@ -137,12 +137,6 @@ export const menuGroups: MenuGroup[] = [
         icon: ClipboardPlus, 
         moduleKey: 'PEP' 
       },
-      { 
-        title: 'Recall Automatizado', 
-        url: '/recall', 
-        icon: Bell, 
-        moduleKey: 'AGENDA' 
-      },
       {
         title: 'Diagnóstico Avançado',
         icon: Brain,
