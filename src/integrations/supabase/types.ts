@@ -59,6 +59,47 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_configurations: {
+        Row: {
+          clinic_id: string
+          config_data: Json
+          config_type: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          clinic_id: string
+          config_data?: Json
+          config_type: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          clinic_id?: string
+          config_data?: Json
+          config_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_configurations_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       analises_radiograficas: {
         Row: {
           ai_model_version: string | null

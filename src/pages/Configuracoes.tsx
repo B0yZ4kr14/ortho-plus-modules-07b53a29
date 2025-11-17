@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, Package, Users, Database, Shield, Bell, Download, Upload } from 'lucide-react';
+import { Settings, Package, Users, Database, Shield, Bell, Download, Upload, Wrench } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,6 +13,9 @@ import { ModulePermissionsManager } from '@/components/settings/ModulePermission
 import { PermissionTemplates } from '@/components/settings/PermissionTemplates';
 import { PermissionAuditLogs } from '@/components/settings/PermissionAuditLogs';
 import { DataMigrationWizard } from '@/components/settings/DataMigrationWizard';
+import { GitHubIntegrationConfig } from '@/components/settings/GitHubIntegrationConfig';
+import { AuthenticationConfig } from '@/components/settings/AuthenticationConfig';
+import { AIModelConfig } from '@/components/settings/AIModelConfig';
 
 export default function Configuracoes() {
   const { user, hasRole } = useAuth();
@@ -45,6 +48,12 @@ export default function Configuracoes() {
       description: 'Gerenciar usuários e permissões'
     },
     {
+      id: 'administration',
+      label: 'Administração',
+      icon: Wrench,
+      description: 'GitHub, Autenticação e Modelos de IA'
+    },
+    {
       id: 'backups',
       label: 'Backups',
       icon: Database,
@@ -74,7 +83,7 @@ export default function Configuracoes() {
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           {configSections.map((section) => (
             <TabsTrigger 
               key={section.id} 
@@ -105,6 +114,12 @@ export default function Configuracoes() {
 
         <TabsContent value="users" className="space-y-4">
           <UserManagementTab />
+        </TabsContent>
+
+        <TabsContent value="administration" className="space-y-4">
+          <GitHubIntegrationConfig />
+          <AuthenticationConfig />
+          <AIModelConfig />
         </TabsContent>
 
         <TabsContent value="backups" className="space-y-4">
