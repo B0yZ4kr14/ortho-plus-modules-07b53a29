@@ -79,48 +79,48 @@
 
 ---
 
-### ⏳ FASE 5: Hooks Restantes (PENDENTE)
+### ✅ FASE 5: Hooks Restantes (COMPLETO)
 
 #### 5.1 PDV
-- [ ] `usePDV` - Vendas e fechamento de caixa
-- [ ] Registrar vendas, listar vendas
-- [ ] Fechar caixa do dia
+- [x] `usePDV` - Vendas e fechamento de caixa
+- [x] Registrar vendas, listar vendas
+- [x] Fechar caixa do dia
 
-**Arquivo a criar**: `src/hooks/api/usePDV.ts`
+**Arquivo**: `src/hooks/api/usePDV.ts`
 
 #### 5.2 PEP (Prontuário Eletrônico)
-- [ ] `usePEP` - Prontuários e evoluções
-- [ ] Criar prontuário, adicionar evoluções
-- [ ] Assinatura digital
+- [x] `usePEP` - Prontuários e evoluções
+- [x] Criar prontuário, adicionar evoluções
+- [x] Assinatura digital
 
-**Arquivo a criar**: `src/hooks/api/usePEP.ts`
+**Arquivo**: `src/hooks/api/usePEP.ts`
 
 #### 5.3 Faturamento
-- [ ] `useFaturamento` - Emissão de NFe
-- [ ] Emitir, autorizar, cancelar NFe
-- [ ] Consultar status SEFAZ
+- [x] `useFaturamento` - Emissão de NFe
+- [x] Emitir, autorizar, cancelar NFe
+- [x] Consultar status SEFAZ
 
-**Arquivo a criar**: `src/hooks/api/useFaturamento.ts`
+**Arquivo**: `src/hooks/api/useFaturamento.ts`
 
 #### 5.4 Crypto Config
-- [ ] `useCryptoConfig` - Exchanges e portfolio
-- [ ] Conectar exchanges, portfolio consolidado
-- [ ] Estratégias DCA
+- [x] `useCryptoConfig` - Exchanges e portfolio
+- [x] Conectar exchanges, portfolio consolidado
+- [x] Estratégias DCA
 
-**Arquivo a criar**: `src/hooks/api/useCryptoConfig.ts`
+**Arquivo**: `src/hooks/api/useCryptoConfig.ts`
 
 #### 5.5 GitHub Tools
-- [ ] `useGitHubTools` - Gestão de repos
-- [ ] Listar repos, branches, PRs, workflows
+- [x] `useGitHubTools` - Gestão de repos
+- [x] Listar repos, branches, PRs, workflows
 
-**Arquivo a criar**: `src/hooks/api/useGitHubTools.ts`
+**Arquivo**: `src/hooks/api/useGitHubTools.ts`
 
 #### 5.6 Terminal
-- [ ] `useTerminal` - Web shell
-- [ ] Criar sessões, executar comandos
-- [ ] Histórico de comandos
+- [x] `useTerminal` - Web shell
+- [x] Criar sessões, executar comandos
+- [x] Histórico de comandos
 
-**Arquivo a criar**: `src/hooks/api/useTerminal.ts`
+**Arquivo**: `src/hooks/api/useTerminal.ts`
 
 ---
 
@@ -217,11 +217,16 @@ VITE_API_BASE_URL=https://api.orthoplus.com.br/api
 | Hook useModulos | 100% | ✅ |
 | Hook useDatabaseAdmin | 100% | ✅ |
 | Hook useBackups | 100% | ✅ |
-| Hooks restantes (6 módulos) | 0% | ⏳ |
+| Hook usePDV | 100% | ✅ |
+| Hook usePEP | 100% | ✅ |
+| Hook useFaturamento | 100% | ✅ |
+| Hook useCryptoConfig | 100% | ✅ |
+| Hook useGitHubTools | 100% | ✅ |
+| Hook useTerminal | 100% | ✅ |
 | Contexts (Auth, Modules) | 0% | ⏳ |
 | Componentes | 0% | ⏳ |
 
-**PROGRESSO TOTAL: 40%**
+**PROGRESSO TOTAL: 60%**
 
 ---
 
