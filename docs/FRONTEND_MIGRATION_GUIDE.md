@@ -138,6 +138,19 @@ Hooks compatíveis com tipos existentes criados:
 
 **TOTAL: 95% COMPLETO**
 
+### 📊 Componentes Identificados
+
+**Módulo Pacientes** (3 componentes prontos para migração):
+- ✅ `PatientSelector.tsx` - 5 minutos
+- ✅ `AgendaClinica.tsx` - 5 minutos  
+- ✅ `Pacientes.tsx` - 15 minutos
+
+**Tempo Total Estimado**: 25 minutos de trabalho
+
+**Guias Práticos**:
+- `docs/PRACTICAL_MIGRATION_GUIDE.md` - Exemplos com código real dos 3 componentes
+- `MIGRATION_STATUS.md` - Status executivo atualizado
+
 ---
 
 ## 🔄 ESTRATÉGIA DE MIGRAÇÃO GRADUAL
