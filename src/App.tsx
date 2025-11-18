@@ -112,6 +112,8 @@ const DashboardExecutivoPDV = lazy(() => import('./pages/pdv/DashboardExecutivoP
 const TerminalPage = lazy(() => import('./pages/admin/TerminalPage'));
 const GitHubManagerPage = lazy(() => import('./pages/admin/GitHubManagerPage'));
 const DatabaseMaintenancePage = lazy(() => import('./pages/admin/DatabaseMaintenancePage'));
+const BackupsPage = lazy(() => import('./pages/admin/BackupsPage'));
+const CryptoConfigPage = lazy(() => import('./pages/admin/CryptoConfigPage'));
 const WikiPage = lazy(() => import('./pages/admin/WikiPage'));
 const ADRsPage = lazy(() => import('./pages/admin/ADRsPage'));
 const MonitoringPage = lazy(() => import('./pages/admin/MonitoringPage'));
@@ -253,17 +255,16 @@ const App = () => (
                 <Route path="/templates-procedimentos" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState />}><TemplatesProcedimentosPage /></Suspense></AppLayout></ProtectedRoute>} />
                 
                 {/* Admin Routes - Enterprise Tools */}
-                <Route path="/admin/terminal" element={<ProtectedRoute requireAdmin><AppLayout><TerminalPage /></AppLayout></ProtectedRoute>} />
-                <Route path="/admin/github" element={<ProtectedRoute requireAdmin><AppLayout><GitHubManagerPage /></AppLayout></ProtectedRoute>} />
-                <Route path="/admin/database-maintenance" element={<ProtectedRoute requireAdmin><AppLayout><DatabaseMaintenancePage /></AppLayout></ProtectedRoute>} />
-                <Route path="/admin/wiki" element={<ProtectedRoute requireAdmin><AppLayout><WikiPage /></AppLayout></ProtectedRoute>} />
-                <Route path="/admin/adrs" element={<ProtectedRoute requireAdmin><AppLayout><ADRsPage /></AppLayout></ProtectedRoute>} />
-                <Route path="/admin/monitoring" element={<ProtectedRoute requireAdmin><AppLayout><MonitoringPage /></AppLayout></ProtectedRoute>} />
-                <Route path="/admin/logs" element={<ProtectedRoute requireAdmin><AppLayout><SystemLogsPage /></AppLayout></ProtectedRoute>} />
-                <Route path="/admin/api-docs" element={<ProtectedRoute requireAdmin><AppLayout><ApiDocsPage /></AppLayout></ProtectedRoute>} />
-                <Route path="/admin/backups" element={<ProtectedRoute requireAdmin><AppLayout><BackupExecutivePage /></AppLayout></ProtectedRoute>} />
-                <Route path="/admin/sql-query" element={<ProtectedRoute requireAdmin><AppLayout><BackupExecutivePage /></AppLayout></ProtectedRoute>} />
-                <Route path="/admin/migrations" element={<ProtectedRoute requireAdmin><AppLayout><BackupExecutivePage /></AppLayout></ProtectedRoute>} />
+                <Route path="/admin/terminal" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><TerminalPage /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/admin/github" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><GitHubManagerPage /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/admin/database" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><DatabaseMaintenancePage /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/admin/backups" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><BackupsPage /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/admin/crypto" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><CryptoConfigPage /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/admin/wiki" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><WikiPage /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/admin/adrs" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><ADRsPage /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/admin/monitoring" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><MonitoringPage /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/admin/logs" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><SystemLogsPage /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/admin/api-docs" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><ApiDocsPage /></Suspense></AppLayout></ProtectedRoute>} />
                 
                 {/* 404 Route */}
                 <Route path="*" element={<NotFound />} />
