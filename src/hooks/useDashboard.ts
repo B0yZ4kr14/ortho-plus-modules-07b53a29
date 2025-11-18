@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api/apiClient';
+import { logger } from '@/lib/logger';
 
 export interface DashboardStats {
   totalPatients: number;
@@ -45,7 +46,7 @@ export function useDashboard() {
       const response = responseData as DashboardData;
       setData(response);
     } catch (err) {
-      console.error('[useDashboard] Erro ao buscar dados:', err);
+      logger.error('[useDashboard] Erro ao buscar dados', err);
       setError(err as Error);
       
       // Fallback com dados mockados em caso de erro

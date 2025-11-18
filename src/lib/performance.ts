@@ -34,7 +34,7 @@ export function observeLongTasks() {
     try {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          logger.warn('Long Task detected', {
+          logger.warn(`Long Task detected`, {
             duration: entry.duration,
             startTime: entry.startTime,
           });
@@ -70,7 +70,7 @@ export function monitorResourceLoading() {
           
           // Alerta para recursos lentos (> 1s)
           if (resourceEntry.duration > 1000) {
-            logger.warn('Slow resource |', {
+            logger.warn(`Slow resource`, {
               name: resourceEntry.name,
               duration: resourceEntry.duration,
               type: resourceEntry.initiatorType,
