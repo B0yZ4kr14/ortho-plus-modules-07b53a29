@@ -15,7 +15,7 @@ import { DocumentosTab } from '@/components/patients/tabs/DocumentosTab';
 import { HistoricoTab } from '@/components/patients/tabs/HistoricoTab';
 import type { Patient } from '@/types/patient';
 
-export default function PatientDetail() {
+export default function PatientDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 

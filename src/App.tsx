@@ -24,9 +24,9 @@ const TemplatesProcedimentosPage = lazy(() => import('./pages/TemplatesProcedime
 // Core imports (não lazy)
 import Demo from "./pages/Demo";
 import DashboardUnified from "./pages/DashboardUnified";
-import Pacientes from "./pages/Pacientes";
-import PatientDetail from "./pages/PatientDetail";
-import PatientForm from "./pages/PatientForm";
+import PacientesListPage from "./modules/pacientes/ui/pages/PacientesListPage";
+import PatientDetailPage from "./modules/pacientes/ui/pages/PatientDetailPage";
+import PatientFormPage from "./modules/pacientes/ui/pages/PatientFormPage";
 import DentistasPage from "./modules/dentistas/ui/pages/DentistasPage";
 import FuncionariosPage from "./modules/funcionarios/ui/pages/FuncionariosPage";
 import ProcedimentosPage from "./modules/procedimentos/ui/pages/ProcedimentosPage";
@@ -35,9 +35,9 @@ import { FinanceiroPage } from "./modules/financeiro/ui/pages/FinanceiroPage";
 import { MarketingAutoPage } from './modules/marketing-auto/ui/pages/MarketingAutoPage';
 import { OrcamentosPage } from './modules/orcamentos/ui/pages/OrcamentosPage';
 import { EstoquePage } from './modules/estoque/ui/pages/EstoquePage';
-import AgendaClinica from "./pages/AgendaClinica";
+import AgendaClinicaPage from "./modules/agenda/ui/pages/AgendaClinicaPage";
 import Configuracoes from './pages/Configuracoes';
-import PEP from './pages/PEP';
+import PEPPage from './modules/pep/ui/pages/PEPPage';
 import HelpCenter from "./pages/HelpCenter";
 import Usuarios from "./pages/Usuarios";
 import { AgendaPage } from '@/modules/agenda/ui/pages/AgendaPage';
@@ -167,10 +167,10 @@ const App = () => (
                 
                 {/* Protected Routes with Layout */}
                 <Route path="/" element={<ProtectedRoute><AppLayout><DashboardUnified /></AppLayout></ProtectedRoute>} />
-                <Route path="/pacientes" element={<ProtectedRoute><AppLayout><Pacientes /></AppLayout></ProtectedRoute>} />
-                <Route path="/pacientes/novo" element={<ProtectedRoute><AppLayout><PatientForm /></AppLayout></ProtectedRoute>} />
-                <Route path="/pacientes/editar/:id" element={<ProtectedRoute><AppLayout><PatientForm /></AppLayout></ProtectedRoute>} />
-                <Route path="/pacientes/:id" element={<ProtectedRoute><AppLayout><PatientDetail /></AppLayout></ProtectedRoute>} />
+                <Route path="/pacientes" element={<ProtectedRoute moduleKey="PACIENTES"><AppLayout><PacientesListPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/pacientes/novo" element={<ProtectedRoute moduleKey="PACIENTES"><AppLayout><PatientFormPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/pacientes/editar/:id" element={<ProtectedRoute moduleKey="PACIENTES"><AppLayout><PatientFormPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/pacientes/:id" element={<ProtectedRoute moduleKey="PACIENTES"><AppLayout><PatientDetailPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/dentistas" element={<ProtectedRoute moduleKey="DENTISTAS"><AppLayout><DentistasPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/funcionarios" element={<ProtectedRoute moduleKey="FUNCIONARIOS"><AppLayout><FuncionariosPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/procedimentos" element={<ProtectedRoute moduleKey="PROCEDIMENTOS"><AppLayout><ProcedimentosPage /></AppLayout></ProtectedRoute>} />

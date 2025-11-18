@@ -19,7 +19,7 @@ import { MarketingTrackingTab } from '@/components/patients/form-tabs/MarketingT
 import { patientFormSchema, type PatientFormValues, calculateBMI } from '@/lib/patient-validation';
 import type { Patient } from '@/types/patient';
 
-export default function PatientForm() {
+export default function PatientFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { clinicId, user } = useAuth();
@@ -136,25 +136,33 @@ export default function PatientForm() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate('/pacientes')}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold">
             {id ? 'Editar Paciente' : 'Novo Paciente'}
           </h1>
           <p className="text-muted-foreground mt-1">
-            {id ? 'Atualize as informações do paciente' : 'Preencha os dados do novo paciente'}
+            Preencha os dados do paciente com atenção
           </p>
         </div>
+        <Button
+          onClick={form.handleSubmit(onSubmit)}
+          disabled={isLoading}
+          className="gap-2"
+        >
+          <Save className="h-4 w-4" />
+          {isLoading ? 'Salvando...' : 'Salvar'}
+        </Button>
       </div>
 
       {/* Form */}
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)}>
           <PatientFormTabs>
             <PersonalDataTab form={form} />
             <ContactAddressTab form={form} />
@@ -164,22 +172,6 @@ export default function PatientForm() {
             <OtherTab form={form} />
             <MarketingTrackingTab form={form} />
           </PatientFormTabs>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-4 pt-6 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate('/pacientes')}
-              disabled={isLoading}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isLoading} className="gap-2">
-              <Save className="h-4 w-4" />
-              {isLoading ? 'Salvando...' : 'Salvar Paciente'}
-            </Button>
-          </div>
         </form>
       </Form>
     </div>

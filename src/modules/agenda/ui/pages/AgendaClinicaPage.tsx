@@ -15,7 +15,7 @@ import { Calendar } from 'lucide-react';
 
 type ViewMode = 'calendar' | 'form' | 'details';
 
-export default function AgendaClinica() {
+export default function AgendaClinicaPage() {
   const { 
     appointments, 
     dentistas, 
@@ -124,26 +124,24 @@ export default function AgendaClinica() {
             </DialogTitle>
           </DialogHeader>
 
-          {viewMode === 'form' && (
+          {viewMode === 'form' ? (
             <AppointmentForm
               appointment={selectedAppointment}
-              dentistas={dentistas}
-              pacientes={pacientesOptions}
               onSubmit={handleSubmit}
               onCancel={handleCancel}
+              pacientes={pacientesOptions}
+              dentistas={dentistas}
               initialDate={initialDate}
               initialTime={initialTime}
             />
-          )}
-
-          {viewMode === 'details' && selectedAppointment && (
+          ) : selectedAppointment ? (
             <AppointmentDetails
               appointment={selectedAppointment}
-              onEdit={() => setViewMode('form')}
-              onClose={handleCancel}
+              onEdit={() => handleEdit(selectedAppointment)}
               onSendReminder={handleSendReminder}
+              onClose={handleCancel}
             />
-          )}
+          ) : null}
         </DialogContent>
       </Dialog>
     </div>
