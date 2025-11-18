@@ -3,6 +3,8 @@
  * Permite comunicação assíncrona entre componentes e sincronização em tempo real
  */
 
+import { logger } from '@/lib/logger';
+
 export interface FrontendEvent {
   eventId: string;
   eventType: string;
@@ -43,7 +45,7 @@ export class FrontendEventBus {
       this.ws = new WebSocket(wsUrl);
 
       this.ws.onopen = () => {
-        console.log('[FrontendEventBus] WebSocket conectado');
+        logger.info('[FrontendEventBus] WebSocket conectado');
         this.reconnectAttempts = 0;
       };
 
@@ -52,20 +54,20 @@ export class FrontendEventBus {
           const event: FrontendEvent = JSON.parse(message.data);
           this.publish(event);
         } catch (error) {
-          console.error('[FrontendEventBus] Erro ao processar mensagem:', error);
+          logger.error('[FrontendEventBus] Erro ao processar mensagem', error);
         }
       };
 
       this.ws.onerror = (error) => {
-        console.error('[FrontendEventBus] Erro no WebSocket:', error);
+        logger.error('[FrontendEventBus] Erro no WebSocket', error);
       };
 
       this.ws.onclose = () => {
-        console.warn('[FrontendEventBus] WebSocket desconectado');
+        logger.warn('[FrontendEventBus] WebSocket desconectado');
         this.attemptReconnect();
       };
     } catch (error) {
-      console.error('[FrontendEventBus] Erro ao conectar WebSocket:', error);
+      logger.error('[FrontendEventBus] Erro ao conectar WebSocket', error);
       this.attemptReconnect();
     }
   }
@@ -75,14 +77,14 @@ export class FrontendEventBus {
    */
   private attemptReconnect(): void {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error('[FrontendEventBus] Máximo de tentativas de reconexão atingido');
+      logger.error('[FrontendEventBus] Máximo de tentativas de reconexão atingido');
       return;
     }
 
     const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
     this.reconnectAttempts++;
 
-    console.log(`[FrontendEventBus] Reconectando em ${delay}ms (tentativa ${this.reconnectAttempts})`);
+    logger.info(`[FrontendEventBus] Reconectando em ${delay}ms (tentativa ${this.reconnectAttempts})`);
     setTimeout(() => this.connectWebSocket(), delay);
   }
 

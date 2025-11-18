@@ -118,6 +118,7 @@ export default function Configuracoes() {
         </TabsContent>
 
         <TabsContent value="administration" className="space-y-4">
+          <BackendSelector />
           <GitHubIntegrationConfig />
           <AuthenticationConfig />
           <AIModelConfig />
