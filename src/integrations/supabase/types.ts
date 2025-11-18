@@ -5611,13 +5611,22 @@ export type Database = {
           blood_pressure_systolic: number | null
           blood_type: string | null
           bmi: number | null
+          campanha_origem_id: string | null
+          campanha_origem_nome: string | null
+          canal_captacao: string | null
           cardiovascular_details: string | null
+          cargo: string | null
+          churn_risk_score: number | null
           clinic_id: string
           clinical_observations: string | null
+          cnpj_empresa: string | null
           cpf: string | null
           created_at: string
           created_by: string | null
           current_medications: string[] | null
+          data_conversao: string | null
+          data_primeiro_contato: string | null
+          data_qualificacao: string | null
           data_sharing_consent: boolean | null
           diabetes_controlled: boolean | null
           diabetes_type: string | null
@@ -5625,6 +5634,8 @@ export type Database = {
           email: string | null
           emergency_contact_name: string | null
           emergency_contact_relationship: string | null
+          empresa: string | null
+          evento_captacao: string | null
           first_appointment_date: string | null
           full_name: string
           gender: string | null
@@ -5646,6 +5657,9 @@ export type Database = {
           hypertension_controlled: boolean | null
           id: string
           image_usage_consent: boolean | null
+          indicado_por: string | null
+          indicado_por_dentista_id: string | null
+          indicado_por_paciente_id: string | null
           is_breastfeeding: boolean | null
           is_pregnant: boolean | null
           last_appointment_date: string | null
@@ -5657,6 +5671,7 @@ export type Database = {
           nationality: string | null
           occupation: string | null
           oral_hygiene_quality: string | null
+          origem_lead: string | null
           pain_level: number | null
           patient_code: string | null
           payment_status: string | null
@@ -5665,6 +5680,9 @@ export type Database = {
           phone_secondary: string | null
           preferred_payment_method: string | null
           pregnancy_trimester: number | null
+          promotor_id: string | null
+          promotor_nome: string | null
+          propensao_indicacao: number | null
           rg: string | null
           risk_level: string | null
           risk_score_anesthetic: number | null
@@ -5681,6 +5699,8 @@ export type Database = {
           treatment_consent: boolean | null
           updated_at: string
           updated_by: string | null
+          valor_lifetime: number | null
+          valor_ticket_medio: number | null
           weight_kg: number | null
         }
         Insert: {
@@ -5700,13 +5720,22 @@ export type Database = {
           blood_pressure_systolic?: number | null
           blood_type?: string | null
           bmi?: number | null
+          campanha_origem_id?: string | null
+          campanha_origem_nome?: string | null
+          canal_captacao?: string | null
           cardiovascular_details?: string | null
+          cargo?: string | null
+          churn_risk_score?: number | null
           clinic_id: string
           clinical_observations?: string | null
+          cnpj_empresa?: string | null
           cpf?: string | null
           created_at?: string
           created_by?: string | null
           current_medications?: string[] | null
+          data_conversao?: string | null
+          data_primeiro_contato?: string | null
+          data_qualificacao?: string | null
           data_sharing_consent?: boolean | null
           diabetes_controlled?: boolean | null
           diabetes_type?: string | null
@@ -5714,6 +5743,8 @@ export type Database = {
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_relationship?: string | null
+          empresa?: string | null
+          evento_captacao?: string | null
           first_appointment_date?: string | null
           full_name: string
           gender?: string | null
@@ -5735,6 +5766,9 @@ export type Database = {
           hypertension_controlled?: boolean | null
           id?: string
           image_usage_consent?: boolean | null
+          indicado_por?: string | null
+          indicado_por_dentista_id?: string | null
+          indicado_por_paciente_id?: string | null
           is_breastfeeding?: boolean | null
           is_pregnant?: boolean | null
           last_appointment_date?: string | null
@@ -5746,6 +5780,7 @@ export type Database = {
           nationality?: string | null
           occupation?: string | null
           oral_hygiene_quality?: string | null
+          origem_lead?: string | null
           pain_level?: number | null
           patient_code?: string | null
           payment_status?: string | null
@@ -5754,6 +5789,9 @@ export type Database = {
           phone_secondary?: string | null
           preferred_payment_method?: string | null
           pregnancy_trimester?: number | null
+          promotor_id?: string | null
+          promotor_nome?: string | null
+          propensao_indicacao?: number | null
           rg?: string | null
           risk_level?: string | null
           risk_score_anesthetic?: number | null
@@ -5770,6 +5808,8 @@ export type Database = {
           treatment_consent?: boolean | null
           updated_at?: string
           updated_by?: string | null
+          valor_lifetime?: number | null
+          valor_ticket_medio?: number | null
           weight_kg?: number | null
         }
         Update: {
@@ -5789,13 +5829,22 @@ export type Database = {
           blood_pressure_systolic?: number | null
           blood_type?: string | null
           bmi?: number | null
+          campanha_origem_id?: string | null
+          campanha_origem_nome?: string | null
+          canal_captacao?: string | null
           cardiovascular_details?: string | null
+          cargo?: string | null
+          churn_risk_score?: number | null
           clinic_id?: string
           clinical_observations?: string | null
+          cnpj_empresa?: string | null
           cpf?: string | null
           created_at?: string
           created_by?: string | null
           current_medications?: string[] | null
+          data_conversao?: string | null
+          data_primeiro_contato?: string | null
+          data_qualificacao?: string | null
           data_sharing_consent?: boolean | null
           diabetes_controlled?: boolean | null
           diabetes_type?: string | null
@@ -5803,6 +5852,8 @@ export type Database = {
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_relationship?: string | null
+          empresa?: string | null
+          evento_captacao?: string | null
           first_appointment_date?: string | null
           full_name?: string
           gender?: string | null
@@ -5824,6 +5875,9 @@ export type Database = {
           hypertension_controlled?: boolean | null
           id?: string
           image_usage_consent?: boolean | null
+          indicado_por?: string | null
+          indicado_por_dentista_id?: string | null
+          indicado_por_paciente_id?: string | null
           is_breastfeeding?: boolean | null
           is_pregnant?: boolean | null
           last_appointment_date?: string | null
@@ -5835,6 +5889,7 @@ export type Database = {
           nationality?: string | null
           occupation?: string | null
           oral_hygiene_quality?: string | null
+          origem_lead?: string | null
           pain_level?: number | null
           patient_code?: string | null
           payment_status?: string | null
@@ -5843,6 +5898,9 @@ export type Database = {
           phone_secondary?: string | null
           preferred_payment_method?: string | null
           pregnancy_trimester?: number | null
+          promotor_id?: string | null
+          promotor_nome?: string | null
+          propensao_indicacao?: number | null
           rg?: string | null
           risk_level?: string | null
           risk_score_anesthetic?: number | null
@@ -5859,6 +5917,8 @@ export type Database = {
           treatment_consent?: boolean | null
           updated_at?: string
           updated_by?: string | null
+          valor_lifetime?: number | null
+          valor_ticket_medio?: number | null
           weight_kg?: number | null
         }
         Relationships: [
@@ -5867,6 +5927,13 @@ export type Database = {
             columns: ["clinic_id"]
             isOneToOne: false
             referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patients_indicado_por_paciente_id_fkey"
+            columns: ["indicado_por_paciente_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
             referencedColumns: ["id"]
           },
         ]
