@@ -37,8 +37,12 @@ export function useDashboard() {
       setIsLoading(true);
       setError(null);
 
-      // Chamar endpoint agregado do backend
-      const response = await apiClient.get<DashboardData>('/dashboard/overview');
+      // Chamar Edge Function do Supabase
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: responseData, error: fnError } = await supabase.functions.invoke('dashboard-overview');
+      
+      if (fnError) throw fnError;
+      const response = responseData as DashboardData;
       setData(response);
     } catch (err) {
       console.error('[useDashboard] Erro ao buscar dados:', err);
