@@ -82,29 +82,32 @@ export interface MenuItem {
 
 export interface MenuGroup {
   label: string;
+  boundedContext: string; // DDD: Bounded Context identifier
   collapsed?: boolean;
   items: MenuItem[];
 }
 
 /**
- * NAVEGAÇÃO PRINCIPAL
+ * NAVEGAÇÃO MODULAR POR BOUNDED CONTEXTS (DDD)
  */
 export const menuGroups: MenuGroup[] = [
-  // ========= 1. INÍCIO =========
+  // ========= DASHBOARD (Visão Geral) =========
   {
-    label: 'INÍCIO',
+    label: 'VISÃO GERAL',
+    boundedContext: 'CORE',
     items: [
       { 
-        title: 'Dashboard', 
+        title: 'Dashboard Executivo', 
         url: '/', 
         icon: LayoutDashboard 
       }
     ]
   },
 
-  // ===== 2. CLÍNICA =====
+  // ========= BOUNDED CONTEXT: PACIENTES =========
   {
-    label: 'CLÍNICA',
+    label: 'PACIENTES',
+    boundedContext: 'PACIENTES',
     collapsed: false,
     items: [
       { 
