@@ -140,7 +140,10 @@ class SupabaseDataService implements IDataService {
       
       if (options?.filters) {
         Object.entries(options.filters).forEach(([key, value]) => {
-          query = query.eq(key, value);
+          if (value !== undefined && value !== null) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            query = (query as any).eq(key, value);
+          }
         });
       }
       
@@ -163,7 +166,7 @@ class SupabaseDataService implements IDataService {
         return { data: [], error: new Error(error.message) };
       }
       
-      return { data: (data as T[]) || [], error: null };
+      return { data: (data as unknown as T[]) || [], error: null };
     } catch (err) {
       logger.error('Query exception', { table, error: err });
       return { 
@@ -186,7 +189,10 @@ class SupabaseDataService implements IDataService {
       
       if (options?.filters) {
         Object.entries(options.filters).forEach(([key, value]) => {
-          countQuery = countQuery.eq(key, value);
+          if (value !== undefined && value !== null) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            countQuery = (countQuery as any).eq(key, value);
+          }
         });
       }
 
@@ -235,10 +241,11 @@ class SupabaseDataService implements IDataService {
     id: string
   ): Promise<{ data: T | null; error: Error | null }> {
     try {
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase
         .from(table)
         .select('*')
-        .eq('id', id)
+        .eq('id', id) as any)
         .maybeSingle();
       
       if (error) {
@@ -246,7 +253,7 @@ class SupabaseDataService implements IDataService {
         return { data: null, error: new Error(error.message) };
       }
       
-      return { data: data as T, error: null };
+      return { data: data as unknown as T, error: null };
     } catch (err) {
       logger.error('Get by ID exception', { table, id, error: err });
       return { 
@@ -261,9 +268,10 @@ class SupabaseDataService implements IDataService {
     data: Partial<T>
   ): Promise<{ data: T | null; error: Error | null }> {
     try {
-      const { data: result, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: result, error } = await (supabase
         .from(table)
-        .insert(data as never)
+        .insert(data as any) as any)
         .select()
         .single();
       
@@ -272,7 +280,7 @@ class SupabaseDataService implements IDataService {
         return { data: null, error: new Error(error.message) };
       }
       
-      return { data: result as T, error: null };
+      return { data: result as unknown as T, error: null };
     } catch (err) {
       logger.error('Create exception', { table, error: err });
       return { 
@@ -288,10 +296,11 @@ class SupabaseDataService implements IDataService {
     data: Partial<T>
   ): Promise<{ data: T | null; error: Error | null }> {
     try {
-      const { data: result, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: result, error } = await (supabase
         .from(table)
-        .update(data as never)
-        .eq('id', id)
+        .update(data as any)
+        .eq('id', id) as any)
         .select()
         .single();
       
@@ -300,7 +309,7 @@ class SupabaseDataService implements IDataService {
         return { data: null, error: new Error(error.message) };
       }
       
-      return { data: result as T, error: null };
+      return { data: result as unknown as T, error: null };
     } catch (err) {
       logger.error('Update exception', { table, id, error: err });
       return { 
@@ -315,10 +324,11 @@ class SupabaseDataService implements IDataService {
     id: string
   ): Promise<{ error: Error | null }> {
     try {
-      const { error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase
         .from(table)
         .delete()
-        .eq('id', id);
+        .eq('id', id) as any);
       
       if (error) {
         logger.error('Delete failed', { table, id, error });
