@@ -1,6 +1,6 @@
 /**
- * SIDEBAR CONFIGURATION V5.0 - Ortho+
- * 6 Categorias Funcionais | Terminologia Intuitiva | Máximo 2 Níveis
+ * SIDEBAR CONFIGURATION V5.3 COHERENCE - Ortho+
+ * Sincronização completa com module_catalog
  */
 
 import { 
@@ -34,6 +34,10 @@ import {
   HardDrive,
   Terminal,
   Github,
+  Gift,
+  ClipboardCheck,
+  UserCircle,
+  FileSignature,
   type LucideIcon
 } from 'lucide-react';
 
@@ -59,7 +63,7 @@ export interface MenuGroup {
 }
 
 /**
- * NAVEGAÇÃO V5.0: 6 BOUNDED CONTEXTS | 38 ITENS TOTAIS
+ * NAVEGAÇÃO V5.3: TODOS OS MÓDULOS COM moduleKey
  */
 export const menuGroups: MenuGroup[] = [
   // ========= 1. DASHBOARD UNIFICADO =========
@@ -71,6 +75,7 @@ export const menuGroups: MenuGroup[] = [
         title: 'Dashboard Executivo', 
         url: '/', 
         icon: LayoutDashboard,
+        moduleKey: 'DASHBOARD',
         badge: { count: 0, variant: 'default' }
       }
     ]
@@ -93,7 +98,7 @@ export const menuGroups: MenuGroup[] = [
         title: 'Pacientes', 
         url: '/pacientes', 
         icon: Users, 
-        moduleKey: 'PEP'
+        moduleKey: 'PACIENTES'
       },
       { 
         title: 'Prontuário Eletrônico', 
@@ -130,7 +135,31 @@ export const menuGroups: MenuGroup[] = [
         url: '/teleodonto',
         icon: Video,
         moduleKey: 'TELEODONTO'
-      }
+      },
+      {
+        title: 'Orçamentos',
+        url: '/orcamentos',
+        icon: FileText,
+        moduleKey: 'ORCAMENTOS',
+      },
+      {
+        title: 'Contratos Digitais',
+        url: '/contratos',
+        icon: FileSignature,
+        moduleKey: 'CONTRATOS',
+      },
+      {
+        title: 'Portal do Paciente',
+        url: '/portal-paciente',
+        icon: UserCircle,
+        moduleKey: 'PORTAL_PACIENTE',
+      },
+      {
+        title: 'Procedimentos',
+        url: '/procedimentos',
+        icon: Stethoscope,
+        moduleKey: 'PROCEDIMENTOS',
+      },
     ]
   },
 
@@ -162,15 +191,15 @@ export const menuGroups: MenuGroup[] = [
       },
       { 
         title: 'Pagamentos em Criptomoedas', 
-        url: '/financeiro/crypto', 
+        url: '/crypto-payment', 
         icon: Bitcoin, 
         moduleKey: 'CRYPTO_PAYMENTS'
       },
       { 
-        title: 'Orçamentos', 
-        url: '/orcamentos', 
-        icon: FileSpreadsheet, 
-        moduleKey: 'ORCAMENTOS'
+        title: 'PDV (Ponto de Venda)', 
+        url: '/pdv', 
+        icon: ShoppingCart, 
+        moduleKey: 'PDV'
       },
       {
         title: 'Notas Fiscais (NFe/NFCe)',
@@ -206,16 +235,24 @@ export const menuGroups: MenuGroup[] = [
     collapsed: false,
     items: [
       { 
-        title: 'PDV (Ponto de Venda)', 
-        url: '/pdv', 
-        icon: ShoppingCart, 
-        moduleKey: 'PDV'
-      },
-      { 
         title: 'Estoque', 
         url: '/estoque', 
         icon: Package, 
-        moduleKey: 'ESTOQUE'
+        moduleKey: 'ESTOQUE',
+        subItems: [
+          {
+            title: 'Dashboard de Inventário',
+            url: '/inventario/dashboard',
+            icon: ClipboardCheck,
+            moduleKey: 'INVENTARIO',
+          },
+          {
+            title: 'Histórico de Inventários',
+            url: '/estoque/inventario-historico',
+            icon: ClipboardCheck,
+            moduleKey: 'INVENTARIO',
+          },
+        ],
       },
       {
         title: 'Scanner Mobile',
@@ -239,6 +276,12 @@ export const menuGroups: MenuGroup[] = [
         moduleKey: 'CRM'
       },
       { 
+        title: 'Programa de Fidelidade', 
+        url: '/fidelidade', 
+        icon: Gift, 
+        moduleKey: 'FIDELIDADE'
+      },
+      { 
         title: 'Campanhas de Marketing', 
         url: '/marketing-auto', 
         icon: Megaphone, 
@@ -251,12 +294,6 @@ export const menuGroups: MenuGroup[] = [
         moduleKey: 'MARKETING_AUTO',
         badge: { count: 0, variant: 'default' }
       },
-      {
-        title: 'Comunicação (SMS/WhatsApp)',
-        url: '/comunicacao',
-        icon: Mail,
-        moduleKey: 'AGENDA'
-      }
     ]
   },
 
@@ -296,72 +333,111 @@ export const menuGroups: MenuGroup[] = [
       {
         title: 'Dentistas',
         url: '/dentistas',
-        icon: Stethoscope
+        icon: Stethoscope,
+        moduleKey: 'ADMIN_ONLY'
       },
       {
         title: 'Funcionários',
         url: '/funcionarios',
-        icon: Users
+        icon: Users,
+        moduleKey: 'ADMIN_ONLY'
       },
       {
-        title: 'Procedimentos',
-        url: '/procedimentos',
-        icon: ClipboardPlus
+        title: 'Usuários',
+        url: '/usuarios',
+        icon: Users,
+        moduleKey: 'ADMIN_ONLY'
       },
       {
-        title: 'Conformidade LGPD',
+        title: 'Configurações Gerais',
+        url: '/configuracoes',
+        icon: Settings,
+        moduleKey: 'ADMIN_ONLY'
+      },
+      {
+        title: 'Ajuda',
+        url: '/help',
+        icon: Mail,
+        moduleKey: 'ADMIN_ONLY'
+      },
+      {
+        title: 'LGPD & Compliance',
         url: '/lgpd',
         icon: Lock,
         moduleKey: 'LGPD'
       },
       {
-        title: 'Assinatura Digital',
+        title: 'Assinatura Digital (ICP)',
         url: '/assinatura-icp',
-        icon: FileCheck,
+        icon: FileSignature,
         moduleKey: 'ASSINATURA_ICP'
-      },
-      {
-        title: 'Configurações Gerais',
-        url: '/configuracoes',
-        icon: Settings
       }
     ]
   }
 ];
 
 /**
- * ADMIN-ONLY MENU ITEMS
- * Exibido apenas para usuários com role ADMIN
+ * MENU ADMINISTRATIVO (ADMIN_ONLY)
  */
 export const adminMenuItems: MenuItem[] = [
   {
     title: 'Administração de Banco',
     url: '/admin/database',
     icon: Database,
-    moduleKey: 'DATABASE_ADMIN'
+    moduleKey: 'DATABASE_ADMIN',
   },
   {
-    title: 'Backups & Restauração',
+    title: 'Backups Avançados',
     url: '/admin/backups',
     icon: HardDrive,
-    moduleKey: 'BACKUPS'
+    moduleKey: 'BACKUPS',
   },
   {
-    title: 'Ferramentas DevOps',
-    url: '/admin/devops',
-    icon: Wrench,
-    moduleKey: 'TERMINAL'
+    title: 'Configuração Crypto',
+    url: '/admin/crypto-config',
+    icon: Bitcoin,
+    moduleKey: 'CRYPTO_CONFIG',
   },
   {
-    title: 'GitHub Tools',
+    title: 'Ferramentas GitHub',
     url: '/admin/github',
     icon: Github,
-    moduleKey: 'GITHUB_TOOLS'
+    moduleKey: 'GITHUB_TOOLS',
   },
   {
     title: 'Terminal Web',
     url: '/admin/terminal',
     icon: Terminal,
-    moduleKey: 'TERMINAL'
-  }
+    moduleKey: 'TERMINAL',
+  },
+  {
+    title: 'Wiki & Documentação',
+    url: '/admin/wiki',
+    icon: FileText,
+    moduleKey: 'ADMIN_ONLY',
+  },
+  {
+    title: 'ADRs (Architecture Decisions)',
+    url: '/admin/adrs',
+    icon: FileSignature,
+    moduleKey: 'ADMIN_ONLY',
+  },
+  {
+    title: 'Monitoramento',
+    url: '/admin/monitoring',
+    icon: BarChart3,
+    moduleKey: 'ADMIN_ONLY',
+  },
+  {
+    title: 'System Logs',
+    url: '/admin/logs',
+    icon: FileText,
+    moduleKey: 'ADMIN_ONLY',
+  },
+  {
+    title: 'API Docs',
+    url: '/admin/api-docs',
+    icon: FileText,
+    moduleKey: 'ADMIN_ONLY',
+  },
 ];

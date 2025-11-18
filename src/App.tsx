@@ -7,6 +7,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ModulesProvider } from "@/contexts/ModulesContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { BackendProvider } from "@/lib/providers/BackendProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
 import { useHotkeys } from "@/hooks/useHotkeys";
@@ -43,6 +44,7 @@ import { ProductTour } from './components/tour/ProductTour';
 import Auth from './pages/Auth';
 import ResetPassword from './pages/ResetPassword';
 import NotFound from './pages/NotFound';
+import Forbidden from './pages/Forbidden';
 
 // Dashboards de Categoria - removidos no V5.1 (consolidados no DashboardUnified)
 
@@ -71,7 +73,6 @@ const ModulesPage = lazy(() => import('./pages/settings/ModulesPage'));
 // V4.0 - New Pages
 const PatientDetailV2 = lazy(() => import('./pages/PatientDetail-v2'));
 const FluxoDigital = lazy(() => import('./pages/FluxoDigital'));
-const Comunicacao = lazy(() => import('./pages/Comunicacao'));
 const DashboardComercialROI = lazy(() => import('./pages/dashboards/DashboardComercial'));
 const EstoqueDashboard = lazy(() => import('@/pages/estoque/EstoqueDashboard'));
 const EstoqueCadastros = lazy(() => import('@/pages/estoque/EstoqueCadastros'));
@@ -91,7 +92,6 @@ const CryptoPagamentos = lazy(() => import('@/pages/financeiro/CryptoPagamentos'
 const ConciliacaoBancaria = lazy(() => import('@/pages/financeiro/ConciliacaoBancaria'));
 const DashboardVendasPDV = lazy(() => import('./pages/financeiro/DashboardVendasPDV'));
 const Orcamentos = lazy(() => import('@/pages/Orcamentos'));
-const HistoricoTeleconsultas = lazy(() => import('./pages/HistoricoTeleconsultas'));
 const CRMFunil = lazy(() => import('@/pages/CRMFunil'));
 const CRMPage = lazy(() => import('@/pages/crm'));
 const RadiografiaPage = lazy(() => import('@/pages/radiografia'));
@@ -107,7 +107,6 @@ const AssinaturaICP = lazy(() => import('@/pages/AssinaturaICP'));
 const ProgramaFidelidade = lazy(() => import('@/pages/ProgramaFidelidade'));
 const PDV = lazy(() => import('@/pages/PDV'));
 const RelatorioCaixa = lazy(() => import('@/pages/RelatorioCaixa'));
-const TestNotifications = lazy(() => import('@/pages/TestNotifications'));
 const MetasGamificacao = lazy(() => import('./pages/pdv/MetasGamificacao'));
 const DashboardExecutivoPDV = lazy(() => import('./pages/pdv/DashboardExecutivoPDV'));
 const TerminalPage = lazy(() => import('./pages/admin/TerminalPage'));
@@ -182,7 +181,6 @@ const App = () => (
                 <Route path="/financeiro/dashboard-vendas" element={<ProtectedRoute><AppLayout><DashboardVendasPDV /></AppLayout></ProtectedRoute>} />
                 {/* V4.0 New Routes */}
                 <Route path="/fluxo-digital" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando..." />}><FluxoDigital /></Suspense></AppLayout></ProtectedRoute>} />
-                <Route path="/comunicacao" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando..." />}><Comunicacao /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/dashboards/comercial-roi" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando..." />}><DashboardComercialROI /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/pdv/metas" element={<ProtectedRoute><AppLayout><MetasGamificacao /></AppLayout></ProtectedRoute>} />
                 <Route path="/agenda" element={<ProtectedRoute><AppLayout><AgendaPage /></AppLayout></ProtectedRoute>} />
@@ -208,9 +206,15 @@ const App = () => (
                 <Route path="/estoque/inventario/dashboard" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando dashboard..." />}><EstoqueInventarioDashboard /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/estoque/inventario/historico" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando histórico..." />}><EstoqueInventarioHistorico /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/orcamentos" element={<ProtectedRoute><AppLayout><Orcamentos /></AppLayout></ProtectedRoute>} />
-                {/* Páginas órfãs removidas no V5.1: Contratos, PortalPaciente */}
+                
+                {/* V5.3 COHERENCE: Novas rotas para módulos implementados */}
+                <Route path="/contratos" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando..." />}><div className="p-6"><h1 className="text-2xl font-bold">Contratos Digitais</h1><p className="text-muted-foreground">Módulo de contratos em desenvolvimento</p></div></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/fidelidade" element={<ProtectedRoute><AppLayout><ProgramaFidelidade /></AppLayout></ProtectedRoute>} />
+                <Route path="/inventario/dashboard" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando dashboard..." />}><EstoqueInventarioDashboard /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/portal-paciente" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando..." />}><div className="p-6"><h1 className="text-2xl font-bold">Portal do Paciente</h1><p className="text-muted-foreground">Módulo portal em desenvolvimento</p></div></Suspense></AppLayout></ProtectedRoute>} />
+                
+                <Route path="/teleodonto" element={<ProtectedRoute><AppLayout><TeleodontoPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/teleodontologia" element={<ProtectedRoute><AppLayout><Teleodontologia /></AppLayout></ProtectedRoute>} />
-                <Route path="/historico-teleconsultas" element={<ProtectedRoute><AppLayout><HistoricoTeleconsultas /></AppLayout></ProtectedRoute>} />
                 <Route path="/ia-radiografia" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando IA..." />}><IARadiografia /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/crm" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando CRM..." />}><CRM /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/crm-kanban" element={<ProtectedRoute><AppLayout><CRMPage /></AppLayout></ProtectedRoute>} />
@@ -241,8 +245,6 @@ const App = () => (
                 <Route path="/pdv/metas" element={<ProtectedRoute><AppLayout><MetasGamificacao /></AppLayout></ProtectedRoute>} />
                 <Route path="/relatorio-caixa" element={<ProtectedRoute><AppLayout><RelatorioCaixa /></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/modules" element={<ProtectedRoute requireAdmin><AppLayout><ModulesAdmin /></AppLayout></ProtectedRoute>} />
-                <Route path="/test-notifications" element={<ProtectedRoute><AppLayout><TestNotifications /></AppLayout></ProtectedRoute>} />
-                <Route path="/settings/modules" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><ModulesAdmin /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/modules-simple" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState />}><ModulesSimple /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/settings/profile" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState />}><ProfileSettings /></Suspense></AppLayout></ProtectedRoute>} />
                 

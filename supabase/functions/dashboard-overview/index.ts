@@ -20,6 +20,8 @@ Deno.serve(async (req) => {
   }
 
   try {
+    console.log('[dashboard-overview] Starting request...');
+    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -31,29 +33,51 @@ Deno.serve(async (req) => {
     );
 
     // Get user and clinic
-    const { data: { user } } = await supabase.auth.getUser();
+    console.log('[dashboard-overview] Fetching user...');
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) {
+      console.error('[dashboard-overview] User fetch error:', userError);
+      return new Response(JSON.stringify({ error: 'Auth error: ' + userError.message }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
     if (!user) {
+      console.error('[dashboard-overview] No user found');
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const { data: profile } = await supabase
+    console.log('[dashboard-overview] Fetching profile for user:', user.id);
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('clinic_id')
       .eq('id', user.id)
       .single();
 
+    if (profileError) {
+      console.error('[dashboard-overview] Profile fetch error:', profileError);
+      return new Response(JSON.stringify({ error: 'Profile error: ' + profileError.message }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const clinicId = profile?.clinic_id;
     if (!clinicId) {
+      console.error('[dashboard-overview] No clinic found for user');
       return new Response(JSON.stringify({ error: 'Clinic not found' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Fetch stats
+    console.log('[dashboard-overview] Processing for clinic:', clinicId);
+
+    // Fetch stats with error handling per section
     const stats: DashboardStats = {
       totalPatients: 0,
       todayAppointments: 0,
@@ -64,33 +88,110 @@ Deno.serve(async (req) => {
     };
 
     // Total patients
-    const { count: patientsCount } = await supabase
-      .from('patients')
-      .select('*', { count: 'exact', head: true })
-      .eq('clinic_id', clinicId);
-    stats.totalPatients = patientsCount || 0;
+    try {
+      console.log('[dashboard-overview] Fetching patients count...');
+      const { count: patientsCount, error: patientsError } = await supabase
+        .from('patients')
+        .select('*', { count: 'exact', head: true })
+        .eq('clinic_id', clinicId);
+      
+      if (patientsError) {
+        console.error('[dashboard-overview] Patients count error:', patientsError);
+      } else {
+        stats.totalPatients = patientsCount || 0;
+        console.log('[dashboard-overview] Patients count:', stats.totalPatients);
+      }
+    } catch (e) {
+      console.error('[dashboard-overview] Patients exception:', e);
+    }
 
     // Today's appointments
-    const today = new Date().toISOString().split('T')[0];
-    const { count: todayCount } = await supabase
-      .from('appointments')
-      .select('*', { count: 'exact', head: true })
-      .eq('clinic_id', clinicId)
-      .gte('start_time', `${today}T00:00:00`)
-      .lt('start_time', `${today}T23:59:59`);
-    stats.todayAppointments = todayCount || 0;
+    try {
+      console.log('[dashboard-overview] Fetching today appointments...');
+      const today = new Date().toISOString().split('T')[0];
+      const { count: todayCount, error: appointmentsError } = await supabase
+        .from('appointments')
+        .select('*', { count: 'exact', head: true })
+        .eq('clinic_id', clinicId)
+        .gte('start_time', `${today}T00:00:00`)
+        .lt('start_time', `${today}T23:59:59`);
+      
+      if (appointmentsError) {
+        console.error('[dashboard-overview] Appointments count error:', appointmentsError);
+      } else {
+        stats.todayAppointments = todayCount || 0;
+        console.log('[dashboard-overview] Today appointments:', stats.todayAppointments);
+      }
+    } catch (e) {
+      console.error('[dashboard-overview] Appointments exception:', e);
+    }
 
-    // Monthly revenue (mock for now)
-    stats.monthlyRevenue = 0;
+    // Monthly revenue - fetch from transactions table
+    try {
+      console.log('[dashboard-overview] Fetching monthly revenue...');
+      const firstDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+      const { data: revenueData, error: revenueError } = await supabase
+        .from('transactions')
+        .select('amount')
+        .eq('clinic_id', clinicId)
+        .eq('type', 'RECEITA')
+        .gte('date', firstDayOfMonth);
+      
+      if (revenueError) {
+        console.error('[dashboard-overview] Revenue error:', revenueError);
+      } else {
+        stats.monthlyRevenue = revenueData?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
+        console.log('[dashboard-overview] Monthly revenue:', stats.monthlyRevenue);
+      }
+    } catch (e) {
+      console.error('[dashboard-overview] Revenue exception:', e);
+    }
 
-    // Occupancy rate (mock for now)
-    stats.occupancyRate = 0;
+    // Occupancy rate - appointments vs total slots
+    try {
+      console.log('[dashboard-overview] Calculating occupancy rate...');
+      const today = new Date().toISOString().split('T')[0];
+      const { count: totalAppointments } = await supabase
+        .from('appointments')
+        .select('*', { count: 'exact', head: true })
+        .eq('clinic_id', clinicId)
+        .gte('start_time', `${today}T00:00:00`)
+        .lt('start_time', `${today}T23:59:59`);
+      
+      // Assuming 8 slots per dentist per day (8am-6pm with 1h each)
+      const { count: dentistsCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('clinic_id', clinicId);
+      
+      const totalSlots = (dentistsCount || 1) * 8;
+      stats.occupancyRate = totalSlots > 0 ? ((totalAppointments || 0) / totalSlots) * 100 : 0;
+      console.log('[dashboard-overview] Occupancy rate:', stats.occupancyRate);
+    } catch (e) {
+      console.error('[dashboard-overview] Occupancy exception:', e);
+    }
 
-    // Pending treatments (mock for now)
-    stats.pendingTreatments = 0;
-
-    // Completed treatments (mock for now)
-    stats.completedTreatments = 0;
+    // Treatments stats
+    try {
+      console.log('[dashboard-overview] Fetching treatments...');
+      const { count: pendingCount } = await supabase
+        .from('pep_tratamentos')
+        .select('*', { count: 'exact', head: true })
+        .eq('clinic_id', clinicId)
+        .eq('status', 'EM_ANDAMENTO');
+      
+      const { count: completedCount } = await supabase
+        .from('pep_tratamentos')
+        .select('*', { count: 'exact', head: true })
+        .eq('clinic_id', clinicId)
+        .eq('status', 'CONCLUIDO');
+      
+      stats.pendingTreatments = pendingCount || 0;
+      stats.completedTreatments = completedCount || 0;
+      console.log('[dashboard-overview] Treatments - pending:', stats.pendingTreatments, 'completed:', stats.completedTreatments);
+    } catch (e) {
+      console.error('[dashboard-overview] Treatments exception:', e);
+    }
 
     // Mock chart data
     const appointmentsData = [
@@ -118,6 +219,7 @@ Deno.serve(async (req) => {
       { name: 'Cancelado', value: 5 },
     ];
 
+    console.log('[dashboard-overview] Returning success response');
     return new Response(
       JSON.stringify({
         stats,
@@ -130,10 +232,15 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error fetching dashboard data:', error);
+    console.error('[dashboard-overview] FATAL ERROR:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : '';
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ 
+        error: errorMessage,
+        stack: errorStack,
+        timestamp: new Date().toISOString()
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
