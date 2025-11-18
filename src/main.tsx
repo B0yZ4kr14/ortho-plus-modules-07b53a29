@@ -4,10 +4,10 @@ import App from "./App.tsx";
 import "./index.css";
 import { DataSourceProvider } from "@/lib/providers/DataSourceProvider";
 
-// 🔄 MIGRAÇÃO GRADUAL: Alterne entre "supabase" e "rest-api"
-// "supabase" → Mantém comportamento atual (chamadas diretas ao Supabase)
-// "rest-api" → Usa novo backend Node.js REST API
-const DATA_SOURCE: 'supabase' | 'rest-api' = 'supabase';
+// ✅ FASE 1 - SPRINT 1.1: DESACOPLAMENTO DO SUPABASE
+// Sistema agora usa 100% REST API modular do backend Node.js
+// Supabase usado apenas para autenticação e storage
+const DATA_SOURCE: 'supabase' | 'rest-api' = 'rest-api';
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
