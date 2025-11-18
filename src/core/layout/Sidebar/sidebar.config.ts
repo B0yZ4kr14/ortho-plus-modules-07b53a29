@@ -58,6 +58,7 @@ export interface MenuItem {
 export interface MenuGroup {
   label: string;
   boundedContext: string;
+  category: string;
   collapsed?: boolean;
   items: MenuItem[];
 }
@@ -70,6 +71,7 @@ export const menuGroups: MenuGroup[] = [
   {
     label: 'VISÃO GERAL',
     boundedContext: 'DASHBOARD',
+    category: 'DASHBOARD',
     items: [
       { 
         title: 'Dashboard Executivo', 
@@ -85,6 +87,7 @@ export const menuGroups: MenuGroup[] = [
   {
     label: 'ATENDIMENTO CLÍNICO',
     boundedContext: 'CLINICA',
+    category: 'ATENDIMENTO CLÍNICO',
     collapsed: false,
     items: [
       { 
@@ -119,24 +122,6 @@ export const menuGroups: MenuGroup[] = [
         moduleKey: 'PEP'
       },
       {
-        title: 'Diagnóstico com IA',
-        url: '/ia-radiografia',
-        icon: Brain,
-        moduleKey: 'IA'
-      },
-      {
-        title: 'Fluxo Digital (CAD/CAM)',
-        url: '/fluxo-digital',
-        icon: Scan,
-        moduleKey: 'FLUXO_DIGITAL'
-      },
-      {
-        title: 'Teleodontologia',
-        url: '/teleodonto',
-        icon: Video,
-        moduleKey: 'TELEODONTO'
-      },
-      {
         title: 'Orçamentos',
         url: '/orcamentos',
         icon: FileText,
@@ -149,12 +134,6 @@ export const menuGroups: MenuGroup[] = [
         moduleKey: 'CONTRATOS',
       },
       {
-        title: 'Portal do Paciente',
-        url: '/portal-paciente',
-        icon: UserCircle,
-        moduleKey: 'PORTAL_PACIENTE',
-      },
-      {
         title: 'Procedimentos',
         url: '/procedimentos',
         icon: Stethoscope,
@@ -163,10 +142,11 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ========= 3. FINANCEIRO & FISCAL =========
+  // ========= 3. GESTÃO FINANCEIRA =========
   {
-    label: 'FINANCEIRO & FISCAL',
+    label: 'GESTÃO FINANCEIRA',
     boundedContext: 'FINANCEIRO',
+    category: 'GESTÃO FINANCEIRA',
     collapsed: false,
     items: [
       { 
@@ -218,12 +198,6 @@ export const menuGroups: MenuGroup[] = [
         url: '/split-pagamento',
         icon: DollarSign,
         moduleKey: 'SPLIT_PAGAMENTO'
-      },
-      {
-        title: 'Faturamento TISS',
-        url: '/faturamento-tiss',
-        icon: FileText,
-        moduleKey: 'TISS'
       }
     ]
   },
@@ -232,6 +206,7 @@ export const menuGroups: MenuGroup[] = [
   {
     label: 'OPERAÇÕES',
     boundedContext: 'OPERACOES',
+    category: 'OPERAÇÕES',
     collapsed: false,
     items: [
       { 
@@ -263,10 +238,11 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ========= 5. CAPTAÇÃO & FIDELIZAÇÃO =========
+  // ========= 5. MARKETING & RELACIONAMENTO =========
   {
-    label: 'CAPTAÇÃO & FIDELIZAÇÃO',
+    label: 'MARKETING & RELACIONAMENTO',
     boundedContext: 'CRESCIMENTO',
+    category: 'MARKETING & RELACIONAMENTO',
     collapsed: false,
     items: [
       { 
@@ -294,6 +270,12 @@ export const menuGroups: MenuGroup[] = [
         moduleKey: 'MARKETING_AUTO',
         badge: { count: 0, variant: 'default' }
       },
+      {
+        title: 'Portal do Paciente',
+        url: '/portal-paciente',
+        icon: UserCircle,
+        moduleKey: 'PORTAL_PACIENTE',
+      },
     ]
   },
 
@@ -301,6 +283,7 @@ export const menuGroups: MenuGroup[] = [
   {
     label: 'ANÁLISES & RELATÓRIOS',
     boundedContext: 'BI',
+    category: 'ANÁLISES & RELATÓRIOS',
     collapsed: false,
     items: [
       { 
@@ -318,10 +301,107 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ========= 7. CONFIGURAÇÕES =========
+  // ========= 7. CONFORMIDADE & LEGAL =========
+  {
+    label: 'CONFORMIDADE & LEGAL',
+    boundedContext: 'COMPLIANCE',
+    category: 'CONFORMIDADE & LEGAL',
+    collapsed: false,
+    items: [
+      {
+        title: 'LGPD & Compliance',
+        url: '/lgpd',
+        icon: Lock,
+        moduleKey: 'LGPD'
+      },
+      {
+        title: 'Assinatura Digital (ICP)',
+        url: '/assinatura-icp',
+        icon: FileSignature,
+        moduleKey: 'ASSINATURA_ICP'
+      },
+      {
+        title: 'Faturamento TISS',
+        url: '/faturamento-tiss',
+        icon: FileText,
+        moduleKey: 'TISS'
+      },
+      {
+        title: 'Teleodontologia',
+        url: '/teleodonto',
+        icon: Video,
+        moduleKey: 'TELEODONTO'
+      }
+    ]
+  },
+
+  // ========= 8. INOVAÇÃO & TECNOLOGIA =========
+  {
+    label: 'INOVAÇÃO & TECNOLOGIA',
+    boundedContext: 'INOVACAO',
+    category: 'INOVAÇÃO & TECNOLOGIA',
+    collapsed: false,
+    items: [
+      {
+        title: 'Diagnóstico com IA',
+        url: '/ia-radiografia',
+        icon: Brain,
+        moduleKey: 'IA'
+      },
+      {
+        title: 'Fluxo Digital (CAD/CAM)',
+        url: '/fluxo-digital',
+        icon: Scan,
+        moduleKey: 'FLUXO_DIGITAL'
+      }
+    ]
+  },
+
+  // ========= 9. ADMINISTRAÇÃO & DEVOPS =========
+  {
+    label: 'ADMINISTRAÇÃO & DEVOPS',
+    boundedContext: 'ADMIN',
+    category: 'ADMINISTRAÇÃO & DEVOPS',
+    collapsed: false,
+    items: [
+      {
+        title: 'Administração de Banco',
+        url: '/admin/database',
+        icon: Database,
+        moduleKey: 'DATABASE_ADMIN',
+      },
+      {
+        title: 'Backups Avançados',
+        url: '/admin/backups',
+        icon: HardDrive,
+        moduleKey: 'BACKUPS',
+      },
+      {
+        title: 'Configuração Crypto',
+        url: '/admin/crypto-config',
+        icon: Bitcoin,
+        moduleKey: 'CRYPTO_CONFIG',
+      },
+      {
+        title: 'Ferramentas GitHub',
+        url: '/admin/github',
+        icon: Github,
+        moduleKey: 'GITHUB_TOOLS',
+      },
+      {
+        title: 'Terminal Web',
+        url: '/admin/terminal',
+        icon: Terminal,
+        moduleKey: 'TERMINAL',
+      }
+    ]
+  },
+
+  // ========= 10. CONFIGURAÇÕES =========
   {
     label: 'CONFIGURAÇÕES',
     boundedContext: 'CONFIGURACOES',
+    category: 'CONFIGURAÇÕES',
     collapsed: false,
     items: [
       {
@@ -359,18 +439,6 @@ export const menuGroups: MenuGroup[] = [
         url: '/help',
         icon: Mail,
         moduleKey: 'ADMIN_ONLY'
-      },
-      {
-        title: 'LGPD & Compliance',
-        url: '/lgpd',
-        icon: Lock,
-        moduleKey: 'LGPD'
-      },
-      {
-        title: 'Assinatura Digital (ICP)',
-        url: '/assinatura-icp',
-        icon: FileSignature,
-        moduleKey: 'ASSINATURA_ICP'
       }
     ]
   }
