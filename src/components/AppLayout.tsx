@@ -2,6 +2,7 @@ import { ReactNode, useState, memo, useMemo } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/core/layout/Sidebar';
 import { DashboardHeader } from '@/components/DashboardHeader';
+import { GlobalSearch } from '@/components/layout/GlobalSearch';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useFocusMode } from '@/hooks/useFocusMode';
@@ -55,6 +56,7 @@ export const AppLayout = memo(function AppLayout({ children }: AppLayoutProps) {
           </main>
         </div>
       </div>
+      <GlobalSearch />
     </SidebarProvider>
   );
 });

@@ -5593,6 +5593,50 @@ export type Database = {
         }
         Relationships: []
       }
+      patient_status_history: {
+        Row: {
+          changed_at: string | null
+          changed_by: string | null
+          created_at: string | null
+          from_status: string | null
+          id: string
+          notes: string | null
+          patient_id: string
+          reason: string | null
+          to_status: string
+        }
+        Insert: {
+          changed_at?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          from_status?: string | null
+          id?: string
+          notes?: string | null
+          patient_id: string
+          reason?: string | null
+          to_status: string
+        }
+        Update: {
+          changed_at?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          from_status?: string | null
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          reason?: string | null
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_status_history_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           address_city: string | null
@@ -5667,6 +5711,11 @@ export type Database = {
           lgpd_consent_date: string | null
           main_complaint: string | null
           marital_status: string | null
+          marketing_campaign: string | null
+          marketing_event: string | null
+          marketing_promoter: string | null
+          marketing_source: string | null
+          marketing_telemarketing_agent: string | null
           medication_allergies: string[] | null
           nationality: string | null
           occupation: string | null
@@ -5683,6 +5732,7 @@ export type Database = {
           promotor_id: string | null
           promotor_nome: string | null
           propensao_indicacao: number | null
+          referral_source: string | null
           rg: string | null
           risk_level: string | null
           risk_score_anesthetic: number | null
@@ -5776,6 +5826,11 @@ export type Database = {
           lgpd_consent_date?: string | null
           main_complaint?: string | null
           marital_status?: string | null
+          marketing_campaign?: string | null
+          marketing_event?: string | null
+          marketing_promoter?: string | null
+          marketing_source?: string | null
+          marketing_telemarketing_agent?: string | null
           medication_allergies?: string[] | null
           nationality?: string | null
           occupation?: string | null
@@ -5792,6 +5847,7 @@ export type Database = {
           promotor_id?: string | null
           promotor_nome?: string | null
           propensao_indicacao?: number | null
+          referral_source?: string | null
           rg?: string | null
           risk_level?: string | null
           risk_score_anesthetic?: number | null
@@ -5885,6 +5941,11 @@ export type Database = {
           lgpd_consent_date?: string | null
           main_complaint?: string | null
           marital_status?: string | null
+          marketing_campaign?: string | null
+          marketing_event?: string | null
+          marketing_promoter?: string | null
+          marketing_source?: string | null
+          marketing_telemarketing_agent?: string | null
           medication_allergies?: string[] | null
           nationality?: string | null
           occupation?: string | null
@@ -5901,6 +5962,7 @@ export type Database = {
           promotor_id?: string | null
           promotor_nome?: string | null
           propensao_indicacao?: number | null
+          referral_source?: string | null
           rg?: string | null
           risk_level?: string | null
           risk_score_anesthetic?: number | null

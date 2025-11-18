@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import GlobalSearch from "@/components/GlobalSearch";
 import { HotkeysHelp } from "@/components/HotkeysHelp";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
+import { QuickActions } from "@/components/layout/QuickActions";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -61,6 +62,8 @@ export function DashboardHeader({ className, onMenuClick }: DashboardHeaderProps
           {/* Right side actions */}
           <div className="flex items-center gap-3">
             <NotificationDropdown />
+            
+            <QuickActions />
 
             <div data-tour="theme-toggle">
               <ThemeToggle />

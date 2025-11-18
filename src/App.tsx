@@ -70,6 +70,13 @@ const Cobranca = lazy(() => import('@/pages/Cobranca'));
 const ScheduledBackupsManagement = lazy(() => import('./pages/settings/ScheduledBackupsManagement'));
 const BackupExecutivePage = lazy(() => import('./pages/settings/BackupExecutivePage'));
 const ModulesPage = lazy(() => import('./pages/settings/ModulesPage'));
+
+// V4.0 - New Pages
+// V4.0 - New Pages
+const PatientDetailV2 = lazy(() => import('./pages/PatientDetail-v2'));
+const FluxoDigital = lazy(() => import('./pages/FluxoDigital'));
+const Comunicacao = lazy(() => import('./pages/Comunicacao'));
+const DashboardComercialROI = lazy(() => import('./pages/dashboards/DashboardComercial'));
 const EstoqueDashboard = lazy(() => import('@/pages/estoque/EstoqueDashboard'));
 const EstoqueCadastros = lazy(() => import('@/pages/estoque/EstoqueCadastros'));
 const EstoqueRequisicoes = lazy(() => import('@/pages/estoque/EstoqueRequisicoes'));
@@ -181,6 +188,11 @@ const App = () => (
                 <Route path="/financeiro/crypto" element={<ProtectedRoute><AppLayout><CryptoPagamentos /></AppLayout></ProtectedRoute>} />
                 <Route path="/financeiro/conciliacao-bancaria" element={<ProtectedRoute><AppLayout><ConciliacaoBancaria /></AppLayout></ProtectedRoute>} />
                 <Route path="/financeiro/dashboard-vendas" element={<ProtectedRoute><AppLayout><DashboardVendasPDV /></AppLayout></ProtectedRoute>} />
+                {/* V4.0 New Routes */}
+                <Route path="/pacientes/:patientId" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando..." />}><PatientDetailV2 /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/fluxo-digital" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando..." />}><FluxoDigital /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/comunicacao" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando..." />}><Comunicacao /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/dashboards/comercial-roi" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando..." />}><DashboardComercialROI /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/pdv/metas" element={<ProtectedRoute><AppLayout><MetasGamificacao /></AppLayout></ProtectedRoute>} />
                 <Route path="/agenda" element={<ProtectedRoute><AppLayout><AgendaPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/agenda-clinica" element={<ProtectedRoute><AppLayout><AgendaPage /></AppLayout></ProtectedRoute>} />
