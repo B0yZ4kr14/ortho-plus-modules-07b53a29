@@ -6,17 +6,19 @@
 import { SupabaseBackendService } from './SupabaseBackendService';
 import type { IBackendService } from './IBackendService';
 
-// Environment variable to control backend type
-const BACKEND_TYPE = import.meta.env.VITE_BACKEND_TYPE || 'supabase';
+// Check localStorage first, then environment variable
+const BACKEND_TYPE = typeof window !== 'undefined' 
+  ? localStorage.getItem('selected_backend') || import.meta.env.VITE_BACKEND_TYPE || 'supabase'
+  : import.meta.env.VITE_BACKEND_TYPE || 'supabase';
 
 /**
  * Get the active backend service
- * Can be extended to support PostgreSQL implementation
+ * Supports both Supabase and PostgreSQL (Ubuntu Server)
  */
 export function getBackendService(): IBackendService {
-  if (BACKEND_TYPE === 'postgresql') {
-    // TODO: Implement PostgreSQLBackendService when self-hosted is ready
-    throw new Error('PostgreSQL backend not implemented yet');
+  if (BACKEND_TYPE === 'ubuntu-server' || BACKEND_TYPE === 'postgresql') {
+    const { PostgreSQLBackendService } = require('./PostgreSQLBackendService');
+    return new PostgreSQLBackendService();
   }
 
   // Default to Supabase
