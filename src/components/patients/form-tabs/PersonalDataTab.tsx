@@ -1,4 +1,4 @@
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
@@ -193,6 +193,27 @@ export function PersonalDataTab({ form }: PersonalDataTabProps) {
                   <SelectItem value="nao_informado">Não Informado</SelectItem>
                 </SelectContent>
               </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="referral_source"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Indicação</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="Quem indicou este paciente?" 
+                  {...field} 
+                  value={field.value || ''}
+                />
+              </FormControl>
+              <FormDescription>
+                Nome do paciente, profissional ou parceiro que fez a indicação
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

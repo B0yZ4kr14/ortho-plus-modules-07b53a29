@@ -80,7 +80,32 @@ export const patientFormSchema = z.object({
   image_usage_consent: z.boolean().optional().nullable(),
   treatment_consent: z.boolean().optional().nullable(),
   data_sharing_consent: z.boolean().optional().nullable(),
-  status: z.enum(['ativo', 'inativo', 'arquivado']).default('ativo'),
+  
+  // Rastreamento Comercial e Marketing (Origem) - Tab 7
+  marketing_campaign: z.string().max(200).optional().nullable(),
+  marketing_source: z.string().max(200).optional().nullable(),
+  marketing_event: z.string().max(200).optional().nullable(),
+  marketing_promoter: z.string().max(200).optional().nullable(),
+  marketing_telemarketing_agent: z.string().max(200).optional().nullable(),
+  referral_source: z.string().max(200).optional().nullable(),
+  
+  // Status Canônico Odontológico (14 estados) - OBRIGATÓRIO
+  status: z.enum([
+    'PROSPECT',
+    'TRATAMENTO',
+    'CONTENCAO',
+    'CONCLUIDO',
+    'ABANDONO',
+    'AFASTAMENTO_TEMPORARIO',
+    'A_PROTESTAR',
+    'PROTESTO',
+    'CANCELADO',
+    'ERUPCAO',
+    'INATIVO',
+    'MIGRADO',
+    'RESPONSAVEL',
+    'TRANSFERENCIA'
+  ]).default('PROSPECT'),
 });
 
 export type PatientFormValues = z.infer<typeof patientFormSchema>;

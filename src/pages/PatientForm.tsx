@@ -15,6 +15,7 @@ import { MedicalHistoryTab } from '@/components/patients/form-tabs/MedicalHistor
 import { HabitsMeasuresTab } from '@/components/patients/form-tabs/HabitsMeasuresTab';
 import { DentalTab } from '@/components/patients/form-tabs/DentalTab';
 import { OtherTab } from '@/components/patients/form-tabs/OtherTab';
+import { MarketingTrackingTab } from '@/components/patients/form-tabs/MarketingTrackingTab';
 import { patientFormSchema, type PatientFormValues, calculateBMI } from '@/lib/patient-validation';
 import type { Patient } from '@/types/patient';
 
@@ -30,7 +31,7 @@ export default function PatientForm() {
     defaultValues: {
       full_name: '',
       phone_primary: '',
-      status: 'ativo',
+      status: 'PROSPECT',
     },
   });
 
@@ -161,6 +162,7 @@ export default function PatientForm() {
             <HabitsMeasuresTab form={form} />
             <DentalTab form={form} />
             <OtherTab form={form} />
+            <MarketingTrackingTab form={form} />
           </PatientFormTabs>
 
           {/* Actions */}
