@@ -153,10 +153,11 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ===== 3. EQUIPE =====
+  // ========= BOUNDED CONTEXT: PEP (Prontuário Eletrônico) =========
   {
-    label: 'EQUIPE',
-    collapsed: true,
+    label: 'PRONTUÁRIO ELETRÔNICO',
+    boundedContext: 'PEP',
+    collapsed: false,
     items: [
       { 
         title: 'Dentistas e Auxiliares',
@@ -177,10 +178,11 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ===== 4. GESTÃO FINANCEIRA =====
+  // ========= BOUNDED CONTEXT: FINANCEIRO =========
   {
-    label: 'GESTÃO FINANCEIRA',
-    collapsed: true,
+    label: 'FINANCEIRO',
+    boundedContext: 'FINANCEIRO',
+    collapsed: false,
     items: [
       { 
         title: 'Dashboard Financeiro',
@@ -243,10 +245,11 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ===== 5. ESTOQUE =====
+  // ========= BOUNDED CONTEXT: INVENTÁRIO =========
   {
-    label: 'ESTOQUE',
-    collapsed: true,
+    label: 'INVENTÁRIO',
+    boundedContext: 'INVENTARIO',
+    collapsed: false,
     items: [
       { 
         title: 'Controle de Estoque',
@@ -264,9 +267,10 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ===== 6. GESTÃO COMERCIAL =====
+  // ========= BOUNDED CONTEXT: MARKETING & CRM =========
   {
-    label: 'GESTÃO COMERCIAL',
+    label: 'MARKETING & CRM',
+    boundedContext: 'MARKETING',
     collapsed: true,
     items: [
       {
@@ -293,9 +297,10 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ===== 7. INTELIGÊNCIA & RELATÓRIOS =====
+  // ========= BOUNDED CONTEXT: BUSINESS INTELLIGENCE =========
   {
-    label: 'INTELIGÊNCIA & RELATÓRIOS',
+    label: 'BUSINESS INTELLIGENCE',
+    boundedContext: 'BI',
     collapsed: true,
     items: [
       { 
@@ -317,9 +322,10 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ===== 8. REGULAMENTAÇÃO =====
+  // ========= BOUNDED CONTEXT: COMPLIANCE =========
   {
-    label: 'REGULAMENTAÇÃO',
+    label: 'COMPLIANCE & REGULAMENTAÇÃO',
+    boundedContext: 'COMPLIANCE',
     collapsed: true,
     items: [
       { 
@@ -355,9 +361,10 @@ export const menuGroups: MenuGroup[] = [
     ]
   },
 
-  // ========= 8. SUPORTE =========
+  // ========= SUPORTE =========
   {
     label: 'SUPORTE',
+    boundedContext: 'SUPPORT',
     items: [
       { 
         title: 'Central de Ajuda', 
