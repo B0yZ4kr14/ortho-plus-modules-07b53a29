@@ -136,7 +136,7 @@ class SupabaseDataService implements IDataService {
   ): Promise<{ data: T[]; error: Error | null }> {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let query: any = supabase.from(table).select('*');
+      let query: any = (supabase as any).from(table).select('*');
       
       if (options?.filters) {
         Object.entries(options.filters).forEach(([key, value]) => {
@@ -185,7 +185,7 @@ class SupabaseDataService implements IDataService {
       const limit = options?.limit || 10;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let countQuery: any = supabase.from(table).select('*', { count: 'exact', head: true });
+      let countQuery: any = (supabase as any).from(table).select('*', { count: 'exact', head: true });
       
       if (options?.filters) {
         Object.entries(options.filters).forEach(([key, value]) => {
@@ -242,10 +242,10 @@ class SupabaseDataService implements IDataService {
   ): Promise<{ data: T | null; error: Error | null }> {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (supabase
+      const { data, error } = await (supabase as any)
         .from(table)
         .select('*')
-        .eq('id', id) as any)
+        .eq('id', id)
         .maybeSingle();
       
       if (error) {
@@ -269,9 +269,9 @@ class SupabaseDataService implements IDataService {
   ): Promise<{ data: T | null; error: Error | null }> {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: result, error } = await (supabase
+      const { data: result, error } = await (supabase as any)
         .from(table)
-        .insert(data as any) as any)
+        .insert(data)
         .select()
         .single();
       
@@ -297,10 +297,10 @@ class SupabaseDataService implements IDataService {
   ): Promise<{ data: T | null; error: Error | null }> {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: result, error } = await (supabase
+      const { data: result, error } = await (supabase as any)
         .from(table)
-        .update(data as any)
-        .eq('id', id) as any)
+        .update(data)
+        .eq('id', id)
         .select()
         .single();
       
@@ -325,10 +325,10 @@ class SupabaseDataService implements IDataService {
   ): Promise<{ error: Error | null }> {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase
+      const { error } = await (supabase as any)
         .from(table)
         .delete()
-        .eq('id', id) as any);
+        .eq('id', id);
       
       if (error) {
         logger.error('Delete failed', { table, id, error });
@@ -402,8 +402,11 @@ class SupabaseStorageService implements IStorageService {
 
       return {
         data: {
-          path: data.path,
           url: publicUrl,
+          path: data.path,
+          filename: file.name,
+          size: file.size,
+          mime_type: file.type,
           bucket: config.bucket,
         },
         error: null,

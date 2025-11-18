@@ -272,6 +272,7 @@ export interface FileUploadResult {
   filename: string;
   size: number;
   mime_type: string;
+  bucket?: string;
 }
 
 export interface StorageConfig {
@@ -279,6 +280,7 @@ export interface StorageConfig {
   path: string;
   maxSize?: number;
   allowedTypes?: string[];
+  upsert?: boolean;
 }
 
 // ==================== Utility Types ====================
