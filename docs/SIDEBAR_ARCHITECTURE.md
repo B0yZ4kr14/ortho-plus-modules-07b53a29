@@ -155,14 +155,61 @@ export interface MenuGroup {
 2. **Não deletar** de `sidebar.config.ts` (para histórico)
 3. Adicionar validação condicional no `SidebarNav.tsx`
 
+## Controle de Acesso e Permissões (V5.3)
+
+### Verificação Granular de Permissões
+
+A partir da V5.3, a sidebar implementa controle de acesso granular por módulo:
+
+**`SidebarMenuItem.tsx`:**
+```typescript
+const hasAccess = !item.moduleKey || hasModuleAccess(item.moduleKey);
+if (!hasAccess) return null; // Item não renderizado
+```
+
+**`SidebarGroup.tsx`:**
+```typescript
+const visibleItems = group.items.filter(item => 
+  !item.moduleKey || hasModuleAccess(item.moduleKey)
+);
+if (visibleItems.length === 0) return null; // Grupo não renderizado
+```
+
+### Proteção de Rotas
+
+Rotas protegidas por módulo usando `ProtectedRoute`:
+```typescript
+<Route 
+  path="/contratos" 
+  element={
+    <ProtectedRoute moduleKey="CONTRATOS">
+      <ContratosPage />
+    </ProtectedRoute>
+  } 
+/>
+```
+
+Se o usuário não tiver permissão para o módulo, será redirecionado para `/403 Forbidden`.
+
+### Fluxo de Autorização
+
+1. Usuário faz login → `AuthContext` carrega `userPermissions` e `activeModules`
+2. `hasModuleAccess(moduleKey)` verifica:
+   - Se role = 'ADMIN' → retorna `true` (acesso total)
+   - Se role = 'MEMBER' → verifica se `moduleKey` está em `userPermissions` ou `activeModules`
+3. Sidebar renderiza apenas itens autorizados
+4. Rotas bloqueiam acesso direto via URL se sem permissão
+
 ## Conformidade Arquitetural
 
 ✅ **100% Alinhado com DDD:** Cada grupo representa um Bounded Context  
 ✅ **Sem Redundâncias:** V5.1 eliminou dashboards de categoria duplicados  
 ✅ **Categorização Correta:** Migration SQL alinha `module_catalog` com UX  
 ✅ **Modularidade:** Novos módulos podem ser adicionados sem refatoração  
+✅ **Permissões Granulares (V5.3):** Controle fino por módulo e usuário  
+✅ **Backend Agnóstico (V5.3):** Alternância Supabase ↔ Ubuntu Server  
 
 ---
 
-**Última Atualização:** V5.1 (2024)  
+**Última Atualização:** V5.3 COHERENCE (2024)  
 **Responsável:** Arquitetura de Front-End Ortho+

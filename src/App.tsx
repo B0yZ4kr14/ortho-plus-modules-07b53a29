@@ -108,6 +108,12 @@ const ProgramaFidelidade = lazy(() => import('@/pages/ProgramaFidelidade'));
 const PDV = lazy(() => import('@/pages/PDV'));
 const RelatorioCaixa = lazy(() => import('@/pages/RelatorioCaixa'));
 const MetasGamificacao = lazy(() => import('./pages/pdv/MetasGamificacao'));
+
+// V5.3 COHERENCE: New pages with module permissions
+import ContratosPage from './pages/Contratos';
+import FidelidadePage from './pages/Fidelidade';
+import InventarioDashboard from './pages/inventario/Dashboard';
+import PortalPacientePage from './pages/PortalPaciente';
 const DashboardExecutivoPDV = lazy(() => import('./pages/pdv/DashboardExecutivoPDV'));
 const TerminalPage = lazy(() => import('./pages/admin/TerminalPage'));
 const GitHubManagerPage = lazy(() => import('./pages/admin/GitHubManagerPage'));
@@ -147,12 +153,13 @@ const App = () => (
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <HotkeysManager />
           <PerformanceMonitor />
-          <AuthProvider>
-            <ModulesProvider>
-              <Toaster />
-              <Sonner />
-              <ProductTour />
-              <Routes>
+          <BackendProvider>
+            <AuthProvider>
+              <ModulesProvider>
+                <Toaster />
+                <Sonner />
+                <ProductTour />
+                <Routes>
                 <Route path="/demo" element={<Demo />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
@@ -207,11 +214,11 @@ const App = () => (
                 <Route path="/estoque/inventario/historico" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando histórico..." />}><EstoqueInventarioHistorico /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/orcamentos" element={<ProtectedRoute><AppLayout><Orcamentos /></AppLayout></ProtectedRoute>} />
                 
-                {/* V5.3 COHERENCE: Novas rotas para módulos implementados */}
-                <Route path="/contratos" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando..." />}><div className="p-6"><h1 className="text-2xl font-bold">Contratos Digitais</h1><p className="text-muted-foreground">Módulo de contratos em desenvolvimento</p></div></Suspense></AppLayout></ProtectedRoute>} />
-                <Route path="/fidelidade" element={<ProtectedRoute><AppLayout><ProgramaFidelidade /></AppLayout></ProtectedRoute>} />
-                <Route path="/inventario/dashboard" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando dashboard..." />}><EstoqueInventarioDashboard /></Suspense></AppLayout></ProtectedRoute>} />
-                <Route path="/portal-paciente" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando..." />}><div className="p-6"><h1 className="text-2xl font-bold">Portal do Paciente</h1><p className="text-muted-foreground">Módulo portal em desenvolvimento</p></div></Suspense></AppLayout></ProtectedRoute>} />
+                {/* V5.3 COHERENCE: New routes with module permission guards */}
+                <Route path="/contratos" element={<ProtectedRoute moduleKey="CONTRATOS"><AppLayout><ContratosPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/fidelidade" element={<ProtectedRoute moduleKey="FIDELIDADE"><AppLayout><FidelidadePage /></AppLayout></ProtectedRoute>} />
+                <Route path="/inventario/dashboard" element={<ProtectedRoute moduleKey="INVENTARIO"><AppLayout><InventarioDashboard /></AppLayout></ProtectedRoute>} />
+                <Route path="/portal-paciente" element={<ProtectedRoute moduleKey="PORTAL_PACIENTE"><AppLayout><PortalPacientePage /></AppLayout></ProtectedRoute>} />
                 
                 <Route path="/teleodonto" element={<ProtectedRoute><AppLayout><TeleodontoPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/teleodontologia" element={<ProtectedRoute><AppLayout><Teleodontologia /></AppLayout></ProtectedRoute>} />
@@ -271,6 +278,7 @@ const App = () => (
               </Routes>
             </ModulesProvider>
           </AuthProvider>
+          </BackendProvider>
         </BrowserRouter>
       </ThemeProvider>
     </TooltipProvider>

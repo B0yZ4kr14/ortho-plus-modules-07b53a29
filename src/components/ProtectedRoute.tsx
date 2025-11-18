@@ -8,15 +8,17 @@ interface ProtectedRouteProps {
   requireAdmin?: boolean;
   requireStaff?: boolean;
   requirePatient?: boolean;
+  moduleKey?: string; // V5.3: Module permission check
 }
 
 export function ProtectedRoute({ 
   children, 
   requireAdmin = false,
   requireStaff = false,
-  requirePatient = false 
+  requirePatient = false,
+  moduleKey 
 }: ProtectedRouteProps) {
-  const { user, loading, isAdmin, isMember, isPatient } = useAuth();
+  const { user, loading, isAdmin, isMember, isPatient, hasModuleAccess } = useAuth();
 
   if (loading) {
     return (
@@ -67,6 +69,11 @@ export function ProtectedRoute({
         </div>
       </div>
     );
+  }
+
+  // V5.3: Check module access if moduleKey is provided
+  if (moduleKey && !hasModuleAccess(moduleKey)) {
+    return <Navigate to="/403" replace />;
   }
 
   return <>{children}</>;
