@@ -42,6 +42,7 @@ export default function Dashboard() {
             description="Pacientes cadastrados"
             icon={Users}
             variant="primary"
+            data-testid="stats-card"
           />
         </div>
         <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
@@ -51,6 +52,7 @@ export default function Dashboard() {
             description="Agendamentos para hoje"
             icon={Calendar}
             variant="default"
+            data-testid="stats-card"
           />
         </div>
         <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>

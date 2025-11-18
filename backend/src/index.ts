@@ -26,6 +26,7 @@ import { createBackupsRouter } from '@/modules/backups/api/router';
 import { createCryptoConfigRouter } from '@/modules/crypto_config/api/router';
 import { createGitHubToolsRouter } from '@/modules/github_tools/api/router';
 import { createTerminalRouter } from '@/modules/terminal/api/router';
+import { createDashboardRouter } from '@/modules/dashboard/api/router';
 
 async function bootstrap() {
   try {
@@ -183,7 +184,15 @@ async function bootstrap() {
       requiresAuth: true,
     });
 
-    logger.info('All 13 modules registered successfully');
+    // Dashboard module
+    apiGateway.registerModule({
+      moduleName: 'dashboard',
+      basePath: '/api/dashboard',
+      router: createDashboardRouter(dbConnections.public),
+      requiresAuth: true,
+    });
+
+    logger.info('All 14 modules registered successfully');
 
 // ========== EVENT BUS SUBSCRIBERS ==========
 
