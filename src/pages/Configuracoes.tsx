@@ -16,6 +16,7 @@ import { DataMigrationWizard } from '@/components/settings/DataMigrationWizard';
 import { GitHubIntegrationConfig } from '@/components/settings/GitHubIntegrationConfig';
 import { AuthenticationConfig } from '@/components/settings/AuthenticationConfig';
 import { AIModelConfig } from '@/components/settings/AIModelConfig';
+import { BackendSelector } from '@/components/settings/BackendSelector';
 
 export default function Configuracoes() {
   const { user, hasRole } = useAuth();

@@ -22,7 +22,7 @@ const TemplatesProcedimentosPage = lazy(() => import('./pages/TemplatesProcedime
 
 // Core imports (não lazy)
 import Demo from "./pages/Demo";
-import Dashboard from "./pages/Dashboard";
+import DashboardUnified from "./pages/DashboardUnified";
 import Pacientes from "./pages/Pacientes";
 import PatientDetail from "./pages/PatientDetail";
 import PatientForm from "./pages/PatientForm";
