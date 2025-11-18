@@ -27,9 +27,10 @@ import DashboardUnified from "./pages/DashboardUnified";
 import Pacientes from "./pages/Pacientes";
 import PatientDetail from "./pages/PatientDetail";
 import PatientForm from "./pages/PatientForm";
-import Dentistas from "./pages/Dentistas";
-import Funcionarios from "./pages/Funcionarios";
-import Procedimentos from "./pages/Procedimentos";
+import DentistasPage from "./modules/dentistas/ui/pages/DentistasPage";
+import FuncionariosPage from "./modules/funcionarios/ui/pages/FuncionariosPage";
+import ProcedimentosPage from "./modules/procedimentos/ui/pages/ProcedimentosPage";
+import CobrancaPage from "./modules/cobranca/ui/pages/CobrancaPage";
 import { FinanceiroPage } from "./modules/financeiro/ui/pages/FinanceiroPage";
 import { MarketingAutoPage } from './modules/marketing-auto/ui/pages/MarketingAutoPage';
 import { OrcamentosPage } from './modules/orcamentos/ui/pages/OrcamentosPage';
@@ -64,7 +65,7 @@ const EstoqueInventarioDashboard = lazy(() => import('@/pages/estoque/EstoqueInv
 const ReportTemplates = lazy(() => import('@/pages/ReportTemplates'));
 const AuditLogs = lazy(() => import('@/pages/AuditLogs'));
 const LGPDCompliance = lazy(() => import("@/pages/lgpd"));
-const Cobranca = lazy(() => import('@/pages/Cobranca'));
+// Cobranca migrated to module
 const ScheduledBackupsManagement = lazy(() => import('./pages/settings/ScheduledBackupsManagement'));
 const BackupExecutivePage = lazy(() => import('./pages/settings/BackupExecutivePage'));
 const ModulesPage = lazy(() => import('./pages/settings/ModulesPage'));
@@ -170,9 +171,9 @@ const App = () => (
                 <Route path="/pacientes/novo" element={<ProtectedRoute><AppLayout><PatientForm /></AppLayout></ProtectedRoute>} />
                 <Route path="/pacientes/editar/:id" element={<ProtectedRoute><AppLayout><PatientForm /></AppLayout></ProtectedRoute>} />
                 <Route path="/pacientes/:id" element={<ProtectedRoute><AppLayout><PatientDetail /></AppLayout></ProtectedRoute>} />
-                <Route path="/dentistas" element={<ProtectedRoute><AppLayout><Dentistas /></AppLayout></ProtectedRoute>} />
-                <Route path="/funcionarios" element={<ProtectedRoute><AppLayout><Funcionarios /></AppLayout></ProtectedRoute>} />
-                <Route path="/procedimentos" element={<ProtectedRoute><AppLayout><Procedimentos /></AppLayout></ProtectedRoute>} />
+                <Route path="/dentistas" element={<ProtectedRoute moduleKey="DENTISTAS"><AppLayout><DentistasPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/funcionarios" element={<ProtectedRoute moduleKey="FUNCIONARIOS"><AppLayout><FuncionariosPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/procedimentos" element={<ProtectedRoute moduleKey="PROCEDIMENTOS"><AppLayout><ProcedimentosPage /></AppLayout></ProtectedRoute>} />
                 {/* FINANCEIRO Module - Clean Architecture */}
                 <Route path="/financeiro" element={<ProtectedRoute><AppLayout><FinanceiroPage /></AppLayout></ProtectedRoute>} />
                 {/* MARKETING_AUTO Module - Clean Architecture */}
@@ -198,7 +199,7 @@ const App = () => (
                 {/* Dashboards de Categoria - Removidos no V5.1 (consolidados no DashboardUnified) */}
                 <Route path="/analise-comportamental" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando analytics..." />}><UserBehaviorAnalytics /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/lgpd" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando..." />}><LGPDCompliance /></Suspense></AppLayout></ProtectedRoute>} />
-                <Route path="/cobranca" element={<ProtectedRoute><AppLayout><Cobranca /></AppLayout></ProtectedRoute>} />
+                <Route path="/cobranca" element={<ProtectedRoute moduleKey="INADIMPLENCIA"><AppLayout><CobrancaPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/estoque" element={<ProtectedRoute><AppLayout><EstoquePage /></AppLayout></ProtectedRoute>} />
                 <Route path="/estoque/dashboard" element={<ProtectedRoute><AppLayout><EstoqueDashboard /></AppLayout></ProtectedRoute>} />
                 <Route path="/estoque/cadastros" element={<ProtectedRoute><AppLayout><EstoqueCadastros /></AppLayout></ProtectedRoute>} />

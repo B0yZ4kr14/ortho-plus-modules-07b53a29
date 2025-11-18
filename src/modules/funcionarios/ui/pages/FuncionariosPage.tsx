@@ -14,7 +14,7 @@ import { Users } from 'lucide-react';
 
 type ViewMode = 'list' | 'form' | 'details';
 
-export default function Funcionarios() {
+export default function FuncionariosPage() {
   const { funcionarios, loading, addFuncionario, updateFuncionario, deleteFuncionario } = useFuncionariosSupabase();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedFuncionario, setSelectedFuncionario] = useState<Funcionario | undefined>();

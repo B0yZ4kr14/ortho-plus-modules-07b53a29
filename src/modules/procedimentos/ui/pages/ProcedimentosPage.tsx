@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 
 type ViewMode = 'list' | 'form' | 'details';
 
-export default function Procedimentos() {
+export default function ProcedimentosPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedId, setSelectedId] = useState<string | undefined>();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
