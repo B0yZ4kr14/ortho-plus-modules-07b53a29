@@ -1,5 +1,8 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+/**
+ * DASHBOARD V6.0 - Desacoplado da REST API
+ * Usa useDashboard hook ao invés de queries diretas ao Supabase
+ */
+
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatsCard } from '@/components/shared/StatsCard';
 import { ActionCard } from '@/components/dashboard/ActionCard';
@@ -11,96 +14,13 @@ import { Button } from '@/components/ui/button';
 import { DashboardChartsMemo } from '@/components/dashboard/DashboardChartsMemo';
 import { DashboardWidgetsMemo } from '@/components/dashboard/DashboardWidgetsMemo';
 import { useNavigate } from 'react-router-dom';
+import { useDashboard } from '@/hooks/useDashboard';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [stats, setStats] = useState({
-    totalPatients: 0,
-    todayAppointments: 0,
-    monthlyRevenue: 0,
-    occupancyRate: 0,
-    pendingTreatments: 0,
-    completedTreatments: 0,
-  });
+  const { data, isLoading } = useDashboard();
 
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        // Buscar estatísticas reais do banco
-        const { data: appointments } = await supabase
-          .from('appointments')
-          .select('*')
-          .eq('status', 'agendado');
-
-        const { data: treatments } = await supabase
-          .from('pep_tratamentos')
-          .select('status, valor_estimado');
-
-        const { count: patientsCount } = await supabase
-          .from('prontuarios')
-          .select('*', { count: 'exact', head: true });
-
-        // Calcular estatísticas
-        const today = new Date().toISOString().split('T')[0];
-        const todayAppts = appointments?.filter(a => 
-          a.start_time.startsWith(today)
-        ).length || 0;
-
-        const pending = treatments?.filter(t => t.status === 'EM_ANDAMENTO').length || 0;
-        const completed = treatments?.filter(t => t.status === 'CONCLUIDO').length || 0;
-
-        const revenue = treatments
-          ?.filter(t => t.status === 'CONCLUIDO')
-          .reduce((sum, t) => sum + (Number(t.valor_estimado) || 0), 0) || 0;
-
-        // Taxa de ocupação (simplificado: compromissos / slots disponíveis)
-        const totalSlots = 40; // 8 horas * 5 slots por hora
-        const occupancy = todayAppts > 0 ? Math.min((todayAppts / totalSlots) * 100, 100) : 0;
-
-        setStats({
-          totalPatients: patientsCount || 0,
-          todayAppointments: todayAppts,
-          monthlyRevenue: revenue,
-          occupancyRate: occupancy,
-          pendingTreatments: pending,
-          completedTreatments: completed,
-        });
-      } catch (error) {
-        console.error('Erro ao buscar estatísticas:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchStats();
-
-    // Atualizar a cada 30 segundos
-    const interval = setInterval(fetchStats, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Dados para os gráficos
-  const appointmentsData = [
-    { name: 'Seg', agendadas: 12, realizadas: 10 },
-    { name: 'Ter', agendadas: 15, realizadas: 13 },
-    { name: 'Qua', agendadas: 18, realizadas: 16 },
-    { name: 'Qui', agendadas: 14, realizadas: 12 },
-    { name: 'Sex', agendadas: 16, realizadas: 15 },
-    { name: 'Sáb', agendadas: 8, realizadas: 7 },
-  ];
-
-  const revenueData = [
-    { name: 'Jan', receita: 45000, despesas: 28000 },
-    { name: 'Fev', receita: 52000, despesas: 30000 },
-    { name: 'Mar', receita: 48000, despesas: 29000 },
-    { name: 'Abr', receita: 61000, despesas: 32000 },
-    { name: 'Mai', receita: 55000, despesas: 31000 },
-    { name: 'Jun', receita: 67000, despesas: 33000 },
-  ];
-
-  if (isLoading) {
+  if (isLoading || !data) {
     return <DashboardSkeleton />;
   }
 
@@ -232,8 +152,8 @@ export default function Dashboard() {
 
       {/* Gráficos Memoizados */}
       <DashboardChartsMemo 
-        appointmentsData={appointmentsData}
-        revenueData={revenueData}
+        appointmentsData={data.appointmentsData}
+        revenueData={data.revenueData}
       />
 
       {/* Widgets de Cotações Memoizados */}
