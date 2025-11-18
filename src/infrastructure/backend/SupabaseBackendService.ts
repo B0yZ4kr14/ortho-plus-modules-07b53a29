@@ -130,68 +130,90 @@ class SupabaseAuthService implements IAuthService {
 // ==================== Supabase Data Service ====================
 
 class SupabaseDataService implements IDataService {
-  async query<T extends DatabaseRecord>(table: string, options?: QueryOptions) {
+  async query<T extends DatabaseRecord>(
+    table: string,
+    options?: QueryOptions
+  ): Promise<{ data: T[]; error: Error | null }> {
     try {
-      let query = supabase.from(table).select('*');
-
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let query: any = supabase.from(table).select('*');
+      
       if (options?.filters) {
         Object.entries(options.filters).forEach(([key, value]) => {
-          if (value !== null && value !== undefined) {
-            query = query.eq(key, value);
-          }
+          query = query.eq(key, value);
         });
       }
-
+      
       if (options?.sort) {
         query = query.order(options.sort.field, { ascending: options.sort.direction === 'asc' });
       }
-
+      
       if (options?.limit) {
         query = query.limit(options.limit);
       }
-
+      
       if (options?.offset) {
         query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
       }
-
+      
       const { data, error } = await query;
-
-      return {
-        data: (data || []) as T[],
-        error: error ? new Error(error.message) : null,
-      };
-    } catch (error) {
-      logger.error(`Query failed for table ${table}`, error);
-      return {
-        data: [],
-        error: error instanceof Error ? error : new Error('Unknown error'),
+      
+      if (error) {
+        logger.error('Query failed', { table, error });
+        return { data: [], error: new Error(error.message) };
+      }
+      
+      return { data: (data as T[]) || [], error: null };
+    } catch (err) {
+      logger.error('Query exception', { table, error: err });
+      return { 
+        data: [], 
+        error: err instanceof Error ? err : new Error('Unknown error occurred')
       };
     }
   }
 
-  async queryPaginated<T extends DatabaseRecord>(table: string, options?: QueryOptions) {
+  async queryPaginated<T extends DatabaseRecord>(
+    table: string,
+    options?: QueryOptions
+  ): Promise<{ data: PaginatedResponse<T>; error: Error | null }> {
     try {
       const page = Math.floor((options?.offset || 0) / (options?.limit || 10)) + 1;
       const limit = options?.limit || 10;
 
-      // Get total count
-      const { count, error: countError } = await supabase
-        .from(table)
-        .select('*', { count: 'exact', head: true });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let countQuery: any = supabase.from(table).select('*', { count: 'exact', head: true });
+      
+      if (options?.filters) {
+        Object.entries(options.filters).forEach(([key, value]) => {
+          countQuery = countQuery.eq(key, value);
+        });
+      }
 
-      if (countError) throw new Error(countError.message);
+      const { count, error: countError } = await countQuery;
 
-      // Get data
-      const { data, error } = await this.query<T>(table, options);
+      if (countError) {
+        logger.error('Count query failed', { table, error: countError });
+        return {
+          data: { data: [], total: 0, page: 1, limit: 10, hasMore: false },
+          error: new Error(countError.message),
+        };
+      }
 
-      if (error) throw error;
+      const result = await this.query<T>(table, options);
+      if (result.error) {
+        return {
+          data: { data: [], total: 0, page: 1, limit: 10, hasMore: false },
+          error: result.error,
+        };
+      }
 
       const total = count || 0;
-      const hasMore = (options?.offset || 0) + limit < total;
+      const hasMore = (page * limit) < total;
 
       return {
         data: {
-          data: data || [],
+          data: result.data,
           total,
           page,
           limit,
@@ -199,98 +221,127 @@ class SupabaseDataService implements IDataService {
         },
         error: null,
       };
-    } catch (error) {
-      logger.error(`Paginated query failed for table ${table}`, error);
+    } catch (err) {
+      logger.error('Paginated query exception', { table, error: err });
       return {
         data: { data: [], total: 0, page: 1, limit: 10, hasMore: false },
-        error: error instanceof Error ? error : new Error('Unknown error'),
+        error: err instanceof Error ? err : new Error('Unknown error occurred'),
       };
     }
   }
 
-  async getById<T extends DatabaseRecord>(table: string, id: string) {
+  async getById<T extends DatabaseRecord>(
+    table: string,
+    id: string
+  ): Promise<{ data: T | null; error: Error | null }> {
     try {
       const { data, error } = await supabase
         .from(table)
         .select('*')
         .eq('id', id)
-        .single();
-
-      return {
-        data: data as T | null,
-        error: error ? new Error(error.message) : null,
-      };
-    } catch (error) {
-      logger.error(`Get by ID failed for table ${table}`, error);
-      return {
-        data: null,
-        error: error instanceof Error ? error : new Error('Unknown error'),
+        .maybeSingle();
+      
+      if (error) {
+        logger.error('Get by ID failed', { table, id, error });
+        return { data: null, error: new Error(error.message) };
+      }
+      
+      return { data: data as T, error: null };
+    } catch (err) {
+      logger.error('Get by ID exception', { table, id, error: err });
+      return { 
+        data: null, 
+        error: err instanceof Error ? err : new Error('Unknown error occurred')
       };
     }
   }
 
-  async create<T extends DatabaseRecord>(table: string, data: Partial<T>) {
+  async create<T extends DatabaseRecord>(
+    table: string,
+    data: Partial<T>
+  ): Promise<{ data: T | null; error: Error | null }> {
     try {
       const { data: result, error } = await supabase
         .from(table)
-        .insert(data)
+        .insert(data as never)
         .select()
         .single();
-
-      return {
-        data: result as T | null,
-        error: error ? new Error(error.message) : null,
-      };
-    } catch (error) {
-      logger.error(`Create failed for table ${table}`, error);
-      return {
-        data: null,
-        error: error instanceof Error ? error : new Error('Unknown error'),
+      
+      if (error) {
+        logger.error('Create failed', { table, error });
+        return { data: null, error: new Error(error.message) };
+      }
+      
+      return { data: result as T, error: null };
+    } catch (err) {
+      logger.error('Create exception', { table, error: err });
+      return { 
+        data: null, 
+        error: err instanceof Error ? err : new Error('Unknown error occurred')
       };
     }
   }
 
-  async update<T extends DatabaseRecord>(table: string, id: string, data: Partial<T>) {
+  async update<T extends DatabaseRecord>(
+    table: string,
+    id: string,
+    data: Partial<T>
+  ): Promise<{ data: T | null; error: Error | null }> {
     try {
       const { data: result, error } = await supabase
         .from(table)
-        .update(data)
+        .update(data as never)
         .eq('id', id)
         .select()
         .single();
-
-      return {
-        data: result as T | null,
-        error: error ? new Error(error.message) : null,
-      };
-    } catch (error) {
-      logger.error(`Update failed for table ${table}`, error);
-      return {
-        data: null,
-        error: error instanceof Error ? error : new Error('Unknown error'),
+      
+      if (error) {
+        logger.error('Update failed', { table, id, error });
+        return { data: null, error: new Error(error.message) };
+      }
+      
+      return { data: result as T, error: null };
+    } catch (err) {
+      logger.error('Update exception', { table, id, error: err });
+      return { 
+        data: null, 
+        error: err instanceof Error ? err : new Error('Unknown error occurred')
       };
     }
   }
 
-  async delete(table: string, id: string) {
+  async delete(
+    table: string,
+    id: string
+  ): Promise<{ error: Error | null }> {
     try {
       const { error } = await supabase
         .from(table)
         .delete()
         .eq('id', id);
-
-      return { error: error ? new Error(error.message) : null };
-    } catch (error) {
-      logger.error(`Delete failed for table ${table}`, error);
-      return { error: error instanceof Error ? error : new Error('Unknown error') };
+      
+      if (error) {
+        logger.error('Delete failed', { table, id, error });
+        return { error: new Error(error.message) };
+      }
+      
+      return { error: null };
+    } catch (err) {
+      logger.error('Delete exception', { table, id, error: err });
+      return { 
+        error: err instanceof Error ? err : new Error('Unknown error occurred')
+      };
     }
   }
 
-  async executeQuery<T = unknown>(query: string, params?: unknown[]) {
-    logger.warn('executeQuery not fully implemented for Supabase');
+  async executeQuery<T = unknown>(
+    query: string,
+    params?: unknown[]
+  ): Promise<{ data: T | null; error: Error | null }> {
+    logger.warn('executeQuery not implemented for Supabase - use RPC instead');
     return {
-      data: null as T | null,
-      error: new Error('Custom queries not supported in Supabase implementation'),
+      data: null,
+      error: new Error('Raw SQL execution not supported. Use Supabase RPC instead.'),
     };
   }
 
@@ -299,7 +350,7 @@ class SupabaseDataService implements IDataService {
     callback: (payload: { eventType: 'INSERT' | 'UPDATE' | 'DELETE'; new: T; old: T }) => void
   ) {
     const channel = supabase
-      .channel(`${table}-changes`)
+      .channel(`${table}_changes`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table },
@@ -322,69 +373,80 @@ class SupabaseDataService implements IDataService {
 // ==================== Supabase Storage Service ====================
 
 class SupabaseStorageService implements IStorageService {
-  async upload(file: File, config: StorageConfig) {
+  async upload(
+    file: File,
+    config: StorageConfig
+  ): Promise<{ data: FileUploadResult | null; error: Error | null }> {
     try {
-      const filePath = `${config.path}/${Date.now()}-${file.name}`;
-      
+      const filePath = `${config.path}/${file.name}`;
       const { data, error } = await supabase.storage
         .from(config.bucket)
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-        });
+        .upload(filePath, file, { upsert: config.upsert });
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        logger.error('Upload failed', { bucket: config.bucket, path: filePath, error });
+        return { data: null, error: new Error(error.message) };
+      }
 
       const publicUrl = this.getPublicUrl(config.bucket, data.path);
 
       return {
         data: {
-          url: publicUrl,
           path: data.path,
-          filename: file.name,
-          size: file.size,
-          mime_type: file.type,
+          url: publicUrl,
+          bucket: config.bucket,
         },
         error: null,
       };
-    } catch (error) {
-      logger.error('File upload failed', error);
+    } catch (err) {
+      logger.error('Upload exception', { config, error: err });
       return {
         data: null,
-        error: error instanceof Error ? error : new Error('Unknown error'),
+        error: err instanceof Error ? err : new Error('Unknown error occurred'),
       };
     }
   }
 
-  async download(bucket: string, path: string) {
+  async download(
+    bucket: string,
+    path: string
+  ): Promise<{ data: Blob | null; error: Error | null }> {
     try {
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .download(path);
+      const { data, error } = await supabase.storage.from(bucket).download(path);
 
-      return {
-        data: data || null,
-        error: error ? new Error(error.message) : null,
-      };
-    } catch (error) {
-      logger.error('File download failed', error);
+      if (error) {
+        logger.error('Download failed', { bucket, path, error });
+        return { data: null, error: new Error(error.message) };
+      }
+
+      return { data, error: null };
+    } catch (err) {
+      logger.error('Download exception', { bucket, path, error: err });
       return {
         data: null,
-        error: error instanceof Error ? error : new Error('Unknown error'),
+        error: err instanceof Error ? err : new Error('Unknown error occurred'),
       };
     }
   }
 
-  async delete(bucket: string, path: string) {
+  async delete(
+    bucket: string,
+    path: string
+  ): Promise<{ error: Error | null }> {
     try {
-      const { error } = await supabase.storage
-        .from(bucket)
-        .remove([path]);
+      const { error } = await supabase.storage.from(bucket).remove([path]);
 
-      return { error: error ? new Error(error.message) : null };
-    } catch (error) {
-      logger.error('File delete failed', error);
-      return { error: error instanceof Error ? error : new Error('Unknown error') };
+      if (error) {
+        logger.error('Delete file failed', { bucket, path, error });
+        return { error: new Error(error.message) };
+      }
+
+      return { error: null };
+    } catch (err) {
+      logger.error('Delete file exception', { bucket, path, error: err });
+      return {
+        error: err instanceof Error ? err : new Error('Unknown error occurred'),
+      };
     }
   }
 
@@ -393,40 +455,55 @@ class SupabaseStorageService implements IStorageService {
     return data.publicUrl;
   }
 
-  async getSignedUrl(bucket: string, path: string, expiresIn = 3600) {
+  async getSignedUrl(
+    bucket: string,
+    path: string,
+    expiresIn = 3600
+  ): Promise<{ data: { signedUrl: string } | null; error: Error | null }> {
     try {
       const { data, error } = await supabase.storage
         .from(bucket)
         .createSignedUrl(path, expiresIn);
 
-      return {
-        data: data ? { signedUrl: data.signedUrl } : null,
-        error: error ? new Error(error.message) : null,
-      };
-    } catch (error) {
-      logger.error('Get signed URL failed', error);
+      if (error) {
+        logger.error('Get signed URL failed', { bucket, path, error });
+        return { data: null, error: new Error(error.message) };
+      }
+
+      return { data: { signedUrl: data.signedUrl }, error: null };
+    } catch (err) {
+      logger.error('Get signed URL exception', { bucket, path, error: err });
       return {
         data: null,
-        error: error instanceof Error ? error : new Error('Unknown error'),
+        error: err instanceof Error ? err : new Error('Unknown error occurred'),
       };
     }
   }
 
-  async list(bucket: string, path?: string) {
+  async list(
+    bucket: string,
+    path = ''
+  ): Promise<{ data: Array<{ name: string; size: number }> | null; error: Error | null }> {
     try {
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .list(path);
+      const { data, error } = await supabase.storage.from(bucket).list(path);
+
+      if (error) {
+        logger.error('List files failed', { bucket, path, error });
+        return { data: null, error: new Error(error.message) };
+      }
 
       return {
-        data: data ? data.map(file => ({ name: file.name, size: file.metadata?.size || 0 })) : null,
-        error: error ? new Error(error.message) : null,
+        data: data.map((file) => ({
+          name: file.name,
+          size: file.metadata?.size || 0,
+        })),
+        error: null,
       };
-    } catch (error) {
-      logger.error('List files failed', error);
+    } catch (err) {
+      logger.error('List files exception', { bucket, path, error: err });
       return {
         data: null,
-        error: error instanceof Error ? error : new Error('Unknown error'),
+        error: err instanceof Error ? err : new Error('Unknown error occurred'),
       };
     }
   }
@@ -437,23 +514,28 @@ class SupabaseStorageService implements IStorageService {
 class SupabaseFunctionsService implements IFunctionsService {
   async invoke<TRequest = unknown, TResponse = unknown>(
     functionName: string,
-    options?: { body?: TRequest; headers?: Record<string, string> }
-  ) {
+    options?: {
+      body?: TRequest;
+      headers?: Record<string, string>;
+    }
+  ): Promise<{ data: TResponse | null; error: Error | null }> {
     try {
-      const { data, error } = await supabase.functions.invoke<TResponse>(functionName, {
+      const { data, error } = await supabase.functions.invoke(functionName, {
         body: options?.body,
         headers: options?.headers,
       });
 
-      return {
-        data: data || null,
-        error: error ? new Error(error.message) : null,
-      };
-    } catch (error) {
-      logger.error(`Function invocation failed: ${functionName}`, error);
+      if (error) {
+        logger.error('Function invocation failed', { functionName, error });
+        return { data: null, error: new Error(error.message) };
+      }
+
+      return { data: data as TResponse, error: null };
+    } catch (err) {
+      logger.error('Function invocation exception', { functionName, error: err });
       return {
         data: null,
-        error: error instanceof Error ? error : new Error('Unknown error'),
+        error: err instanceof Error ? err : new Error('Unknown error occurred'),
       };
     }
   }
@@ -462,10 +544,10 @@ class SupabaseFunctionsService implements IFunctionsService {
 // ==================== Complete Supabase Backend Service ====================
 
 export class SupabaseBackendService implements IBackendService {
-  public auth: IAuthService;
-  public data: IDataService;
-  public storage: IStorageService;
-  public functions: IFunctionsService;
+  auth: IAuthService;
+  data: IDataService;
+  storage: IStorageService;
+  functions: IFunctionsService;
 
   constructor() {
     this.auth = new SupabaseAuthService();
@@ -480,13 +562,10 @@ export class SupabaseBackendService implements IBackendService {
 
   async isReady(): Promise<boolean> {
     try {
-      const { data, error } = await supabase.from('clinics').select('id').limit(1);
+      const { error } = await supabase.from('clinics').select('id').limit(1);
       return !error;
     } catch {
       return false;
     }
   }
 }
-
-// Singleton instance
-export const supabaseBackend = new SupabaseBackendService();
