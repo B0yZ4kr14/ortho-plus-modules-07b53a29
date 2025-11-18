@@ -4,8 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from 'sonner';
 import type { ExchangeConfig, CryptoWallet, CryptoTransactionComplete } from '../types/crypto.types';
-
 import { fetchExchangeRateWithCache } from '@/lib/utils/crypto-cache.utils';
+import { logger } from '@/lib/logger';
 
 export const useCryptoSupabase = (clinicId: string) => {
   const [exchanges, setExchanges] = useState<ExchangeConfig[]>([]);
@@ -16,7 +16,7 @@ export const useCryptoSupabase = (clinicId: string) => {
 
   const loadData = async () => {
     if (!clinicId) {
-      console.log('[CryptoSupabase] No clinicId, skipping data load');
+      logger.debug('[CryptoSupabase] No clinicId, skipping data load');
       setLoading(false);
       return;
     }
@@ -32,7 +32,7 @@ export const useCryptoSupabase = (clinicId: string) => {
         .order('created_at', { ascending: false });
 
       if (exchangesError) {
-        console.error('[CryptoSupabase] Error loading exchanges:', exchangesError);
+        logger.error('[CryptoSupabase] Error loading exchanges', exchangesError);
         throw exchangesError;
       }
 
@@ -44,7 +44,7 @@ export const useCryptoSupabase = (clinicId: string) => {
         .order('created_at', { ascending: false });
 
       if (walletsError) {
-        console.error('[CryptoSupabase] Error loading wallets:', walletsError);
+        logger.error('[CryptoSupabase] Error loading wallets', walletsError);
         throw walletsError;
       }
 
@@ -61,7 +61,7 @@ export const useCryptoSupabase = (clinicId: string) => {
         .order('created_at', { ascending: false });
 
       if (transactionsError) {
-        console.error('[CryptoSupabase] Error loading transactions:', transactionsError);
+        logger.error('[CryptoSupabase] Error loading transactions', transactionsError);
         throw transactionsError;
       }
 
@@ -78,13 +78,13 @@ export const useCryptoSupabase = (clinicId: string) => {
       setWallets(walletsData || []);
       setTransactions(mappedTransactions);
       
-      console.log('[CryptoSupabase] Data loaded successfully:', {
+      logger.debug('[CryptoSupabase] Data loaded successfully', {
         exchanges: exchangesData?.length || 0,
         wallets: walletsData?.length || 0,
         transactions: mappedTransactions?.length || 0,
       });
     } catch (error: any) {
-      console.error('[CryptoSupabase] Error loading crypto data:', error);
+      logger.error('[CryptoSupabase] Error loading crypto data', error);
       toast({
         title: 'Erro ao carregar dados',
         description: error.message,

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { logger } from '@/lib/logger';
 
 interface CryptoAlert {
   id: string;
@@ -42,7 +43,7 @@ export function useCryptoNotifications() {
       );
 
       ws.onopen = () => {
-        console.log('[WebSocket] Conectado às notificações cripto');
+        logger.info('[WebSocket] Conectado às notificações cripto');
         setConnected(true);
         
         // Enviar mensagem de heartbeat a cada 30 segundos
@@ -61,7 +62,7 @@ export function useCryptoNotifications() {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log('[WebSocket] Mensagem recebida:', data);
+          logger.debug('[WebSocket] Mensagem recebida', { data });
 
           switch (data.type) {
             case 'price_alert':
@@ -71,23 +72,23 @@ export function useCryptoNotifications() {
               handleRateUpdate(data.rates);
               break;
             case 'pong':
-              console.log('[WebSocket] Pong recebido');
+              logger.debug('[WebSocket] Pong recebido');
               break;
             default:
-              console.log('[WebSocket] Tipo de mensagem desconhecido:', data.type);
+              logger.warn('[WebSocket] Tipo de mensagem desconhecido', { type: data.type });
           }
         } catch (error) {
-          console.error('[WebSocket] Erro ao processar mensagem:', error);
+          logger.error('[WebSocket] Erro ao processar mensagem', error);
         }
       };
 
       ws.onerror = (error) => {
-        console.error('[WebSocket] Erro:', error);
+        logger.error('[WebSocket] Erro', error);
         setConnected(false);
       };
 
       ws.onclose = (event) => {
-        console.log('[WebSocket] Conexão fechada:', event.code, event.reason);
+        logger.info('[WebSocket] Conexão fechada', { code: event.code, reason: event.reason });
         setConnected(false);
         
         // Tentar reconectar após 5 segundos
@@ -96,20 +97,20 @@ export function useCryptoNotifications() {
         }
         
         reconnectTimeoutRef.current = setTimeout(() => {
-          console.log('[WebSocket] Tentando reconectar...');
+          logger.info('[WebSocket] Tentando reconectar...');
           connectWebSocket();
         }, 5000);
       };
 
       wsRef.current = ws;
     } catch (error) {
-      console.error('[WebSocket] Erro ao conectar:', error);
+      logger.error('[WebSocket] Erro ao conectar', error);
       setConnected(false);
     }
   };
 
   const handlePriceAlert = (alert: CryptoAlert) => {
-    console.log('[Notification] Alerta de preço acionado:', alert);
+    logger.info('[Notification] Alerta de preço acionado', { alert });
     
     setAlerts(prev => [...prev, alert]);
 
@@ -145,7 +146,7 @@ export function useCryptoNotifications() {
   };
 
   const handleRateUpdate = (rates: Record<string, number>) => {
-    console.log('[Notification] Cotações atualizadas:', rates);
+    logger.debug('[Notification] Cotações atualizadas', { rates });
     // Você pode usar isso para atualizar cotações em tempo real na UI
   };
 
@@ -153,9 +154,9 @@ export function useCryptoNotifications() {
     try {
       const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjaR1/HMeS0FJHbH8N2RQAoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQoUXbPp66hVFApGnt/yvmwhBjaQ1/HMeS0FJHbH8N2RQQo=');
       audio.volume = 0.3;
-      audio.play().catch(e => console.log('Não foi possível tocar som de notificação:', e));
+      audio.play().catch(e => logger.debug('Não foi possível tocar som de notificação', { error: e }));
     } catch (error) {
-      console.log('Erro ao tocar som:', error);
+      logger.debug('Erro ao tocar som', error);
     }
   };
 

@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 export interface BlockchainTransaction {
   txHash: string;
@@ -34,11 +35,11 @@ export class BlockchainMonitor {
    * Inicia monitoramento de um endereço
    */
   async watchAddress(config: MonitorConfig): Promise<void> {
-    console.log(`[BlockchainMonitor] Starting watch for ${config.address} (${config.cryptocurrency})`);
+    logger.info(`[BlockchainMonitor] Starting watch for ${config.address} (${config.cryptocurrency})`);
 
     // Verificar se já está sendo monitorado
     if (this.activeMonitors.has(config.address)) {
-      console.warn(`[BlockchainMonitor] Address ${config.address} already being monitored`);
+      logger.warn(`[BlockchainMonitor] Address ${config.address} already being monitored`);
       return;
     }
 
@@ -48,7 +49,7 @@ export class BlockchainMonitor {
         const tx = await this.checkAddressBalance(config);
         
         if (tx && tx.confirmations >= this.MIN_CONFIRMATIONS) {
-          console.log(`[BlockchainMonitor] Payment confirmed for ${config.address}:`, tx);
+          logger.info(`[BlockchainMonitor] Payment confirmed for ${config.address}`, { tx });
           
           // Parar monitoramento
           this.stopWatching(config.address);
@@ -57,7 +58,7 @@ export class BlockchainMonitor {
           config.onConfirmed(tx);
         }
       } catch (error) {
-        console.error(`[BlockchainMonitor] Error checking address ${config.address}:`, error);
+        logger.error(`[BlockchainMonitor] Error checking address ${config.address}`, error);
         if (config.onError) {
           config.onError(error as Error);
         }
@@ -69,7 +70,7 @@ export class BlockchainMonitor {
     // Timeout: parar após 2 horas
     setTimeout(() => {
       this.stopWatching(config.address);
-      console.log(`[BlockchainMonitor] Timeout expired for ${config.address}`);
+      logger.info(`[BlockchainMonitor] Timeout expired for ${config.address}`);
     }, 2 * 60 * 60 * 1000);
   }
 
@@ -81,7 +82,7 @@ export class BlockchainMonitor {
     if (intervalId) {
       clearInterval(intervalId);
       this.activeMonitors.delete(address);
-      console.log(`[BlockchainMonitor] Stopped watching ${address}`);
+      logger.info(`[BlockchainMonitor] Stopped watching ${address}`);
     }
   }
 
