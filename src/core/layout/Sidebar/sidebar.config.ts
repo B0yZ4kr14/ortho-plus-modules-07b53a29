@@ -25,6 +25,7 @@ import {
   FileCode,
   BookText,
   Github,
+  Terminal,
   type LucideIcon,
   Sparkles,
   BriefcaseBusiness,
@@ -357,6 +358,45 @@ export const menuGroups: MenuGroup[] = [
         url: '/teleodonto', 
         icon: Video, 
         moduleKey: 'TELEODONTO' 
+      }
+    ]
+  },
+
+  // ========= BOUNDED CONTEXT: ADMIN_DEVOPS (Administração e DevOps) =========
+  {
+    label: 'ADMIN & DEVOPS',
+    boundedContext: 'ADMIN_DEVOPS',
+    collapsed: false,
+    items: [
+      { 
+        title: 'Database Admin', 
+        url: '/admin/database', 
+        icon: Database, 
+        moduleKey: 'DATABASE_ADMIN' 
+      },
+      { 
+        title: 'Backups Avançados', 
+        url: '/admin/backups', 
+        icon: HardDrive, 
+        moduleKey: 'BACKUPS' 
+      },
+      { 
+        title: 'Crypto Config', 
+        url: '/admin/crypto', 
+        icon: Wallet, 
+        moduleKey: 'CRYPTO_CONFIG' 
+      },
+      { 
+        title: 'GitHub Tools', 
+        url: '/admin/github', 
+        icon: Github, 
+        moduleKey: 'GITHUB_TOOLS' 
+      },
+      { 
+        title: 'Terminal Web', 
+        url: '/admin/terminal', 
+        icon: Code2, 
+        moduleKey: 'TERMINAL' 
       }
     ]
   },
