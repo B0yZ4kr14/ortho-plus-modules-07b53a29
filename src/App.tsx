@@ -95,7 +95,7 @@ const Orcamentos = lazy(() => import('@/pages/Orcamentos'));
 const CRMFunil = lazy(() => import('@/pages/CRMFunil'));
 const CRMPage = lazy(() => import('@/pages/crm'));
 const RadiografiaPage = lazy(() => import('@/pages/radiografia'));
-const CryptoPaymentPage = lazy(() => import('@/pages/crypto-payment'));
+const CryptoPaymentPage = lazy(() => import('@/modules/crypto/ui/pages/CryptoPaymentPage'));
 const TeleodontoPage = lazy(() => import('@/pages/teleodonto'));
 const SplitPagamentoPage = lazy(() => import('@/pages/split-pagamento'));
 const InadimplenciaPage = lazy(() => import('@/pages/inadimplencia'));
@@ -105,7 +105,7 @@ const TISSPage = lazy(() => import('@/pages/tiss'));
 const MarketingAuto = lazy(() => import('@/pages/MarketingAuto'));
 const AssinaturaICP = lazy(() => import('@/pages/AssinaturaICP'));
 const ProgramaFidelidade = lazy(() => import('@/pages/ProgramaFidelidade'));
-const PDV = lazy(() => import('@/pages/PDV'));
+const PDVPage = lazy(() => import('@/modules/pdv/ui/pages/PDVPage'));
 const RelatorioCaixa = lazy(() => import('@/pages/RelatorioCaixa'));
 const MetasGamificacao = lazy(() => import('./pages/pdv/MetasGamificacao'));
 
@@ -246,7 +246,7 @@ const App = () => (
                 <Route path="/configuracoes/analytics" element={<ProtectedRoute requireAdmin><AppLayout><Suspense fallback={<LoadingState />}><OnboardingAnalytics /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/configuracoes/backups-agendados" element={<ProtectedRoute requireAdmin><AppLayout><ScheduledBackupsManagement /></AppLayout></ProtectedRoute>} />
                 <Route path="/configuracoes/backup-executivo" element={<ProtectedRoute requireAdmin><AppLayout><BackupExecutivePage /></AppLayout></ProtectedRoute>} />
-                <Route path="/pdv" element={<ProtectedRoute><AppLayout><PDV /></AppLayout></ProtectedRoute>} />
+                <Route path="/pdv" element={<ProtectedRoute><AppLayout><PDVPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/pdv/dashboard" element={<ProtectedRoute><AppLayout><DashboardVendasPDV /></AppLayout></ProtectedRoute>} />
                 <Route path="/pdv/executivo" element={<ProtectedRoute requireAdmin><AppLayout><DashboardExecutivoPDV /></AppLayout></ProtectedRoute>} />
                 <Route path="/pdv/metas" element={<ProtectedRoute><AppLayout><MetasGamificacao /></AppLayout></ProtectedRoute>} />
