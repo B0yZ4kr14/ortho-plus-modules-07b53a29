@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api/apiClient';
-import { User, FileSpreadsheet, Calendar, DollarSign } from 'lucide-react';
+import { User, FileSpreadsheet, Calendar } from 'lucide-react';
+import { useGlobalSearch } from '@/hooks/useGlobalSearch';
+import { useDebounce } from 'use-debounce';
 
 export function GlobalSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [debouncedQuery] = useDebounce(query, 300);
   const navigate = useNavigate();
+  
+  const { data: results } = useGlobalSearch(debouncedQuery);
   
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -21,22 +24,11 @@ export function GlobalSearch() {
     return () => document.removeEventListener('keydown', down);
   }, []);
   
-  const { data: results } = useQuery<{
-    patients?: Array<{ id: string; full_name: string; phone_primary: string }>;
-    budgets?: Array<{ id: string; patient_name: string }>;
-  }>({
-    queryKey: ['global-search', query],
-    queryFn: async () => {
-      if (query.length < 2) return null;
-      try {
-        return await apiClient.get(`/search?q=${encodeURIComponent(query)}`);
-      } catch (error) {
-        console.error('Search error:', error);
-        return null;
-      }
-    },
-    enabled: query.length >= 2
-  });
+  useEffect(() => {
+    if (!open) {
+      setQuery('');
+    }
+  }, [open]);
   
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
@@ -50,16 +42,16 @@ export function GlobalSearch() {
         
         {results?.patients && results.patients.length > 0 && (
           <CommandGroup heading="Pacientes">
-            {results.patients.map((patient: any) => (
+            {results.patients.map((patient) => (
               <CommandItem
                 key={patient.id}
                 onSelect={() => {
-                  navigate(`/pacientes/${patient.id}`);
+                  navigate(patient.url);
                   setOpen(false);
                 }}
               >
                 <User className="mr-2 h-4 w-4" />
-                <span>{patient.full_name} - {patient.phone_primary}</span>
+                <span>{patient.title} - {patient.subtitle}</span>
               </CommandItem>
             ))}
           </CommandGroup>
@@ -67,16 +59,33 @@ export function GlobalSearch() {
         
         {results?.budgets && results.budgets.length > 0 && (
           <CommandGroup heading="Orçamentos">
-            {results.budgets.map((budget: any) => (
+            {results.budgets.map((budget) => (
               <CommandItem
                 key={budget.id}
                 onSelect={() => {
-                  navigate(`/orcamentos/${budget.id}`);
+                  navigate(budget.url);
                   setOpen(false);
                 }}
               >
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
-                <span>Orçamento #{budget.id} - {budget.patient_name}</span>
+                <span>{budget.title} - {budget.subtitle}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        
+        {results?.appointments && results.appointments.length > 0 && (
+          <CommandGroup heading="Agendamentos">
+            {results.appointments.map((appointment) => (
+              <CommandItem
+                key={appointment.id}
+                onSelect={() => {
+                  navigate(appointment.url);
+                  setOpen(false);
+                }}
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                <span>{appointment.title} - {appointment.subtitle}</span>
               </CommandItem>
             ))}
           </CommandGroup>
