@@ -14,7 +14,7 @@ import { Stethoscope } from 'lucide-react';
 
 type ViewMode = 'list' | 'form' | 'details';
 
-export default function Dentistas() {
+export default function DentistasPage() {
   const { dentistas, loading, addDentista, updateDentista, deleteDentista } = useDentistasStore();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedDentista, setSelectedDentista] = useState<Dentista | undefined>();

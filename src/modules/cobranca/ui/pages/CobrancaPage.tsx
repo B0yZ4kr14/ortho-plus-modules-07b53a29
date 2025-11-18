@@ -15,7 +15,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 
-export default function Cobranca() {
+export default function CobrancaPage() {
   return (
     <div className="p-8 space-y-6">
       <PageHeader
@@ -103,48 +103,34 @@ export default function Cobranca() {
                   </Button>
                 </div>
 
-                <div className="rounded-md border">
-                  <div className="p-4">
-                    <div className="space-y-4">
-                      {[
-                        { name: 'Maria Silva', cpf: '123.456.789-00', amount: 'R$ 1.200,00', days: 15, status: 'crítico' },
-                        { name: 'João Santos', cpf: '987.654.321-00', amount: 'R$ 850,00', days: 8, status: 'alerta' },
-                        { name: 'Ana Costa', cpf: '456.789.123-00', amount: 'R$ 2.400,00', days: 30, status: 'crítico' },
-                      ].map((item, i) => (
-                        <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium">{item.name}</p>
-                              <Badge variant={item.status === 'crítico' ? 'destructive' : 'secondary'}>
-                                {item.days} dias
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground">{item.cpf}</p>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <div className="text-right">
-                              <p className="font-bold text-destructive">{item.amount}</p>
-                              <p className="text-xs text-muted-foreground">em aberto</p>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm">
-                                <Mail className="h-4 w-4 mr-1" />
-                                Email
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <MessageSquare className="h-4 w-4 mr-1" />
-                                WhatsApp
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <FileText className="h-4 w-4 mr-1" />
-                                Boleto
-                              </Button>
-                            </div>
-                          </div>
+                {/* TODO: Implementar lista dinâmica com dados reais do Supabase */}
+                <div className="border rounded-lg divide-y">
+                  {[1, 2, 3].map((item) => (
+                    <div key={item} className="p-4 flex items-center justify-between hover:bg-muted/50">
+                      <div className="space-y-1">
+                        <p className="font-medium">Paciente {item}</p>
+                        <p className="text-sm text-muted-foreground">CPF: 000.000.000-00</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge variant="destructive">Vencido há 15 dias</Badge>
+                          <Badge variant="outline">R$ 450,00</Badge>
                         </div>
-                      ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline">
+                          <Mail className="h-4 w-4 mr-2" />
+                          E-mail
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          WhatsApp
+                        </Button>
+                        <Button size="sm">
+                          <FileText className="h-4 w-4 mr-2" />
+                          Ver Fatura
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </CardContent>
@@ -154,21 +140,15 @@ export default function Cobranca() {
         <TabsContent value="comunicacao" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Automação de Cobranças</CardTitle>
+              <CardTitle>Comunicação Automatizada</CardTitle>
               <CardDescription>
-                Configure mensagens automáticas e regras de comunicação
+                Configure regras de envio automático de lembretes e cobranças
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-12">
-                <Mail className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">
-                  Funcionalidade de automação de cobranças em desenvolvimento
-                </p>
-                <Button variant="outline" disabled>
-                  Configurar Automação
-                </Button>
-              </div>
+              <p className="text-sm text-muted-foreground">
+                Funcionalidade em desenvolvimento - Integração com WhatsApp Business API e e-mail
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -178,16 +158,13 @@ export default function Cobranca() {
             <CardHeader>
               <CardTitle>Histórico de Cobranças</CardTitle>
               <CardDescription>
-                Registro de todas as ações de cobrança realizadas
+                Registro de todas as ações de cobrança enviadas
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-12">
-                <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">
-                  Histórico de cobranças será exibido aqui
-                </p>
-              </div>
+              <p className="text-sm text-muted-foreground">
+                Funcionalidade em desenvolvimento - Audit log de comunicações enviadas
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
