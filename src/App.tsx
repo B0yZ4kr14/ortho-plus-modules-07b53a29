@@ -35,6 +35,12 @@ import { FinanceiroPage } from "./modules/financeiro/ui/pages/FinanceiroPage";
 import { MarketingAutoPage } from './modules/marketing-auto/ui/pages/MarketingAutoPage';
 import { OrcamentosPage } from './modules/orcamentos/ui/pages/OrcamentosPage';
 import { EstoquePage } from './modules/estoque/ui/pages/EstoquePage';
+import EstoqueDashboardPage from './modules/estoque/ui/pages/EstoqueDashboardPage';
+import EstoqueMovimentacoesPage from './modules/estoque/ui/pages/EstoqueMovimentacoesPage';
+import EstoqueCadastrosPage from './modules/estoque/ui/pages/EstoqueCadastrosPage';
+import EstoquePedidosPage from './modules/estoque/ui/pages/EstoquePedidosPage';
+import EstoqueInventarioPage from './modules/estoque/ui/pages/EstoqueInventarioPage';
+import EstoqueRequisicoesPage from './modules/estoque/ui/pages/EstoqueRequisicoesPage';
 import AgendaClinicaPage from "./modules/agenda/ui/pages/AgendaClinicaPage";
 import Configuracoes from './pages/Configuracoes';
 import PEPPage from './modules/pep/ui/pages/PEPPage';
@@ -75,16 +81,10 @@ const ModulesPage = lazy(() => import('./pages/settings/ModulesPage'));
 const PatientDetailV2 = lazy(() => import('./pages/PatientDetail-v2'));
 const FluxoDigital = lazy(() => import('./pages/FluxoDigital'));
 const DashboardComercialROI = lazy(() => import('./pages/dashboards/DashboardComercial'));
-const EstoqueDashboard = lazy(() => import('@/pages/estoque/EstoqueDashboard'));
-const EstoqueCadastros = lazy(() => import('@/pages/estoque/EstoqueCadastros'));
-const EstoqueRequisicoes = lazy(() => import('@/pages/estoque/EstoqueRequisicoes'));
-const EstoqueMovimentacoes = lazy(() => import('@/pages/estoque/EstoqueMovimentacoes'));
 const EstoqueAnaliseConsumo = lazy(() => import('@/pages/estoque/EstoqueAnaliseConsumo'));
-const EstoquePedidos = lazy(() => import('@/pages/estoque/EstoquePedidos'));
 const EstoqueIntegracoes = lazy(() => import('@/pages/estoque/EstoqueIntegracoes'));
 const EstoqueAnalisePedidos = lazy(() => import('@/pages/estoque/EstoqueAnalisePedidos'));
 const EstoqueScannerMobile = lazy(() => import('@/pages/estoque/EstoqueScannerMobile'));
-const EstoqueInventario = lazy(() => import('@/pages/estoque/EstoqueInventario'));
 const ContasReceber = lazy(() => import('@/pages/financeiro/ContasReceber'));
 const ContasPagar = lazy(() => import('@/pages/financeiro/ContasPagar'));
 const NotasFiscais = lazy(() => import('@/pages/financeiro/NotasFiscais'));
@@ -192,7 +192,6 @@ const App = () => (
                 <Route path="/dashboards/comercial-roi" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando..." />}><DashboardComercialROI /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/pdv/metas" element={<ProtectedRoute><AppLayout><MetasGamificacao /></AppLayout></ProtectedRoute>} />
                 <Route path="/agenda" element={<ProtectedRoute><AppLayout><AgendaPage /></AppLayout></ProtectedRoute>} />
-                <Route path="/pep" element={<ProtectedRoute><AppLayout><PEP /></AppLayout></ProtectedRoute>} />
                 <Route path="/relatorios" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando relatórios..." />}><Relatorios /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/business-intelligence" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando BI..." />}><BusinessIntelligence /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/bi" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando BI..." />}><BusinessIntelligence /></Suspense></AppLayout></ProtectedRoute>} />
@@ -201,16 +200,16 @@ const App = () => (
                 <Route path="/lgpd" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando..." />}><LGPDCompliance /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/cobranca" element={<ProtectedRoute moduleKey="INADIMPLENCIA"><AppLayout><CobrancaPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/estoque" element={<ProtectedRoute><AppLayout><EstoquePage /></AppLayout></ProtectedRoute>} />
-                <Route path="/estoque/dashboard" element={<ProtectedRoute><AppLayout><EstoqueDashboard /></AppLayout></ProtectedRoute>} />
-                <Route path="/estoque/cadastros" element={<ProtectedRoute><AppLayout><EstoqueCadastros /></AppLayout></ProtectedRoute>} />
-                <Route path="/estoque/requisicoes" element={<ProtectedRoute><AppLayout><EstoqueRequisicoes /></AppLayout></ProtectedRoute>} />
-                <Route path="/estoque/movimentacoes" element={<ProtectedRoute><AppLayout><EstoqueMovimentacoes /></AppLayout></ProtectedRoute>} />
-                <Route path="/estoque/pedidos" element={<ProtectedRoute><AppLayout><EstoquePedidos /></AppLayout></ProtectedRoute>} />
-                <Route path="/estoque/integracoes" element={<ProtectedRoute><AppLayout><EstoqueIntegracoes /></AppLayout></ProtectedRoute>} />
-                <Route path="/estoque/analise-pedidos" element={<ProtectedRoute><AppLayout><EstoqueAnalisePedidos /></AppLayout></ProtectedRoute>} />
-                <Route path="/estoque/analise-consumo" element={<ProtectedRoute><AppLayout><EstoqueAnaliseConsumo /></AppLayout></ProtectedRoute>} />
-                <Route path="/estoque/scanner-mobile" element={<ProtectedRoute><AppLayout><EstoqueScannerMobile /></AppLayout></ProtectedRoute>} />
-                <Route path="/estoque/inventario" element={<ProtectedRoute><AppLayout><EstoqueInventario /></AppLayout></ProtectedRoute>} />
+                <Route path="/estoque/dashboard" element={<ProtectedRoute><AppLayout><EstoqueDashboardPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/estoque/cadastros" element={<ProtectedRoute><AppLayout><EstoqueCadastrosPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/estoque/requisicoes" element={<ProtectedRoute><AppLayout><EstoqueRequisicoesPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/estoque/movimentacoes" element={<ProtectedRoute><AppLayout><EstoqueMovimentacoesPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/estoque/pedidos" element={<ProtectedRoute><AppLayout><EstoquePedidosPage /></AppLayout></ProtectedRoute>} />
+                <Route path="/estoque/integracoes" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" />}><EstoqueIntegracoes /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/estoque/analise-pedidos" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" />}><EstoqueAnalisePedidos /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/estoque/analise-consumo" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" />}><EstoqueAnaliseConsumo /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/estoque/scanner-mobile" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" />}><EstoqueScannerMobile /></Suspense></AppLayout></ProtectedRoute>} />
+                <Route path="/estoque/inventario" element={<ProtectedRoute><AppLayout><EstoqueInventarioPage /></AppLayout></ProtectedRoute>} />
                 <Route path="/estoque/inventario/dashboard" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando dashboard..." />}><EstoqueInventarioDashboard /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/estoque/inventario/historico" element={<ProtectedRoute><AppLayout><Suspense fallback={<LoadingState size="lg" message="Carregando histórico..." />}><EstoqueInventarioHistorico /></Suspense></AppLayout></ProtectedRoute>} />
                 <Route path="/orcamentos" element={<ProtectedRoute><AppLayout><Orcamentos /></AppLayout></ProtectedRoute>} />
