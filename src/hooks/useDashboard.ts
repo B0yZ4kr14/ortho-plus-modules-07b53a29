@@ -40,7 +40,18 @@ export function useDashboard() {
 
       // Chamar Edge Function do Supabase
       const { supabase } = await import('@/integrations/supabase/client');
-      const { data: responseData, error: fnError } = await supabase.functions.invoke('dashboard-overview');
+      
+      // Garantir que a sessão está ativa
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        throw new Error('Sessão de autenticação não encontrada. Faça login novamente.');
+      }
+      
+      const { data: responseData, error: fnError } = await supabase.functions.invoke('dashboard-overview', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
       
       if (fnError) throw fnError;
       const response = responseData as DashboardData;
