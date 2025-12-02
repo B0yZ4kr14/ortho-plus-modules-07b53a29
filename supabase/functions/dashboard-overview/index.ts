@@ -37,10 +37,10 @@ Deno.serve(async (req) => {
     console.log('[dashboard-overview] Fetching user...');
 
     const authHeader = req.headers.get('Authorization') || '';
-    const token = authHeader.replace('Bearer', '').replace('bearer', '').replace(/\s+/g, ' ').trim().split(' ')[1] || '';
+    const token = authHeader.split(' ')[1] || '';
 
     if (!token) {
-      console.error('[dashboard-overview] Missing Authorization token');
+      console.error('[dashboard-overview] Missing Authorization token, header:', authHeader);
       return new Response(JSON.stringify({ error: 'Auth error: missing bearer token' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
