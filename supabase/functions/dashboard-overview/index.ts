@@ -35,7 +35,19 @@ Deno.serve(async (req) => {
 
     // Get user and clinic
     console.log('[dashboard-overview] Fetching user...');
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    const authHeader = req.headers.get('Authorization') || '';
+    const token = authHeader.replace('Bearer', '').replace('bearer', '').replace(/\s+/g, ' ').trim().split(' ')[1] || '';
+
+    if (!token) {
+      console.error('[dashboard-overview] Missing Authorization token');
+      return new Response(JSON.stringify({ error: 'Auth error: missing bearer token' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError) {
       console.error('[dashboard-overview] User fetch error:', userError);
       return new Response(JSON.stringify({ error: 'Auth error: ' + userError.message }), {
