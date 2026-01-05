@@ -22,7 +22,7 @@ export function useTableData<T>({ data, searchFields, initialPageSize = 10 }: Us
 
     return data.filter((item) =>
       stableSearchFields.some((field) => {
-        const value = item[field as keyof T];
+        const value = item[field];
         return String(value).toLowerCase().includes(searchTerm.toLowerCase());
       })
     );
