@@ -1,7 +1,7 @@
 import { Produto } from '@/domain/entities/Produto';
 import { IProdutoRepository } from '@/domain/repositories/IProdutoRepository';
 import { supabase } from '@/integrations/supabase/client';
-import { ProdutoMapper } from './mappers/ProdutoMapper';
+import { ProdutoMapper } from '@/infrastructure/repositories/mappers/ProdutoMapper';
 
 /**
  * Implementação do repositório de Produto usando Supabase

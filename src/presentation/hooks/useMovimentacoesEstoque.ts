@@ -9,7 +9,7 @@ import type {
   AjustarEstoqueUseCase,
   AjustarEstoqueInput,
   GetMovimentacoesByProdutoUseCase,
-} from '@/application/use-cases/estoque';
+} from '@/modules/estoque/application/use-cases';
 import { MovimentacaoEstoque } from '@/domain/entities/MovimentacaoEstoque';
 import { toast } from 'sonner';
 
