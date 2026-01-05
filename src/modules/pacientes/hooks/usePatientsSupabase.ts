@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -8,14 +8,15 @@ import type { UsePatientsReturn } from './usePatientsUnified';
 /**
  * Hook para gerenciar pacientes via Supabase (Legacy)
  * Busca direto da tabela `patients` que está no formato global snake_case
+ * @param enabled - Whether to enable data fetching (default: true)
  */
-export function usePatientsSupabase(): UsePatientsReturn {
+export function usePatientsSupabase(enabled: boolean = true): UsePatientsReturn {
   const { clinicId } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
 
-  const loadPatients = async () => {
-    if (!clinicId) {
+  const loadPatients = useCallback(async () => {
+    if (!clinicId || !enabled) {
       setLoading(false);
       return;
     }
@@ -37,9 +38,14 @@ export function usePatientsSupabase(): UsePatientsReturn {
     } finally {
       setLoading(false);
     }
-  };
+  }, [clinicId, enabled]);
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+
     loadPatients();
 
     // Setup realtime subscription
@@ -64,7 +70,7 @@ export function usePatientsSupabase(): UsePatientsReturn {
     return () => {
       subscription.unsubscribe();
     };
-  }, [clinicId]);
+  }, [clinicId, enabled, loadPatients]);
 
   const addPatient = async (patientData: Partial<Patient>) => {
     if (!clinicId) {

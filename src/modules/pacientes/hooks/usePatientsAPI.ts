@@ -1,6 +1,7 @@
 /**
  * usePatientsAPI Hook
  * Hook compatível com tipos existentes do sistema que usa REST API
+ * @param enabled - Whether to enable data fetching (default: true)
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -11,13 +12,13 @@ import { toast } from 'sonner';
 import type { Patient } from '@/types/patient';
 import type { UsePatientsReturn } from './usePatientsUnified';
 
-export function usePatientsAPI(): UsePatientsReturn {
+export function usePatientsAPI(enabled: boolean = true): UsePatientsReturn {
   const { clinicId } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
 
   const loadPatients = useCallback(async () => {
-    if (!clinicId) {
+    if (!clinicId || !enabled) {
       setLoading(false);
       return;
     }
@@ -35,11 +36,15 @@ export function usePatientsAPI(): UsePatientsReturn {
     } finally {
       setLoading(false);
     }
-  }, [clinicId]);
+  }, [clinicId, enabled]);
 
   useEffect(() => {
-    loadPatients();
-  }, [loadPatients]);
+    if (enabled) {
+      loadPatients();
+    } else {
+      setLoading(false);
+    }
+  }, [loadPatients, enabled]);
 
   const addPatient = async (patientData: Partial<Patient>) => {
     if (!clinicId) {

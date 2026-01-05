@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, useMemo } from 'react';
 import { Search, Loader2, User, Calendar, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'use-debounce';
@@ -113,6 +113,13 @@ const GlobalSearch = memo(function GlobalSearch() {
     fetchResults();
   }, [debouncedSearch, clinicId]);
 
+  // Group results by type once to avoid repeated filter operations during render
+  const groupedResults = useMemo(() => ({
+    patients: results.filter(r => r.type === 'patient'),
+    appointments: results.filter(r => r.type === 'appointment'),
+    procedures: results.filter(r => r.type === 'procedure'),
+  }), [results]);
+
   return (
     <>
       <div className="relative cursor-pointer" onClick={() => setOpen(true)}>
@@ -127,9 +134,9 @@ const GlobalSearch = memo(function GlobalSearch() {
           {loading && <div className="flex items-center justify-center py-6"><Loader2 className="h-6 w-6 animate-spin" /></div>}
           {!loading && results.length === 0 && search && <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>}
           
-          {results.filter(r => r.type === 'patient').length > 0 && (
+          {groupedResults.patients.length > 0 && (
             <CommandGroup heading="Pacientes">
-              {results.filter(r => r.type === 'patient').map((r) => (
+              {groupedResults.patients.map((r) => (
                 <CommandItem key={r.id} onSelect={() => { navigate(r.route); setOpen(false); }}>
                   <User className="mr-2 h-4 w-4" />
                   <div className="flex flex-col">
@@ -141,9 +148,9 @@ const GlobalSearch = memo(function GlobalSearch() {
             </CommandGroup>
           )}
 
-          {results.filter(r => r.type === 'appointment').length > 0 && (
+          {groupedResults.appointments.length > 0 && (
             <CommandGroup heading="Agendamentos">
-              {results.filter(r => r.type === 'appointment').map((r) => (
+              {groupedResults.appointments.map((r) => (
                 <CommandItem key={r.id} onSelect={() => { navigate(r.route); setOpen(false); }}>
                   <Calendar className="mr-2 h-4 w-4" />
                   <div className="flex flex-col">
@@ -155,9 +162,9 @@ const GlobalSearch = memo(function GlobalSearch() {
             </CommandGroup>
           )}
 
-          {results.filter(r => r.type === 'procedure').length > 0 && (
+          {groupedResults.procedures.length > 0 && (
             <CommandGroup heading="Procedimentos">
-              {results.filter(r => r.type === 'procedure').map((r) => (
+              {groupedResults.procedures.map((r) => (
                 <CommandItem key={r.id} onSelect={() => { navigate(r.route); setOpen(false); }}>
                   <FileText className="mr-2 h-4 w-4" />
                   <div className="flex flex-col">
