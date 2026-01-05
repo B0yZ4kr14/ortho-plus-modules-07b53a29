@@ -23,9 +23,9 @@ export interface UsePatientsReturn {
 export function usePatientsUnified(): UsePatientsReturn {
   const { useRESTAPI } = useDataSource();
   
-  // Alternar entre implementações de forma transparente
-  const supabaseHook = usePatientsSupabase();
-  const apiHook = usePatientsAPI();
+  // Pass enabled flag to prevent unnecessary API calls in the inactive hook
+  const supabaseHook = usePatientsSupabase(!useRESTAPI);
+  const apiHook = usePatientsAPI(useRESTAPI);
   
   // Retornar implementação baseada na configuração
   return useRESTAPI ? apiHook : supabaseHook;

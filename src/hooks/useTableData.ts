@@ -6,21 +6,27 @@ interface UseTableDataProps<T> {
   initialPageSize?: number;
 }
 
-export function useTableData<T>({ data, searchFields = [], initialPageSize = 10 }: UseTableDataProps<T>) {
+// Stable empty array to prevent unnecessary recalculations
+const EMPTY_FIELDS: never[] = [];
+
+export function useTableData<T>({ data, searchFields, initialPageSize = 10 }: UseTableDataProps<T>) {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(initialPageSize);
+
+  // Use stable reference for searchFields to avoid unnecessary useMemo recalculations
+  const stableSearchFields = searchFields || EMPTY_FIELDS;
 
   const filteredData = useMemo(() => {
     if (!searchTerm) return data;
 
     return data.filter((item) =>
-      searchFields.some((field) => {
-        const value = item[field];
+      stableSearchFields.some((field) => {
+        const value = item[field as keyof T];
         return String(value).toLowerCase().includes(searchTerm.toLowerCase());
       })
     );
-  }, [data, searchTerm, searchFields]);
+  }, [data, searchTerm, stableSearchFields]);
 
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
