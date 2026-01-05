@@ -67,14 +67,14 @@ import { UpdateToothNotesUseCase } from '@/application/use-cases/odontograma/Upd
 // Estoque Module (usando repositórios do módulo)
 import { SupabaseProdutoRepository } from '@/modules/estoque/infrastructure/repositories/SupabaseProdutoRepository';
 import { SupabaseMovimentacaoEstoqueRepository } from '@/modules/estoque/infrastructure/repositories/SupabaseMovimentacaoEstoqueRepository';
-import { CreateProdutoUseCase } from '@/application/use-cases/estoque/CreateProdutoUseCase';
-import { UpdateProdutoUseCase } from '@/application/use-cases/estoque/UpdateProdutoUseCase';
-import { GetProdutoByIdUseCase } from '@/application/use-cases/estoque/GetProdutoByIdUseCase';
-import { ListProdutosByClinicUseCase } from '@/application/use-cases/estoque/ListProdutosByClinicUseCase';
-import { RegistrarEntradaUseCase } from '@/application/use-cases/estoque/RegistrarEntradaUseCase';
-import { RegistrarSaidaUseCase } from '@/application/use-cases/estoque/RegistrarSaidaUseCase';
-import { AjustarEstoqueUseCase } from '@/application/use-cases/estoque/AjustarEstoqueUseCase';
-import { GetMovimentacoesByProdutoUseCase } from '@/application/use-cases/estoque/GetMovimentacoesByProdutoUseCase';
+import { CreateProdutoUseCase } from '@/modules/estoque/application/use-cases/CreateProdutoUseCase';
+import { UpdateProdutoUseCase } from '@/modules/estoque/application/use-cases/UpdateProdutoUseCase';
+import { GetProdutoByIdUseCase } from '@/modules/estoque/application/use-cases/GetProdutoByIdUseCase';
+import { ListProdutosByClinicUseCase } from '@/modules/estoque/application/use-cases/ListProdutosByClinicUseCase';
+import { RegistrarEntradaUseCase } from '@/modules/estoque/application/use-cases/RegistrarEntradaUseCase';
+import { RegistrarSaidaUseCase } from '@/modules/estoque/application/use-cases/RegistrarSaidaUseCase';
+import { AjustarEstoqueUseCase } from '@/modules/estoque/application/use-cases/AjustarEstoqueUseCase';
+import { GetMovimentacoesByProdutoUseCase } from '@/modules/estoque/application/use-cases/GetMovimentacoesByProdutoUseCase';
 
 // Financeiro Module
 import { SupabaseContaPagarRepository } from '@/infrastructure/repositories/SupabaseContaPagarRepository';

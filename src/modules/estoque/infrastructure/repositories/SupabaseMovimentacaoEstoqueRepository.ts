@@ -1,7 +1,7 @@
 import { MovimentacaoEstoque } from '@/domain/entities/MovimentacaoEstoque';
 import { IMovimentacaoEstoqueRepository } from '@/domain/repositories/IMovimentacaoEstoqueRepository';
 import { supabase } from '@/integrations/supabase/client';
-import { MovimentacaoEstoqueMapper } from './mappers/MovimentacaoEstoqueMapper';
+import { MovimentacaoEstoqueMapper } from '@/infrastructure/repositories/mappers/MovimentacaoEstoqueMapper';
 
 /**
  * Implementação do repositório de MovimentacaoEstoque usando Supabase

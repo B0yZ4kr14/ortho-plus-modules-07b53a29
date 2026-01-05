@@ -8,7 +8,7 @@ import type {
   UpdateProdutoInput,
   GetProdutoByIdUseCase,
   ListProdutosByClinicUseCase,
-} from '@/application/use-cases/estoque';
+} from '@/modules/estoque/application/use-cases';
 import { Produto } from '@/domain/entities/Produto';
 import { toast } from 'sonner';
 
