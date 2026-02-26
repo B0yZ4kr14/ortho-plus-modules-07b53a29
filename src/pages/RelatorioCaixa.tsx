@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -22,7 +21,7 @@ export default function RelatorioCaixa() {
 
     setLoading(true);
     try {
-      let dataInicio = new Date();
+      const dataInicio = new Date();
       
       if (filtro === 'hoje') {
         dataInicio.setHours(0, 0, 0, 0);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,11 +7,31 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Webhook, Activity, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 
+interface CommitInfo {
+  length: number;
+}
+
+interface PullRequestInfo {
+  number?: number;
+  title?: string;
+}
+
+interface WorkflowInfo {
+  name?: string;
+  status?: string;
+}
+
+interface EventData {
+  commits?: CommitInfo | unknown[];
+  pull_requests?: PullRequestInfo[];
+  workflows?: WorkflowInfo[];
+}
+
 interface GitHubEvent {
   id: string;
   clinic_id: string;
   event_type: string;
-  event_data: any;
+  event_data: EventData;
   triggered_by: string;
   created_at: string;
 }
@@ -21,11 +41,7 @@ export function WebhookManager() {
   const [events, setEvents] = useState<GitHubEvent[]>([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    loadWebhookEvents();
-  }, [selectedClinic]);
-
-  const loadWebhookEvents = async () => {
+  const loadWebhookEvents = useCallback(async () => {
     if (!selectedClinic) return;
 
     setLoading(true);
@@ -45,7 +61,11 @@ export function WebhookManager() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedClinic]);
+
+  useEffect(() => {
+    loadWebhookEvents();
+  }, [loadWebhookEvents]);
 
   const getEventIcon = (eventType: string) => {
     if (eventType.includes('push')) return <Activity className="h-4 w-4 text-blue-500" />;
@@ -107,7 +127,7 @@ export function WebhookManager() {
                       
                       {event.event_data && (
                         <div className="mt-2">
-                          {event.event_data.commits && (
+                          {event.event_data.commits && Array.isArray(event.event_data.commits) && (
                             <p className="text-sm">
                               <span className="font-medium">{event.event_data.commits.length}</span> commit(s) recebido(s)
                             </p>
