@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Camera, X, Loader2 } from 'lucide-react';
@@ -24,18 +24,18 @@ export function BarcodeScanner({ onScan, onCancel, className }: BarcodeScannerPr
     }
   };
 
-  const handleCancel = async () => {
+  const handleCancel = useCallback(async () => {
     await stopScan();
     setShowInstructions(true);
     onCancel?.();
-  };
+  }, [stopScan, onCancel]);
 
   useEffect(() => {
     // Cleanup ao desmontar
     return () => {
       stopScan();
     };
-  }, []);
+  }, [stopScan]);
 
   return (
     <div className={cn('relative', className)}>

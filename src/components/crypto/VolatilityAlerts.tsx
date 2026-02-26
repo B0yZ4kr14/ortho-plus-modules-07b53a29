@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -31,6 +31,15 @@ interface VolatilityAlert {
   created_at: string;
 }
 
+interface CryptoPriceAlertData {
+  id: string;
+  coin_type: string;
+  is_active: boolean;
+  notification_method?: string[];
+  last_triggered_at?: string;
+  created_at: string;
+}
+
 export function VolatilityAlerts() {
   const { selectedClinic } = useAuth();
   const [alerts, setAlerts] = useState<VolatilityAlert[]>([]);
@@ -45,13 +54,7 @@ export function VolatilityAlerts() {
     notification_method: ['EMAIL'],
   });
 
-  useEffect(() => {
-    if (selectedClinic?.id) {
-      loadAlerts();
-    }
-  }, [selectedClinic]);
-
-  const loadAlerts = async () => {
+  const loadAlerts = useCallback(async () => {
     if (!selectedClinic?.id) return;
     
     try {
@@ -65,7 +68,7 @@ export function VolatilityAlerts() {
       if (error) throw error;
       
       // Mapear dados para o formato esperado
-      const mappedAlerts: VolatilityAlert[] = (data || []).map((item: any) => ({
+      const mappedAlerts: VolatilityAlert[] = (data || []).map((item: CryptoPriceAlertData) => ({
         id: item.id,
         coin_type: item.coin_type,
         timeframe_minutes: 60, // Padrão
@@ -73,7 +76,7 @@ export function VolatilityAlerts() {
         direction: 'both' as 'up' | 'down' | 'both',
         is_active: item.is_active,
         notification_method: item.notification_method || ['EMAIL'],
-        last_triggered_at: item.last_triggered_at,
+        last_triggered_at: item.last_triggered_at ?? null,
         created_at: item.created_at,
       }));
       
@@ -84,7 +87,13 @@ export function VolatilityAlerts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedClinic?.id]);
+
+  useEffect(() => {
+    if (selectedClinic?.id) {
+      loadAlerts();
+    }
+  }, [selectedClinic?.id, loadAlerts]);
 
   const handleCreateAlert = async () => {
     if (!selectedClinic?.id) return;
