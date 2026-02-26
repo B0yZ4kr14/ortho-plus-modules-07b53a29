@@ -212,4 +212,4 @@ Conecte seu domínio em **Project > Settings > Domains > Connect Domain**.
 
 ---
 
-*Desenvolvido com excelência e 💙 pela TSI Telecom | Versão 1.0.0 Production-Ready*
+*Desenvolvido por B0.y_Z4kr14*
