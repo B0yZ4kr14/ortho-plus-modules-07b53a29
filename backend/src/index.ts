@@ -194,64 +194,75 @@ async function bootstrap() {
 
     logger.info('All 14 modules registered successfully');
 
-// ========== EVENT BUS SUBSCRIBERS ==========
+    // ========== EVENT BUS SUBSCRIBERS ==========
 
-// Subscribe to domain events
-eventBus.subscribe('Pacientes.PacienteCadastrado', (event) => {
-  logger.info('Domain Event: Paciente cadastrado', {
-    patientId: event.payload.patientId,
-    patientName: event.payload.patientName,
-  });
-  
-  // Aqui outros módulos podem reagir ao evento
-  // Ex: Módulo FINANCEIRO cria conta a receber inicial
-  // Ex: Módulo CRM atualiza funil de vendas
-});
+    // Subscribe to domain events
+    eventBus.subscribe('Pacientes.PacienteCadastrado', (event) => {
+      logger.info('Domain Event: Paciente cadastrado', {
+        patientId: event.payload.patientId,
+        patientName: event.payload.patientName,
+      });
+      
+      // Aqui outros módulos podem reagir ao evento
+      // Ex: Módulo FINANCEIRO cria conta a receber inicial
+      // Ex: Módulo CRM atualiza funil de vendas
+    });
 
-eventBus.subscribe('Pacientes.StatusAlterado', (event) => {
-  logger.info('Domain Event: Status do paciente alterado', {
-    patientId: event.payload.patientId,
-    fromStatus: event.payload.fromStatus,
-    toStatus: event.payload.toStatus,
-  });
-  
-  // Outros módulos podem reagir à mudança de status
-});
+    eventBus.subscribe('Pacientes.StatusAlterado', (event) => {
+      logger.info('Domain Event: Status do paciente alterado', {
+        patientId: event.payload.patientId,
+        fromStatus: event.payload.fromStatus,
+        toStatus: event.payload.toStatus,
+      });
+      
+      // Outros módulos podem reagir à mudança de status
+    });
 
-// System started event
-eventBus.publish({
-  eventId: crypto.randomUUID(),
-  eventType: 'System.Started',
-  aggregateId: 'system',
-  aggregateType: 'System',
-  payload: {
-    modules: ['pacientes'],
-    environment: process.env.NODE_ENV,
-  },
-  metadata: {
-    timestamp: new Date().toISOString(),
-  },
-});
+    // System started event
+    eventBus.publish({
+      eventId: crypto.randomUUID(),
+      eventType: 'System.Started',
+      aggregateId: 'system',
+      aggregateType: 'System',
+      payload: {
+        modules: ['pacientes'],
+        environment: process.env.NODE_ENV,
+      },
+      metadata: {
+        timestamp: new Date().toISOString(),
+      },
+    });
 
-// Iniciar servidor
-const PORT = parseInt(process.env.PORT || '3001');
-apiGateway.listen(PORT);
+    // Iniciar servidor
+    const PORT = parseInt(process.env.PORT || '3001');
+    apiGateway.listen(PORT);
 
-logger.info('Ortho+ Backend started successfully', {
-  port: PORT,
-  environment: process.env.NODE_ENV,
-  registeredModules: ['pacientes'],
-});
+    logger.info('Ortho+ Backend started successfully', {
+      port: PORT,
+      environment: process.env.NODE_ENV,
+      registeredModules: ['pacientes'],
+    });
 
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  logger.info('SIGTERM received, shutting down gracefully');
-  await dbPacientes.close();
-  process.exit(0);
-});
+    // Graceful shutdown
+    process.on('SIGTERM', async () => {
+      logger.info('SIGTERM received, shutting down gracefully');
+      for (const db of Object.values(dbConnections)) {
+        await db.close();
+      }
+      process.exit(0);
+    });
 
-process.on('SIGINT', async () => {
-  logger.info('SIGINT received, shutting down gracefully');
-  await dbPacientes.close();
-  process.exit(0);
-});
+    process.on('SIGINT', async () => {
+      logger.info('SIGINT received, shutting down gracefully');
+      for (const db of Object.values(dbConnections)) {
+        await db.close();
+      }
+      process.exit(0);
+    });
+  } catch (error) {
+    logger.error('Failed to start Ortho+ Backend', error);
+    process.exit(1);
+  }
+}
+
+bootstrap();

@@ -42,12 +42,11 @@ export function useOrcamentos(clinicId: string) {
     enabled: !!clinicId,
   });
 
-  // Query: Orçamentos por paciente
-  const getOrcamentosByPatient = (patientId: string) => {
-    return useQuery({
+  // Query: Orçamentos por paciente (use queryClient for imperative fetching)
+  const getOrcamentosByPatient = async (patientId: string) => {
+    return queryClient.fetchQuery({
       queryKey: ['orcamentos', 'patient', patientId],
       queryFn: () => orcamentoRepository.findByPatientId(patientId, clinicId),
-      enabled: !!patientId && !!clinicId,
     });
   };
 

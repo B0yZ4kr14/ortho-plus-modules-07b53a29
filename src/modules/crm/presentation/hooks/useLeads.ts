@@ -14,6 +14,8 @@ export function useLeads(clinicId: string, status?: string) {
     SERVICE_KEYS.GET_LEADS_BY_STATUS_USE_CASE
   );
 
+  const leadRepo = useService<ILeadRepository>(SERVICE_KEYS.LEAD_REPOSITORY);
+
   // Query para buscar leads
   const { data: leads = [], isLoading, error } = useQuery({
     queryKey: ['leads', clinicId, status],
@@ -51,7 +53,6 @@ export function useLeads(clinicId: string, status?: string) {
         updatedAt: new Date(),
       });
 
-      const leadRepo = useService<ILeadRepository>(SERVICE_KEYS.LEAD_REPOSITORY);
       return await leadRepo.save(lead);
     },
     onSuccess: () => {

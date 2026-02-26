@@ -4,6 +4,7 @@
  */
 
 import { SupabaseBackendService } from './SupabaseBackendService';
+import { PostgreSQLBackendService } from './PostgreSQLBackendService';
 import type { IBackendService } from './IBackendService';
 
 // Check localStorage first, then environment variable
@@ -17,7 +18,6 @@ const BACKEND_TYPE = typeof window !== 'undefined'
  */
 export function getBackendService(): IBackendService {
   if (BACKEND_TYPE === 'ubuntu-server' || BACKEND_TYPE === 'postgresql') {
-    const { PostgreSQLBackendService } = require('./PostgreSQLBackendService');
     return new PostgreSQLBackendService();
   }
 

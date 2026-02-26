@@ -49,9 +49,10 @@ export const FormattedInput = forwardRef<HTMLInputElement, FormattedInputProps>(
           return formatCPF(rawValue);
         case 'cnpj':
           return formatCNPJ(rawValue);
-        case 'cpf-cnpj':
+        case 'cpf-cnpj': {
           const cleaned = cleanFormat(rawValue);
           return cleaned.length <= 11 ? formatCPF(rawValue) : formatCNPJ(rawValue);
+        }
         case 'cep':
           return formatCEP(rawValue);
         case 'phone':

@@ -20,26 +20,26 @@ export class ExchangeFactory {
     additionalConfig?: Record<string, any>
   ): Promise<ICryptoExchange> {
     switch (exchangeName) {
-      case 'BINANCE':
+      case 'BINANCE': {
         const { BinanceAdapter } = await import('./BinanceAdapter');
         return new BinanceAdapter(apiKey, apiSecret);
-      
-      case 'COINBASE':
+      }
+      case 'COINBASE': {
         const { CoinbaseAdapter } = await import('./CoinbaseAdapter');
         return new CoinbaseAdapter(apiKey, apiSecret);
-      
-      case 'KRAKEN':
+      }
+      case 'KRAKEN': {
         const { KrakenAdapter } = await import('./KrakenAdapter');
         return new KrakenAdapter(apiKey, apiSecret);
-      
-      case 'MERCADO_BITCOIN':
+      }
+      case 'MERCADO_BITCOIN': {
         const { MercadoBitcoinAdapter } = await import('./MercadoBitcoinAdapter');
         return new MercadoBitcoinAdapter(apiKey, apiSecret);
-      
-      case 'BTCPAY':
+      }
+      case 'BTCPAY': {
         const { BTCPayAdapter } = await import('./BTCPayAdapter');
         return new BTCPayAdapter(additionalConfig?.btcpayServerUrl, additionalConfig?.storeId, apiKey);
-      
+      }
       default:
         throw new Error(`Exchange ${exchangeName} não suportada`);
     }
