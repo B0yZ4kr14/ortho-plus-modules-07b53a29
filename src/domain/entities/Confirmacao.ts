@@ -35,7 +35,7 @@ export class Confirmacao {
     }
 
     // Validação básica de formato de telefone (números e caracteres especiais)
-    const phoneRegex = /^[\d\s()+\-]+$/;
+    const phoneRegex = /^[\d\s()+-]+$/;
     if (!phoneRegex.test(props.phoneNumber)) {
       throw new Error('Formato de telefone inválido');
     }

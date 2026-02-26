@@ -100,7 +100,7 @@ export class JitsiService {
    * Extrai o room name de um link Jitsi
    */
   extractRoomName(link: string): string | null {
-    const match = link.match(/https:\/\/[^\/]+\/(.+)/);
+    const match = link.match(/https:\/\/[^/]+\/(.+)/);
     return match ? match[1] : null;
   }
 }

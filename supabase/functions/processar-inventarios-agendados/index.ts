@@ -175,11 +175,12 @@ function calcularProximaExecucao(agendamento: any): Date {
   const proxima = new Date();
 
   switch (agendamento.periodicidade) {
-    case 'SEMANAL':
+    case 'SEMANAL': {
       // Próxima execução no mesmo dia da semana
       const diasAteProximaSemana = ((agendamento.dia_semana - now.getDay() + 7) % 7) || 7;
       proxima.setDate(now.getDate() + diasAteProximaSemana);
       break;
+    }
 
     case 'MENSAL':
       // Próximo mês no mesmo dia

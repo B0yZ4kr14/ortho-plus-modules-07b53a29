@@ -7,6 +7,7 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { IBackendService } from '@/infrastructure/backend/IBackendService';
 import { SupabaseBackendService } from '@/infrastructure/backend/SupabaseBackendService';
+import { PostgreSQLBackendService } from '@/infrastructure/backend/PostgreSQLBackendService';
 import { logger } from '@/lib/logger';
 
 type BackendType = 'supabase' | 'ubuntu-server' | 'postgresql';
@@ -114,9 +115,7 @@ export function BackendProvider({ children }: BackendProviderProps) {
  */
 function createBackendService(type: BackendType): IBackendService {
   if (type === 'ubuntu-server' || type === 'postgresql') {
-    // Lazy load PostgreSQL backend apenas quando necessário
     try {
-      const { PostgreSQLBackendService } = require('@/infrastructure/backend/PostgreSQLBackendService');
       return new PostgreSQLBackendService();
     } catch (error) {
       logger.error('[BackendProvider] Failed to load PostgreSQL backend, falling back to Supabase', error);

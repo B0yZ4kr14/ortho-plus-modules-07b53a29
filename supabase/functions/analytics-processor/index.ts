@@ -180,7 +180,7 @@ async function processGamificationGoals(supabase: any, clinicId: string, userId:
     let isCompleted = false;
 
     switch (goal.type) {
-      case 'CONSULTAS_MES':
+      case 'CONSULTAS_MES': {
         const { count: consultasCount } = await supabase
           .from('appointments')
           .select('id', { count: 'exact', head: true })
@@ -190,8 +190,8 @@ async function processGamificationGoals(supabase: any, clinicId: string, userId:
         progress = (consultasCount / goal.target_value) * 100;
         isCompleted = consultasCount >= goal.target_value;
         break;
-
-      case 'RECEITA_MES':
+      }
+      case 'RECEITA_MES': {
         const { data: receitas } = await supabase
           .from('contas_receber')
           .select('valor_pago')
@@ -202,6 +202,7 @@ async function processGamificationGoals(supabase: any, clinicId: string, userId:
         progress = (totalReceita / goal.target_value) * 100;
         isCompleted = totalReceita >= goal.target_value;
         break;
+      }
     }
 
     await supabase
