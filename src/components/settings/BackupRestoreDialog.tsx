@@ -70,7 +70,7 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
     setLoading(true);
     try {
       const text = await file.text();
-      let data = text;
+      const data = text;
       
       // Check if encrypted (starts with base64)
       if (text.match(/^[A-Za-z0-9+/=]+$/)) {

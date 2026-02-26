@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect, useMemo } from 'react';
 import { Calendar, TrendingUp, TrendingDown, Minus, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';

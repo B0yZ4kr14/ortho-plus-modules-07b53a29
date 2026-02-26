@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePDVSupabase } from '@/hooks/usePDVSupabase';
