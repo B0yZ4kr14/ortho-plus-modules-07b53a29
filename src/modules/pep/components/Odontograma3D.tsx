@@ -1,4 +1,4 @@
-import { Suspense, useRef, useState } from 'react';
+import { Suspense, memo, useCallback, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Text } from '@react-three/drei';
 import * as THREE from 'three';
@@ -20,6 +20,9 @@ import {
   LOWER_RIGHT_TEETH,
 } from '../types/odontograma.types';
 import { Loader2, Info } from 'lucide-react';
+
+// Computed once at module level to avoid recreating on every render
+const TOOTH_STATUS_KEYS = Object.keys(TOOTH_STATUS_COLORS) as ToothStatus[];
 
 interface ToothMeshProps {
   position: [number, number, number];
@@ -120,7 +123,7 @@ interface Odontograma3DProps {
   prontuarioId: string;
 }
 
-export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
+export const Odontograma3D = memo(({ prontuarioId }: Odontograma3DProps) => {
   const {
     teethData,
     isLoading,
@@ -135,27 +138,27 @@ export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
   const [selectedTooth, setSelectedTooth] = useState<ToothData | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
-  const handleToothClick = (toothNumber: number) => {
+  const handleToothClick = useCallback((toothNumber: number) => {
     updateToothStatus(toothNumber, selectedStatus);
     toast.success(`Dente ${toothNumber} marcado como ${TOOTH_STATUS_LABELS[selectedStatus]}`);
-  };
+  }, [updateToothStatus, selectedStatus]);
 
-  const handleToothRightClick = (toothNumber: number) => {
+  const handleToothRightClick = useCallback((toothNumber: number) => {
     const tooth = teethData[toothNumber];
     if (tooth) {
       setSelectedTooth(tooth);
       setIsDetailDialogOpen(true);
     }
-  };
+  }, [teethData]);
 
-  const handleUpdateToothStatus = (status: ToothStatus) => {
+  const handleUpdateToothStatus = useCallback((status: ToothStatus) => {
     if (selectedTooth) {
       updateToothStatus(selectedTooth.number, status);
       setSelectedTooth(prev => prev ? { ...prev, status } : null);
     }
-  };
+  }, [selectedTooth, updateToothStatus]);
 
-  const handleUpdateToothSurface = (surface: ToothSurface, status: ToothStatus) => {
+  const handleUpdateToothSurface = useCallback((surface: ToothSurface, status: ToothStatus) => {
     if (selectedTooth) {
       updateToothSurface(selectedTooth.number, surface, status);
       setSelectedTooth(prev => 
@@ -165,15 +168,15 @@ export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
         } : null
       );
     }
-  };
+  }, [selectedTooth, updateToothSurface]);
 
-  const handleUpdateToothNotes = (notes: string) => {
+  const handleUpdateToothNotes = useCallback((notes: string) => {
     if (selectedTooth) {
       updateToothNotes(selectedTooth.number, notes);
       setSelectedTooth(prev => prev ? { ...prev, notes } : null);
       toast.success('Observações salvas');
     }
-  };
+  }, [selectedTooth, updateToothNotes]);
 
   if (isLoading) {
     return (
@@ -206,7 +209,7 @@ export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            {(Object.keys(TOOTH_STATUS_COLORS) as ToothStatus[]).map(status => (
+            {TOOTH_STATUS_KEYS.map(status => (
               <Button
                 key={status}
                 variant={selectedStatus === status ? 'default' : 'outline'}
@@ -373,7 +376,7 @@ export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {(Object.keys(TOOTH_STATUS_COLORS) as ToothStatus[]).map(status => (
+            {TOOTH_STATUS_KEYS.map(status => (
               <div key={status} className="text-center">
                 <Badge variant="outline" className="w-full justify-center mb-2">
                   {TOOTH_STATUS_LABELS[status]}
@@ -387,4 +390,4 @@ export const Odontograma3D = ({ prontuarioId }: Odontograma3DProps) => {
       </div>
     </>
   );
-};
+});

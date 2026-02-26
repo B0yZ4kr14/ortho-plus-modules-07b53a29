@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -10,7 +10,25 @@ interface IAInsightsDashboardProps {
   analises: AnaliseComplete[];
 }
 
-export function IAInsightsDashboard({ analises }: IAInsightsDashboardProps) {
+const getPrioridadeColor = (prioridade: string) => {
+  const colors: Record<string, any> = {
+    alta: 'destructive',
+    media: 'warning',
+    baixa: 'success'
+  };
+  return colors[prioridade] || 'default';
+};
+
+const getSeveridadeColor = (severidade: string) => {
+  const colors: Record<string, any> = {
+    ALTA: 'destructive',
+    MEDIA: 'warning',
+    BAIXA: 'success'
+  };
+  return colors[severidade] || 'default';
+};
+
+export const IAInsightsDashboard = memo(function IAInsightsDashboard({ analises }: IAInsightsDashboardProps) {
   // Análise de padrões mais comuns
   const padroesMaisComuns = useMemo(() => {
     const problemas = new Map<string, number>();
@@ -147,24 +165,6 @@ export function IAInsightsDashboard({ analises }: IAInsightsDashboardProps) {
     return recomendacoes;
   }, [padroesMaisComuns, areasProblematicas, taxaMediaProblemas, severidades, analises.length]);
 
-  const getPrioridadeColor = (prioridade: string) => {
-    const colors: Record<string, any> = {
-      alta: 'destructive',
-      media: 'warning',
-      baixa: 'success'
-    };
-    return colors[prioridade] || 'default';
-  };
-
-  const getSeveridadeColor = (severidade: string) => {
-    const colors: Record<string, any> = {
-      ALTA: 'destructive',
-      MEDIA: 'warning',
-      BAIXA: 'success'
-    };
-    return colors[severidade] || 'default';
-  };
-
   return (
     <div className="space-y-6">
       <Card className="p-6" depth="intense">
@@ -224,7 +224,7 @@ export function IAInsightsDashboard({ analises }: IAInsightsDashboardProps) {
               </h3>
               <div className="space-y-3">
                 {padroesMaisComuns.map((padrao, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-accent/50 rounded-lg">
+                  <div key={padrao.tipo} className="flex items-center justify-between p-3 bg-accent/50 rounded-lg">
                     <div className="flex items-center gap-3">
                       <Badge variant="outline" className="font-mono">#{index + 1}</Badge>
                       <span className="font-medium">{padrao.tipo}</span>
@@ -246,7 +246,7 @@ export function IAInsightsDashboard({ analises }: IAInsightsDashboardProps) {
               </h3>
               <div className="space-y-3">
                 {areasProblematicas.map((area, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-warning/10 rounded-lg border border-warning/20">
+                  <div key={area.area} className="flex items-center justify-between p-3 bg-warning/10 rounded-lg border border-warning/20">
                     <div className="flex items-center gap-3">
                       <Badge variant="outline" className="font-mono">#{index + 1}</Badge>
                       <span className="font-medium">{area.area}</span>
@@ -265,7 +265,7 @@ export function IAInsightsDashboard({ analises }: IAInsightsDashboardProps) {
               <h3 className="text-md font-semibold mb-4">Distribuição por Severidade</h3>
               <div className="grid grid-cols-3 gap-4">
                 {severidades.map((sev, index) => (
-                  <div key={index} className="text-center p-4 bg-accent/50 rounded-lg">
+                  <div key={sev.severidade} className="text-center p-4 bg-accent/50 rounded-lg">
                     <Badge variant={getSeveridadeColor(sev.severidade) as any} className="mb-2">
                       {sev.severidade}
                     </Badge>
@@ -281,7 +281,7 @@ export function IAInsightsDashboard({ analises }: IAInsightsDashboardProps) {
               <h3 className="text-md font-semibold mb-4">Tipos de Radiografia Mais Analisados</h3>
               <div className="space-y-2">
                 {tiposMaisAnalisados.map((tipo, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-accent/50 rounded-lg">
+                  <div key={tipo.tipo} className="flex items-center justify-between p-3 bg-accent/50 rounded-lg">
                     <span className="text-sm">{tipo.tipo}</span>
                     <Badge variant="outline">{tipo.quantidade} análises</Badge>
                   </div>
@@ -297,7 +297,7 @@ export function IAInsightsDashboard({ analises }: IAInsightsDashboardProps) {
               </h3>
               <div className="space-y-4">
                 {recomendacoesPreventivas.map((rec, index) => (
-                  <Alert key={index} className="border-l-4" style={{ borderLeftColor: `hsl(var(--${getPrioridadeColor(rec.prioridade)}))` }}>
+                  <Alert key={rec.titulo} className="border-l-4" style={{ borderLeftColor: `hsl(var(--${getPrioridadeColor(rec.prioridade)}))` }}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <AlertTitle className="flex items-center gap-2">
@@ -321,4 +321,4 @@ export function IAInsightsDashboard({ analises }: IAInsightsDashboardProps) {
       </Card>
     </div>
   );
-}
+})

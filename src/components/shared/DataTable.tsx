@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -87,7 +87,7 @@ export function DataTable<T extends Record<string, any>>({
   }, [sortedData, currentPage, pageSize]);
 
   // Reset to page 1 when filters change
-  useMemo(() => {
+  useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, pageSize]);
 
