@@ -54,7 +54,8 @@ export function useInventarioSupabase() {
     const { data, error } = await supabase
       .from('inventarios' as any)
       .select('*')
-      .order('data', { ascending: false });
+      .order('data', { ascending: false })
+      .limit(1000);
 
     if (error) {
       console.error('Error loading inventarios:', error);
@@ -75,6 +76,10 @@ export function useInventarioSupabase() {
       observacoes: inv.observacoes || undefined,
       createdAt: inv.created_at,
     })));
+
+    if ((data as any[]).length === 1000) {
+      console.warn('[useInventarioSupabase] Limit of 1000 inventories reached; oldest records may not be shown.');
+    }
   };
 
   const addInventario = async (inventario: Inventario) => {
@@ -164,7 +169,8 @@ export function useInventarioSupabase() {
     const { data, error } = await supabase
       .from('inventario_itens' as any)
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(5000);
 
     if (error) {
       console.error('Error loading inventario_itens:', error);
@@ -187,6 +193,10 @@ export function useInventarioSupabase() {
       contadoEm: item.contado_em || undefined,
       observacoes: item.observacoes || undefined,
     })));
+
+    if ((data as any[]).length === 5000) {
+      console.warn('[useInventarioSupabase] Limit of 5000 inventory items reached; oldest records may not be shown.');
+    }
   };
 
   const addInventarioItem = async (item: InventarioItem) => {
@@ -299,22 +309,26 @@ export function useInventarioSupabase() {
       throw movError;
     }
 
-    // Atualizar quantidades dos produtos
-    for (const item of (items as any[])) {
-      const { data: produto } = await supabase
-        .from('estoque_produtos' as any)
-        .select('quantidade_atual')
-        .eq('id', item.produto_id)
-        .single();
+    // Atualizar quantidades dos produtos em paralelo (batch fetch + parallel updates)
+    const productIds = (items as any[]).map((item: any) => item.produto_id);
+    const { data: produtos } = await supabase
+      .from('estoque_produtos' as any)
+      .select('id, quantidade_atual')
+      .in('id', productIds);
 
-      if (produto) {
-        const novaQuantidade = Number((produto as any).quantidade_atual) + Number(item.divergencia);
-        
-        await supabase
-          .from('estoque_produtos' as any)
-          .update({ quantidade_atual: novaQuantidade })
-          .eq('id', item.produto_id);
-      }
+    if (produtos) {
+      const produtosMap = new Map((produtos as any[]).map((p: any) => [p.id, p.quantidade_atual]));
+
+      await Promise.all((items as any[]).map(async (item: any) => {
+        const quantidadeAtual = produtosMap.get(item.produto_id);
+        if (quantidadeAtual !== undefined) {
+          const novaQuantidade = Number(quantidadeAtual) + Number(item.divergencia);
+          await supabase
+            .from('estoque_produtos' as any)
+            .update({ quantidade_atual: novaQuantidade })
+            .eq('id', item.produto_id);
+        }
+      }));
     }
 
     // Atualizar status do inventário para CONCLUIDO

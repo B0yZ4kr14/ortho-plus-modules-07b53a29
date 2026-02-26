@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Patient, patientSchema } from '../types/patient.types';
@@ -35,6 +35,13 @@ interface PatientFormProps {
 export function PatientForm({ patient, onSubmit, onCancel }: PatientFormProps) {
   const { triggerSuccessConfetti } = useConfetti();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(patient?.avatar_url || null);
+  const focusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
+    };
+  }, []);
   
   const form = useForm<Patient>({
     resolver: zodResolver(patientSchema),
@@ -81,7 +88,8 @@ export function PatientForm({ patient, onSubmit, onCancel }: PatientFormProps) {
     form.setValue('endereco.bairro', address.bairro);
     form.setValue('endereco.cidade', address.cidade);
     form.setValue('endereco.estado', address.estado);
-    setTimeout(() => document.getElementById('endereco-numero')?.focus(), 100);
+    if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
+    focusTimerRef.current = setTimeout(() => document.getElementById('endereco-numero')?.focus(), 100);
   };
 
   return (

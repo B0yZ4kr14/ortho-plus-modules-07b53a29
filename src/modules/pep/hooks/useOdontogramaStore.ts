@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocalStorage } from '@/lib/hooks/useLocalStorage';
 import { 
   OdontogramaData, 
@@ -29,6 +29,8 @@ export const useOdontogramaStore = (prontuarioId: string) => {
   const [teethData, setTeethData] = useState<Record<number, ToothData>>({});
   const [history, setHistory] = useState<OdontogramaHistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const surfaceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Carregar dados do prontuário específico
   useEffect(() => {
@@ -49,6 +51,14 @@ export const useOdontogramaStore = (prontuarioId: string) => {
     }
     setIsLoading(false);
   }, [prontuarioId, storedData]);
+
+  // Cleanup pending history timers on unmount
+  useEffect(() => {
+    return () => {
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+      if (surfaceTimerRef.current) clearTimeout(surfaceTimerRef.current);
+    };
+  }, []);
 
   // Salvar dados automaticamente
   const saveData = useCallback(() => {
@@ -90,7 +100,8 @@ export const useOdontogramaStore = (prontuarioId: string) => {
     });
     
     if (addToHistory) {
-      setTimeout(() => addHistoryEntry([toothNumber], `Dente ${toothNumber} marcado como ${status}`), 100);
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+      statusTimerRef.current = setTimeout(() => addHistoryEntry([toothNumber], `Dente ${toothNumber} marcado como ${status}`), 100);
     }
   }, [addHistoryEntry]);
 
@@ -114,7 +125,8 @@ export const useOdontogramaStore = (prontuarioId: string) => {
     }));
 
     if (addToHistory) {
-      setTimeout(() => addHistoryEntry([toothNumber], `Face ${surface} do dente ${toothNumber} marcada como ${status}`), 100);
+      if (surfaceTimerRef.current) clearTimeout(surfaceTimerRef.current);
+      surfaceTimerRef.current = setTimeout(() => addHistoryEntry([toothNumber], `Face ${surface} do dente ${toothNumber} marcada como ${status}`), 100);
     }
   }, [addHistoryEntry]);
 
