@@ -1,0 +1,23 @@
+name: "CD: SaaS OrthoPlus Deployment"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VM 200
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: b0yz4kr14
+          key: ${{ secrets.PROD_SSH_KEY }}
+          port: 22
+          script: |
+            echo "Kicking off autonomous update routine..."
+            cd /home/b0yz4kr14
+            ./deploy.sh
