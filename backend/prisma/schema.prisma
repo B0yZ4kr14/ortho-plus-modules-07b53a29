@@ -1,0 +1,2474 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model abuse_reports {
+  abuse_type   String
+  auto_blocked Boolean?
+  created_at   DateTime @default(now())
+  details      Json?
+  endpoint     String
+  id           Int      @id @default(autoincrement())
+  ip_address   Json
+  resolved     Boolean?
+  resolved_at  String?
+  resolved_by  String?
+  severity     String
+  user_id      String?
+}
+
+model admin_configurations {
+  clinic_id   String
+  config_data Json
+  config_type String
+  created_at  DateTime? @default(now())
+  created_by  String?
+  id          String    @id @default(uuid())
+  is_active   Boolean?
+  updated_at  DateTime? @updatedAt
+}
+
+model analises_radiograficas {
+  ai_model_version      String?
+  ai_processing_time_ms Int?
+  auto_approved         Boolean?
+  clinic_id             String
+  confidence_score      Int?
+  created_at            DateTime @default(now())
+  created_by            String
+  feedback_comments     String?
+  feedback_rating       Int?
+  id                    String   @id @default(uuid())
+  imagem_storage_path   String
+  imagem_url            String
+  observacoes_dentista  String?
+  patient_id            String
+  problemas_detectados  Int?
+  prontuario_id         String?
+  resultado_ia          Json?
+  revisado_em           String?
+  revisado_por          String?
+  revisado_por_dentista Boolean?
+  status_analise        String
+  tipo_radiografia      String
+  updated_at            DateTime @updatedAt
+}
+
+model analises_radiograficas_history {
+  ai_model_version     String?
+  analise_id           String
+  confidence_score     Int?
+  created_at           DateTime @default(now())
+  created_by           String
+  id                   String   @id @default(uuid())
+  problemas_detectados Int?
+  resultado_ia         Json
+  versao               Int
+}
+
+model appointment_confirmations {
+  appointment_id      String
+  confirmation_method String
+  confirmed_at        String?
+  created_at          DateTime @default(now())
+  error_message       String?
+  id                  String   @id @default(uuid())
+  message_content     String?
+  phone_number        String?
+  sent_at             String?
+  status              String
+}
+
+model appointment_reminders {
+  appointment_id   String
+  created_at       DateTime @default(now())
+  error_message    String?
+  id               String   @id @default(uuid())
+  message_template String
+  phone_number     String?
+  reminder_type    String
+  scheduled_for    String
+  sent_at          String?
+  status           String
+}
+
+model appointments {
+  clinic_id    String
+  created_at   DateTime @default(now())
+  created_by   String
+  dentist_id   String
+  description  String?
+  end_time     String
+  id           String   @id @default(uuid())
+  patient_id   String
+  start_time   String
+  status       String
+  title        String
+  treatment_id String?
+  updated_at   DateTime @updatedAt
+}
+
+model architecture_decision_records {
+  adr_number              Int
+  alternatives_considered String?
+  clinic_id               String
+  consequences            String
+  context                 String
+  created_at              DateTime @default(now())
+  created_by              String
+  decided_at              String?
+  decided_by              String?
+  decision                String
+  id                      String   @id @default(uuid())
+  status                  String
+  superseded_by_adr_id    String?
+  supersedes_adr_id       String?
+  tags                    String[]
+  title                   String
+  updated_at              DateTime @updatedAt
+}
+
+model audit_logs {
+  action           String
+  action_type      String?
+  affected_records Json?
+  clinic_id        String?
+  created_at       DateTime @default(now())
+  details          Json?
+  id               Int      @id @default(autoincrement())
+  ip_address       Json
+  target_module_id Int?
+  user_agent       String?
+  user_id          String?
+}
+
+model audit_trail {
+  action            String
+  clinic_id         String?
+  entity_id         String?
+  entity_type       String
+  id                Int     @id @default(autoincrement())
+  ip_address        Json
+  new_values        Json?
+  old_values        Json?
+  sensitivity_level String
+  timestamp         String
+  user_agent        String?
+  user_id           String?
+}
+
+model backup_history {
+  backup_type            String
+  checksum_md5           String?
+  checksum_sha256        String?
+  clinic_id              String
+  completed_at           String?
+  compression_ratio      Int?
+  created_at             DateTime @default(now())
+  created_by             String?
+  error_message          String?
+  file_path              String?
+  file_size_bytes        Int?
+  format                 String?
+  id                     String   @id @default(uuid())
+  includes_postgres_dump Boolean?
+  metadata               Json?
+  parent_backup_id       String?
+  restore_tested_at      String?
+  retention_policy_id    String?
+  status                 String
+  transfer_speed_mbps    Int?
+  verified_at            String?
+}
+
+model backup_replications {
+  backup_id          String
+  checksum_md5       String?
+  completed_at       String?
+  created_at         DateTime? @default(now())
+  error_message      String?
+  file_size_bytes    Int?
+  id                 String    @id @default(uuid())
+  metadata           Json?
+  region             String
+  replication_status String
+  source_clinic_id   String
+  started_at         String?
+  storage_path       String?
+  storage_provider   String
+  target_clinic_id   String
+  updated_at         DateTime? @updatedAt
+}
+
+model backup_retention_policies {
+  auto_delete_enabled Boolean?
+  backup_type         String
+  clinic_id           String
+  created_at          DateTime? @default(now())
+  id                  String    @id @default(uuid())
+  keep_daily          Int
+  keep_monthly        Int
+  keep_weekly         Int
+  keep_yearly         Int
+  name                String
+  updated_at          DateTime? @updatedAt
+}
+
+model backup_verification_log {
+  backup_id         String
+  details           Json?
+  id                String  @id @default(uuid())
+  status            String
+  verification_type String
+  verified_at       String?
+}
+
+model bi_dashboards {
+  clinic_id                String
+  created_at               DateTime @default(now())
+  created_by               String
+  description              String?
+  id                       String   @id @default(uuid())
+  is_default               Boolean
+  is_public                Boolean
+  layout                   Json?
+  name                     String
+  refresh_interval_minutes Int?
+  shared_with              String[]
+  tags                     String[]
+  updated_at               DateTime @updatedAt
+}
+
+model bi_data_cache {
+  cache_key  String
+  clinic_id  String
+  created_at DateTime @default(now())
+  data       Json
+  expires_at String
+  id         String   @id @default(uuid())
+  widget_id  String?
+}
+
+model bi_metrics {
+  aggregation_period String
+  calculation_type   String
+  clinic_id          String
+  created_at         DateTime @default(now())
+  data_sources       String[]
+  description        String?
+  formula            String?
+  id                 String   @id @default(uuid())
+  last_calculated_at String?
+  metadata           Json?
+  metric_key         String
+  name               String
+  trend              Int?
+  updated_at         DateTime @updatedAt
+  value              Int?
+}
+
+model bi_reports {
+  clinic_id          String
+  created_at         DateTime @default(now())
+  created_by         String
+  description        String?
+  format             String
+  id                 String   @id @default(uuid())
+  is_active          Boolean
+  last_generated_at  String?
+  name               String
+  next_generation_at String?
+  parameters         Json?
+  recipients         String[]
+  report_type        String
+  schedule           Json?
+  updated_at         DateTime @updatedAt
+}
+
+model bi_widgets {
+  cache_duration_minutes Int?
+  chart_type             String?
+  clinic_id              String
+  created_at             DateTime @default(now())
+  dashboard_id           String
+  data_source            String
+  display_config         Json?
+  height                 Int
+  id                     String   @id @default(uuid())
+  name                   String
+  position_x             Int
+  position_y             Int
+  query_config           Json
+  refresh_on_load        Boolean
+  updated_at             DateTime @updatedAt
+  widget_type            String
+  width                  Int
+}
+
+model blocked_times {
+  clinic_id      String
+  created_at     DateTime? @default(now())
+  created_by     String
+  dentist_id     String
+  end_datetime   String
+  id             String    @id @default(uuid())
+  reason         String
+  start_datetime String
+}
+
+model budget_approvals {
+  acao                  String
+  alteracoes_realizadas Json?
+  budget_id             String
+  created_at            DateTime @default(now())
+  id                    String   @id @default(uuid())
+  motivo                String?
+  usuario_id            String
+  valor_orcamento       Int
+  versao                Int
+}
+
+model budget_items {
+  budget_id           String
+  created_at          DateTime @default(now())
+  dente_regiao        String?
+  desconto_percentual Int?
+  desconto_valor      Int?
+  descricao           String
+  id                  String   @id @default(uuid())
+  observacoes         String?
+  ordem               Int
+  procedimento_id     String?
+  quantidade          Int
+  valor_total         Int
+  valor_unitario      Int
+}
+
+model budget_versions {
+  budget_id     String
+  created_at    DateTime @default(now())
+  created_by    String
+  id            String   @id @default(uuid())
+  snapshot_data Json
+  versao        Int
+}
+
+model budgets {
+  aprovado_em         String?
+  aprovado_por        String?
+  clinic_id           String
+  contrato_id         String?
+  convertido_contrato Boolean?
+  created_at          DateTime @default(now())
+  created_by          String
+  data_expiracao      String?
+  desconto_percentual Int?
+  desconto_valor      Int?
+  descricao           String?
+  id                  String   @id @default(uuid())
+  motivo_rejeicao     String?
+  numero_orcamento    String
+  observacoes         String?
+  patient_id          String
+  rejeitado_em        String?
+  rejeitado_por       String?
+  status              String
+  tipo_plano          String
+  titulo              String
+  updated_at          DateTime @updatedAt
+  validade_dias       Int
+  valor_subtotal      Int
+  valor_total         Int
+}
+
+model caixa_incidentes {
+  boletim_ocorrencia  String?
+  clinic_id           String
+  created_at          DateTime? @default(now())
+  data_incidente      String
+  descricao           String?
+  dia_semana          Int
+  horario_incidente   String
+  id                  String    @id @default(uuid())
+  metadata            Json?
+  tipo_incidente      String
+  valor_caixa_momento Int?
+  valor_perdido       Int?
+}
+
+model caixa_movimentos {
+  aberto_em       String?
+  caixa_id        String?
+  clinic_id       String
+  created_at      DateTime? @default(now())
+  created_by      String
+  diferenca       Int?
+  fechado_em      String?
+  horario_risco   String?
+  id              String    @id @default(uuid())
+  motivo_sangria  String?
+  observacoes     String?
+  risco_calculado Int?
+  status          String
+  sugerido_por_ia Boolean?
+  tipo            String
+  valor           Int
+  valor_esperado  Int?
+  valor_final     Int?
+  valor_inicial   Int?
+}
+
+model campaign_metrics {
+  bounce_rate       Int?
+  campaign_id       String
+  click_rate        Int?
+  conversion_rate   Int?
+  created_at        DateTime @default(now())
+  id                String   @id @default(uuid())
+  metric_date       String
+  open_rate         Int?
+  revenue_generated Int?
+  total_clicked     Int?
+  total_converted   Int?
+  total_delivered   Int?
+  total_errors      Int?
+  total_opened      Int?
+  total_sent        Int?
+  unsubscribe_count Int?
+  updated_at        DateTime @updatedAt
+}
+
+model campaign_sends {
+  campaign_id       String
+  clicked_at        String?
+  converted_at      String?
+  created_at        DateTime @default(now())
+  delivered_at      String?
+  error_code        String?
+  error_message     String?
+  id                String   @id @default(uuid())
+  message_content   String?
+  metadata          Json?
+  opened_at         String?
+  patient_id        String
+  recipient_contact String
+  recipient_name    String
+  retry_count       Int?
+  scheduled_for     String
+  sent_at           String?
+  status            String
+}
+
+model campaign_templates {
+  category      String?
+  clinic_id     String
+  content       String
+  created_at    DateTime @default(now())
+  created_by    String
+  description   String?
+  id            String   @id @default(uuid())
+  is_default    Boolean?
+  name          String
+  subject       String?
+  template_type String
+  updated_at    DateTime @updatedAt
+  variables     Json?
+}
+
+model campaign_triggers {
+  campaign_id       String
+  created_at        DateTime @default(now())
+  delay_days        Int?
+  delay_hours       Int?
+  id                String   @id @default(uuid())
+  is_active         Boolean
+  trigger_condition Json
+  trigger_type      String
+}
+
+model campanha_envios {
+  aberto_em         String?
+  campanha_id       String
+  clicado_em        String?
+  convertido_em     String?
+  created_at        DateTime @default(now())
+  destinatario_id   String
+  destinatario_tipo String
+  email             String?
+  enviado_em        String?
+  erro_mensagem     String?
+  id                String   @id @default(uuid())
+  status_envio      String
+  telefone          String?
+}
+
+model campanhas_inadimplencia {
+  clinic_id         String
+  created_at        DateTime @default(now())
+  data_envio        String?
+  id                String   @id @default(uuid())
+  inadimplente_id   String?
+  mensagem_enviada  String?
+  resposta_recebida Boolean?
+  status            String
+  tipo_campanha     String
+  updated_at        DateTime @updatedAt
+  valor_recuperado  Int?
+}
+
+model campanhas_marketing {
+  clinic_id           String
+  conteudo_template   String
+  created_at          DateTime @default(now())
+  created_by          String
+  data_fim            String?
+  data_inicio         String?
+  id                  String   @id @default(uuid())
+  nome                String
+  segmento_alvo       Json?
+  status              String
+  taxa_abertura       Int?
+  taxa_clique         Int?
+  taxa_conversao      Int?
+  tipo                String
+  total_aberturas     Int?
+  total_cliques       Int?
+  total_conversoes    Int?
+  total_destinatarios Int?
+  total_enviados      Int?
+  updated_at          DateTime @updatedAt
+}
+
+model clinic_modules {
+  clinic_id         String
+  id                Int      @id @default(autoincrement())
+  is_active         Boolean
+  module_catalog_id Int
+  subscribed_at     String
+  updated_at        DateTime @updatedAt
+}
+
+model clinics {
+  auto_cleanup_enabled  Boolean?
+  backup_retention_days Int?
+  created_at            DateTime @default(now())
+  id                    String   @id @default(uuid())
+  name                  String
+  updated_at            DateTime @updatedAt
+}
+
+model cloud_storage_configs {
+  clinic_id  String
+  config     Json
+  created_at DateTime @default(now())
+  id         String   @id @default(uuid())
+  is_active  Boolean
+  provider   String
+  updated_at DateTime @updatedAt
+}
+
+model collection_actions {
+  action_date        String
+  action_type        String
+  created_at         DateTime @default(now())
+  created_by         String
+  id                 String   @id @default(uuid())
+  message_content    String?
+  overdue_account_id String
+  response_received  String?
+  scheduled_for      String?
+  status             String
+}
+
+model collection_automation_config {
+  action_type      String
+  clinic_id        String
+  created_at       DateTime @default(now())
+  created_by       String
+  days_trigger     Int
+  id               String   @id @default(uuid())
+  is_active        Boolean
+  message_template String
+  updated_at       DateTime @updatedAt
+}
+
+model contas_pagar {
+  anexo_url       String?
+  categoria       String
+  clinic_id       String
+  created_at      DateTime @default(now())
+  created_by      String?
+  data_emissao    String
+  data_pagamento  String?
+  data_vencimento String
+  descricao       String
+  forma_pagamento String?
+  fornecedor      String
+  id              String   @id @default(uuid())
+  observacoes     String?
+  parcela_numero  Int?
+  parcela_total   Int?
+  periodicidade   String?
+  recorrente      Boolean?
+  status          String
+  updated_at      DateTime @updatedAt
+  valor           Int
+  valor_pago      Int?
+}
+
+model contas_receber {
+  clinic_id       String
+  created_at      DateTime @default(now())
+  created_by      String?
+  data_emissao    String
+  data_pagamento  String?
+  data_vencimento String
+  descricao       String
+  forma_pagamento String?
+  id              String   @id @default(uuid())
+  observacoes     String?
+  parcela_numero  Int?
+  parcela_total   Int?
+  patient_id      String?
+  status          String
+  updated_at      DateTime @updatedAt
+  valor           Int
+  valor_pago      Int?
+}
+
+model contrato_anexos {
+  caminho_storage String
+  contrato_id     String
+  created_at      DateTime @default(now())
+  id              String   @id @default(uuid())
+  mime_type       String
+  nome_arquivo    String
+  tamanho_bytes   Int
+  uploaded_by     String
+}
+
+model contrato_templates {
+  ativo                 Boolean
+  clinic_id             String
+  conteudo_html         String
+  created_at            DateTime @default(now())
+  created_by            String
+  id                    String   @id @default(uuid())
+  nome                  String
+  tipo_tratamento       String
+  updated_at            DateTime @updatedAt
+  variaveis_disponiveis Json?
+}
+
+model contratos {
+  assinado_em                String?
+  assinatura_dentista_base64 String?
+  assinatura_paciente_base64 String?
+  cancelado_em               String?
+  clinic_id                  String
+  conteudo_html              String
+  created_at                 DateTime @default(now())
+  created_by                 String
+  data_inicio                String
+  data_termino               String?
+  hash_blockchain            String?
+  id                         String   @id @default(uuid())
+  ip_assinatura              String?
+  motivo_cancelamento        String?
+  numero_contrato            String
+  orcamento_id               String?
+  patient_id                 String
+  renovacao_automatica       Boolean?
+  status                     String
+  template_id                String?
+  titulo                     String
+  updated_at                 DateTime @updatedAt
+  valor_contrato             Int
+}
+
+model crm_activities {
+  activity_type  String
+  assigned_to    String
+  clinic_id      String
+  completed_date String?
+  created_at     DateTime @default(now())
+  description    String?
+  id             String   @id @default(uuid())
+  lead_id        String
+  outcome        String?
+  scheduled_date String?
+  status         String
+  title          String
+  updated_at     DateTime @updatedAt
+}
+
+model crm_conversions {
+  assigned_to          String?
+  clinic_id            String
+  conversion_type      String
+  conversion_value     Int?
+  converted_at         String
+  created_at           DateTime @default(now())
+  id                   String   @id @default(uuid())
+  lead_id              String
+  time_to_convert_days Int?
+  total_interactions   Int?
+}
+
+model crm_interactions {
+  attachments      Json?
+  clinic_id        String
+  created_at       DateTime @default(now())
+  created_by       String
+  description      String
+  duration_minutes Int?
+  id               String   @id @default(uuid())
+  interaction_type String
+  lead_id          String
+  next_action      String?
+  next_action_date String?
+  outcome          String?
+  subject          String?
+}
+
+model crm_leads {
+  assigned_to          String?
+  clinic_id            String
+  created_at           DateTime @default(now())
+  created_by           String
+  email                String?
+  estimated_value      Int?
+  id                   String   @id @default(uuid())
+  interest_description String?
+  name                 String
+  next_contact_date    String?
+  notes                String?
+  phone                String?
+  source               String
+  status               String
+  tags                 String[]
+  updated_at           DateTime @updatedAt
+}
+
+model crm_stages {
+  average_time_days Int?
+  clinic_id         String
+  color             String?
+  conversion_rate   Int?
+  created_at        DateTime @default(now())
+  description       String?
+  id                String   @id @default(uuid())
+  is_active         Boolean
+  name              String
+  order_index       Int
+  updated_at        DateTime @updatedAt
+}
+
+model crypto_candlestick_data {
+  close_price Int
+  close_time  String
+  coin_type   String
+  created_at  DateTime @default(now())
+  high_price  Int
+  id          String   @id @default(uuid())
+  interval    String
+  low_price   Int
+  open_price  Int
+  open_time   String
+  volume      Int
+}
+
+model crypto_payments {
+  amount_brl      Int
+  checkout_link   String?
+  clinic_id       String
+  confirmations   Int?
+  confirmed_at    String?
+  created_at      DateTime? @default(now())
+  created_by      String?
+  crypto_amount   Int?
+  crypto_currency String?
+  currency        String
+  expires_at      String?
+  id              String    @id @default(uuid())
+  invoice_id      String
+  metadata        Json?
+  order_id        String
+  qr_code_data    String?
+  status          String
+  transaction_id  String?
+  updated_at      DateTime? @updatedAt
+}
+
+model crypto_price_alerts {
+  alert_type              String
+  auto_convert_on_trigger Boolean?
+  cascade_enabled         Boolean?
+  cascade_group_id        String?
+  cascade_order           Int?
+  clinic_id               String
+  coin_type               String
+  conversion_percentage   Int?
+  created_at              DateTime @default(now())
+  created_by              String
+  id                      String   @id @default(uuid())
+  is_active               Boolean
+  last_triggered_at       String?
+  notification_method     String[]
+  stop_loss_enabled       Boolean?
+  target_rate_brl         Int
+  updated_at              DateTime @updatedAt
+}
+
+model dentist_schedules {
+  clinic_id   String
+  created_at  DateTime @default(now())
+  created_by  String
+  day_of_week Int
+  dentist_id  String
+  end_time    String
+  id          String   @id @default(uuid())
+  is_active   Boolean
+  start_time  String
+  updated_at  DateTime @updatedAt
+}
+
+model estoque_pedidos {
+  clinic_id              String
+  created_at             DateTime @default(now())
+  created_by             String
+  data_pedido            String
+  data_prevista_entrega  String?
+  data_recebimento       String?
+  fornecedor_id          String
+  gerado_automaticamente Boolean?
+  id                     String   @id @default(uuid())
+  numero_pedido          String
+  observacoes            String?
+  status                 String
+  tipo                   String
+  updated_at             DateTime @updatedAt
+  valor_total            Int?
+}
+
+model estoque_pedidos_config {
+  clinic_id              String
+  created_at             DateTime @default(now())
+  dias_entrega_estimados Int?
+  gerar_automaticamente  Boolean?
+  id                     String   @id @default(uuid())
+  ponto_pedido           Int
+  produto_id             String
+  quantidade_reposicao   Int
+  updated_at             DateTime @updatedAt
+}
+
+model estoque_pedidos_itens {
+  created_at          DateTime @default(now())
+  id                  String   @id @default(uuid())
+  observacoes         String?
+  pedido_id           String
+  preco_unitario      Int
+  produto_id          String
+  quantidade          Int
+  quantidade_recebida Int?
+  valor_total         Int
+}
+
+model fechamento_caixa {
+  arquivo_sped_gerado_em String?
+  arquivo_sped_path      String?
+  caixa_movimento_id     String
+  clinic_id              String
+  created_at             DateTime? @default(now())
+  created_by             String
+  data_fechamento        String
+  divergencia            Int
+  id                     String    @id @default(uuid())
+  observacoes            String?
+  percentual_divergencia Int?
+  quantidade_nfce        Int
+  quantidade_vendas_pdv  Int
+  total_nfce_emitidas    Int
+  total_sangrias         Int
+  total_suprimentos      Int
+  total_vendas_pdv       Int
+  vendas_sem_nfce        Int
+}
+
+model financial_categories {
+  active     Boolean?
+  clinic_id  String
+  color      String?
+  created_at DateTime @default(now())
+  icon       String?
+  id         String   @id @default(uuid())
+  name       String
+  type       String
+  updated_at DateTime @updatedAt
+}
+
+model financial_transactions {
+  amount           Int
+  category         String
+  clinic_id        String
+  created_at       DateTime @default(now())
+  created_by       String?
+  description      String
+  id               String   @id @default(uuid())
+  notes            String?
+  payment_method   String?
+  status           String
+  tags             String[]
+  transaction_date String
+  type             String
+  updated_at       DateTime @updatedAt
+}
+
+model fiscal_config {
+  ambiente                 String
+  certificado_digital      String?
+  clinic_id                String
+  cnpj                     String
+  codigo_regime_tributario Int?
+  contingencia_enabled     Boolean?
+  contingencia_motivo      String?
+  created_at               DateTime? @default(now())
+  csc_id                   String?
+  csc_token                String?
+  email_contabilidade      String?
+  endereco                 Json?
+  id                       String    @id @default(uuid())
+  inscricao_estadual       String?
+  is_active                Boolean?
+  nome_fantasia            String?
+  numero_ultimo_nfce       Int?
+  razao_social             String
+  regime_tributario        String
+  senha_certificado        String?
+  serie_nfce               Int?
+  tipo_emissao             String
+  updated_at               DateTime? @updatedAt
+}
+
+model funcionarios {
+  avatar_url       String?
+  cargo            String
+  celular          String
+  clinic_id        String
+  cpf              String
+  created_at       DateTime @default(now())
+  data_admissao    String
+  data_nascimento  String
+  dias_trabalho    Int[]
+  email            String
+  endereco         Json
+  horario_trabalho Json
+  id               String   @id @default(uuid())
+  nome             String
+  observacoes      String?
+  permissoes       Json
+  rg               String?
+  salario          Int
+  sexo             String
+  status           String
+  telefone         String
+  updated_at       DateTime @updatedAt
+  user_id          String?
+}
+
+model github_events {
+  clinic_id    String
+  created_at   DateTime @default(now())
+  event_data   Json
+  event_type   String
+  id           String   @id @default(uuid())
+  triggered_by String?
+}
+
+model historico_clinico {
+  created_at         DateTime @default(now())
+  created_by         String
+  dados_estruturados Json?
+  descricao          String
+  id                 String   @id @default(uuid())
+  prontuario_id      String
+  tipo               String
+  titulo             String
+  updated_at         DateTime @updatedAt
+}
+
+model inadimplentes {
+  clinic_id          String
+  created_at         DateTime @default(now())
+  dias_atraso        Int
+  email              String?
+  id                 String   @id @default(uuid())
+  nome_paciente      String
+  observacoes        String?
+  patient_id         String
+  status             String
+  telefone           String?
+  ultima_cobranca    String?
+  updated_at         DateTime @updatedAt
+  valor_total_devido Int
+}
+
+model integracao_contabil_config {
+  api_key             String?
+  api_secret          String?
+  api_url             String
+  ativo               Boolean
+  clinic_id           String
+  codigo_empresa      String?
+  created_at          DateTime @default(now())
+  email_contador      String?
+  enviar_nfce_dados   Boolean
+  enviar_sped_fiscal  Boolean
+  envio_automatico    Boolean
+  id                  String   @id @default(uuid())
+  metadata            Json?
+  periodicidade_envio String
+  software            String
+  updated_at          DateTime @updatedAt
+}
+
+model integracao_contabil_envios {
+  arquivo_path       String?
+  arquivo_size_bytes Int?
+  clinic_id          String
+  config_id          String
+  created_at         DateTime @default(now())
+  enviado_em         String?
+  erro_mensagem      String?
+  id                 String   @id @default(uuid())
+  max_tentativas     Int
+  periodo_referencia String
+  response_data      Json?
+  status             String
+  tentativas         Int
+  tipo_documento     String
+  updated_at         DateTime @updatedAt
+}
+
+model inventario_agendamentos {
+  ativo                 Boolean
+  categorias_ids        String[]
+  clinic_id             String
+  created_at            DateTime @default(now())
+  created_by            String
+  dia_execucao          Int?
+  dia_semana            Int?
+  id                    String   @id @default(uuid())
+  nome                  String
+  notificar_dias_antes  Int?
+  notificar_responsavel Boolean?
+  observacoes           String?
+  periodicidade         String
+  proxima_execucao      String?
+  responsavel           String
+  tipo_inventario       String
+  ultima_execucao       String?
+  updated_at            DateTime @updatedAt
+}
+
+model inventario_itens {
+  contado_em             String?
+  contado_por            String?
+  created_at             DateTime @default(now())
+  divergencia            Int?
+  id                     String   @id @default(uuid())
+  inventario_id          String
+  lote                   String?
+  observacoes            String?
+  percentual_divergencia Int?
+  produto_id             String
+  produto_nome           String
+  quantidade_fisica      Int?
+  quantidade_sistema     Int
+  valor_divergencia      Int?
+  valor_unitario         Int
+}
+
+model inventarios {
+  clinic_id                String
+  created_at               DateTime @default(now())
+  created_by               String
+  data                     String
+  divergencias_encontradas Int?
+  id                       String   @id @default(uuid())
+  itens_contados           Int?
+  numero                   String
+  observacoes              String?
+  responsavel              String
+  status                   String
+  tipo                     String
+  total_itens              Int?
+  updated_at               DateTime @updatedAt
+  valor_divergencias       Int?
+}
+
+model lead_interacoes {
+  agendou_avaliacao Boolean?
+  created_at        DateTime @default(now())
+  created_by        String
+  descricao         String
+  id                String   @id @default(uuid())
+  lead_id           String
+  proximo_passo     String?
+  resultado         String?
+  tipo              String
+}
+
+model lead_tags {
+  created_at DateTime @default(now())
+  id         String   @id @default(uuid())
+  lead_id    String
+  tag        String
+}
+
+model leads {
+  atribuido_a      String?
+  clinic_id        String
+  created_at       DateTime @default(now())
+  created_by       String?
+  email            String?
+  id               String   @id @default(uuid())
+  interesse        String?
+  motivo_perda     String?
+  nome             String
+  observacoes      String?
+  origem           String
+  proximo_followup String?
+  score_qualidade  Int?
+  status_funil     String
+  telefone         String?
+  temperatura      String
+  ultimo_contato   String?
+  updated_at       DateTime @updatedAt
+  utm_campaign     String?
+  utm_medium       String?
+  utm_source       String?
+  valor_estimado   Int?
+  whatsapp         String?
+}
+
+model lgpd_consents {
+  accepted     Boolean
+  accepted_at  String?
+  accepted_by  String?
+  clinic_id    String
+  consent_text String
+  consent_type String
+  created_at   DateTime @default(now())
+  expires_at   String?
+  id           String   @id @default(uuid())
+  ip_address   String?
+  metadata     Json?
+  patient_id   String
+  revoked      Boolean?
+  revoked_at   String?
+  revoked_by   String?
+  updated_at   DateTime @updatedAt
+  user_agent   String?
+  version      Int
+}
+
+model lgpd_data_consents {
+  clinic_id    String
+  consent_type String
+  created_at   DateTime @default(now())
+  expires_at   String?
+  granted      Boolean
+  granted_at   String?
+  id           String   @id @default(uuid())
+  patient_id   String
+  revoked_at   String?
+}
+
+model lgpd_data_exports {
+  clinic_id       String
+  created_at      DateTime @default(now())
+  download_count  Int?
+  downloaded_at   String?
+  error_message   String?
+  expires_at      String?
+  export_type     String
+  file_format     String?
+  file_path       String?
+  file_size_bytes Int?
+  generated_at    String?
+  generated_by    String
+  id              String   @id @default(uuid())
+  metadata        Json?
+  patient_id      String
+  request_id      String?
+  status          String
+  tables_included String[]
+  updated_at      DateTime @updatedAt
+}
+
+model lgpd_data_requests {
+  clinic_id        String
+  completed_at     String?
+  created_at       DateTime @default(now())
+  data_export_id   String?
+  description      String?
+  id               String   @id @default(uuid())
+  metadata         Json?
+  patient_id       String
+  rejection_reason String?
+  request_type     String
+  requested_at     String
+  requested_by     String
+  responded_at     String?
+  responded_by     String?
+  response         String?
+  status           String
+  updated_at       DateTime @updatedAt
+}
+
+model login_attempts {
+  attempted_at             String
+  created_at               DateTime @default(now())
+  device_fingerprint       String?
+  email                    String
+  id                       Int      @id @default(autoincrement())
+  ip_address               String?
+  ip_geolocation           Json?
+  session_duration_seconds Int?
+  success                  Boolean
+  user_agent               String?
+}
+
+model marketing_campaigns {
+  campaign_type    String
+  channel          String
+  clinic_id        String
+  created_at       DateTime @default(now())
+  created_by       String
+  description      String?
+  end_date         String?
+  id               String   @id @default(uuid())
+  last_sent_at     String?
+  metadata         Json?
+  name             String
+  schedule_config  Json?
+  send_immediately Boolean?
+  start_date       String?
+  status           String
+  target_audience  Json?
+  template_id      String?
+  trigger_config   Json?
+  updated_at       DateTime @updatedAt
+}
+
+model module_catalog {
+  category    String
+  created_at  DateTime @default(now())
+  description String?
+  icon        String?
+  id          Int      @id @default(autoincrement())
+  module_key  String
+  name        String
+}
+
+model module_configuration_templates {
+  created_at  DateTime @default(now())
+  description String?
+  icon        String?
+  id          String   @id @default(uuid())
+  is_active   Boolean
+  modules     Json
+  name        String
+  specialty   String
+  updated_at  DateTime @updatedAt
+}
+
+model module_dependencies {
+  created_at           DateTime @default(now())
+  depends_on_module_id Int
+  id                   Int      @id @default(autoincrement())
+  module_id            Int
+}
+
+model movimentacoes_estoque {
+  clinic_id           String
+  created_at          DateTime @default(now())
+  id                  String   @id @default(uuid())
+  motivo              String?
+  observacoes         String?
+  produto_id          String
+  quantidade          Int
+  quantidade_anterior Int
+  quantidade_atual    Int
+  tipo                String
+  usuario_id          String
+  valor_total         Int
+  valor_unitario      Int
+}
+
+model nfce_carta_correcao {
+  clinic_id     String
+  codigo_status String?
+  correcao      String
+  created_at    DateTime? @default(now())
+  created_by    String
+  data_evento   String?
+  id            String    @id @default(uuid())
+  motivo        String?
+  nfce_id       String
+  protocolo     String?
+  sequencia     Int
+  status        String
+  xml_evento    String?
+}
+
+model nfce_contingencia {
+  chave_acesso             String
+  clinic_id                String
+  created_at               DateTime @default(now())
+  emitido_em               String
+  erro_sincronizacao       String?
+  forma_pagamento          String
+  id                       String   @id @default(uuid())
+  itens                    Json
+  modo_contingencia        String
+  motivo_contingencia      String
+  numero_nfce              Int
+  protocolo_autorizacao    String?
+  serie                    Int
+  sincronizado_em          String?
+  status_sincronizacao     String
+  tentativas_sincronizacao Int
+  updated_at               DateTime @updatedAt
+  valor_total              Int
+  venda_id                 String?
+  xml_nfce                 String
+}
+
+model nfce_emitidas {
+  ambiente              String
+  chave_acesso          String
+  clinic_id             String
+  contingencia          Boolean?
+  created_at            DateTime? @default(now())
+  data_cancelamento     String?
+  data_emissao          String?
+  error_message         String?
+  id                    String    @id @default(uuid())
+  metadata              Json?
+  motivo_cancelamento   String?
+  numero_nfce           Int
+  pdf_url               String?
+  protocolo_autorizacao String?
+  qrcode_url            String?
+  serie                 Int
+  status                String
+  tipo_emissao          String
+  updated_at            DateTime? @updatedAt
+  valor_total           Int
+  venda_id              String
+  xml_cancelamento      String?
+  xml_nfce              String?
+}
+
+model nfce_inutilizacao {
+  ano               Int
+  clinic_id         String
+  codigo_status     String?
+  created_at        DateTime? @default(now())
+  created_by        String
+  data_inutilizacao String?
+  id                String    @id @default(uuid())
+  justificativa     String
+  motivo            String?
+  numero_final      Int
+  numero_inicial    Int
+  protocolo         String?
+  serie             Int
+  status            String
+  xml_inutilizacao  String?
+}
+
+model notas_fiscais {
+  chave_acesso      String?
+  clinic_id         String
+  created_at        DateTime @default(now())
+  created_by        String?
+  data_emissao      String
+  data_recebimento  String?
+  destinatario_cnpj String?
+  destinatario_nome String?
+  emitente_cnpj     String
+  emitente_nome     String
+  id                String   @id @default(uuid())
+  numero            String
+  observacoes       String?
+  pdf_url           String?
+  serie             String?
+  status            String
+  tipo              String
+  updated_at        DateTime @updatedAt
+  valor_icms        Int?
+  valor_iss         Int?
+  valor_total       Int
+  xml_url           String?
+}
+
+model notifications {
+  clinic_id  String
+  created_at DateTime @default(now())
+  id         String   @id @default(uuid())
+  lida       Boolean
+  lida_em    String?
+  link_acao  String?
+  mensagem   String
+  tipo       String
+  titulo     String
+  user_id    String?
+}
+
+model odontogramas {
+  clinic_id     String
+  created_at    DateTime @default(now())
+  history       Json
+  id            String   @id @default(uuid())
+  last_updated  String
+  prontuario_id String
+  teeth         Json
+  updated_at    DateTime @updatedAt
+}
+
+model onboarding_analytics {
+  clinic_id          String
+  created_at         DateTime @default(now())
+  event_type         String
+  id                 String   @id @default(uuid())
+  metadata           Json?
+  step_name          String?
+  step_number        Int?
+  time_spent_seconds Int?
+  user_id            String
+}
+
+model orcamento_itens {
+  created_at      DateTime @default(now())
+  dente_codigo    String?
+  descricao       String
+  id              String   @id @default(uuid())
+  observacoes     String?
+  orcamento_id    String
+  ordem           Int
+  procedimento_id String?
+  quantidade      Int
+  valor_total     Int
+  valor_unitario  Int
+}
+
+model orcamento_pagamento {
+  created_at      DateTime @default(now())
+  forma_pagamento String[]
+  id              String   @id @default(uuid())
+  numero_parcelas Int?
+  observacoes     String?
+  orcamento_id    String
+  tipo_pagamento  String
+  valor_entrada   Int?
+  valor_parcela   Int?
+}
+
+model orcamento_visualizacoes {
+  duracao_segundos Int?
+  id               String  @id @default(uuid())
+  ip_address       String?
+  orcamento_id     String
+  user_agent       String?
+  visualizado_em   String
+}
+
+model orcamentos {
+  aprovado_em         String?
+  aprovado_por        String?
+  clinic_id           String
+  convertido_em       String?
+  created_at          DateTime @default(now())
+  created_by          String
+  data_validade       String
+  desconto_percentual Int?
+  desconto_valor      Int?
+  descricao           String?
+  id                  String   @id @default(uuid())
+  motivo_rejeicao     String?
+  numero_orcamento    String
+  observacoes         String?
+  patient_id          String
+  prontuario_id       String?
+  rejeitado_em        String?
+  status              String
+  tipo_plano          String
+  titulo              String
+  updated_at          DateTime @updatedAt
+  validade_dias       Int
+  valor_final         Int
+  valor_total         Int
+}
+
+model overdue_accounts {
+  clinic_id        String
+  conta_receber_id String
+  created_at       DateTime @default(now())
+  days_overdue     Int
+  id               String   @id @default(uuid())
+  interest_amount  Int?
+  original_amount  Int
+  patient_id       String
+  penalty_amount   Int?
+  remaining_amount Int
+  risk_level       String
+  status           String
+  total_amount     Int
+  updated_at       DateTime @updatedAt
+}
+
+model patient_accounts {
+  ativo             Boolean
+  created_at        DateTime @default(now())
+  email             String
+  email_verificado  Boolean
+  id                String   @id @default(uuid())
+  patient_id        String
+  senha_hash        String
+  token_verificacao String?
+  ultimo_acesso     String?
+  updated_at        DateTime @updatedAt
+}
+
+model patient_messages {
+  anexos         Json?
+  clinic_id      String
+  created_at     DateTime @default(now())
+  id             String   @id @default(uuid())
+  lida           Boolean
+  lida_em        String?
+  mensagem       String
+  patient_id     String
+  remetente_id   String
+  remetente_tipo String
+}
+
+model patient_notifications {
+  created_at DateTime @default(now())
+  id         String   @id @default(uuid())
+  lida       Boolean
+  lida_em    String?
+  link_acao  String?
+  mensagem   String
+  patient_id String
+  tipo       String
+  titulo     String
+}
+
+model patient_preferences {
+  id                      String   @id @default(uuid())
+  idioma                  String?
+  lembrete_consulta_horas Int?
+  notificacoes_email      Boolean?
+  notificacoes_push       Boolean?
+  notificacoes_sms        Boolean?
+  notificacoes_whatsapp   Boolean?
+  patient_id              String
+  tema                    String?
+  updated_at              DateTime @updatedAt
+}
+
+model patient_sessions {
+  created_at DateTime @default(now())
+  expires_at String
+  id         String   @id @default(uuid())
+  patient_id String
+  token      String
+}
+
+model patient_status_history {
+  changed_at  String?
+  changed_by  String?
+  created_at  DateTime? @default(now())
+  from_status String?
+  id          String    @id @default(uuid())
+  notes       String?
+  patient_id  String
+  reason      String?
+  to_status   String
+}
+
+model patients {
+  address_city                   String?
+  address_complement             String?
+  address_country                String?
+  address_neighborhood           String?
+  address_number                 String?
+  address_state                  String?
+  address_street                 String?
+  address_zipcode                String?
+  alcohol_frequency              String?
+  allergies_list                 String[]
+  birth_date                     String
+  bleeding_disorder_details      String?
+  blood_pressure_diastolic       Int?
+  blood_pressure_systolic        Int?
+  blood_type                     String?
+  bmi                            Int?
+  campanha_origem_id             String?
+  campanha_origem_nome           String?
+  canal_captacao                 String?
+  cardiovascular_details         String?
+  cargo                          String?
+  churn_risk_score               Int?
+  clinic_id                      String
+  clinical_observations          String?
+  cnpj_empresa                   String?
+  cpf                            String?
+  created_at                     DateTime @default(now())
+  created_by                     String?
+  current_medications            String[]
+  data_conversao                 String?
+  data_primeiro_contato          String?
+  data_qualificacao              String?
+  data_sharing_consent           Boolean?
+  diabetes_controlled            Boolean?
+  diabetes_type                  String?
+  education_level                String?
+  email                          String?
+  emergency_contact_name         String?
+  emergency_contact_relationship String?
+  empresa                        String?
+  evento_captacao                String?
+  first_appointment_date         String?
+  full_name                      String
+  gender                         String?
+  gum_condition                  String?
+  has_alcohol_habit              Boolean?
+  has_allergies                  Boolean?
+  has_bleeding_disorder          Boolean?
+  has_cardiovascular_disease     Boolean?
+  has_diabetes                   Boolean?
+  has_hepatitis                  Boolean?
+  has_hiv                        Boolean?
+  has_hypertension               Boolean?
+  has_medication_allergy         Boolean?
+  has_smoking_habit              Boolean?
+  has_systemic_disease           Boolean?
+  heart_rate                     Int?
+  height_cm                      Int?
+  hepatitis_type                 String?
+  hypertension_controlled        Boolean?
+  id                             String   @id @default(uuid())
+  image_usage_consent            Boolean?
+  indicado_por                   String?
+  indicado_por_dentista_id       String?
+  indicado_por_paciente_id       String?
+  is_breastfeeding               Boolean?
+  is_pregnant                    Boolean?
+  last_appointment_date          String?
+  lgpd_consent                   Boolean?
+  lgpd_consent_date              String?
+  main_complaint                 String?
+  marital_status                 String?
+  marketing_campaign             String?
+  marketing_event                String?
+  marketing_promoter             String?
+  marketing_source               String?
+  marketing_telemarketing_agent  String?
+  medication_allergies           String[]
+  nationality                    String?
+  occupation                     String?
+  oral_hygiene_quality           String?
+  origem_lead                    String?
+  pain_level                     Int?
+  patient_code                   String?
+  payment_status                 String?
+  phone_emergency                String?
+  phone_primary                  String
+  phone_secondary                String?
+  preferred_payment_method       String?
+  pregnancy_trimester            Int?
+  promotor_id                    String?
+  promotor_nome                  String?
+  propensao_indicacao            Int?
+  referral_source                String?
+  rg                             String?
+  risk_level                     String?
+  risk_score_anesthetic          Int?
+  risk_score_medical             Int?
+  risk_score_overall             Int?
+  risk_score_surgical            Int?
+  smoking_frequency              String?
+  social_name                    String?
+  status                         String?
+  systemic_diseases              String[]
+  total_appointments             Int?
+  total_debt                     Int?
+  total_paid                     Int?
+  treatment_consent              Boolean?
+  updated_at                     DateTime @updatedAt
+  updated_by                     String?
+  valor_lifetime                 Int?
+  valor_ticket_medio             Int?
+  weight_kg                      Int?
+}
+
+model payment_methods {
+  active          Boolean?
+  clinic_id       String
+  config          Json?
+  created_at      DateTime @default(now())
+  id              String   @id @default(uuid())
+  name            String
+  taxa_fixa       Int?
+  taxa_percentual Int?
+  type            String
+  updated_at      DateTime @updatedAt
+}
+
+model payment_negotiations {
+  accepted_at         String?
+  clinic_id           String
+  completed_at        String?
+  created_at          DateTime @default(now())
+  created_by          String
+  discount_amount     Int?
+  discount_percentage Int?
+  first_payment_date  String?
+  id                  String   @id @default(uuid())
+  installments        Int?
+  negotiated_amount   Int
+  original_amount     Int
+  overdue_account_id  String
+  patient_id          String
+  status              String
+  updated_at          DateTime @updatedAt
+}
+
+model pdv_produtos {
+  cest              String?
+  cfop              String?
+  clinic_id         String
+  codigo            String
+  cofins_aliquota   Int?
+  controla_estoque  Boolean?
+  created_at        DateTime? @default(now())
+  cst_cofins        String?
+  cst_icms          String?
+  cst_pis           String?
+  descricao         String
+  estoque_atual     Int?
+  estoque_minimo    Int?
+  icms_aliquota     Int?
+  id                String    @id @default(uuid())
+  is_active         Boolean?
+  ncm               String?
+  origem_mercadoria Int?
+  pis_aliquota      Int?
+  tipo              String
+  unidade_medida    String?
+  updated_at        DateTime? @updatedAt
+  valor_unitario    Int
+}
+
+model pdv_vendas {
+  caixa_movimento_id String?
+  clinic_id          String
+  created_at         DateTime @default(now())
+  forma_pagamento    String
+  id                 String   @id @default(uuid())
+  metadata           Json?
+  numero_venda       String
+  observacoes        String?
+  status             String
+  updated_at         DateTime @updatedAt
+  valor_total        Int
+}
+
+model pep_anexos {
+  caminho_storage String
+  created_at      DateTime @default(now())
+  descricao       String?
+  historico_id    String?
+  id              String   @id @default(uuid())
+  mime_type       String
+  nome_arquivo    String
+  prontuario_id   String
+  tamanho_bytes   Int
+  tipo_arquivo    String
+  uploaded_by     String
+}
+
+model pep_assinaturas {
+  assinatura_base64 String
+  historico_id      String?
+  id                String  @id @default(uuid())
+  ip_address        String?
+  prontuario_id     String
+  signed_at         String
+  signed_by         String
+  tipo_documento    String
+  user_agent        String?
+}
+
+model pep_evolucoes {
+  created_at    DateTime @default(now())
+  created_by    String
+  data_evolucao String
+  descricao     String
+  id            String   @id @default(uuid())
+  tipo          String
+  tratamento_id String
+}
+
+model pep_odontograma {
+  created_at     DateTime @default(now())
+  created_by     String
+  dente_codigo   String
+  faces_afetadas String[]
+  id             String   @id @default(uuid())
+  observacoes    String?
+  prontuario_id  String
+  status         String
+  updated_at     DateTime @updatedAt
+}
+
+model pep_odontograma_data {
+  created_at    DateTime @default(now())
+  created_by    String
+  id            String   @id @default(uuid())
+  notes         String?
+  prontuario_id String
+  status        String
+  tooth_number  Int
+  updated_at    DateTime @updatedAt
+  updated_by    String?
+}
+
+model pep_odontograma_history {
+  changed_teeth Int[]
+  created_at    DateTime @default(now())
+  created_by    String
+  description   String?
+  id            String   @id @default(uuid())
+  prontuario_id String
+  snapshot_data Json
+}
+
+model pep_tooth_surfaces {
+  created_at          DateTime @default(now())
+  id                  String   @id @default(uuid())
+  odontograma_data_id String
+  status              String
+  surface             String
+  updated_at          DateTime @updatedAt
+}
+
+model pep_tratamentos {
+  created_at      DateTime @default(now())
+  created_by      String
+  data_conclusao  String?
+  data_inicio     String
+  dente_codigo    String?
+  descricao       String
+  id              String   @id @default(uuid())
+  observacoes     String?
+  procedimento_id String?
+  prontuario_id   String
+  status          String
+  titulo          String
+  updated_at      DateTime @updatedAt
+  valor_estimado  Int?
+}
+
+model permission_audit_logs {
+  action            String
+  clinic_id         String
+  created_at        DateTime @default(now())
+  details           Json?
+  id                String   @id @default(uuid())
+  module_catalog_id Int?
+  target_user_id    String
+  template_name     String?
+  user_id           String
+}
+
+model permission_templates {
+  created_at  DateTime @default(now())
+  description String?
+  icon        String?
+  id          String   @id @default(uuid())
+  module_keys String[]
+  name        String
+}
+
+model prescricoes_remotas {
+  assinatura_digital     String?
+  created_at             DateTime @default(now())
+  descricao              String
+  enviado_em             String?
+  enviado_para_paciente  Boolean?
+  id                     String   @id @default(uuid())
+  instrucoes             String?
+  medicamento_dosagem    String?
+  medicamento_duracao    String?
+  medicamento_frequencia String?
+  medicamento_nome       String?
+  teleconsulta_id        String
+  tipo                   String
+}
+
+model problemas_radiograficos {
+  analise_id          String
+  confianca           Int?
+  created_at          DateTime @default(now())
+  dente_codigo        String?
+  descricao           String?
+  id                  String   @id @default(uuid())
+  localizacao         String?
+  severidade          String
+  sugestao_tratamento String?
+  tipo_problema       String
+  urgente             Boolean?
+}
+
+model procedimento_templates {
+  categoria              String
+  clinic_id              String?
+  created_at             DateTime @default(now())
+  created_by             String
+  descricao              String?
+  id                     String   @id @default(uuid())
+  is_public              Boolean?
+  nome                   String
+  steps                  Json
+  tags                   String[]
+  tempo_estimado_minutos Int
+  updated_at             DateTime @updatedAt
+  valor_sugerido         Int
+}
+
+model produtos {
+  ativo             Boolean
+  categoria         String
+  clinic_id         String
+  codigo_barras     String?
+  created_at        DateTime @default(now())
+  descricao         String?
+  fornecedor        String?
+  id                String   @id @default(uuid())
+  localizacao       String?
+  nome              String
+  observacoes       String?
+  quantidade_atual  Int
+  quantidade_minima Int
+  unidade_medida    String
+  updated_at        DateTime @updatedAt
+  valor_unitario    Int
+}
+
+model profiles {
+  app_role   String
+  avatar_url String?
+  clinic_id  String?
+  created_at DateTime @default(now())
+  full_name  String?
+  id         String   @id @default(uuid())
+  is_active  Boolean
+  phone      String?
+  updated_at DateTime @updatedAt
+}
+
+model prontuarios {
+  clinic_id    String
+  created_at   DateTime @default(now())
+  created_by   String
+  id           String   @id @default(uuid())
+  patient_id   String
+  patient_name String
+  updated_at   DateTime @updatedAt
+}
+
+model radiografia_ai_feedback {
+  analise_id          String
+  anotacoes_dentista  Json?
+  clinic_id           String
+  created_at          DateTime @default(now())
+  created_by          String
+  diagnostico_correto String?
+  falsos_negativos    Json?
+  falsos_positivos    Json?
+  ia_estava_correta   Boolean
+  id                  String   @id @default(uuid())
+  imagem_marcada_url  String?
+  usado_para_treino   Boolean?
+}
+
+model radiografia_laudo_templates {
+  clinic_id             String
+  created_at            DateTime @default(now())
+  created_by            String
+  id                    String   @id @default(uuid())
+  is_default            Boolean?
+  nome_template         String
+  template_markdown     String
+  tipo_radiografia      String
+  variaveis_disponiveis Json?
+}
+
+model rate_limit_config {
+  created_at            DateTime @default(now())
+  enabled               Boolean
+  endpoint              String
+  id                    Int      @id @default(autoincrement())
+  max_requests_per_ip   Int
+  max_requests_per_user Int
+  updated_at            DateTime @updatedAt
+  window_minutes        Int
+}
+
+model rate_limit_log {
+  created_at    DateTime @default(now())
+  endpoint      String
+  id            Int      @id @default(autoincrement())
+  ip_address    Json
+  request_count Int?
+  updated_at    DateTime @updatedAt
+  user_id       String?
+  window_start  String
+}
+
+model recalls {
+  clinic_id              String
+  created_at             DateTime @default(now())
+  created_by             String?
+  data_prevista          String
+  id                     String   @id @default(uuid())
+  mensagem_personalizada String?
+  metodo_notificacao     String?
+  notificacao_enviada    Boolean?
+  patient_id             String
+  status                 String
+  tipo_recall            String
+  updated_at             DateTime @updatedAt
+}
+
+model room_availability {
+  capacity    Int
+  clinic_id   String
+  created_at  DateTime @default(now())
+  created_by  String
+  equipment   Json?
+  id          String   @id @default(uuid())
+  is_active   Boolean
+  room_name   String
+  room_number String?
+  updated_at  DateTime @updatedAt
+}
+
+model root_actions_log {
+  action           String
+  details          Json?
+  executed_at      String
+  id               Int     @id @default(autoincrement())
+  ip_address       Json
+  root_user_id     String
+  target_record_id String?
+  target_table     String?
+  user_agent       String?
+}
+
+model rum_metrics {
+  clinic_id    String
+  created_at   DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  metric_name  String
+  metric_value Int
+  page_url     String
+  rating       String
+  user_agent   String?
+  user_id      String?
+}
+
+model sat_mfe_config {
+  ativo            Boolean
+  clinic_id        String
+  codigo_ativacao  String?
+  created_at       DateTime @default(now())
+  fabricante       String?
+  id               String   @id @default(uuid())
+  ip_address       String?
+  metadata         Json?
+  modelo           String?
+  numero_serie     String
+  porta            Int?
+  tipo_equipamento String
+  updated_at       DateTime @updatedAt
+  versao_software  String?
+}
+
+model sat_mfe_impressoes {
+  chave_consulta     String?
+  clinic_id          String
+  codigo_autorizacao String?
+  config_id          String
+  created_at         DateTime @default(now())
+  id                 String   @id @default(uuid())
+  mensagem_retorno   String?
+  metadata           Json?
+  nfce_id            String?
+  numero_sessao      String?
+  status             String
+  tentativas         Int
+  tipo_equipamento   String
+  updated_at         DateTime @updatedAt
+  venda_id           String?
+  xml_enviado        String?
+  xml_retorno        String?
+}
+
+model scheduled_backups {
+  backup_type            String
+  clinic_id              String
+  compression_enabled    Boolean
+  created_at             DateTime @default(now())
+  created_by             String
+  day_of_month           Int?
+  day_of_week            Int?
+  encryption_enabled     Boolean
+  frequency              String
+  id                     String   @id @default(uuid())
+  include_data           Json
+  includes_postgres_dump Boolean?
+  is_active              Boolean
+  last_run_at            String?
+  local_path             String?
+  max_parallel_jobs      Int?
+  name                   String
+  next_run_at            String
+  notification_emails    String[]
+  retention_policy_id    String?
+  storage_config         Json?
+  storage_destination    String?
+  time_of_day            String
+  updated_at             DateTime @updatedAt
+}
+
+model scheduled_exports {
+  clinic_id      String
+  created_at     DateTime @default(now())
+  dashboard_name String
+  email          String
+  export_format  String
+  frequency      String
+  id             String   @id @default(uuid())
+  is_active      Boolean
+  last_sent_at   String?
+  next_send_at   String?
+  updated_at     DateTime @updatedAt
+  user_id        String
+}
+
+model security_audit_log {
+  description       String
+  id                Int     @id @default(autoincrement())
+  issue_type        String
+  migration_version String
+  resolution        String
+  resolved_at       String
+  severity          String?
+}
+
+model split_payment_config {
+  clinic_id       String
+  created_at      DateTime @default(now())
+  id              String   @id @default(uuid())
+  is_active       Boolean
+  percentage      Int
+  procedure_type  String?
+  professional_id String
+  updated_at      DateTime @updatedAt
+}
+
+model split_payment_details {
+  created_at           DateTime @default(now())
+  id                   String   @id @default(uuid())
+  net_amount           Int
+  paid_at              String?
+  recipient_id         String
+  recipient_name       String
+  recipient_type       String
+  split_amount         Int
+  split_transaction_id String
+  status               String
+  tax_withheld         Int?
+}
+
+model split_payment_recipients {
+  clinic_id          String
+  created_at         DateTime @default(now())
+  id                 String   @id @default(uuid())
+  recipient_id       String?
+  recipient_name     String
+  recipient_type     String
+  rule_id            String
+  split_fixed_amount Int?
+  split_percentage   Int?
+  tax_rate           Int?
+  tax_regime         String?
+}
+
+model split_payment_rules {
+  clinic_id  String
+  conditions Json
+  created_at DateTime @default(now())
+  created_by String
+  id         String   @id @default(uuid())
+  priority   Int
+  rule_name  String
+  rule_type  String
+  status     String
+  updated_at DateTime @updatedAt
+}
+
+model split_payment_transactions {
+  clinic_id           String
+  conta_receber_id    String?
+  created_at          DateTime @default(now())
+  error_message       String?
+  id                  String   @id @default(uuid())
+  processed_at        String?
+  rule_id             String?
+  split_calculated_at String
+  status              String
+  total_amount        Int
+  transaction_id      String?
+}
+
+model split_transactions {
+  clinic_amount       Int
+  clinic_id           String
+  created_at          DateTime @default(now())
+  id                  String   @id @default(uuid())
+  percentage          Int
+  processed_at        String?
+  professional_amount Int
+  professional_id     String
+  status              String
+  total_amount        Int
+  transaction_id      String
+}
+
+model system_health_metrics {
+  clinic_id   String
+  id          String  @id @default(uuid())
+  metadata    Json?
+  metric_type String
+  recorded_at String
+  unit        String?
+  value       Int
+}
+
+model teleconsultas {
+  appointment_id  String?
+  clinic_id       String
+  conduta         String?
+  created_at      DateTime @default(now())
+  created_by      String
+  data_agendada   String
+  data_finalizada String?
+  data_iniciada   String?
+  dentist_id      String
+  diagnostico     String?
+  duracao_minutos Int?
+  id              String   @id @default(uuid())
+  link_sala       String?
+  motivo          String
+  observacoes     String?
+  patient_id      String
+  recording_url   String?
+  status          String
+  tipo            String
+  titulo          String
+  updated_at      DateTime @updatedAt
+}
+
+model teleodonto_chat {
+  attachment_type String?
+  attachment_url  String?
+  id              String  @id @default(uuid())
+  message_text    String
+  message_type    String
+  read_at         String?
+  sender_id       String
+  sender_role     String
+  sent_at         String
+  session_id      String
+}
+
+model teleodonto_files {
+  compartilhado_com_paciente Boolean?
+  descricao                  String?
+  file_name                  String
+  file_size_bytes            Int
+  file_type                  String
+  file_url                   String?
+  id                         String   @id @default(uuid())
+  session_id                 String
+  storage_path               String
+  tipo_arquivo               String
+  uploaded_at                String
+  uploaded_by                String
+}
+
+model teleodonto_sessions {
+  appointment_id            String?
+  clinic_id                 String
+  consentimento_assinado_em String?
+  consentimento_gravacao    Boolean?
+  created_at                DateTime @default(now())
+  created_by                String
+  dentist_id                String
+  dentist_joined_at         String?
+  diagnostico_preliminar    String?
+  duracao_minutos           Int?
+  ended_at                  String?
+  id                        String   @id @default(uuid())
+  notas_pos_consulta        String?
+  notas_pre_consulta        String?
+  patient_id                String
+  patient_joined_at         String?
+  platform                  String
+  prescricoes               Json?
+  problemas_tecnicos        String?
+  qualidade_audio           String?
+  qualidade_video           String?
+  recording_url             String?
+  room_id                   String?
+  room_url                  String?
+  scheduled_end             String
+  scheduled_start           String
+  started_at                String?
+  status                    String
+  updated_at                DateTime @updatedAt
+}
+
+model terminal_command_history {
+  clinic_id      String
+  command        String
+  duration_ms    Int?
+  executed_at    String
+  exit_code      Int?
+  id             String   @id @default(uuid())
+  output         String?
+  user_id        String
+  was_successful Boolean?
+}
+
+model tiss_batches {
+  batch_number      String
+  clinic_id         String
+  created_at        DateTime @default(now())
+  guide_ids         String[]
+  id                String   @id @default(uuid())
+  insurance_company String
+  processed_at      String?
+  sent_at           String?
+  status            String
+  total_amount      Int
+  total_guides      Int
+}
+
+model tiss_guides {
+  amount            Int
+  batch_id          String?
+  clinic_id         String
+  created_at        DateTime @default(now())
+  guide_number      String
+  id                String   @id @default(uuid())
+  insurance_company String
+  patient_id        String
+  procedure_code    String
+  procedure_name    String
+  response_date     String?
+  service_date      String
+  status            String
+  submission_date   String?
+  updated_at        DateTime @updatedAt
+}
+
+model triagem_teleconsulta {
+  alergias         String?
+  created_at       DateTime @default(now())
+  fotos_anexas     Json?
+  id               String   @id @default(uuid())
+  intensidade_dor  Int?
+  medicamentos_uso String?
+  sintomas         String[]
+  teleconsulta_id  String
+  tempo_sintoma    String?
+}
+
+model user_clinic_access {
+  clinic_id  String
+  created_at DateTime @default(now())
+  id         String   @id @default(uuid())
+  is_default Boolean?
+  user_id    String
+}
+
+model user_module_permissions {
+  can_delete        Boolean
+  can_edit          Boolean
+  can_view          Boolean
+  created_at        DateTime @default(now())
+  id                String   @id @default(uuid())
+  module_catalog_id Int
+  updated_at        DateTime @updatedAt
+  user_id           String
+}
+
+model user_roles {
+  created_at DateTime @default(now())
+  id         String   @id @default(uuid())
+  role       String
+  user_id    String
+}
+
+model wiki_page_versions {
+  change_summary String?
+  changed_by     String
+  content        String
+  created_at     DateTime @default(now())
+  id             String   @id @default(uuid())
+  page_id        String
+  title          String
+  version        Int
+}
+
+model wiki_pages {
+  category     String
+  clinic_id    String
+  content      String
+  created_at   DateTime @default(now())
+  created_by   String
+  id           String   @id @default(uuid())
+  is_published Boolean
+  parent_id    String?
+  slug         String
+  tags         String[]
+  title        String
+  updated_at   DateTime @updatedAt
+  updated_by   String?
+  version      Int
+}

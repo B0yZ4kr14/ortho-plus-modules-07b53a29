@@ -53,6 +53,31 @@ class SupabaseQueryBuilder {
     return this;
   }
 
+  gte(column: string, value: any) {
+    this._filters.push(`gte.${column}=${value}`);
+    return this;
+  }
+
+  lte(column: string, value: any) {
+    this._filters.push(`lte.${column}=${value}`);
+    return this;
+  }
+
+  gt(column: string, value: any) {
+    this._filters.push(`gt.${column}=${value}`);
+    return this;
+  }
+
+  lt(column: string, value: any) {
+    this._filters.push(`lt.${column}=${value}`);
+    return this;
+  }
+
+  neq(column: string, value: any) {
+    this._filters.push(`neq.${column}=${value}`);
+    return this;
+  }
+
   order(field: string, opts?: { ascending?: boolean }) {
     const dir = opts?.ascending === false ? "desc" : "asc";
     this._order = `order=${field}.${dir}`;
@@ -63,19 +88,19 @@ class SupabaseQueryBuilder {
     this._limit = num;
     return this;
   }
-  
+
   insert(data: any) {
     this._action = "POST";
     this._payload = data;
     return this;
   }
-  
+
   update(data: any) {
     this._action = "PATCH";
     this._payload = data;
     return this;
   }
-  
+
   delete() {
     this._action = "DELETE";
     return this;
@@ -85,9 +110,9 @@ class SupabaseQueryBuilder {
     try {
         const queryParams = [`select=${this._select}`, ...this._filters].join("&");
         const fullQuery = [queryParams, this._order].filter(Boolean).join("&") + (this._limit ? `&limit=${this._limit}` : "");
-        
+
         let res;
-        
+
         if (this._action === "GET") {
             res = await api.get(`/rest/v1/${this._table}?${fullQuery}`);
         } else if (this._action === "POST") {
@@ -108,7 +133,7 @@ class SupabaseQueryBuilder {
         resolve({ data: null, error: err });
     }
   }
-  
+
   // Provide single methods since React Query calls them often
   async single() {
      const result: any = await new Promise((res, rej) => this.then(res, rej));
