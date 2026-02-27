@@ -23,7 +23,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       
       - name: Run npm audit
         run: npm audit --audit-level=moderate
@@ -57,7 +57,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       
       - name: Run ESLint security rules
         run: npx eslint . --ext .ts,.tsx --max-warnings 0
