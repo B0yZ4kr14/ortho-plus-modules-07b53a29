@@ -6,7 +6,7 @@ test.describe('Fluxo Integrado: Paciente → PEP → Tratamento → Agendamento 
   test('deve completar fluxo completo de atendimento', async ({ page }) => {
     // ========== ETAPA 1: LOGIN ==========
     await page.goto('/auth');
-    await page.getByLabel(/email/i).fill('admin@orthomais.com');
+    await page.getByLabel(/email/i).fill('admin@orthoplus.com');
     await page.getByLabel(/senha/i).fill('Admin123!');
     await page.getByRole('button', { name: /entrar/i }).click();
     await page.waitForURL('/dashboard');
@@ -134,7 +134,7 @@ test.describe('Fluxo Integrado: Paciente → PEP → Tratamento → Agendamento 
 
   test('deve manter consistência de dados entre módulos', async ({ page }) => {
     await page.goto('/auth');
-    await page.getByLabel(/email/i).fill('admin@orthomais.com');
+    await page.getByLabel(/email/i).fill('admin@orthoplus.com');
     await page.getByLabel(/senha/i).fill('Admin123!');
     await page.getByRole('button', { name: /entrar/i }).click();
     await page.waitForURL('/dashboard');
@@ -156,7 +156,7 @@ test.describe('Fluxo Integrado: Paciente → PEP → Tratamento → Agendamento 
 
   test('deve preservar dados ao navegar entre módulos', async ({ page }) => {
     await page.goto('/auth');
-    await page.getByLabel(/email/i).fill('admin@orthomais.com');
+    await page.getByLabel(/email/i).fill('admin@orthoplus.com');
     await page.getByLabel(/senha/i).fill('Admin123!');
     await page.getByRole('button', { name: /entrar/i }).click();
     await page.waitForURL('/dashboard');

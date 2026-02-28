@@ -9,7 +9,7 @@ test.describe('Backend Switching', () => {
   test.beforeEach(async ({ page }) => {
     // Login como admin
     await page.goto('/auth');
-    await page.getByLabel(/email/i).fill('admin@orthomais.com');
+    await page.getByLabel(/email/i).fill('admin@orthoplus.com');
     await page.getByLabel(/senha/i).fill('Admin123!');
     await page.getByRole('button', { name: /entrar/i }).click();
     await page.waitForURL('/dashboard');

@@ -1,0 +1,63 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "Performance" [level=3] [ref=e6]:
+        - img [ref=e7]
+        - text: Performance
+      - generic [ref=e10]:
+        - generic [ref=e11]: "FPS:"
+        - generic [ref=e12]: "35"
+    - generic [ref=e13]:
+      - heading "Memory" [level=3] [ref=e15]:
+        - img [ref=e16]
+        - text: Memory
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - generic [ref=e21]: "Used:"
+          - generic [ref=e22]: 19.55 MB
+        - generic [ref=e23]:
+          - generic [ref=e24]: "Total:"
+          - generic [ref=e25]: 28.04 MB
+        - generic [ref=e26]:
+          - generic [ref=e27]: "Usage:"
+          - generic [ref=e28]: 0.88%
+    - generic [ref=e30]:
+      - img [ref=e31]
+      - text: DEV MODE
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T"
+  - generic [ref=e34]:
+    - generic [ref=e35]:
+      - img "Ortho+" [ref=e37]
+      - heading "Bem-vindo ao Ortho+" [level=3] [ref=e38]
+      - paragraph [ref=e39]: Sistema de Gestão para Clínicas Odontológicas
+    - generic [ref=e41]:
+      - tablist [ref=e42]:
+        - tab "Equipe" [selected] [ref=e43] [cursor=pointer]
+        - tab "Paciente" [ref=e44] [cursor=pointer]
+        - tab "Cadastro" [ref=e45] [cursor=pointer]
+      - tabpanel "Equipe" [ref=e46]:
+        - paragraph [ref=e47]: Acesso para dentistas, recepcionistas e administradores
+        - generic [ref=e48]:
+          - generic [ref=e49]:
+            - text: Email
+            - textbox "Email" [ref=e50]:
+              - /placeholder: seu@email.com
+              - text: invalido@email.com
+          - generic [ref=e51]:
+            - text: Senha
+            - textbox "Senha" [ref=e52]:
+              - /placeholder: ••••••••
+              - text: senhaErrada
+          - button "Entrar" [ref=e53] [cursor=pointer]
+          - button "Esqueceu sua senha?" [ref=e54] [cursor=pointer]
+          - generic [ref=e55]:
+            - paragraph [ref=e56]: Login Padrão de Administrador
+            - generic [ref=e57]:
+              - paragraph [ref=e58]: "Email: admin@orthoplus.com"
+              - paragraph [ref=e59]: "Senha: Admin123!"
+```

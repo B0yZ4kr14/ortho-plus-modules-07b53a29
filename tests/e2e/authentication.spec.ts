@@ -6,7 +6,7 @@ test.describe('Autenticação', () => {
   });
 
   test('deve realizar login com sucesso', async ({ page }) => {
-    await page.getByLabel(/email/i).fill('admin@orthomais.com');
+    await page.getByLabel(/email/i).fill('admin@orthoplus.com');
     await page.getByLabel(/senha/i).fill('Admin123!');
     await page.getByRole('button', { name: /entrar/i }).click();
     
@@ -24,7 +24,7 @@ test.describe('Autenticação', () => {
 
   test('deve realizar logout com sucesso', async ({ page }) => {
     // Login
-    await page.getByLabel(/email/i).fill('admin@orthomais.com');
+    await page.getByLabel(/email/i).fill('admin@orthoplus.com');
     await page.getByLabel(/senha/i).fill('Admin123!');
     await page.getByRole('button', { name: /entrar/i }).click();
     await page.waitForURL('/dashboard');

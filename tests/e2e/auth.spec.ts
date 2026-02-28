@@ -12,14 +12,14 @@ test.describe('Autenticação', () => {
 
   test('deve fazer login com credenciais válidas', async ({ page }) => {
     // Preencher formulário de login
-    await page.getByLabel(/email/i).fill('admin@orthomais.com');
+    await page.getByLabel(/email/i).fill('admin@orthoplus.com');
     await page.getByLabel(/senha/i).fill('Admin123!');
     
     // Clicar no botão de login
     await page.getByRole('button', { name: /entrar/i }).click();
     
     // Aguardar redirecionamento para dashboard
-    await expect(page).toHaveURL('/dashboard');
+    await expect(page).toHaveURL('/');
     await expect(page.getByText(/dashboard/i)).toBeVisible();
   });
 
@@ -36,11 +36,11 @@ test.describe('Autenticação', () => {
   test('deve fazer logout com sucesso', async ({ page }) => {
     // Login primeiro
     await page.goto('/auth');
-    await page.getByLabel(/email/i).fill('admin@orthomais.com');
+    await page.getByLabel(/email/i).fill('admin@orthoplus.com');
     await page.getByLabel(/senha/i).fill('Admin123!');
     await page.getByRole('button', { name: /entrar/i }).click();
     
-    await page.waitForURL('/dashboard');
+    await page.waitForURL('/');
     
     // Fazer logout
     await page.getByRole('button', { name: /sair|logout/i }).click();

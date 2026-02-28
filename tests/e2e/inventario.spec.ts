@@ -4,7 +4,7 @@ test.describe('Gestão de Inventário', () => {
   test.beforeEach(async ({ page }) => {
     // Login antes de cada teste
     await page.goto('/auth');
-    await page.getByLabel(/email/i).fill('admin@orthomais.com');
+    await page.getByLabel(/email/i).fill('admin@orthoplus.com');
     await page.getByLabel(/senha/i).fill('Admin123!');
     await page.getByRole('button', { name: /entrar/i }).click();
     await page.waitForURL('/dashboard');
