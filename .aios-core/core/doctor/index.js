@@ -39,7 +39,7 @@ async function runDoctorChecks(options = {}) {
 
   const context = {
     projectRoot,
-    frameworkRoot: path.resolve(__dirname, '..', '..', '..'),
+    frameworkRoot: path.resolve(__dirname, '..', '..'),
     options: { fix, json, dryRun, quiet },
   };
 
