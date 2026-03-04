@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Architecture | Ortho+ Enterprise</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-color: #f8f9fa;
+        --text-color: #24292e;
+        --header-bg: #24292e;
+        --header-text: #ffffff;
+        --accent-color: #0366d6;
+        --border-color: #e1e4e8;
+        --card-bg: #ffffff;
+        --code-bg: #f6f8fa;
+        --success-color: #28a745;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-color: #0d1117;
+          --text-color: #c9d1d9;
+          --header-bg: #161b22;
+          --header-text: #ffffff;
+          --accent-color: #58a6ff;
+          --border-color: #30363d;
+          --card-bg: #161b22;
+          --code-bg: #1f2428;
+          --success-color: #2ea043;
+        }
+      }
+
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Helvetica,
+          Arial,
+          sans-serif;
+        line-height: 1.6;
+        color: var(--text-color);
+        background-color: var(--bg-color);
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      header {
+        background-color: var(--header-bg);
+        color: var(--header-text);
+        padding: 2rem 0;
+        border-bottom: 1px solid var(--border-color);
+        text-align: center;
+      }
+
+      .container {
+        max-width: 1012px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      h1,
+      h2,
+      h3 {
+        font-weight: 600;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        letter-spacing: -0.05em;
+      }
+      h2 {
+        font-size: 1.75rem;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.5rem;
+      }
+      h3 {
+        font-size: 1.25rem;
+      }
+
+      .card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      code,
+      pre {
+        font-family:
+          "JetBrains Mono", ui-monospace, SFMono-Regular, Consolas,
+          "Liberation Mono", Menlo, monospace;
+        background-color: var(--code-bg);
+        border-radius: 6px;
+        font-size: 85%;
+      }
+
+      code {
+        padding: 0.2em 0.4em;
+      }
+
+      pre {
+        padding: 16px;
+        overflow: auto;
+        border: 1px solid var(--border-color);
+      }
+
+      pre code {
+        padding: 0;
+        background-color: transparent;
+      }
+
+      ul {
+        padding-left: 2rem;
+      }
+
+      li {
+        margin-bottom: 0.5rem;
+      }
+
+      .diagram-box {
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        overflow-x: auto;
+        margin: 1.5rem 0;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .diagram-box {
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 0.25em 0.5em;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 20px;
+        background-color: rgba(3, 102, 214, 0.1);
+        color: var(--accent-color);
+        border: 1px solid rgba(3, 102, 214, 0.2);
+        vertical-align: middle;
+        margin-left: 0.5rem;
+      }
+      .footer {
+        margin-top: 4rem;
+        padding: 2rem;
+        text-align: center;
+        font-size: 0.875rem;
+        color: #6a737d;
+        border-top: 1px solid var(--border-color);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Ortho+ Enterprise Architecture</h1>
+      <p>Documentação Técnica Definitiva (v2.0) - Express & Prisma Stack</p>
+    </header>
+
+    <div class="container">
+      <div class="card">
+        <h2>Visão Executiva</h2>
+        <p>
+          O <strong>Ortho+</strong> é um sistema robusto refatorado a partir de
+          sua estrutura Legacy (Edge Functions/Deno) para um
+          <strong>Monolito Modular Moderno</strong> rodando nativamente no
+          Node.js com Express e Prisma.
+        </p>
+        <p>
+          A separação em <em>Domain-Driven Design</em> e isolamento de domínios
+          garante a integridade dos limites operacionais de cada módulo da
+          clínica.
+        </p>
+      </div>
+
+      <h2>🧩 Padrões de Projeto (Frontend)</h2>
+      <div class="card">
+        <h3>Camada React / Vite</h3>
+        <ul>
+          <li>
+            <strong>Isolamento de React Hooks:</strong> Todo estado do lado do
+            servidor é roteado por intermédio do <code>useQuery</code> do
+            <code>@tanstack/react-query</code>, apontando estritamente para
+            endpoints express <code>/api/*</code>.
+          </li>
+          <li>
+            <strong>Payload Enforcement:</strong> Nenhum DTO de formulário é
+            disparado sem passar validamente pelos TypeGuards do
+            <code>Zod</code> + <code>react-hook-form</code>.
+          </li>
+          <li>
+            <strong>Router Guards Inflexíveis:</strong> A verificação de ACL é
+            tripla. O componente <code>ProtectedRoute</code> avalia a prop
+            <code>moduleKey</code> injetada, comparando-a dinamicamente via
+            <code>AuthContext</code> com a tabela
+            <code>clinic_modules</code> persistida na Auth Store.
+          </li>
+        </ul>
+        <pre><code>src/modules/[nome-do-modulo]/
+ ├── components/    # Componentes puros da UI (ex: Modais, Tabelas)
+ ├── pages/         # Contêineres injetores de lógica
+ ├── hooks/         # Orquestradores de mutations/queries
+ └── utils/         # Helpers isolados do ecosistema global</code></pre>
+      </div>
+
+      <h2>⚙️ Topologia (Backend & Infraestrutura)</h2>
+      <div class="card">
+        <h3>Express.js Gateway</h3>
+        <p>
+          A pipeline REST central é gerenciada pelo <strong>VM200</strong>,
+          atuando como o motor assíncrono. Substitui o antigo acoplamento BaaS.
+        </p>
+        <ul>
+          <li>
+            <strong>Sistema de Middleware:</strong> JWT Decoders robustos
+            rejeitam fluxos sem assinatura RSA. Validam o
+            <code>clinic_id</code> automaticamente e isolam sub-tenants por RLS.
+          </li>
+          <li>
+            <strong>Node Real-Time Engine (SSE):</strong> O socket
+            `/api/events/stream` opera sob Server-Sent Events, despachando
+            sub-eventos para listeners específicos sem sobrecarga TCP de
+            WebSockets (Socket.io).
+          </li>
+          <li>
+            <strong>Cache Engine:</strong> Endpoints intensivos em leitura (e.g.
+            Dashboard de BI, Analise Financeira) são cobertos por um buffer
+            Redis com TTL inteligente, eliminando gargalos de banco.
+          </li>
+        </ul>
+        <pre><code>backend/src/
+ ├── controllers/     # Handlers de Request delegando para Prisma
+ ├── routes/          # Bindings Express (REST + Middleware bindings)
+ ├── infrastructure/  # Singleton Wrappers para Logger, Queue, Redis
+ ├── modules/         # Lógicas específicas de backend (Dumps, Exporting)
+ └── utils/           # Type guards, Prisma Singletons</code></pre>
+      </div>
+
+      <h2>🗄️ Estrutura de Domínios Relacionais (Database)</h2>
+      <div class="card">
+        <p>
+          Hospedado no <strong>VM201</strong> de modo isolado da computação
+          HTTP. O banco está sob governança estrita de permissões e triggers
+          criptográficas.
+        </p>
+        <ul>
+          <li>
+            <strong>Multi-Tenancy (Isolamento Row-Level):</strong> Todas as
+            master schemas carregam <code>clinic_id</code> FK indexada
+            nativamente. RLS Policies previnem select sem injeção de ID.
+          </li>
+          <li>
+            <strong>Continuous Audit:</strong> Cada mutation significativa gera
+            um append na engine de logs acoplada pelo trigger
+            <code>after_transaction_audit</code> no PostgreSQL.
+          </li>
+        </ul>
+      </div>
+
+      <h2>🚀 Integração Contínua (CI/CD)</h2>
+      <div class="card">
+        <p>
+          A engine de Deployment no GitHub garante zero regressão por cada merge
+          na master.
+        </p>
+        <ol>
+          <li>
+            <strong>Serviços:</strong> Inicializa containers nativamente via
+            <code>services</code> Action (PostgreSQL e Redis).
+          </li>
+          <li>
+            <strong>Daemon Test:</strong> Inicializa a thread do Prisma
+            <code>npx prisma generate && npx tsx src/index.ts &</code> e captura
+            PID localmente.
+          </li>
+          <li>
+            <strong>Playwright Test E2E:</strong> Shard em 2 cores rodando por
+            completo suítes críticas com limit timeout total de 30 segundos
+            usando Webkit, Firefox e Chromium.
+          </li>
+        </ol>
+      </div>
+
+      <div class="footer">
+        Este documento reflete a verdade técnica arquitetônica da Stack Ortho+
+        atual. Mantenha sincronizado em PRs.<br />
+        <strong
+          >Gerado Autonomamente por Agente Antigravity para DevOps e Arquitetos
+          (2026)</strong
+        >
+      </div>
+    </div>
+  </body>
+</html>

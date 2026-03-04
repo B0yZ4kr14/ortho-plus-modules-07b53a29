@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
-import ModulesSimple from './settings/ModulesSimple';
+import ModulesSimple from '@/modules/settings/ui/pages/ModulesSimple';
 import DatabaseBackupTab from '@/components/settings/DatabaseBackupTab';
 import { UserManagementTab } from '@/components/settings/UserManagementTab';
 import { ModulePermissionsManager } from '@/components/settings/ModulePermissionsManager';
@@ -77,8 +77,8 @@ export default function Configuracoes() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <PageHeader 
-        title="Configurações Administrativas" 
+      <PageHeader
+        title="Configurações Administrativas"
         icon={Settings}
         description="Gerencie todos os aspectos do sistema Ortho +"
       />
@@ -86,8 +86,8 @@ export default function Configuracoes() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-7">
           {configSections.map((section) => (
-            <TabsTrigger 
-              key={section.id} 
+            <TabsTrigger
+              key={section.id}
               value={section.id}
               disabled={section.comingSoon}
               className="relative"
@@ -138,7 +138,7 @@ export default function Configuracoes() {
             </CardHeader>
             <CardContent>
               <div className="flex gap-4">
-                <Button 
+                <Button
                   onClick={() => setShowExportWizard(true)}
                   variant="outline"
                   className="flex-1"
@@ -146,7 +146,7 @@ export default function Configuracoes() {
                   <Download className="h-4 w-4 mr-2" />
                   Exportar Dados
                 </Button>
-                <Button 
+                <Button
                   onClick={() => setShowImportWizard(true)}
                   variant="outline"
                   className="flex-1"
@@ -157,17 +157,17 @@ export default function Configuracoes() {
               </div>
             </CardContent>
           </Card>
-          
+
           <DatabaseBackupTab />
         </TabsContent>
 
-        <DataMigrationWizard 
+        <DataMigrationWizard
           open={showExportWizard}
           onClose={() => setShowExportWizard(false)}
           mode="export"
         />
-        
-        <DataMigrationWizard 
+
+        <DataMigrationWizard
           open={showImportWizard}
           onClose={() => setShowImportWizard(false)}
           mode="import"
