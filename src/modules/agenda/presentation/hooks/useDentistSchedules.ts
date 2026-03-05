@@ -1,11 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { DentistScheduleRepositorySupabase } from '../../infrastructure/repositories/DentistScheduleRepositorySupabase';
-import { CreateDentistScheduleUseCase } from '../../application/useCases/CreateDentistScheduleUseCase';
-import { UpdateDentistScheduleUseCase } from '../../application/useCases/UpdateDentistScheduleUseCase';
-import { ListDentistSchedulesUseCase } from '../../application/useCases/ListDentistSchedulesUseCase';
-import { toast } from 'sonner';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { CreateDentistScheduleUseCase } from "../../application/useCases/CreateDentistScheduleUseCase";
+import { ListDentistSchedulesUseCase } from "../../application/useCases/ListDentistSchedulesUseCase";
+import { UpdateDentistScheduleUseCase } from "../../application/useCases/UpdateDentistScheduleUseCase";
+import { DentistScheduleRepositoryApi } from "../../infrastructure/repositories/DentistScheduleRepositoryApi";
 
-const scheduleRepo = new DentistScheduleRepositorySupabase();
+const scheduleRepo = new DentistScheduleRepositoryApi();
 
 export function useDentistSchedules(filters?: {
   clinicId?: string;
@@ -13,8 +13,12 @@ export function useDentistSchedules(filters?: {
 }) {
   const queryClient = useQueryClient();
 
-  const { data: schedules, isLoading, error } = useQuery({
-    queryKey: ['dentist-schedules', filters],
+  const {
+    data: schedules,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["dentist-schedules", filters],
     queryFn: async () => {
       const useCase = new ListDentistSchedulesUseCase(scheduleRepo);
       return await useCase.execute(filters || {});
@@ -36,8 +40,8 @@ export function useDentistSchedules(filters?: {
       return await useCase.execute(input);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dentist-schedules'] });
-      toast.success('Horário configurado com sucesso');
+      queryClient.invalidateQueries({ queryKey: ["dentist-schedules"] });
+      toast.success("Horário configurado com sucesso");
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -56,8 +60,8 @@ export function useDentistSchedules(filters?: {
       return await useCase.execute(input);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dentist-schedules'] });
-      toast.success('Horário atualizado com sucesso');
+      queryClient.invalidateQueries({ queryKey: ["dentist-schedules"] });
+      toast.success("Horário atualizado com sucesso");
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -69,8 +73,8 @@ export function useDentistSchedules(filters?: {
       await scheduleRepo.delete(scheduleId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dentist-schedules'] });
-      toast.success('Horário removido');
+      queryClient.invalidateQueries({ queryKey: ["dentist-schedules"] });
+      toast.success("Horário removido");
     },
     onError: (error: Error) => {
       toast.error(error.message);

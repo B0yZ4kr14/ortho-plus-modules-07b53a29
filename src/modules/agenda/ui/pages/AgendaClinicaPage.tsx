@@ -1,33 +1,35 @@
-import { useState } from 'react';
-import { useAgendaSupabase } from '@/modules/agenda/hooks/useAgendaSupabase';
-import { usePatientsSupabase } from '@/modules/pacientes/hooks/usePatientsSupabase';
-import { AgendaCalendar } from '@/modules/agenda/components/AgendaCalendar';
-import { AppointmentForm } from '@/modules/agenda/components/AppointmentForm';
-import { AppointmentDetails } from '@/modules/agenda/components/AppointmentDetails';
-import { Appointment } from '@/modules/agenda/types/agenda.types';
+import { useState } from "react";
+import { useAgendaApi } from "@/modules/agenda/hooks/useAgendaApi";
+import { usePatientsUnified } from "@/modules/pacientes/hooks/usePatientsUnified";
+import { AgendaCalendar } from "@/modules/agenda/components/AgendaCalendar";
+import { AppointmentForm } from "@/modules/agenda/components/AppointmentForm";
+import { AppointmentDetails } from "@/modules/agenda/components/AppointmentDetails";
+import { Appointment } from "@/modules/agenda/types/agenda.types";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Calendar } from 'lucide-react';
+} from "@/components/ui/dialog";
+import { Calendar } from "lucide-react";
 
-type ViewMode = 'calendar' | 'form' | 'details';
+type ViewMode = "calendar" | "form" | "details";
 
 export default function AgendaClinicaPage() {
-  const { 
-    appointments, 
-    dentistas, 
-    loading, 
-    addAppointment, 
-    updateAppointment, 
-    enviarLembrete 
-  } = useAgendaSupabase();
-  
-  const { patients } = usePatientsSupabase();
-  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | undefined>();
+  const {
+    appointments,
+    dentistas,
+    loading,
+    addAppointment,
+    updateAppointment,
+    enviarLembrete,
+  } = useAgendaApi();
+
+  const { patients } = usePatientsUnified();
+  const [viewMode, setViewMode] = useState<ViewMode>("calendar");
+  const [selectedAppointment, setSelectedAppointment] = useState<
+    Appointment | undefined
+  >();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [initialDate, setInitialDate] = useState<string>();
   const [initialTime, setInitialTime] = useState<string>();
@@ -36,7 +38,7 @@ export default function AgendaClinicaPage() {
     setSelectedAppointment(undefined);
     setInitialDate(date);
     setInitialTime(time);
-    setViewMode('form');
+    setViewMode("form");
     setDialogOpen(true);
   };
 
@@ -44,13 +46,13 @@ export default function AgendaClinicaPage() {
     setSelectedAppointment(appointment);
     setInitialDate(undefined);
     setInitialTime(undefined);
-    setViewMode('form');
+    setViewMode("form");
     setDialogOpen(true);
   };
 
   const handleView = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
-    setViewMode('details');
+    setViewMode("details");
     setDialogOpen(true);
   };
 
@@ -87,7 +89,10 @@ export default function AgendaClinicaPage() {
     );
   }
 
-  const pacientesOptions = patients.map(p => ({ id: p.id!, nome: p.full_name }));
+  const pacientesOptions = patients.map((p) => ({
+    id: p.id!,
+    nome: p.full_name,
+  }));
 
   return (
     <div className="p-8 space-y-6">
@@ -116,15 +121,15 @@ export default function AgendaClinicaPage() {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {viewMode === 'form'
+              {viewMode === "form"
                 ? selectedAppointment
-                  ? 'Editar Consulta'
-                  : 'Nova Consulta'
-                : 'Detalhes da Consulta'}
+                  ? "Editar Consulta"
+                  : "Nova Consulta"
+                : "Detalhes da Consulta"}
             </DialogTitle>
           </DialogHeader>
 
-          {viewMode === 'form' ? (
+          {viewMode === "form" ? (
             <AppointmentForm
               appointment={selectedAppointment}
               onSubmit={handleSubmit}

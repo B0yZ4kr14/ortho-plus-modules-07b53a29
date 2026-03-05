@@ -1,478 +1,355 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import type { Produto, Fornecedor, Categoria, Requisicao, Movimentacao, Alerta, Pedido, PedidoItem, PedidoConfig } from '../types/estoque.types';
+import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import { apiClient } from '@/lib/apiClient';
+
+export interface Produto {
+  id: string;
+  codigo_barra: string;
+  nome: string;
+  categoria: string;
+  unidadeMedida: string;
+  quantidadeAtual: number;
+  quantidadeMinima: number;
+  valorUnitario: number;
+  fornecedor: string;
+  localizacao: string;
+  lote?: string;
+  dataValidade?: string;
+  ativo: boolean;
+  clinicId?: string;
+  createdAt?: string;
+}
+
+export interface Categoria {
+  id: string;
+  nome: string;
+  descricao?: string;
+}
+
+export interface Fornecedor {
+  id: string;
+  nome: string;
+  cnpj?: string;
+  telefone?: string;
+  email?: string;
+  contato?: string;
+  prazo_entrega_dias?: number;
+}
+
+export interface Requisicao {
+  id: string;
+  produtoId: string;
+  quantidade: number;
+  motivo: string;
+  prioridade: 'BAIXA' | 'NORMAL' | 'ALTA' | 'URGENTE';
+  status: 'PENDENTE' | 'APROVADA' | 'REJEITADA' | 'ENTREGUE';
+  solicitadoPor: string;
+  aprovadoPor?: string;
+  dataAprovacao?: string;
+  observacoes?: string;
+  createdAt?: string;
+}
+
+export interface Movimentacao {
+  id?: string;
+  produtoId: string;
+  tipo: 'ENTRADA' | 'SAIDA' | 'AJUSTE' | 'PERDA' | 'VENCIMENTO';
+  quantidade: number;
+  lote?: string;
+  dataValidade?: string;
+  motivo?: string;
+  valorUnitario?: number;
+  valorTotal?: number;
+  fornecedorId?: string;
+  notaFiscal?: string;
+  realizadoPor: string;
+  observacoes?: string;
+  createdAt?: string;
+}
+
+export interface Alerta {
+  id: string;
+  produtoId: string;
+  tipo: 'ESTOQUE_BAIXO' | 'VENCIMENTO_PROXIMO' | 'VENCIDO';
+  mensagem: string;
+  quantidadeAtual: number;
+  quantidadeSugerida?: number;
+  lido: boolean;
+  createdAt: string;
+}
+
+export interface Pedido {
+  id: string;
+  numeroPedido: string;
+  fornecedorId?: string;
+  status: 'RASCUNHO' | 'ENVIADO' | 'RECEBIDO_PARCIAL' | 'RECEBIDO' | 'CANCELADO';
+  tipo: 'COMPRA' | 'TRANSFERENCIA';
+  dataPedido: string;
+  dataPrevistaEntrega?: string;
+  dataRecebimento?: string;
+  valorTotal?: number;
+  observacoes?: string;
+  createdAt?: string;
+  createdBy?: string;
+  geradoAutomaticamente?: boolean;
+}
+
+export interface PedidoItem {
+  id: string;
+  pedidoId: string;
+  produtoId: string;
+  quantidade: number;
+  precoUnitario?: number;
+  valorTotal?: number;
+  quantidadeRecebida: number;
+  observacoes?: string;
+  createdAt?: string;
+}
+
+export interface PedidoConfig {
+  id?: string;
+  produtoId: string;
+  quantidadeReposicao: number;
+  pontoPedido: number;
+  gerarAutomaticamente: boolean;
+  diasEntregaEstimados: number;
+  createdAt?: string;
+}
 
 export function useEstoqueSupabase() {
+  const { user } = useAuth();
+  
   const [produtos, setProdutos] = useState<Produto[]>([]);
-  const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
   const [requisicoes, setRequisicoes] = useState<Requisicao[]>([]);
   const [movimentacoes, setMovimentacoes] = useState<Movimentacao[]>([]);
   const [alertas, setAlertas] = useState<Alerta[]>([]);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [pedidosItens, setPedidosItens] = useState<PedidoItem[]>([]);
   const [pedidosConfig, setPedidosConfig] = useState<PedidoConfig[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Load data on mount and setup realtime
-  useEffect(() => {
-    loadAllData();
-
-    // Setup Realtime subscriptions
-    const produtosChannel = supabase
-      .channel('estoque_produtos_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_produtos' }, () => {
-        loadProdutos();
-      })
-      .subscribe();
-
-    const categoriasChannel = supabase
-      .channel('estoque_categorias_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_categorias' }, () => {
-        loadCategorias();
-      })
-      .subscribe();
-
-    const fornecedoresChannel = supabase
-      .channel('estoque_fornecedores_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_fornecedores' }, () => {
-        loadFornecedores();
-      })
-      .subscribe();
-
-    const requisicoesChannel = supabase
-      .channel('estoque_requisicoes_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_requisicoes' }, () => {
-        loadRequisicoes();
-      })
-      .subscribe();
-
-    const movimentacoesChannel = supabase
-      .channel('estoque_movimentacoes_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_movimentacoes' }, () => {
-        loadMovimentacoes();
-      })
-      .subscribe();
-
-    const alertasChannel = supabase
-      .channel('estoque_alertas_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_alertas' }, () => {
-        loadAlertas();
-      })
-      .subscribe();
-
-    const pedidosChannel = supabase
-      .channel('estoque_pedidos_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_pedidos' }, () => {
-        loadPedidos();
-      })
-      .subscribe();
-
-    const pedidosItensChannel = supabase
-      .channel('estoque_pedidos_itens_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_pedidos_itens' }, () => {
-        loadPedidosItens();
-      })
-      .subscribe();
-
-    const pedidosConfigChannel = supabase
-      .channel('estoque_pedidos_config_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque_pedidos_config' }, () => {
-        loadPedidosConfig();
-      })
-      .subscribe();
-
-    // Cleanup subscriptions on unmount
-    return () => {
-      supabase.removeChannel(produtosChannel);
-      supabase.removeChannel(categoriasChannel);
-      supabase.removeChannel(fornecedoresChannel);
-      supabase.removeChannel(requisicoesChannel);
-      supabase.removeChannel(movimentacoesChannel);
-      supabase.removeChannel(alertasChannel);
-      supabase.removeChannel(pedidosChannel);
-      supabase.removeChannel(pedidosItensChannel);
-      supabase.removeChannel(pedidosConfigChannel);
-    };
-  }, []);
-
-  const loadAllData = async () => {
-    setLoading(true);
-    try {
-      await Promise.all([
-        loadCategorias(),
-        loadFornecedores(),
-        loadProdutos(),
-        loadRequisicoes(),
-        loadMovimentacoes(),
-        loadAlertas(),
-        loadPedidos(),
-        loadPedidosItens(),
-        loadPedidosConfig(),
-      ]);
-    } catch (error) {
-      console.error('Error loading estoque data:', error);
-      toast.error('Erro ao carregar dados do estoque');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [loading, setLoading] = useState(false);
 
   // Categorias
-  const loadCategorias = async () => {
-    const { data, error } = await supabase
-      .from('estoque_categorias' as any)
-      .select('*')
-      .order('nome');
-
-    if (error) {
+  const loadCategorias = useCallback(async () => {
+    try {
+      const data = await apiClient.get<any[]>('/estoque/categorias');
+      setCategorias(data.map(c => ({
+        id: c.id,
+        nome: c.nome,
+        descricao: c.descricao,
+      })));
+    } catch (error) {
       console.error('Error loading categorias:', error);
-      return;
     }
+  }, []);
 
-    setCategorias((data as any[]).map((c: any) => ({
-      id: c.id as string,
-      nome: c.nome,
-      descricao: c.descricao || undefined,
-      cor: c.cor || undefined,
-      createdAt: c.created_at,
-    })));
-  };
-
-  const addCategoria = async (categoria: Categoria) => {
-    const { data: userData } = await supabase.auth.getUser();
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('clinic_id')
-      .eq('id', userData.user?.id)
-      .single();
-
-    const { data, error } = await supabase
-      .from('estoque_categorias' as any)
-      .insert({
-        clinic_id: profile?.clinic_id,
-        nome: categoria.nome,
-        descricao: categoria.descricao,
-        cor: categoria.cor,
-      } as any)
-      .select()
-      .single();
-
-    if (error) {
+  const addCategoria = async (categoria: Pick<Categoria, 'nome' | 'descricao'>) => {
+    try {
+      await apiClient.post('/estoque/categorias', categoria);
+      toast.success('Categoria adicionada');
+      await loadCategorias();
+    } catch (error) {
       toast.error('Erro ao adicionar categoria');
       throw error;
     }
-
-    toast.success('Categoria adicionada com sucesso');
-    await loadCategorias();
-    return data;
   };
 
-  const updateCategoria = async (id: string, data: Partial<Categoria>) => {
-    const { error } = await supabase
-      .from('estoque_categorias' as any)
-      .update({
-        nome: data.nome,
-        descricao: data.descricao,
-        cor: data.cor,
-      } as any)
-      .eq('id', id);
-
-    if (error) {
+  const updateCategoria = async (id: string, categoria: Partial<Categoria>) => {
+    try {
+      await apiClient.patch(`/estoque/categorias/${id}`, categoria);
+      toast.success('Categoria atualizada');
+      await loadCategorias();
+    } catch (error) {
       toast.error('Erro ao atualizar categoria');
       throw error;
     }
-
-    toast.success('Categoria atualizada com sucesso');
-    await loadCategorias();
   };
 
   const deleteCategoria = async (id: string) => {
-    const { error } = await supabase
-      .from('estoque_categorias' as any)
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      toast.error('Erro ao excluir categoria');
+    try {
+      await apiClient.delete(`/estoque/categorias/${id}`);
+      toast.success('Categoria removida');
+      await loadCategorias();
+    } catch (error) {
+      toast.error('Erro ao remover categoria');
       throw error;
     }
-
-    toast.success('Categoria excluída com sucesso');
-    await loadCategorias();
   };
 
   const getCategoriaById = (id: string) => categorias.find(c => c.id === id);
 
   // Fornecedores
-  const loadFornecedores = async () => {
-    const { data, error } = await supabase
-      .from('estoque_fornecedores' as any)
-      .select('*')
-      .order('nome');
-
-    if (error) {
+  const loadFornecedores = useCallback(async () => {
+    try {
+      const data = await apiClient.get<any[]>('/estoque/fornecedores');
+      setFornecedores(data.map(f => ({
+        id: f.id,
+        nome: f.nome,
+        cnpj: f.cnpj,
+        telefone: f.telefone,
+        email: f.email,
+        contato: f.contato,
+        prazo_entrega_dias: f.prazo_entrega_dias,
+      })));
+    } catch (error) {
       console.error('Error loading fornecedores:', error);
-      return;
     }
+  }, []);
 
-    setFornecedores((data as any[]).map((f: any) => ({
-      id: f.id as string,
-      nome: f.nome,
-      razaoSocial: f.razao_social || undefined,
-      cnpj: f.cnpj || undefined,
-      email: f.email || undefined,
-      telefone: f.telefone || undefined,
-      endereco: f.endereco || undefined,
-      cidade: f.cidade || undefined,
-      estado: f.estado || undefined,
-      cep: f.cep || undefined,
-      observacoes: f.observacoes || undefined,
-      ativo: f.ativo,
-      createdAt: f.created_at,
-    })));
-  };
-
-  const addFornecedor = async (fornecedor: Fornecedor) => {
-    const { data: userData } = await supabase.auth.getUser();
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('clinic_id')
-      .eq('id', userData.user?.id)
-      .single();
-
-    const { data, error } = await supabase
-      .from('estoque_fornecedores' as any)
-      .insert({
-        clinic_id: profile?.clinic_id,
-        nome: fornecedor.nome,
-        razao_social: fornecedor.razaoSocial,
-        cnpj: fornecedor.cnpj,
-        email: fornecedor.email,
-        telefone: fornecedor.telefone,
-        endereco: fornecedor.endereco,
-        cidade: fornecedor.cidade,
-        estado: fornecedor.estado,
-        cep: fornecedor.cep,
-        observacoes: fornecedor.observacoes,
-        ativo: fornecedor.ativo ?? true,
-      } as any)
-      .select()
-      .single();
-
-    if (error) {
+  const addFornecedor = async (fornecedor: Omit<Fornecedor, 'id'>) => {
+    try {
+      await apiClient.post('/estoque/fornecedores', fornecedor);
+      toast.success('Fornecedor adicionado');
+      await loadFornecedores();
+    } catch (error) {
       toast.error('Erro ao adicionar fornecedor');
       throw error;
     }
-
-    toast.success('Fornecedor adicionado com sucesso');
-    await loadFornecedores();
-    return data;
   };
 
-  const updateFornecedor = async (id: string, data: Partial<Fornecedor>) => {
-    const { error } = await supabase
-      .from('estoque_fornecedores' as any)
-      .update({
-        nome: data.nome,
-        razao_social: data.razaoSocial,
-        cnpj: data.cnpj,
-        email: data.email,
-        telefone: data.telefone,
-        endereco: data.endereco,
-        cidade: data.cidade,
-        estado: data.estado,
-        cep: data.cep,
-        observacoes: data.observacoes,
-        ativo: data.ativo,
-      } as any)
-      .eq('id', id);
-
-    if (error) {
+  const updateFornecedor = async (id: string, fornecedor: Partial<Fornecedor>) => {
+    try {
+      await apiClient.patch(`/estoque/fornecedores/${id}`, fornecedor);
+      toast.success('Fornecedor atualizado');
+      await loadFornecedores();
+    } catch (error) {
       toast.error('Erro ao atualizar fornecedor');
       throw error;
     }
-
-    toast.success('Fornecedor atualizado com sucesso');
-    await loadFornecedores();
   };
 
   const deleteFornecedor = async (id: string) => {
-    const { error } = await supabase
-      .from('estoque_fornecedores' as any)
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      toast.error('Erro ao excluir fornecedor');
+    try {
+      await apiClient.delete(`/estoque/fornecedores/${id}`);
+      toast.success('Fornecedor removido');
+      await loadFornecedores();
+    } catch (error) {
+      toast.error('Erro ao remover fornecedor');
       throw error;
     }
-
-    toast.success('Fornecedor excluído com sucesso');
-    await loadFornecedores();
   };
 
   const getFornecedorById = (id: string) => fornecedores.find(f => f.id === id);
 
   // Produtos
-  const loadProdutos = async () => {
-    const { data, error } = await supabase
-      .from('estoque_produtos' as any)
-      .select('*')
-      .order('nome');
-
-    if (error) {
+  const loadProdutos = useCallback(async () => {
+    try {
+      const data = await apiClient.get<any[]>('/estoque/produtos');
+      setProdutos(data.map(p => ({
+        id: p.id,
+        codigo_barra: p.codigo_barra,
+        nome: p.nome,
+        categoria: p.categoria,
+        unidadeMedida: p.unidade_medida,
+        quantidadeAtual: Number(p.quantidade_atual),
+        quantidadeMinima: Number(p.quantidade_minima),
+        valorUnitario: Number(p.valor_unitario),
+        fornecedor: p.fornecedor,
+        localizacao: p.localizacao,
+        lote: p.lote,
+        dataValidade: p.data_validade,
+        ativo: p.ativo,
+        clinicId: p.clinic_id,
+        createdAt: p.created_at,
+      })));
+    } catch (error) {
       console.error('Error loading produtos:', error);
-      return;
     }
+  }, []);
 
-    setProdutos((data as any[]).map((p: any) => ({
-      id: p.id as string,
-      nome: p.nome,
-      descricao: p.descricao || undefined,
-      codigo: p.codigo,
-      categoriaId: p.categoria_id,
-      fornecedorId: p.fornecedor_id,
-      unidadeMedida: p.unidade_medida as any,
-      quantidadeMinima: Number(p.quantidade_minima),
-      quantidadeAtual: Number(p.quantidade_atual),
-      precoCompra: Number(p.preco_compra),
-      precoVenda: p.preco_venda ? Number(p.preco_venda) : undefined,
-      lote: p.lote || undefined,
-      dataValidade: p.data_validade || undefined,
-      ativo: p.ativo,
-      createdAt: p.created_at,
-    })));
-  };
-
-  const addProduto = async (produto: Produto) => {
-    const { data: userData } = await supabase.auth.getUser();
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('clinic_id')
-      .eq('id', userData.user?.id)
-      .single();
-
-    const { data, error } = await supabase
-      .from('estoque_produtos' as any)
-      .insert({
-        clinic_id: profile?.clinic_id,
-        nome: produto.nome,
-        descricao: produto.descricao,
-        codigo: produto.codigo,
-        categoria_id: produto.categoriaId,
-        fornecedor_id: produto.fornecedorId,
+  const addProduto = async (produto: Omit<Produto, 'id' | 'createdAt' | 'clinicId'>) => {
+    try {
+      const result = await apiClient.post('/estoque/produtos', {
+        ...produto,
         unidade_medida: produto.unidadeMedida,
-        quantidade_minima: produto.quantidadeMinima,
         quantidade_atual: produto.quantidadeAtual,
-        preco_compra: produto.precoCompra,
-        preco_venda: produto.precoVenda,
-        lote: produto.lote,
+        quantidade_minima: produto.quantidadeMinima,
+        valor_unitario: produto.valorUnitario,
         data_validade: produto.dataValidade,
-        ativo: produto.ativo ?? true,
-      } as any)
-      .select()
-      .single();
-
-    if (error) {
+      });
+      toast.success('Produto adicionado com sucesso');
+      await loadProdutos();
+      return result;
+    } catch (error) {
       toast.error('Erro ao adicionar produto');
       throw error;
     }
-
-    toast.success('Produto adicionado com sucesso');
-    await loadProdutos();
-    return data;
   };
 
   const updateProduto = async (id: string, data: Partial<Produto>) => {
-    const updateData: any = {};
-    
-    if (data.nome !== undefined) updateData.nome = data.nome;
-    if (data.descricao !== undefined) updateData.descricao = data.descricao;
-    if (data.codigo !== undefined) updateData.codigo = data.codigo;
-    if (data.categoriaId !== undefined) updateData.categoria_id = data.categoriaId;
-    if (data.fornecedorId !== undefined) updateData.fornecedor_id = data.fornecedorId;
-    if (data.unidadeMedida !== undefined) updateData.unidade_medida = data.unidadeMedida;
-    if (data.quantidadeMinima !== undefined) updateData.quantidade_minima = data.quantidadeMinima;
-    if (data.quantidadeAtual !== undefined) updateData.quantidade_atual = data.quantidadeAtual;
-    if (data.precoCompra !== undefined) updateData.preco_compra = data.precoCompra;
-    if (data.precoVenda !== undefined) updateData.preco_venda = data.precoVenda;
-    if (data.lote !== undefined) updateData.lote = data.lote;
-    if (data.dataValidade !== undefined) updateData.data_validade = data.dataValidade;
-    if (data.ativo !== undefined) updateData.ativo = data.ativo;
+    try {
+      const updateData: any = { ...data };
+      if (data.unidadeMedida !== undefined) {
+        updateData.unidade_medida = data.unidadeMedida;
+        delete updateData.unidadeMedida;
+      }
+      if (data.quantidadeAtual !== undefined) {
+        updateData.quantidade_atual = data.quantidadeAtual;
+        delete updateData.quantidadeAtual;
+      }
+      if (data.quantidadeMinima !== undefined) {
+        updateData.quantidade_minima = data.quantidadeMinima;
+        delete updateData.quantidadeMinima;
+      }
+      if (data.valorUnitario !== undefined) {
+        updateData.valor_unitario = data.valorUnitario;
+        delete updateData.valorUnitario;
+      }
+      if (data.dataValidade !== undefined) {
+        updateData.data_validade = data.dataValidade;
+        delete updateData.dataValidade;
+      }
 
-    const { error } = await supabase
-      .from('estoque_produtos' as any)
-      .update(updateData)
-      .eq('id', id);
-
-    if (error) {
+      await apiClient.patch(`/estoque/produtos/${id}`, updateData);
+      toast.success('Produto atualizado com sucesso');
+      await loadProdutos();
+      await loadAlertas();
+    } catch (error) {
       toast.error('Erro ao atualizar produto');
       throw error;
     }
-
-    toast.success('Produto atualizado com sucesso');
-    await loadProdutos();
-    await loadAlertas(); // Recarregar alertas pois podem ter mudado
   };
 
   const deleteProduto = async (id: string) => {
-    const { error } = await supabase
-      .from('estoque_produtos' as any)
-      .delete()
-      .eq('id', id);
-
-    if (error) {
+    try {
+      await apiClient.delete(`/estoque/produtos/${id}`);
+      toast.success('Produto excluído com sucesso');
+      await loadProdutos();
+    } catch (error) {
       toast.error('Erro ao excluir produto');
       throw error;
     }
-
-    toast.success('Produto excluído com sucesso');
-    await loadProdutos();
   };
 
   const getProdutoById = (id: string) => produtos.find(p => p.id === id);
 
   // Requisições
-  const loadRequisicoes = async () => {
-    const { data, error } = await supabase
-      .from('estoque_requisicoes' as any)
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
+  const loadRequisicoes = useCallback(async () => {
+    try {
+      const data = await apiClient.get<any[]>('/estoque/requisicoes');
+      setRequisicoes(data.map(r => ({
+        id: r.id as string,
+        produtoId: r.produto_id,
+        quantidade: Number(r.quantidade),
+        motivo: r.motivo,
+        prioridade: r.prioridade as any,
+        status: r.status as any,
+        solicitadoPor: r.solicitado_por,
+        aprovadoPor: r.aprovado_por || undefined,
+        dataAprovacao: r.data_aprovacao || undefined,
+        observacoes: r.observacoes || undefined,
+        createdAt: r.created_at,
+      })));
+    } catch (error) {
       console.error('Error loading requisicoes:', error);
-      return;
     }
-
-    setRequisicoes((data as any[]).map((r: any) => ({
-      id: r.id as string,
-      produtoId: r.produto_id,
-      quantidade: Number(r.quantidade),
-      motivo: r.motivo,
-      prioridade: r.prioridade as any,
-      status: r.status as any,
-      solicitadoPor: r.solicitado_por,
-      aprovadoPor: r.aprovado_por || undefined,
-      dataAprovacao: r.data_aprovacao || undefined,
-      observacoes: r.observacoes || undefined,
-      createdAt: r.created_at,
-    })));
-  };
+  }, []);
 
   const addRequisicao = async (requisicao: Requisicao) => {
-    const { data: userData } = await supabase.auth.getUser();
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('clinic_id')
-      .eq('id', userData.user?.id)
-      .single();
-
-    const { data, error } = await supabase
-      .from('estoque_requisicoes' as any)
-      .insert({
-        clinic_id: profile?.clinic_id,
+    try {
+      const data = await apiClient.post('/estoque/requisicoes', {
         produto_id: requisicao.produtoId,
         quantidade: requisicao.quantidade,
         motivo: requisicao.motivo,
@@ -480,64 +357,60 @@ export function useEstoqueSupabase() {
         status: requisicao.status || 'PENDENTE',
         solicitado_por: requisicao.solicitadoPor,
         observacoes: requisicao.observacoes,
-      } as any)
-      .select()
-      .single();
-
-    if (error) {
+      });
+      toast.success('Requisição criada com sucesso');
+      await loadRequisicoes();
+      return data;
+    } catch (error) {
       toast.error('Erro ao criar requisição');
       throw error;
     }
-
-    toast.success('Requisição criada com sucesso');
-    await loadRequisicoes();
-    return data;
   };
 
   const updateRequisicao = async (id: string, data: Partial<Requisicao>) => {
-    const updateData: any = {};
-    
-    if (data.status !== undefined) updateData.status = data.status;
-    if (data.aprovadoPor !== undefined) updateData.aprovado_por = data.aprovadoPor;
-    if (data.dataAprovacao !== undefined) updateData.data_aprovacao = data.dataAprovacao;
-    if (data.observacoes !== undefined) updateData.observacoes = data.observacoes;
+    try {
+      const updateData: any = {};
+      
+      if (data.status !== undefined) updateData.status = data.status;
+      if (data.aprovadoPor !== undefined) updateData.aprovado_por = data.aprovadoPor;
+      if (data.dataAprovacao !== undefined) updateData.data_aprovacao = data.dataAprovacao;
+      if (data.observacoes !== undefined) updateData.observacoes = data.observacoes;
 
-    const { error } = await supabase
-      .from('estoque_requisicoes' as any)
-      .update(updateData)
-      .eq('id', id);
-
-    if (error) {
+      await apiClient.patch(`/estoque/requisicoes/${id}`, updateData);
+      await loadRequisicoes();
+    } catch (error) {
       toast.error('Erro ao atualizar requisição');
       throw error;
     }
-
-    await loadRequisicoes();
   };
 
   const aprovarRequisicao = async (id: string, aprovadoPor: string) => {
     const requisicao = requisicoes.find(r => r.id === id);
     if (!requisicao) return;
 
-    await updateRequisicao(id, {
-      status: 'APROVADA',
-      aprovadoPor,
-      dataAprovacao: new Date().toISOString(),
-    });
-
-    // Criar movimentação de saída
-    const produto = produtos.find(p => p.id === requisicao.produtoId);
-    if (produto) {
-      await addMovimentacao({
-        produtoId: requisicao.produtoId,
-        tipo: 'SAIDA',
-        quantidade: requisicao.quantidade,
-        motivo: `Requisição aprovada: ${requisicao.motivo}`,
-        realizadoPor: aprovadoPor,
+    try {
+      await updateRequisicao(id, {
+        status: 'APROVADA',
+        aprovadoPor,
+        dataAprovacao: new Date().toISOString(),
       });
-    }
 
-    toast.success('Requisição aprovada com sucesso');
+      // Criar movimentação de saída
+      const produto = produtos.find(p => p.id === requisicao.produtoId);
+      if (produto) {
+        await addMovimentacao({
+          produtoId: requisicao.produtoId,
+          tipo: 'SAIDA',
+          quantidade: requisicao.quantidade,
+          motivo: `Requisição aprovada: ${requisicao.motivo}`,
+          realizadoPor: aprovadoPor,
+        });
+      }
+
+      toast.success('Requisição aprovada com sucesso');
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const rejeitarRequisicao = async (id: string, motivo: string) => {
@@ -551,47 +424,33 @@ export function useEstoqueSupabase() {
   const getRequisicaoById = (id: string) => requisicoes.find(r => r.id === id);
 
   // Movimentações
-  const loadMovimentacoes = async () => {
-    const { data, error } = await supabase
-      .from('estoque_movimentacoes' as any)
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
+  const loadMovimentacoes = useCallback(async () => {
+    try {
+      const data = await apiClient.get<any[]>('/estoque/movimentacoes');
+      setMovimentacoes(data.map(m => ({
+        id: m.id as string,
+        produtoId: m.produto_id,
+        tipo: m.tipo as any,
+        quantidade: Number(m.quantidade),
+        lote: m.lote || undefined,
+        dataValidade: m.data_validade || undefined,
+        motivo: m.motivo,
+        valorUnitario: m.valor_unitario ? Number(m.valor_unitario) : undefined,
+        valorTotal: m.valor_total ? Number(m.valor_total) : undefined,
+        fornecedorId: m.fornecedor_id || undefined,
+        notaFiscal: m.nota_fiscal || undefined,
+        realizadoPor: m.realizado_por,
+        observacoes: m.observacoes || undefined,
+        createdAt: m.created_at,
+      })));
+    } catch (error) {
       console.error('Error loading movimentacoes:', error);
-      return;
     }
-
-    setMovimentacoes((data as any[]).map((m: any) => ({
-      id: m.id as string,
-      produtoId: m.produto_id,
-      tipo: m.tipo as any,
-      quantidade: Number(m.quantidade),
-      lote: m.lote || undefined,
-      dataValidade: m.data_validade || undefined,
-      motivo: m.motivo,
-      valorUnitario: m.valor_unitario ? Number(m.valor_unitario) : undefined,
-      valorTotal: m.valor_total ? Number(m.valor_total) : undefined,
-      fornecedorId: m.fornecedor_id || undefined,
-      notaFiscal: m.nota_fiscal || undefined,
-      realizadoPor: m.realizado_por,
-      observacoes: m.observacoes || undefined,
-      createdAt: m.created_at,
-    })));
-  };
+  }, []);
 
   const addMovimentacao = async (movimentacao: Movimentacao) => {
-    const { data: userData } = await supabase.auth.getUser();
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('clinic_id')
-      .eq('id', userData.user?.id)
-      .single();
-
-    const { data, error } = await supabase
-      .from('estoque_movimentacoes' as any)
-      .insert({
-        clinic_id: profile?.clinic_id,
+    try {
+      const data = await apiClient.post('/estoque/movimentacoes', {
         produto_id: movimentacao.produtoId,
         tipo: movimentacao.tipo,
         quantidade: movimentacao.quantidade,
@@ -604,80 +463,64 @@ export function useEstoqueSupabase() {
         nota_fiscal: movimentacao.notaFiscal,
         realizado_por: movimentacao.realizadoPor,
         observacoes: movimentacao.observacoes,
-      } as any)
-      .select()
-      .single();
+      });
 
-    if (error) {
+      toast.success('Movimentação registrada com sucesso');
+      
+      // O backend deve atualizar o estoque e criar alertas, então recarregamos os dados
+      await Promise.all([
+        loadMovimentacoes(),
+        loadProdutos(),
+        loadAlertas(),
+      ]);
+      
+      return data;
+    } catch (error) {
       toast.error('Erro ao criar movimentação');
       throw error;
     }
-
-    toast.success('Movimentação registrada com sucesso');
-    
-    // O trigger do banco já atualiza o estoque e cria alertas automaticamente
-    await Promise.all([
-      loadMovimentacoes(),
-      loadProdutos(),
-      loadAlertas(),
-    ]);
-    
-    return data;
   };
 
   const getMovimentacaoById = (id: string) => movimentacoes.find(m => m.id === id);
 
   // Alertas
-  const loadAlertas = async () => {
-    const { data, error } = await supabase
-      .from('estoque_alertas' as any)
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
+  const loadAlertas = useCallback(async () => {
+    try {
+      const data = await apiClient.get<any[]>('/estoque/alertas');
+      setAlertas(data.map(a => ({
+        id: a.id as string,
+        produtoId: a.produto_id,
+        tipo: a.tipo as any,
+        mensagem: a.mensagem,
+        quantidadeAtual: Number(a.quantidade_atual),
+        quantidadeSugerida: a.quantidade_sugerida ? Number(a.quantidade_sugerida) : undefined,
+        lido: a.lido,
+        createdAt: a.created_at,
+      })));
+    } catch (error) {
       console.error('Error loading alertas:', error);
-      return;
     }
-
-    setAlertas((data as any[]).map((a: any) => ({
-      id: a.id as string,
-      produtoId: a.produto_id,
-      tipo: a.tipo as any,
-      mensagem: a.mensagem,
-      quantidadeAtual: Number(a.quantidade_atual),
-      quantidadeSugerida: a.quantidade_sugerida ? Number(a.quantidade_sugerida) : undefined,
-      lido: a.lido,
-      createdAt: a.created_at,
-    })));
-  };
+  }, []);
 
   const marcarAlertaComoLido = async (id: string) => {
-    const { error } = await supabase
-      .from('estoque_alertas' as any)
-      .update({ lido: true } as any)
-      .eq('id', id);
-
-    if (error) {
+    try {
+      await apiClient.patch(`/estoque/alertas/${id}`, { lido: true });
+      await loadAlertas();
+    } catch (error) {
       toast.error('Erro ao marcar alerta como lido');
       throw error;
     }
-
-    await loadAlertas();
   };
 
   const limparAlertasLidos = async () => {
-    const { error } = await supabase
-      .from('estoque_alertas' as any)
-      .delete()
-      .eq('lido', true);
-
-    if (error) {
+    try {
+      await apiClient.delete('/estoque/alertas/lidos');
+      toast.success('Alertas lidos removidos');
+      await loadAlertas();
+    } catch (error) {
       toast.error('Erro ao limpar alertas');
       throw error;
     }
-
-    toast.success('Alertas lidos removidos');
-    await loadAlertas();
   };
 
   const calcularSugestaoReposicao = (produtoId: string): number => {
@@ -705,163 +548,153 @@ export function useEstoqueSupabase() {
   };
 
   // Pedidos
-  const loadPedidos = async () => {
-    const { data, error } = await supabase
-      .from('estoque_pedidos' as any)
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
+  const loadPedidos = useCallback(async () => {
+    try {
+      const data = await apiClient.get<any[]>('/estoque/pedidos');
+      setPedidos(data.map(p => ({
+        id: p.id,
+        numeroPedido: p.numero_pedido,
+        fornecedorId: p.fornecedor_id,
+        status: p.status,
+        tipo: p.tipo,
+        dataPedido: p.data_pedido,
+        dataPrevistaEntrega: p.data_prevista_entrega,
+        dataRecebimento: p.data_recebimento,
+        valorTotal: Number(p.valor_total),
+        observacoes: p.observacoes,
+        geradoAutomaticamente: p.gerado_automaticamente,
+        createdAt: p.created_at,
+        createdBy: p.created_by,
+      })));
+    } catch (error) {
       console.error('Error loading pedidos:', error);
-      return;
     }
+  }, []);
 
-    setPedidos((data as any[]).map((p: any) => ({
-      id: p.id,
-      numeroPedido: p.numero_pedido,
-      fornecedorId: p.fornecedor_id,
-      status: p.status,
-      tipo: p.tipo,
-      dataPedido: p.data_pedido,
-      dataPrevistaEntrega: p.data_prevista_entrega,
-      dataRecebimento: p.data_recebimento,
-      valorTotal: Number(p.valor_total),
-      observacoes: p.observacoes,
-      geradoAutomaticamente: p.gerado_automaticamente,
-      createdAt: p.created_at,
-      createdBy: p.created_by,
-    })));
-  };
-
-  const loadPedidosItens = async () => {
-    const { data, error } = await supabase
-      .from('estoque_pedidos_itens' as any)
-      .select('*');
-
-    if (error) {
+  const loadPedidosItens = useCallback(async () => {
+    try {
+      const data = await apiClient.get<any[]>('/estoque/pedidos-itens');
+      setPedidosItens(data.map(i => ({
+        id: i.id,
+        pedidoId: i.pedido_id,
+        produtoId: i.produto_id,
+        quantidade: Number(i.quantidade),
+        precoUnitario: Number(i.preco_unitario),
+        valorTotal: Number(i.valor_total),
+        quantidadeRecebida: Number(i.quantidade_recebida),
+        observacoes: i.observacoes,
+        createdAt: i.created_at,
+      })));
+    } catch (error) {
       console.error('Error loading pedidos itens:', error);
-      return;
     }
+  }, []);
 
-    setPedidosItens((data as any[]).map((i: any) => ({
-      id: i.id,
-      pedidoId: i.pedido_id,
-      produtoId: i.produto_id,
-      quantidade: Number(i.quantidade),
-      precoUnitario: Number(i.preco_unitario),
-      valorTotal: Number(i.valor_total),
-      quantidadeRecebida: Number(i.quantidade_recebida),
-      observacoes: i.observacoes,
-      createdAt: i.created_at,
-    })));
-  };
-
-  const loadPedidosConfig = async () => {
-    const { data, error } = await supabase
-      .from('estoque_pedidos_config' as any)
-      .select('*');
-
-    if (error) {
+  const loadPedidosConfig = useCallback(async () => {
+    try {
+      const data = await apiClient.get<any[]>('/estoque/pedidos-config');
+      setPedidosConfig(data.map(c => ({
+        id: c.id,
+        produtoId: c.produto_id,
+        quantidadeReposicao: Number(c.quantidade_reposicao),
+        pontoPedido: Number(c.ponto_pedido),
+        gerarAutomaticamente: c.gerar_automaticamente,
+        diasEntregaEstimados: c.dias_entrega_estimados,
+        createdAt: c.created_at,
+      })));
+    } catch (error) {
       console.error('Error loading pedidos config:', error);
-      return;
     }
-
-    setPedidosConfig((data as any[]).map((c: any) => ({
-      id: c.id,
-      produtoId: c.produto_id,
-      quantidadeReposicao: Number(c.quantidade_reposicao),
-      pontoPedido: Number(c.ponto_pedido),
-      gerarAutomaticamente: c.gerar_automaticamente,
-      diasEntregaEstimados: c.dias_entrega_estimados,
-      createdAt: c.created_at,
-    })));
-  };
+  }, []);
 
   const addPedidoConfig = async (config: PedidoConfig) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('clinic_id')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile) throw new Error('Profile not found');
-
-    const { error } = await supabase
-      .from('estoque_pedidos_config' as any)
-      .insert({
-        clinic_id: profile.clinic_id,
+    try {
+      await apiClient.post('/estoque/pedidos-config', {
         produto_id: config.produtoId,
         quantidade_reposicao: config.quantidadeReposicao,
         ponto_pedido: config.pontoPedido,
         gerar_automaticamente: config.gerarAutomaticamente,
         dias_entrega_estimados: config.diasEntregaEstimados,
-      } as any);
-
-    if (error) {
+      });
+      toast.success('Configuração criada com sucesso');
+      await loadPedidosConfig();
+    } catch (error) {
       toast.error('Erro ao criar configuração');
       throw error;
     }
-
-    toast.success('Configuração criada com sucesso');
-    await loadPedidosConfig();
   };
 
   const updatePedidoConfig = async (id: string, config: PedidoConfig) => {
-    const { error } = await supabase
-      .from('estoque_pedidos_config' as any)
-      .update({
+    try {
+      await apiClient.patch(`/estoque/pedidos-config/${id}`, {
         quantidade_reposicao: config.quantidadeReposicao,
         ponto_pedido: config.pontoPedido,
         gerar_automaticamente: config.gerarAutomaticamente,
         dias_entrega_estimados: config.diasEntregaEstimados,
-      } as any)
-      .eq('id', id);
-
-    if (error) {
+      });
+      toast.success('Configuração atualizada com sucesso');
+      await loadPedidosConfig();
+    } catch (error) {
       toast.error('Erro ao atualizar configuração');
       throw error;
     }
-
-    toast.success('Configuração atualizada com sucesso');
-    await loadPedidosConfig();
   };
 
   const updatePedidoStatus = async (id: string, status: string) => {
-    const updates: any = { status };
-    
-    if (status === 'RECEBIDO') {
-      updates.data_recebimento = new Date().toISOString();
-    }
+    try {
+      const updates: any = { status };
+      
+      if (status === 'RECEBIDO') {
+        updates.data_recebimento = new Date().toISOString();
+      }
 
-    const { error } = await supabase
-      .from('estoque_pedidos' as any)
-      .update(updates)
-      .eq('id', id);
-
-    if (error) {
+      await apiClient.patch(`/estoque/pedidos/${id}`, updates);
+      toast.success('Status do pedido atualizado');
+      await loadPedidos();
+    } catch (error) {
       toast.error('Erro ao atualizar status do pedido');
       throw error;
     }
-
-    toast.success('Status do pedido atualizado');
-    await loadPedidos();
   };
 
   const gerarPedidosAutomaticos = async () => {
-    const { error } = await supabase.functions.invoke('gerar-pedidos-automaticos');
-
-    if (error) {
+    try {
+      await apiClient.post('/estoque/pedidos/gerar-automaticos', {});
+      toast.success('Pedidos automáticos gerados com sucesso');
+      await loadPedidos();
+      await loadPedidosItens();
+    } catch (error) {
       toast.error('Erro ao gerar pedidos automáticos');
       throw error;
     }
-
-    toast.success('Pedidos automáticos gerados com sucesso');
-    await loadPedidos();
-    await loadPedidosItens();
   };
+
+  const loadData = useCallback(async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      await Promise.all([
+        loadProdutos(),
+        loadFornecedores(),
+        loadCategorias(),
+        loadRequisicoes(),
+        loadMovimentacoes(),
+        loadAlertas(),
+        loadPedidos(),
+        loadPedidosItens(),
+        loadPedidosConfig(),
+      ]);
+    } catch (error) {
+      console.error('Error loading initial data:', error);
+      toast.error('Erro ao carregar dados do estoque');
+    } finally {
+      setLoading(false);
+    }
+  }, [user, loadProdutos, loadFornecedores, loadCategorias, loadRequisicoes, loadMovimentacoes, loadAlertas, loadPedidos, loadPedidosItens, loadPedidosConfig]);
+
+  // Use a manual reload flow rather than realtime subscriptions which complicate logic
+  const reloadData = loadData;
 
   return {
     produtos,
@@ -900,5 +733,7 @@ export function useEstoqueSupabase() {
     updatePedidoConfig,
     updatePedidoStatus,
     gerarPedidosAutomaticos,
+    reloadData,
+    loadData
   };
 }

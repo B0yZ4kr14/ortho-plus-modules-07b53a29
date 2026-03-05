@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Brain, AlertTriangle, TrendingUp, TrendingDown, Minus, Mail, CalendarDays, Target } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/lib/apiClient";
 
 interface Previsao {
   produto: string;
@@ -82,14 +82,10 @@ export function PrevisaoReposicao() {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('prever-reposicao', {
-        body: { 
-          produtos: produtosParaAnalise,
-          eventosFuturos: eventosFuturos.length > 0 ? eventosFuturos : undefined
-        }
+      const data = await apiClient.post('/estoque/previsao/gerar', {
+        produtos: produtosParaAnalise,
+        eventosFuturos: eventosFuturos.length > 0 ? eventosFuturos : undefined
       });
-
-      if (error) throw error;
 
       setPrevisoes(data.previsoes || []);
       setResumo(data.resumo || {});
@@ -110,11 +106,12 @@ export function PrevisaoReposicao() {
 
     setSendingEmail(true);
     try {
-      const { error } = await supabase.functions.invoke('send-replenishment-alerts', {
-        body: { previsoes, resumo, eventosFuturos: eventosFuturos.length > 0 ? eventosFuturos : undefined }
+      await apiClient.post('/estoque/previsao/alertas/email', {
+        previsoes, 
+        resumo, 
+        eventosFuturos: eventosFuturos.length > 0 ? eventosFuturos : undefined
       });
 
-      if (error) throw error;
       toast.success("Alertas enviados por email para gestores!");
     } catch (error: any) {
       console.error("Erro ao enviar alertas:", error);

@@ -1,16 +1,16 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AppointmentRepositorySupabase } from '../../infrastructure/repositories/AppointmentRepositorySupabase';
-import { BlockedTimeRepositorySupabase } from '../../infrastructure/repositories/BlockedTimeRepositorySupabase';
-import { CreateAppointmentUseCase } from '../../application/useCases/CreateAppointmentUseCase';
-import { ListAppointmentsUseCase } from '../../application/useCases/ListAppointmentsUseCase';
-import { UpdateAppointmentUseCase } from '../../application/useCases/UpdateAppointmentUseCase';
-import { CancelAppointmentUseCase } from '../../application/useCases/CancelAppointmentUseCase';
-import { ConfirmAppointmentUseCase } from '../../application/useCases/ConfirmAppointmentUseCase';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { useAuth } from "@/contexts/AuthContext";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { CancelAppointmentUseCase } from "../../application/useCases/CancelAppointmentUseCase";
+import { ConfirmAppointmentUseCase } from "../../application/useCases/ConfirmAppointmentUseCase";
+import { CreateAppointmentUseCase } from "../../application/useCases/CreateAppointmentUseCase";
+import { ListAppointmentsUseCase } from "../../application/useCases/ListAppointmentsUseCase";
+import { UpdateAppointmentUseCase } from "../../application/useCases/UpdateAppointmentUseCase";
+import { AppointmentRepositoryApi } from "../../infrastructure/repositories/AppointmentRepositoryApi";
+import { BlockedTimeRepositoryApi } from "../../infrastructure/repositories/BlockedTimeRepositoryApi";
 
-const appointmentRepo = new AppointmentRepositorySupabase();
-const blockedTimeRepo = new BlockedTimeRepositorySupabase();
+const appointmentRepo = new AppointmentRepositoryApi();
+const blockedTimeRepo = new BlockedTimeRepositoryApi();
 
 export function useAppointments(filters?: {
   clinicId?: string;
@@ -22,8 +22,12 @@ export function useAppointments(filters?: {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: appointments, isLoading, error } = useQuery({
-    queryKey: ['appointments', filters],
+  const {
+    data: appointments,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["appointments", filters],
     queryFn: async () => {
       const useCase = new ListAppointmentsUseCase(appointmentRepo);
       return await useCase.execute(filters || {});
@@ -41,15 +45,18 @@ export function useAppointments(filters?: {
       appointmentType: string;
       notes?: string;
     }) => {
-      const useCase = new CreateAppointmentUseCase(appointmentRepo, blockedTimeRepo);
+      const useCase = new CreateAppointmentUseCase(
+        appointmentRepo,
+        blockedTimeRepo,
+      );
       return await useCase.execute({
         ...input,
-        createdBy: user?.id || '',
+        createdBy: user?.id || "",
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
-      toast.success('Agendamento criado com sucesso');
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      toast.success("Agendamento criado com sucesso");
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -62,12 +69,15 @@ export function useAppointments(filters?: {
       scheduledDatetime?: Date;
       notes?: string;
     }) => {
-      const useCase = new UpdateAppointmentUseCase(appointmentRepo, blockedTimeRepo);
+      const useCase = new UpdateAppointmentUseCase(
+        appointmentRepo,
+        blockedTimeRepo,
+      );
       return await useCase.execute(input);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
-      toast.success('Agendamento atualizado com sucesso');
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      toast.success("Agendamento atualizado com sucesso");
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -80,8 +90,8 @@ export function useAppointments(filters?: {
       return await useCase.execute(input);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
-      toast.success('Agendamento cancelado');
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      toast.success("Agendamento cancelado");
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -94,8 +104,8 @@ export function useAppointments(filters?: {
       return await useCase.execute({ appointmentId });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
-      toast.success('Agendamento confirmado');
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      toast.success("Agendamento confirmado");
     },
     onError: (error: Error) => {
       toast.error(error.message);

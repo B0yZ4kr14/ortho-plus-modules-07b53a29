@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingState } from '@/components/shared/LoadingState';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/apiClient';
 import { 
   Webhook, 
   TrendingUp, 
@@ -49,41 +49,23 @@ export default function EstoqueIntegracoes() {
   });
   const [testingAPI, setTestingAPI] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
 
-      // Buscar fornecedores com API habilitada
-      const fornecedoresResult = await (supabase as any)
-        .from('estoque_fornecedores')
-        .select('*')
-        .eq('api_enabled', true)
-        .order('nome');
+      const [fornecedoresData, pedidosData] = await Promise.all([
+        apiClient.get<any[]>('/estoque/fornecedores?api_enabled=true'),
+        apiClient.get<any[]>('/estoque/pedidos/automaticos?limit=100')
+      ]);
 
-      if (fornecedoresResult.error) throw fornecedoresResult.error;
-
-      // Buscar pedidos automáticos  
-      const pedidosResult = await (supabase as any)
-        .from('estoque_pedidos')
-        .select('*')
-        .eq('tipo', 'AUTOMATICO')
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (pedidosResult.error) throw pedidosResult.error;
-
-      setFornecedores(fornecedoresResult.data || []);
-      setPedidos(pedidosResult.data || []);
+      setFornecedores(fornecedoresData || []);
+      setPedidos(pedidosData || []);
 
       // Calcular métricas
-      const total = pedidosResult.data?.length || 0;
-      const enviados = pedidosResult.data?.filter((p: any) => p.status === 'enviado' || p.status === 'confirmado').length || 0;
-      const confirmados = pedidosResult.data?.filter((p: any) => p.status === 'confirmado').length || 0;
-      const falhos = pedidosResult.data?.filter((p: any) => p.status === 'cancelado').length || 0;
+      const total = pedidosData?.length || 0;
+      const enviados = pedidosData?.filter((p: any) => p.status === 'enviado' || p.status === 'confirmado').length || 0;
+      const confirmados = pedidosData?.filter((p: any) => p.status === 'confirmado').length || 0;
+      const falhos = pedidosData?.filter((p: any) => p.status === 'cancelado').length || 0;
       const taxaSucesso = total > 0 ? (confirmados / total) * 100 : 0;
 
       // Calcular tempo médio de resposta (mock - deveria vir dos logs)
@@ -108,17 +90,20 @@ export default function EstoqueIntegracoes() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
 
   const handleTestarAPI = async (fornecedorId: string) => {
     try {
       setTestingAPI(fornecedorId);
       
-      const { data, error } = await supabase.functions.invoke('enviar-pedido-automatico-api', {
-        body: { fornecedor_id: fornecedorId }
+      const data = await apiClient.post(`/estoque/integracoes/testar-api`, {
+        fornecedor_id: fornecedorId
       });
-
-      if (error) throw error;
 
       toast({
         title: 'Teste concluído',
@@ -142,9 +127,7 @@ export default function EstoqueIntegracoes() {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase.functions.invoke('enviar-pedido-automatico-api');
-
-      if (error) throw error;
+      const data = await apiClient.post('/estoque/pedidos/disparar-automaticos', {});
 
       toast({
         title: 'Pedidos enviados',
