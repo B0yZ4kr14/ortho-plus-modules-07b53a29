@@ -2,39 +2,51 @@ name: E2E Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         browser: [chromium, firefox, webkit]
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-      
+          node-version: "20"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
-      
+
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps ${{ matrix.browser }}
-      
+
+      - name: Setup Backend
+        run: |
+          cd backend
+          npm install --legacy-peer-deps
+          npm install -D tsx
+          PORT=3000 nohup npx tsx src/index.ts > backend.log 2>&1 &
+          echo "BACKEND_PID=$!" >> $GITHUB_ENV
+
       - name: Run E2E tests
         run: npx playwright test --project=${{ matrix.browser }}
         env:
           CI: true
-      
+
+      - name: Stop Backend
+        if: always()
+        run: kill ${{ env.BACKEND_PID }} || true
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
@@ -44,7 +56,7 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 30
-      
+
       - name: Upload videos
         uses: actions/upload-artifact@v4
         if: failure()
@@ -58,11 +70,11 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: always()
-    
+
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
-      
+
       - name: Publish HTML Report
         uses: peaceiris/actions-gh-pages@v3
         with:
