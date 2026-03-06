@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp, TrendingDown, Package, Calendar, AlertTriangle, Sparkles, BarChart3 } from 'lucide-react';
-import { useEstoqueSupabase } from '@/modules/estoque/hooks/useEstoqueSupabase';
+import { useEstoque } from '@/modules/estoque/hooks/useEstoque';
 import { PrevisaoReposicao } from '@/modules/estoque/components/PrevisaoReposicao';
 import { format, subDays, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, eachMonthOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -15,7 +15,7 @@ const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3
 
 export default function EstoqueAnaliseConsumo() {
   const [periodoAnalise, setPeriodoAnalise] = useState<'7d' | '30d' | '90d' | '12m'>('30d');
-  const { produtos, movimentacoes, loading } = useEstoqueSupabase();
+  const { produtos, movimentacoes, loading } = useEstoque();
 
   // Calcular produtos mais consumidos
   const produtosMaisConsumidos = useMemo(() => {

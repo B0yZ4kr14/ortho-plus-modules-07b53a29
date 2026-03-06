@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { SearchInput } from '@/components/shared/SearchInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp, TrendingDown, ArrowRightLeft, Plus } from 'lucide-react';
-import { useEstoqueSupabase } from '@/modules/estoque/hooks/useEstoqueSupabase';
+import { useEstoque } from '@/modules/estoque/hooks/useEstoque';
 import { MovimentacaoForm } from '@/modules/estoque/components/MovimentacaoForm';
 import { MovimentacoesList } from '@/modules/estoque/components/MovimentacoesList';
 import { useToast } from '@/hooks/use-toast';
@@ -22,7 +22,7 @@ export default function EstoqueMovimentacoes() {
     movimentacoes,
     loading,
     addMovimentacao,
-  } = useEstoqueSupabase();
+  } = useEstoque();
 
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');

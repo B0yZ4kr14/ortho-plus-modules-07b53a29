@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from "@/lib/api/apiClient";
+import { useQuery } from "@tanstack/react-query";
 
 export interface CampaignROI {
   campaign: string;
@@ -30,12 +30,12 @@ export interface MarketingMetrics {
 
 export function useMarketingROI() {
   return useQuery({
-    queryKey: ['marketing-roi'],
+    queryKey: ["marketing-roi"],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('marketing-roi');
-
-      if (error) throw error;
-      return data.metrics as MarketingMetrics;
+      const data = await apiClient.get<{ metrics: MarketingMetrics }>(
+        "/analytics/marketing-roi",
+      );
+      return data.metrics;
     },
     staleTime: 1000 * 60 * 10, // 10 minutos
   });

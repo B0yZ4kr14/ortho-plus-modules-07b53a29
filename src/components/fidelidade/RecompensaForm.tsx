@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useFidelidadeSupabase } from "@/modules/fidelidade/hooks/useFidelidadeSupabase";
+import { useFidelidade } from "@/modules/fidelidade/hooks/useFidelidade";
 
 const recompensaSchema = z.object({
   nome: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
@@ -35,7 +35,7 @@ export function RecompensaForm({
   procedimentos,
   editingRecompensa 
 }: RecompensaFormProps) {
-  const { createRecompensa, updateRecompensa } = useFidelidadeSupabase();
+  const { createRecompensa, updateRecompensa } = useFidelidade();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<RecompensaFormData>>({
     nome: editingRecompensa?.nome || "",

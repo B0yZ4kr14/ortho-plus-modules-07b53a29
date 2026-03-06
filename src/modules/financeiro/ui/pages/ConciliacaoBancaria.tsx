@@ -1,21 +1,33 @@
-import { useState, useEffect } from 'react';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
-import { CheckCircle2, XCircle, AlertCircle, Filter, Download } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { formatCurrency } from '@/lib/utils/validation.utils';
+import { useState, useEffect } from "react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import {
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  Filter,
+  Download,
+} from "lucide-react";
+import { apiClient } from "@/lib/api/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { formatCurrency } from "@/lib/utils/validation.utils";
 
 interface BancoExtrato {
   id: string;
   data_movimento: string;
   descricao: string;
   valor: number;
-  tipo: 'CREDITO' | 'DEBITO';
+  tipo: "CREDITO" | "DEBITO";
   documento: string | null;
   conciliado: boolean;
   conta_receber_id: string | null;
@@ -25,7 +37,9 @@ interface BancoExtrato {
 export default function ConciliacaoBancaria() {
   const { selectedClinic } = useAuth();
   const [extratos, setExtratos] = useState<BancoExtrato[]>([]);
-  const [filtro, setFiltro] = useState<'TODOS' | 'CONCILIADO' | 'PENDENTE'>('TODOS');
+  const [filtro, setFiltro] = useState<"TODOS" | "CONCILIADO" | "PENDENTE">(
+    "TODOS",
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,21 +50,19 @@ export default function ConciliacaoBancaria() {
 
   const loadExtratos = async () => {
     try {
-      let query = supabase
-        .from('banco_extratos')
-        .select('*')
-        .eq('clinic_id', selectedClinic!)
-        .order('data_movimento', { ascending: false });
+      const params = new URLSearchParams();
+      params.append("clinic_id", `eq.${selectedClinic!}`);
+      params.append("order", "data_movimento.desc");
 
-      if (filtro === 'CONCILIADO') {
-        query = query.eq('conciliado', true);
-      } else if (filtro === 'PENDENTE') {
-        query = query.eq('conciliado', false);
+      if (filtro === "CONCILIADO") {
+        params.append("conciliado", "eq.true");
+      } else if (filtro === "PENDENTE") {
+        params.append("conciliado", "eq.false");
       }
 
-      const { data, error } = await query;
-
-      if (error) throw error;
+      const data = await apiClient.get<BancoExtrato[]>(
+        `/rest/v1/banco_extratos?${params.toString()}`,
+      );
       setExtratos(data || []);
     } catch (error: any) {
       toast.error(`Erro ao carregar extratos: ${error.message}`);
@@ -61,17 +73,12 @@ export default function ConciliacaoBancaria() {
 
   const handleConciliar = async (extratoId: string, contaReceberId: string) => {
     try {
-      const { error } = await supabase
-        .from('banco_extratos')
-        .update({
-          conciliado: true,
-          conta_receber_id: contaReceberId,
-          observacoes: 'Conciliado manualmente',
-        })
-        .eq('id', extratoId);
-
-      if (error) throw error;
-      toast.success('Lançamento conciliado com sucesso');
+      await apiClient.patch(`/rest/v1/banco_extratos?id=eq.${extratoId}`, {
+        conciliado: true,
+        conta_receber_id: contaReceberId,
+        observacoes: "Conciliado manualmente",
+      });
+      toast.success("Lançamento conciliado com sucesso");
       loadExtratos();
     } catch (error: any) {
       toast.error(`Erro ao conciliar: ${error.message}`);
@@ -80,17 +87,12 @@ export default function ConciliacaoBancaria() {
 
   const handleDesconciliar = async (extratoId: string) => {
     try {
-      const { error } = await supabase
-        .from('banco_extratos')
-        .update({
-          conciliado: false,
-          conta_receber_id: null,
-          observacoes: null,
-        })
-        .eq('id', extratoId);
-
-      if (error) throw error;
-      toast.success('Conciliação desfeita com sucesso');
+      await apiClient.patch(`/rest/v1/banco_extratos?id=eq.${extratoId}`, {
+        conciliado: false,
+        conta_receber_id: null,
+        observacoes: null,
+      });
+      toast.success("Conciliação desfeita com sucesso");
       loadExtratos();
     } catch (error: any) {
       toast.error(`Erro ao desconciliar: ${error.message}`);
@@ -99,9 +101,11 @@ export default function ConciliacaoBancaria() {
 
   const stats = {
     total: extratos.length,
-    conciliados: extratos.filter(e => e.conciliado).length,
-    pendentes: extratos.filter(e => !e.conciliado).length,
-    valorTotal: extratos.filter(e => e.tipo === 'CREDITO').reduce((sum, e) => sum + e.valor, 0),
+    conciliados: extratos.filter((e) => e.conciliado).length,
+    pendentes: extratos.filter((e) => !e.conciliado).length,
+    valorTotal: extratos
+      .filter((e) => e.tipo === "CREDITO")
+      .reduce((sum, e) => sum + e.valor, 0),
   };
 
   return (
@@ -113,20 +117,28 @@ export default function ConciliacaoBancaria() {
 
       <div className="grid grid-cols-4 gap-4">
         <Card className="p-4">
-          <div className="text-sm text-muted-foreground">Total de Lançamentos</div>
+          <div className="text-sm text-muted-foreground">
+            Total de Lançamentos
+          </div>
           <div className="text-2xl font-bold">{stats.total}</div>
         </Card>
         <Card className="p-4">
           <div className="text-sm text-muted-foreground">Conciliados</div>
-          <div className="text-2xl font-bold text-success">{stats.conciliados}</div>
+          <div className="text-2xl font-bold text-success">
+            {stats.conciliados}
+          </div>
         </Card>
         <Card className="p-4">
           <div className="text-sm text-muted-foreground">Pendentes</div>
-          <div className="text-2xl font-bold text-warning">{stats.pendentes}</div>
+          <div className="text-2xl font-bold text-warning">
+            {stats.pendentes}
+          </div>
         </Card>
         <Card className="p-4">
           <div className="text-sm text-muted-foreground">Valor Total</div>
-          <div className="text-2xl font-bold">{formatCurrency(stats.valorTotal)}</div>
+          <div className="text-2xl font-bold">
+            {formatCurrency(stats.valorTotal)}
+          </div>
         </Card>
       </div>
 
@@ -173,7 +185,11 @@ export default function ConciliacaoBancaria() {
                   )}
                 </div>
                 <div className="flex gap-4 text-sm text-muted-foreground mt-1">
-                  <span>{new Date(extrato.data_movimento).toLocaleDateString('pt-BR')}</span>
+                  <span>
+                    {new Date(extrato.data_movimento).toLocaleDateString(
+                      "pt-BR",
+                    )}
+                  </span>
                   {extrato.documento && <span>Doc: {extrato.documento}</span>}
                   {extrato.observacoes && <span>{extrato.observacoes}</span>}
                 </div>
@@ -181,10 +197,15 @@ export default function ConciliacaoBancaria() {
 
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <div className={`font-bold ${extrato.tipo === 'CREDITO' ? 'text-success' : 'text-destructive'}`}>
-                    {extrato.tipo === 'CREDITO' ? '+' : '-'} {formatCurrency(extrato.valor)}
+                  <div
+                    className={`font-bold ${extrato.tipo === "CREDITO" ? "text-success" : "text-destructive"}`}
+                  >
+                    {extrato.tipo === "CREDITO" ? "+" : "-"}{" "}
+                    {formatCurrency(extrato.valor)}
                   </div>
-                  <div className="text-xs text-muted-foreground">{extrato.tipo}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {extrato.tipo}
+                  </div>
                 </div>
 
                 {extrato.conciliado ? (
@@ -201,7 +222,7 @@ export default function ConciliacaoBancaria() {
                     size="sm"
                     onClick={() => {
                       // Em produção, abrir dialog para selecionar conta a receber
-                      toast.info('Selecione a conta a receber correspondente');
+                      toast.info("Selecione a conta a receber correspondente");
                     }}
                   >
                     <CheckCircle2 className="h-4 w-4 mr-2" />
@@ -214,7 +235,8 @@ export default function ConciliacaoBancaria() {
 
           {extratos.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
-              Nenhum lançamento bancário encontrado. Configure a integração bancária primeiro.
+              Nenhum lançamento bancário encontrado. Configure a integração
+              bancária primeiro.
             </div>
           )}
         </div>

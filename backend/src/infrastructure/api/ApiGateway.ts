@@ -1,6 +1,6 @@
 /**
  * API Gateway - Ponto único de entrada para todos os módulos
- * 
+ *
  * Responsabilidades:
  * - Roteamento para módulos
  * - Autenticação/Autorização
@@ -9,12 +9,12 @@
  * - Error handling
  */
 
-import express, { Router, Request, Response, NextFunction } from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import { IAuthService } from '@/infrastructure/auth/IAuthService';
-import { logger } from '@/infrastructure/logger';
-import { prometheusMetrics } from '@/infrastructure/metrics/PrometheusMetrics';
+import { IAuthService } from "@/infrastructure/auth/IAuthService";
+import { logger } from "@/infrastructure/logger";
+import { prometheusMetrics } from "@/infrastructure/metrics/PrometheusMetrics";
+import cors from "cors";
+import express, { NextFunction, Request, Response, Router } from "express";
+import helmet from "helmet";
 
 export interface ModuleRouter {
   moduleName: string;
@@ -40,8 +40,8 @@ export class ApiGateway {
     this.app.use(cors());
 
     // Body parsing
-    this.app.use(express.json({ limit: '10mb' }));
-    this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+    this.app.use(express.json({ limit: "10mb" }));
+    this.app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
     // Prometheus metrics middleware
     this.app.use(prometheusMetrics.middleware());
@@ -49,9 +49,9 @@ export class ApiGateway {
     // Request logging
     this.app.use((req, res, next) => {
       const start = Date.now();
-      res.on('finish', () => {
+      res.on("finish", () => {
         const duration = Date.now() - start;
-        logger.info('HTTP Request', {
+        logger.info("HTTP Request", {
           method: req.method,
           path: req.path,
           statusCode: res.statusCode,
@@ -63,9 +63,9 @@ export class ApiGateway {
     });
 
     // Health check
-    this.app.get('/health', (req, res) => {
+    this.app.get("/health", (_req, res) => {
       res.json({
-        status: 'healthy',
+        status: "healthy",
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
         modules: Array.from(this.moduleRouters.keys()),
@@ -73,14 +73,14 @@ export class ApiGateway {
     });
 
     // Metrics endpoint
-    this.app.get('/metrics', async (req, res) => {
+    this.app.get("/metrics", async (_req, res) => {
       try {
         const metrics = await prometheusMetrics.getMetrics();
-        res.set('Content-Type', 'text/plain');
+        res.set("Content-Type", "text/plain");
         res.send(metrics);
       } catch (error) {
-        logger.error('Error generating metrics', { error });
-        res.status(500).send('Error generating metrics');
+        logger.error("Error generating metrics", { error });
+        res.status(500).send("Error generating metrics");
       }
     });
   }
@@ -101,7 +101,7 @@ export class ApiGateway {
 
     this.moduleRouters.set(moduleName, moduleRouter);
 
-    logger.info('Module router registered', {
+    logger.info("Module router registered", {
       moduleName,
       basePath,
       requiresAuth,
@@ -114,13 +114,15 @@ export class ApiGateway {
   private async authMiddleware(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const authHeader = req.headers.authorization;
 
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        res.status(401).json({ error: 'Missing or invalid authorization header' });
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        res
+          .status(401)
+          .json({ error: "Missing or invalid authorization header" });
         return;
       }
 
@@ -132,8 +134,8 @@ export class ApiGateway {
 
       next();
     } catch (error) {
-      logger.warn('Authentication failed', { error, path: req.path });
-      res.status(401).json({ error: 'Invalid or expired token' });
+      logger.warn("Authentication failed", { error, path: req.path });
+      res.status(401).json({ error: "Invalid or expired token" });
     }
   }
 
@@ -142,18 +144,19 @@ export class ApiGateway {
    */
   setupErrorHandler(): void {
     this.app.use(
-      (err: Error, req: Request, res: Response, next: NextFunction) => {
-        logger.error('Unhandled error', {
+      (err: Error, req: Request, res: Response, _next: NextFunction) => {
+        logger.error("Unhandled error", {
           error: err,
           method: req.method,
           path: req.path,
         });
 
         res.status(500).json({
-          error: 'Internal server error',
-          message: process.env.NODE_ENV === 'development' ? err.message : undefined,
+          error: "Internal server error",
+          message:
+            process.env.NODE_ENV === "development" ? err.message : undefined,
         });
-      }
+      },
     );
   }
 
@@ -171,7 +174,7 @@ export class ApiGateway {
     this.setupErrorHandler();
 
     this.app.listen(port, () => {
-      logger.info('API Gateway started', {
+      logger.info("API Gateway started", {
         port,
         modules: Array.from(this.moduleRouters.keys()),
       });

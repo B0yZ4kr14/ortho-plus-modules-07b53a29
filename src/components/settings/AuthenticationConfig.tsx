@@ -1,14 +1,20 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { KeyRound, Mail, Chrome, RefreshCw } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { apiClient } from "@/lib/api/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { KeyRound, Mail, Chrome, RefreshCw } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 
 interface AuthConfig {
   email_password_enabled?: boolean;
@@ -43,23 +49,20 @@ export function AuthenticationConfig() {
 
   const loadConfig = async () => {
     if (!selectedClinic) return;
-    
+
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('admin_configurations')
-        .select('config_data')
-        .eq('clinic_id', typeof selectedClinic === 'string' ? selectedClinic : selectedClinic.id)
-        .eq('config_type', 'auth')
-        .single();
+      const dataArray = await apiClient.get<any[]>(
+        `/rest/v1/admin_configurations?select=config_data&clinic_id=eq.${typeof selectedClinic === "string" ? selectedClinic : selectedClinic.id}&config_type=eq.auth`,
+      );
 
-      if (error && error.code !== 'PGRST116') throw error;
-      
+      const data = dataArray?.[0];
+
       if (data?.config_data) {
         setConfig(data.config_data as AuthConfig);
       }
     } catch (error) {
-      console.error('Erro ao carregar config auth:', error);
+      console.error("Erro ao carregar config auth:", error);
     } finally {
       setLoading(false);
     }
@@ -70,28 +73,34 @@ export function AuthenticationConfig() {
 
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('admin_configurations')
-        .upsert({
-          clinic_id: typeof selectedClinic === 'string' ? selectedClinic : selectedClinic.id,
-          config_type: 'auth',
+      await apiClient.post(
+        "/rest/v1/admin_configurations",
+        {
+          clinic_id:
+            typeof selectedClinic === "string"
+              ? selectedClinic
+              : selectedClinic.id,
+          config_type: "auth",
           config_data: config as any,
           is_active: true,
-        }, {
-          onConflict: 'clinic_id,config_type'
-        });
-
-      if (error) throw error;
+        },
+        {
+          headers: {
+            Prefer: "resolution=merge-duplicates",
+          },
+        },
+      );
 
       toast({
-        title: 'Configurações salvas',
-        description: 'Configurações de autenticação atualizadas com sucesso',
+        title: "Configurações salvas",
+        description: "Configurações de autenticação atualizadas com sucesso",
       });
     } catch (error) {
       toast({
-        title: 'Erro ao salvar',
-        description: error instanceof Error ? error.message : 'Erro desconhecido',
-        variant: 'destructive',
+        title: "Erro ao salvar",
+        description:
+          error instanceof Error ? error.message : "Erro desconhecido",
+        variant: "destructive",
       });
     } finally {
       setSaving(false);
@@ -99,7 +108,11 @@ export function AuthenticationConfig() {
   };
 
   if (loading) {
-    return <Card><CardContent className="pt-6">Carregando...</CardContent></Card>;
+    return (
+      <Card>
+        <CardContent className="pt-6">Carregando...</CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -128,7 +141,7 @@ export function AuthenticationConfig() {
             </div>
             <Switch
               checked={config.email_password_enabled || false}
-              onCheckedChange={(checked) => 
+              onCheckedChange={(checked) =>
                 setConfig({ ...config, email_password_enabled: checked })
               }
             />
@@ -145,7 +158,7 @@ export function AuthenticationConfig() {
                 </div>
                 <Switch
                   checked={config.auto_confirm_email || false}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     setConfig({ ...config, auto_confirm_email: checked })
                   }
                 />
@@ -159,20 +172,23 @@ export function AuthenticationConfig() {
                   min={6}
                   max={32}
                   value={config.password_min_length || 8}
-                  onChange={(e) => 
-                    setConfig({ ...config, password_min_length: parseInt(e.target.value) })
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      password_min_length: parseInt(e.target.value),
+                    })
                   }
                 />
               </div>
 
               <div className="space-y-3">
                 <Label>Requisitos de Senha</Label>
-                
+
                 <div className="flex items-center justify-between">
                   <Label className="font-normal">Exigir letra maiúscula</Label>
                   <Switch
                     checked={config.require_uppercase || false}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setConfig({ ...config, require_uppercase: checked })
                     }
                   />
@@ -182,17 +198,19 @@ export function AuthenticationConfig() {
                   <Label className="font-normal">Exigir número</Label>
                   <Switch
                     checked={config.require_number || false}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setConfig({ ...config, require_number: checked })
                     }
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <Label className="font-normal">Exigir caractere especial (!@#$%)</Label>
+                  <Label className="font-normal">
+                    Exigir caractere especial (!@#$%)
+                  </Label>
                   <Switch
                     checked={config.require_special_char || false}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setConfig({ ...config, require_special_char: checked })
                     }
                   />
@@ -218,7 +236,7 @@ export function AuthenticationConfig() {
             </div>
             <Switch
               checked={config.google_oauth_enabled || false}
-              onCheckedChange={(checked) => 
+              onCheckedChange={(checked) =>
                 setConfig({ ...config, google_oauth_enabled: checked })
               }
             />
@@ -231,7 +249,17 @@ export function AuthenticationConfig() {
                   <strong>⚠️ Configuração no Google Cloud Console:</strong>
                 </p>
                 <ol className="text-sm text-blue-600 dark:text-blue-400 mt-2 space-y-1 list-decimal list-inside">
-                  <li>Acesse <a href="https://console.cloud.google.com" target="_blank" rel="noopener" className="underline">Google Cloud Console</a></li>
+                  <li>
+                    Acesse{" "}
+                    <a
+                      href="https://console.cloud.google.com"
+                      target="_blank"
+                      rel="noopener"
+                      className="underline"
+                    >
+                      Google Cloud Console
+                    </a>
+                  </li>
                   <li>Crie um projeto OAuth 2.0</li>
                   <li>Adicione URLs autorizadas (redirect URIs)</li>
                   <li>Obtenha Client ID e Client Secret</li>
@@ -244,22 +272,27 @@ export function AuthenticationConfig() {
                 <Input
                   id="google-client-id"
                   placeholder="123456789-abc123.apps.googleusercontent.com"
-                  value={config.google_client_id || ''}
-                  onChange={(e) => 
+                  value={config.google_client_id || ""}
+                  onChange={(e) =>
                     setConfig({ ...config, google_client_id: e.target.value })
                   }
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="google-client-secret">Google Client Secret</Label>
+                <Label htmlFor="google-client-secret">
+                  Google Client Secret
+                </Label>
                 <Input
                   id="google-client-secret"
                   type="password"
                   placeholder="GOCSPX-*********************"
-                  value={config.google_client_secret || ''}
-                  onChange={(e) => 
-                    setConfig({ ...config, google_client_secret: e.target.value })
+                  value={config.google_client_secret || ""}
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      google_client_secret: e.target.value,
+                    })
                   }
                 />
                 <p className="text-xs text-muted-foreground">
@@ -272,7 +305,7 @@ export function AuthenticationConfig() {
 
         <div className="flex gap-2">
           <Button onClick={saveConfig} disabled={saving}>
-            {saving ? 'Salvando...' : 'Salvar Configurações'}
+            {saving ? "Salvando..." : "Salvar Configurações"}
           </Button>
           <Button variant="outline" onClick={() => loadConfig()}>
             <RefreshCw className="h-4 w-4 mr-2" />

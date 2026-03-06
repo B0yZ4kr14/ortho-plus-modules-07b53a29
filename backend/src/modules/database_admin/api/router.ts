@@ -1,18 +1,16 @@
-/**
- * Database Admin Module Router
- */
+import { Router } from "express";
+import { DatabaseAdminController } from "./DatabaseAdminController";
 
-import { Router } from 'express';
-import { DatabaseAdminController } from './DatabaseAdminController';
+const router = Router();
+const databaseAdminController = new DatabaseAdminController();
 
-export function createDatabaseAdminRouter(): Router {
-  const router = Router();
-  const controller = new DatabaseAdminController();
+// /api/db/maintenance
+router.post("/maintenance", databaseAdminController.runMaintenance);
 
-  router.get('/health', (req, res) => controller.getHealth(req, res));
-  router.get('/slow-queries', (req, res) => controller.getSlowQueries(req, res));
-  router.get('/connection-pool', (req, res) => controller.getConnectionPool(req, res));
-  router.post('/maintenance', (req, res) => controller.runMaintenance(req, res));
+// /api/db/health
+router.get("/health", databaseAdminController.getHealth);
 
-  return router;
-}
+// /api/db/audit_logs
+router.get("/audit_logs", databaseAdminController.getAuditLogs);
+
+export default router;

@@ -1,22 +1,48 @@
-import { useState, useEffect } from 'react';
-import { FileCode, Plus, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import {
+  FileCode,
+  Plus,
+  CheckCircle,
+  XCircle,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { toast } from "sonner";
 
 interface ADR {
   id: string;
   adr_number: number;
   title: string;
-  status: 'proposed' | 'accepted' | 'deprecated' | 'superseded';
+  status: "proposed" | "accepted" | "deprecated" | "superseded";
   context: string;
   decision: string;
   consequences: string;
@@ -25,32 +51,28 @@ interface ADR {
 }
 
 export default function ADRsPage() {
-  const { clinicId } = useAuth();
+  const { clinicId, user } = useAuth();
   const [adrs, setAdrs] = useState<ADR[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
-    title: '',
-    context: '',
-    decision: '',
-    consequences: '',
-    alternatives_considered: '',
-    status: 'proposed' as 'proposed' | 'accepted' | 'deprecated' | 'superseded'
+    title: "",
+    context: "",
+    decision: "",
+    consequences: "",
+    alternatives_considered: "",
+    status: "proposed" as "proposed" | "accepted" | "deprecated" | "superseded",
   });
 
   const fetchADRs = async () => {
     if (!clinicId) return;
 
     try {
-      const { data, error } = await supabase
-        .from('architecture_decision_records')
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .order('adr_number', { ascending: false });
-
-      if (error) throw error;
-      setAdrs((data || []) as ADR[]);
+      const data = await apiClient.get<ADR[]>(
+        `/rest/v1/architecture_decision_records?clinic_id=eq.${clinicId}&order=adr_number.desc`,
+      );
+      setAdrs(data || []);
     } catch (error) {
-      toast.error('Erro ao carregar ADRs');
+      toast.error("Erro ao carregar ADRs");
       console.error(error);
     }
   };
@@ -61,50 +83,63 @@ export default function ADRsPage() {
 
   const handleCreate = async () => {
     if (!clinicId || !formData.title.trim()) {
-      toast.error('Preencha todos os campos obrigatórios');
+      toast.error("Preencha todos os campos obrigatórios");
       return;
     }
 
     try {
-      const nextNumber = adrs.length > 0 ? Math.max(...adrs.map(a => a.adr_number)) + 1 : 1;
-      const user = (await supabase.auth.getUser()).data.user;
+      const nextNumber =
+        adrs.length > 0 ? Math.max(...adrs.map((a) => a.adr_number)) + 1 : 1;
 
-      const { error } = await supabase
-        .from('architecture_decision_records')
-        .insert({
-          clinic_id: clinicId,
-          adr_number: nextNumber,
-          ...formData,
-          created_by: user?.id,
-          decided_by: formData.status === 'accepted' ? user?.id : undefined,
-          decided_at: formData.status === 'accepted' ? new Date().toISOString() : undefined
-        });
+      await apiClient.post("/rest/v1/architecture_decision_records", {
+        clinic_id: clinicId,
+        adr_number: nextNumber,
+        ...formData,
+        created_by: user?.id,
+        decided_by: formData.status === "accepted" ? user?.id : undefined,
+        decided_at:
+          formData.status === "accepted" ? new Date().toISOString() : undefined,
+      });
 
-      if (error) throw error;
-
-      toast.success('ADR criado com sucesso');
+      toast.success("ADR criado com sucesso");
       setDialogOpen(false);
       setFormData({
-        title: '',
-        context: '',
-        decision: '',
-        consequences: '',
-        alternatives_considered: '',
-        status: 'proposed'
+        title: "",
+        context: "",
+        decision: "",
+        consequences: "",
+        alternatives_considered: "",
+        status: "proposed",
       });
       fetchADRs();
     } catch (error) {
-      toast.error('Erro ao criar ADR');
+      toast.error("Erro ao criar ADR");
       console.error(error);
     }
   };
 
-  const getStatusBadge = (status: ADR['status']) => {
+  const getStatusBadge = (status: ADR["status"]) => {
     const variants = {
-      proposed: { variant: 'secondary' as const, icon: Clock, label: 'Proposto' },
-      accepted: { variant: 'default' as const, icon: CheckCircle, label: 'Aceito' },
-      deprecated: { variant: 'outline' as const, icon: XCircle, label: 'Deprecated' },
-      superseded: { variant: 'outline' as const, icon: AlertCircle, label: 'Superseded' }
+      proposed: {
+        variant: "secondary" as const,
+        icon: Clock,
+        label: "Proposto",
+      },
+      accepted: {
+        variant: "default" as const,
+        icon: CheckCircle,
+        label: "Aceito",
+      },
+      deprecated: {
+        variant: "outline" as const,
+        icon: XCircle,
+        label: "Deprecated",
+      },
+      superseded: {
+        variant: "outline" as const,
+        icon: AlertCircle,
+        label: "Superseded",
+      },
     };
 
     const config = variants[status];
@@ -145,7 +180,9 @@ export default function ADRsPage() {
                 <label className="text-sm font-medium">Título</label>
                 <Input
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
                   placeholder="Ex: Migração de Monolito para Microserviços"
                 />
               </div>
@@ -154,7 +191,9 @@ export default function ADRsPage() {
                 <label className="text-sm font-medium">Status</label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value: any) => setFormData({ ...formData, status: value })}
+                  onValueChange={(value: any) =>
+                    setFormData({ ...formData, status: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -172,7 +211,9 @@ export default function ADRsPage() {
                 <label className="text-sm font-medium">Contexto</label>
                 <Textarea
                   value={formData.context}
-                  onChange={(e) => setFormData({ ...formData, context: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, context: e.target.value })
+                  }
                   placeholder="Qual é o contexto e o problema que estamos tentando resolver?"
                   rows={4}
                 />
@@ -182,7 +223,9 @@ export default function ADRsPage() {
                 <label className="text-sm font-medium">Decisão</label>
                 <Textarea
                   value={formData.decision}
-                  onChange={(e) => setFormData({ ...formData, decision: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, decision: e.target.value })
+                  }
                   placeholder="Qual decisão foi tomada?"
                   rows={4}
                 />
@@ -192,17 +235,26 @@ export default function ADRsPage() {
                 <label className="text-sm font-medium">Consequências</label>
                 <Textarea
                   value={formData.consequences}
-                  onChange={(e) => setFormData({ ...formData, consequences: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, consequences: e.target.value })
+                  }
                   placeholder="Quais são as consequências dessa decisão?"
                   rows={4}
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium">Alternativas Consideradas (opcional)</label>
+                <label className="text-sm font-medium">
+                  Alternativas Consideradas (opcional)
+                </label>
                 <Textarea
                   value={formData.alternatives_considered}
-                  onChange={(e) => setFormData({ ...formData, alternatives_considered: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      alternatives_considered: e.target.value,
+                    })
+                  }
                   placeholder="Que outras opções foram consideradas?"
                   rows={3}
                 />
@@ -212,9 +264,7 @@ export default function ADRsPage() {
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleCreate}>
-                  Criar ADR
-                </Button>
+                <Button onClick={handleCreate}>Criar ADR</Button>
               </div>
             </div>
           </DialogContent>
@@ -228,13 +278,16 @@ export default function ADRsPage() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline">ADR-{adr.adr_number.toString().padStart(3, '0')}</Badge>
+                    <Badge variant="outline">
+                      ADR-{adr.adr_number.toString().padStart(3, "0")}
+                    </Badge>
                     {getStatusBadge(adr.status)}
                   </div>
                   <CardTitle className="text-xl">{adr.title}</CardTitle>
                   <CardDescription>
                     Criado em {new Date(adr.created_at).toLocaleDateString()}
-                    {adr.decided_at && ` • Decidido em ${new Date(adr.decided_at).toLocaleDateString()}`}
+                    {adr.decided_at &&
+                      ` • Decidido em ${new Date(adr.decided_at).toLocaleDateString()}`}
                   </CardDescription>
                 </div>
               </div>
@@ -242,17 +295,23 @@ export default function ADRsPage() {
             <CardContent className="space-y-4">
               <div>
                 <h4 className="font-semibold mb-2">Contexto</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{adr.context}</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {adr.context}
+                </p>
               </div>
 
               <div>
                 <h4 className="font-semibold mb-2">Decisão</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{adr.decision}</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {adr.decision}
+                </p>
               </div>
 
               <div>
                 <h4 className="font-semibold mb-2">Consequências</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{adr.consequences}</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {adr.consequences}
+                </p>
               </div>
             </CardContent>
           </Card>

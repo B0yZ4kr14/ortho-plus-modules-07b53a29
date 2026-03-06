@@ -1,21 +1,31 @@
-import { useState, useEffect } from 'react';
-import { Database, Wrench, Play, TrendingUp, HardDrive } from 'lucide-react';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import { Database, Wrench, Play, TrendingUp, HardDrive } from "lucide-react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { apiClient } from "@/lib/api/apiClient";
+import { toast } from "sonner";
 
 interface DBStats {
-  database_size: string;
-  total_tables: number;
-  total_rows: number;
-  cache_hit_ratio: number;
-  connection_count: number;
-  slow_queries: number;
-  last_vacuum: string;
-  tables: Array<{
+  id?: string;
+  clinicId?: string;
+  connectionPoolSize?: number;
+  activeConnections?: number;
+  idleConnections?: number;
+  slowQueriesCount?: number;
+  averageQueryTime?: number;
+  diskUsagePercent?: number;
+  lastVacuum?: string;
+  lastAnalyze?: string;
+  timestamp?: string;
+  tables?: Array<{
     name: string;
     rows: number;
     size: string;
@@ -31,15 +41,10 @@ export default function DatabaseMaintenancePage() {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('db-maintenance', {
-        body: {}
-      });
-
-      if (error) throw error;
-
-      setStats(data.stats);
+      const data = await apiClient.get<{ health: DBStats }>("/db/health");
+      setStats({ ...data.health, tables: [] });
     } catch (error) {
-      toast.error('Erro ao carregar estatísticas');
+      toast.error("Erro ao carregar estatísticas");
       console.error(error);
     } finally {
       setLoading(false);
@@ -53,16 +58,15 @@ export default function DatabaseMaintenancePage() {
   const executeMaintenance = async (action: string, table?: string) => {
     setExecuting(action);
     try {
-      const { data, error } = await supabase.functions.invoke('db-maintenance', {
-        body: { action, table }
-      });
+      const data = await apiClient.post<{ message: string }>(
+        "/db/maintenance",
+        { operation: action, targetSchema: table },
+      );
 
-      if (error) throw error;
-
-      toast.success(data.result.message);
+      toast.success(data.message);
       await fetchStats();
     } catch (error) {
-      toast.error('Erro ao executar manutenção');
+      toast.error("Erro ao executar manutenção");
       console.error(error);
     } finally {
       setExecuting(null);
@@ -86,19 +90,22 @@ export default function DatabaseMaintenancePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.database_size}</div>
+            <div className="text-2xl font-bold">
+              {stats?.diskUsagePercent ?? 0}% Utilizado
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Cache Hit Ratio
+              Tempo Médio de Query
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats ? (stats.cache_hit_ratio * 100).toFixed(1) : 0}%
+              {stats?.averageQueryTime ? stats.averageQueryTime.toFixed(1) : 0}{" "}
+              ms
             </div>
           </CardContent>
         </Card>
@@ -110,7 +117,9 @@ export default function DatabaseMaintenancePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.connection_count}</div>
+            <div className="text-2xl font-bold">
+              {stats?.activeConnections || 0}
+            </div>
           </CardContent>
         </Card>
 
@@ -121,7 +130,9 @@ export default function DatabaseMaintenancePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-500">{stats?.slow_queries}</div>
+            <div className="text-2xl font-bold text-yellow-500">
+              {stats?.slowQueriesCount || 0}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -145,12 +156,12 @@ export default function DatabaseMaintenancePage() {
               </CardHeader>
               <CardContent>
                 <Button
-                  onClick={() => executeMaintenance('VACUUM')}
+                  onClick={() => executeMaintenance("VACUUM")}
                   disabled={executing !== null}
                   className="w-full"
                 >
                   <Play className="h-4 w-4 mr-2" />
-                  {executing === 'VACUUM' ? 'Executando...' : 'Executar VACUUM'}
+                  {executing === "VACUUM" ? "Executando..." : "Executar VACUUM"}
                 </Button>
               </CardContent>
             </Card>
@@ -164,12 +175,14 @@ export default function DatabaseMaintenancePage() {
               </CardHeader>
               <CardContent>
                 <Button
-                  onClick={() => executeMaintenance('ANALYZE')}
+                  onClick={() => executeMaintenance("ANALYZE")}
                   disabled={executing !== null}
                   className="w-full"
                 >
                   <TrendingUp className="h-4 w-4 mr-2" />
-                  {executing === 'ANALYZE' ? 'Executando...' : 'Executar ANALYZE'}
+                  {executing === "ANALYZE"
+                    ? "Executando..."
+                    : "Executar ANALYZE"}
                 </Button>
               </CardContent>
             </Card>
@@ -183,20 +196,30 @@ export default function DatabaseMaintenancePage() {
               </CardHeader>
               <CardContent>
                 <Button
-                  onClick={() => executeMaintenance('REINDEX')}
+                  onClick={() => executeMaintenance("REINDEX")}
                   disabled={executing !== null}
                   className="w-full"
                 >
                   <Database className="h-4 w-4 mr-2" />
-                  {executing === 'REINDEX' ? 'Executando...' : 'Executar REINDEX'}
+                  {executing === "REINDEX"
+                    ? "Executando..."
+                    : "Executar REINDEX"}
                 </Button>
               </CardContent>
             </Card>
           </div>
 
           <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
-            <p><strong>Último VACUUM:</strong> {stats?.last_vacuum}</p>
-            <p className="mt-1"><strong>Nota:</strong> Operações de manutenção podem afetar a performance durante execução.</p>
+            <p>
+              <strong>Último VACUUM:</strong>{" "}
+              {stats?.lastVacuum
+                ? new Date(stats.lastVacuum).toLocaleString()
+                : "N/A"}
+            </p>
+            <p className="mt-1">
+              <strong>Nota:</strong> Operações de manutenção podem afetar a
+              performance durante execução.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -210,13 +233,17 @@ export default function DatabaseMaintenancePage() {
         <CardContent>
           <div className="space-y-2">
             {stats?.tables.map((table) => (
-              <div key={table.name} className="flex items-center justify-between p-3 border rounded-lg">
+              <div
+                key={table.name}
+                className="flex items-center justify-between p-3 border rounded-lg"
+              >
                 <div className="flex items-center gap-3">
                   <HardDrive className="h-5 w-5 text-muted-foreground" />
                   <div>
                     <p className="font-medium">{table.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {table.rows.toLocaleString()} rows • Último VACUUM: {table.last_vacuum}
+                      {table.rows.toLocaleString()} rows • Último VACUUM:{" "}
+                      {table.last_vacuum}
                     </p>
                   </div>
                 </div>

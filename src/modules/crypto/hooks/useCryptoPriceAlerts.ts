@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface PriceAlert {
   id: string;
   coin_type: string;
   target_rate_brl: number;
-  alert_type: 'ABOVE' | 'BELOW';
+  alert_type: "ABOVE" | "BELOW";
   notification_method: string[];
   is_active: boolean;
   last_triggered_at: string | null;
@@ -22,8 +22,10 @@ interface PriceAlert {
 
 export function useCryptoPriceAlerts() {
   const { user, clinicId: authClinicId } = useAuth();
-  const clinicId = authClinicId || (user && 'user_metadata' in user ? user.user_metadata?.clinic_id : null);
-  
+  const clinicId =
+    authClinicId ||
+    (user && "user_metadata" in user ? user.user_metadata?.clinic_id : null);
+
   const [alerts, setAlerts] = useState<PriceAlert[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -31,17 +33,13 @@ export function useCryptoPriceAlerts() {
     if (!clinicId) return;
 
     try {
-      const { data, error } = await supabase
-        .from('crypto_price_alerts' as any)
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setAlerts((data as any) || []);
-    } catch (error: any) {
-      console.error('Error fetching alerts:', error);
-      toast.error('Erro ao carregar alertas');
+      const data = await apiClient.get<PriceAlert[]>(
+        `/crypto/price-alerts?clinic_id=${clinicId}`,
+      );
+      setAlerts(data || []);
+    } catch (error: unknown) {
+      console.error("Error fetching alerts:", error);
+      toast.error("Erro ao carregar alertas");
     } finally {
       setLoading(false);
     }
@@ -51,64 +49,59 @@ export function useCryptoPriceAlerts() {
     fetchAlerts();
   }, [clinicId]);
 
-  const createAlert = async (alertData: Omit<PriceAlert, 'id' | 'created_at' | 'last_triggered_at' | 'is_active'>) => {
+  const createAlert = async (
+    alertData: Omit<
+      PriceAlert,
+      "id" | "created_at" | "last_triggered_at" | "is_active"
+    >,
+  ) => {
     if (!clinicId || !user?.id) return;
 
     try {
-      const { error } = await supabase
-        .from('crypto_price_alerts' as any)
-        .insert({
-          ...alertData,
-          clinic_id: clinicId,
-          created_by: user.id,
-          target_rate_brl: Number(alertData.target_rate_brl),
-          conversion_percentage: Number(alertData.conversion_percentage || 100),
-        });
-
-      if (error) throw error;
+      await apiClient.post("/crypto/price-alerts", {
+        ...alertData,
+        clinic_id: clinicId,
+        created_by: user.id,
+        target_rate_brl: Number(alertData.target_rate_brl),
+        conversion_percentage: Number(alertData.conversion_percentage || 100),
+      });
 
       const successMsg = alertData.stop_loss_enabled
-        ? 'Stop-Loss configurado com sucesso!'
-        : 'Alerta criado com sucesso!';
+        ? "Stop-Loss configurado com sucesso!"
+        : "Alerta criado com sucesso!";
       toast.success(successMsg);
       fetchAlerts();
-    } catch (error: any) {
-      console.error('Error creating alert:', error);
-      toast.error('Erro ao criar alerta');
+    } catch (error: unknown) {
+      console.error("Error creating alert:", error);
+      toast.error("Erro ao criar alerta");
     }
   };
 
   const toggleAlert = async (alertId: string, isActive: boolean) => {
     try {
-      const { error } = await supabase
-        .from('crypto_price_alerts' as any)
-        .update({ is_active: !isActive })
-        .eq('id', alertId);
+      await apiClient.patch(`/crypto/price-alerts/${alertId}`, {
+        is_active: !isActive,
+      });
 
-      if (error) throw error;
-
-      toast.success(`Alerta ${!isActive ? 'ativado' : 'desativado'} com sucesso!`);
+      toast.success(
+        `Alerta ${!isActive ? "ativado" : "desativado"} com sucesso!`,
+      );
       fetchAlerts();
-    } catch (error: any) {
-      console.error('Error toggling alert:', error);
-      toast.error('Erro ao atualizar alerta');
+    } catch (error: unknown) {
+      console.error("Error toggling alert:", error);
+      toast.error("Erro ao atualizar alerta");
     }
   };
 
   const deleteAlert = async (alertId: string) => {
     try {
-      const { error } = await supabase
-        .from('crypto_price_alerts' as any)
-        .delete()
-        .eq('id', alertId);
+      await apiClient.delete(`/crypto/price-alerts/${alertId}`);
 
-      if (error) throw error;
-
-      toast.success('Alerta excluído com sucesso!');
+      toast.success("Alerta excluído com sucesso!");
       fetchAlerts();
-    } catch (error: any) {
-      console.error('Error deleting alert:', error);
-      toast.error('Erro ao excluir alerta');
+    } catch (error: unknown) {
+      console.error("Error deleting alert:", error);
+      toast.error("Erro ao excluir alerta");
     }
   };
 

@@ -1,12 +1,12 @@
-import { useRef } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { Badge } from '@/components/ui/badge';
-import { Printer, FileText, CheckCircle, QrCode } from 'lucide-react';
+import { useRef } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Printer, FileText, CheckCircle, QrCode } from "lucide-react";
 
 interface CupomFiscalProps {
   venda: any;
@@ -20,54 +20,47 @@ export const CupomFiscal = ({ venda, items }: CupomFiscalProps) => {
 
   const emitirNFCeMutation = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('emitir-nfce', {
-        body: {
-          vendaId: venda.id,
-          clinicId: clinicId,
-          items: items,
-          valorTotal: venda.valor_total,
-        },
+      const data: any = await apiClient.post("/emitir-nfce", {
+        vendaId: venda.id,
+        clinicId: clinicId,
+        items: items,
+        valorTotal: venda.valor_total,
       });
 
-      if (error) throw error;
       return data;
     },
     onSuccess: async (data) => {
       toast({
-        title: 'NFCe emitida com sucesso',
+        title: "NFCe emitida com sucesso",
         description: `Chave: ${data.nfce.chave_acesso}`,
       });
-      
+
       // Disparar impressão automática em SAT/MFe após emissão NFCe
       await imprimirCupomFiscal();
     },
     onError: (error: any) => {
       toast({
-        title: 'Erro ao emitir NFCe',
+        title: "Erro ao emitir NFCe",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     },
   });
 
   const imprimirCupomFiscal = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('imprimir-cupom-sat', {
-        body: {
-          vendaId: venda.id,
-          clinicId: clinicId,
-          items: items.map((item: any) => ({
-            descricao: item.descricao,
-            quantidade: item.quantidade,
-            valor_unitario: item.valor_unitario,
-            valor_total: item.valor_total,
-          })),
-          valorTotal: venda.valor_total,
-          formaPagamento: venda.forma_pagamento || 'DINHEIRO',
-        },
+      const data: any = await apiClient.post("/imprimir-cupom-sat", {
+        vendaId: venda.id,
+        clinicId: clinicId,
+        items: items.map((item: any) => ({
+          descricao: item.descricao,
+          quantidade: item.quantidade,
+          valor_unitario: item.valor_unitario,
+          valor_total: item.valor_total,
+        })),
+        valorTotal: venda.valor_total,
+        formaPagamento: venda.forma_pagamento || "DINHEIRO",
       });
-
-      if (error) throw error;
 
       if (data.success) {
         toast({
@@ -75,10 +68,10 @@ export const CupomFiscal = ({ venda, items }: CupomFiscalProps) => {
           description: `Autorização: ${data.codigoAutorizacao}`,
         });
       } else {
-        throw new Error(data.mensagem || 'Erro ao imprimir cupom fiscal');
+        throw new Error(data.mensagem || "Erro ao imprimir cupom fiscal");
       }
     } catch (error: any) {
-      console.error('Error printing fiscal coupon:', error);
+      console.error("Error printing fiscal coupon:", error);
       toast({
         title: "Erro ao imprimir cupom fiscal",
         description: error.message,
@@ -89,10 +82,10 @@ export const CupomFiscal = ({ venda, items }: CupomFiscalProps) => {
 
   const handlePrint = () => {
     if (cupomRef.current) {
-      const printWindow = window.open('', '', 'height=600,width=400');
+      const printWindow = window.open("", "", "height=600,width=400");
       if (printWindow) {
-        printWindow.document.write('<html><head><title>Cupom Fiscal</title>');
-        printWindow.document.write('<style>');
+        printWindow.document.write("<html><head><title>Cupom Fiscal</title>");
+        printWindow.document.write("<style>");
         printWindow.document.write(`
           body { font-family: 'Courier New', monospace; font-size: 12px; margin: 0; padding: 20px; }
           .cupom { max-width: 80mm; margin: 0 auto; }
@@ -103,9 +96,9 @@ export const CupomFiscal = ({ venda, items }: CupomFiscalProps) => {
           td { padding: 2px 0; }
           .right { text-align: right; }
         `);
-        printWindow.document.write('</style></head><body>');
+        printWindow.document.write("</style></head><body>");
         printWindow.document.write(cupomRef.current.innerHTML);
-        printWindow.document.write('</body></html>');
+        printWindow.document.write("</body></html>");
         printWindow.document.close();
         printWindow.print();
       }
@@ -114,7 +107,7 @@ export const CupomFiscal = ({ venda, items }: CupomFiscalProps) => {
 
   const valorTotal = items.reduce(
     (sum, item) => sum + item.valor_unitario * item.quantidade,
-    0
+    0,
   );
 
   return (
@@ -167,15 +160,15 @@ export const CupomFiscal = ({ venda, items }: CupomFiscalProps) => {
                     <div className="flex justify-between">
                       <span>{item.quantidade} x</span>
                       <span>
-                        {new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
+                        {new Intl.NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
                         }).format(item.valor_unitario)}
                       </span>
                       <span className="bold">
-                        {new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
+                        {new Intl.NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
                         }).format(item.valor_unitario * item.quantidade)}
                       </span>
                     </div>
@@ -191,9 +184,9 @@ export const CupomFiscal = ({ venda, items }: CupomFiscalProps) => {
             <tr>
               <td>TOTAL</td>
               <td className="right bold text-lg">
-                {new Intl.NumberFormat('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL',
+                {new Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
                 }).format(valorTotal)}
               </td>
             </tr>
@@ -223,10 +216,8 @@ export const CupomFiscal = ({ venda, items }: CupomFiscalProps) => {
           <div className="divider"></div>
 
           <div className="center text-xs">
-            <p>Data: {new Date().toLocaleString('pt-BR')}</p>
-            <p className="mt-2">
-              Protocolo de Autorização: 999123456789012345
-            </p>
+            <p>Data: {new Date().toLocaleString("pt-BR")}</p>
+            <p className="mt-2">Protocolo de Autorização: 999123456789012345</p>
           </div>
 
           <div className="divider"></div>
@@ -238,11 +229,7 @@ export const CupomFiscal = ({ venda, items }: CupomFiscalProps) => {
         </div>
 
         <div className="flex gap-3 mt-6">
-          <Button
-            variant="outline"
-            onClick={handlePrint}
-            className="flex-1"
-          >
+          <Button variant="outline" onClick={handlePrint} className="flex-1">
             <Printer className="h-4 w-4 mr-2" />
             Imprimir Cupom
           </Button>
@@ -252,7 +239,7 @@ export const CupomFiscal = ({ venda, items }: CupomFiscalProps) => {
             className="flex-1"
           >
             <FileText className="h-4 w-4 mr-2" />
-            {emitirNFCeMutation.isPending ? 'Emitindo...' : 'Emitir NFCe'}
+            {emitirNFCeMutation.isPending ? "Emitindo..." : "Emitir NFCe"}
           </Button>
         </div>
       </Card>

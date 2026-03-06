@@ -1,55 +1,84 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Database, TrendingUp, Clock, HardDrive } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { Database, TrendingUp, Clock, HardDrive } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function BackupExecutiveTab() {
   const { clinicId } = useAuth();
 
   const { data: stats, isLoading } = useQuery({
-    queryKey: ['backup-executive-stats', clinicId],
+    queryKey: ["backup-executive-stats", clinicId],
     queryFn: async () => {
-      const { data: backups, error } = await supabase
-        .from('backup_history')
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (error) throw error;
+      const backups = await apiClient.get<any[]>(
+        `/rest/v1/backup_history?clinic_id=eq.${clinicId}&order=created_at.desc&limit=100`,
+      );
 
       const now = new Date();
       const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      const recent = backups.filter(b => new Date(b.created_at) >= last30Days);
+      const recent = backups.filter(
+        (b) => new Date(b.created_at) >= last30Days,
+      );
 
       const totalBackups = recent.length;
-      const successfulBackups = recent.filter(b => b.status === 'success').length;
-      const successRate = totalBackups > 0 ? (successfulBackups / totalBackups) * 100 : 0;
+      const successfulBackups = recent.filter(
+        (b) => b.status === "success",
+      ).length;
+      const successRate =
+        totalBackups > 0 ? (successfulBackups / totalBackups) * 100 : 0;
 
-      const totalSize = recent.reduce((sum, b) => sum + (b.file_size_bytes || 0), 0);
+      const totalSize = recent.reduce(
+        (sum, b) => sum + (b.file_size_bytes || 0),
+        0,
+      );
       const avgSize = totalBackups > 0 ? totalSize / totalBackups : 0;
 
       const trendData = [];
       for (let i = 29; i >= 0; i--) {
         const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-        const dateStr = date.toISOString().split('T')[0];
-        const dayBackups = recent.filter(b => b.created_at.split('T')[0] === dateStr);
-        const daySuccess = dayBackups.filter(b => b.status === 'success').length;
-        const dayFailed = dayBackups.filter(b => b.status === 'failed').length;
+        const dateStr = date.toISOString().split("T")[0];
+        const dayBackups = recent.filter(
+          (b) => b.created_at.split("T")[0] === dateStr,
+        );
+        const daySuccess = dayBackups.filter(
+          (b) => b.status === "success",
+        ).length;
+        const dayFailed = dayBackups.filter(
+          (b) => b.status === "failed",
+        ).length;
 
         trendData.push({
-          date: date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+          date: date.toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+          }),
           success: daySuccess,
-          failed: dayFailed
+          failed: dayFailed,
         });
       }
 
-      return { totalBackups, successfulBackups, successRate, avgSize, totalSize, trendData };
+      return {
+        totalBackups,
+        successfulBackups,
+        successRate,
+        avgSize,
+        totalSize,
+        trendData,
+      };
     },
-    enabled: !!clinicId
+    enabled: !!clinicId,
   });
 
   if (isLoading) {
@@ -78,7 +107,9 @@ export function BackupExecutiveTab() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Taxa de Sucesso</p>
-              <p className="text-2xl font-bold">{stats?.successRate.toFixed(1)}%</p>
+              <p className="text-2xl font-bold">
+                {stats?.successRate.toFixed(1)}%
+              </p>
             </div>
           </div>
         </Card>
@@ -113,7 +144,9 @@ export function BackupExecutiveTab() {
       </div>
 
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Tendência de Backups (30 dias)</h3>
+        <h3 className="text-lg font-semibold mb-4">
+          Tendência de Backups (30 dias)
+        </h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={stats?.trendData || []}>
             <CartesianGrid strokeDasharray="3 3" />

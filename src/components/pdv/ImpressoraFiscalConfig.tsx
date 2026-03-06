@@ -1,119 +1,112 @@
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/integrations/supabase/client'
-import { useToast } from '@/hooks/use-toast'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { Badge } from '@/components/ui/badge'
-import { Loader2, Printer, CheckCircle2, XCircle } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Printer, CheckCircle2, XCircle } from "lucide-react";
 
 export default function ImpressoraFiscalConfig() {
-  const { user, selectedClinic } = useAuth()
-  const { toast } = useToast()
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [config, setConfig] = useState<any>(null)
+  const { user, selectedClinic } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [config, setConfig] = useState<any>(null);
   const [formData, setFormData] = useState({
-    tipo_equipamento: 'SAT',
-    numero_serie: '',
-    codigo_ativacao: '',
-    ip_address: '',
+    tipo_equipamento: "SAT",
+    numero_serie: "",
+    codigo_ativacao: "",
+    ip_address: "",
     porta: 7000,
-    modelo: '',
-    fabricante: '',
-    versao_software: '',
+    modelo: "",
+    fabricante: "",
+    versao_software: "",
     ativo: true,
-  })
+  });
 
   useEffect(() => {
-    loadConfig()
-  }, [selectedClinic])
+    loadConfig();
+  }, [selectedClinic]);
 
   const loadConfig = async () => {
-    if (!selectedClinic) return
+    if (!selectedClinic) return;
 
     try {
-      setLoading(true)
-      const { data, error } = await supabase
-        .from('sat_mfe_config')
-        .select('*')
-        .eq('clinic_id', selectedClinic)
-        .maybeSingle()
-
-      if (error && error.code !== 'PGRST116') throw error
-
-      if (data) {
-        setConfig(data)
-        setFormData(data)
+      setLoading(true);
+      try {
+        const data = await apiClient.get("/sat-mfe-config", {
+          clinic_id: selectedClinic,
+        });
+        const configData = Array.isArray(data) ? data[0] : data;
+        if (configData) {
+          setConfig(configData);
+          setFormData(configData);
+        }
+      } catch (error: any) {
+        if (error?.status !== 404) throw error;
       }
     } catch (error: any) {
-      console.error('Error loading config:', error)
+      console.error("Error loading config:", error);
       toast({
         title: "Erro ao carregar configuração",
         description: error.message,
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedClinic) return
+    e.preventDefault();
+    if (!selectedClinic) return;
 
     try {
-      setSaving(true)
+      setSaving(true);
 
       const payload = {
         ...formData,
         clinic_id: selectedClinic,
         porta: Number(formData.porta),
-      }
+      };
 
       if (config) {
-        // Atualizar configuração existente
-        const { error } = await supabase
-          .from('sat_mfe_config')
-          .update(payload)
-          .eq('id', config.id)
-
-        if (error) throw error
-
+        await apiClient.patch(`/sat-mfe-config/${config.id}`, payload);
         toast({
           title: "Configuração atualizada",
           description: "Impressora fiscal configurada com sucesso",
-        })
+        });
       } else {
-        // Criar nova configuração
-        const { error } = await supabase
-          .from('sat_mfe_config')
-          .insert(payload)
-
-        if (error) throw error
-
+        await apiClient.post("/sat-mfe-config", payload);
         toast({
           title: "Configuração criada",
           description: "Impressora fiscal configurada com sucesso",
-        })
+        });
       }
 
-      loadConfig()
+      loadConfig();
     } catch (error: any) {
-      console.error('Error saving config:', error)
+      console.error("Error saving config:", error);
       toast({
         title: "Erro ao salvar configuração",
         description: error.message,
         variant: "destructive",
-      })
+      });
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -122,7 +115,7 @@ export default function ImpressoraFiscalConfig() {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -157,14 +150,20 @@ export default function ImpressoraFiscalConfig() {
               <Label htmlFor="tipo_equipamento">Tipo de Equipamento</Label>
               <Select
                 value={formData.tipo_equipamento}
-                onValueChange={(value) => setFormData({ ...formData, tipo_equipamento: value })}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, tipo_equipamento: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="SAT">SAT (Sistema Autenticador e Transmissor)</SelectItem>
-                  <SelectItem value="MFE">MFe (Módulo Fiscal Eletrônico)</SelectItem>
+                  <SelectItem value="SAT">
+                    SAT (Sistema Autenticador e Transmissor)
+                  </SelectItem>
+                  <SelectItem value="MFE">
+                    MFe (Módulo Fiscal Eletrônico)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -174,7 +173,9 @@ export default function ImpressoraFiscalConfig() {
               <Input
                 id="numero_serie"
                 value={formData.numero_serie}
-                onChange={(e) => setFormData({ ...formData, numero_serie: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, numero_serie: e.target.value })
+                }
                 placeholder="Ex: 900000001"
                 required
               />
@@ -186,7 +187,9 @@ export default function ImpressoraFiscalConfig() {
                 id="codigo_ativacao"
                 type="password"
                 value={formData.codigo_ativacao}
-                onChange={(e) => setFormData({ ...formData, codigo_ativacao: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, codigo_ativacao: e.target.value })
+                }
                 placeholder="Código fornecido pela SEFAZ"
                 required
               />
@@ -197,7 +200,9 @@ export default function ImpressoraFiscalConfig() {
               <Input
                 id="fabricante"
                 value={formData.fabricante}
-                onChange={(e) => setFormData({ ...formData, fabricante: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, fabricante: e.target.value })
+                }
                 placeholder="Ex: Dimep, Sweda, Bematech"
               />
             </div>
@@ -207,7 +212,9 @@ export default function ImpressoraFiscalConfig() {
               <Input
                 id="modelo"
                 value={formData.modelo}
-                onChange={(e) => setFormData({ ...formData, modelo: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, modelo: e.target.value })
+                }
                 placeholder="Ex: D-SAT 2.0"
               />
             </div>
@@ -217,7 +224,9 @@ export default function ImpressoraFiscalConfig() {
               <Input
                 id="versao_software"
                 value={formData.versao_software}
-                onChange={(e) => setFormData({ ...formData, versao_software: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, versao_software: e.target.value })
+                }
                 placeholder="Ex: 1.0.0"
               />
             </div>
@@ -227,7 +236,9 @@ export default function ImpressoraFiscalConfig() {
               <Input
                 id="ip_address"
                 value={formData.ip_address}
-                onChange={(e) => setFormData({ ...formData, ip_address: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, ip_address: e.target.value })
+                }
                 placeholder="Ex: 192.168.1.100"
               />
             </div>
@@ -238,7 +249,9 @@ export default function ImpressoraFiscalConfig() {
                 id="porta"
                 type="number"
                 value={formData.porta}
-                onChange={(e) => setFormData({ ...formData, porta: Number(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({ ...formData, porta: Number(e.target.value) })
+                }
                 placeholder="7000"
               />
             </div>
@@ -248,7 +261,9 @@ export default function ImpressoraFiscalConfig() {
             <Switch
               id="ativo"
               checked={formData.ativo}
-              onCheckedChange={(checked) => setFormData({ ...formData, ativo: checked })}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, ativo: checked })
+              }
             />
             <Label htmlFor="ativo" className="cursor-pointer">
               Equipamento ativo para impressão automática
@@ -267,10 +282,10 @@ export default function ImpressoraFiscalConfig() {
 
           <Button type="submit" disabled={saving} className="w-full">
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {config ? 'Atualizar Configuração' : 'Salvar Configuração'}
+            {config ? "Atualizar Configuração" : "Salvar Configuração"}
           </Button>
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

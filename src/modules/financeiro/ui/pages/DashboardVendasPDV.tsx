@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { Card } from '@/components/ui/card';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { LoadingState } from '@/components/shared/LoadingState';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { LoadingState } from "@/components/shared/LoadingState";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import {
   TrendingUp,
   DollarSign,
@@ -15,8 +15,8 @@ import {
   CreditCard,
   Users,
   Award,
-  BarChart3
-} from 'lucide-react';
+  BarChart3,
+} from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -32,43 +32,40 @@ import {
   Legend,
   ResponsiveContainer,
   Area,
-  AreaChart
-} from 'recharts';
+  AreaChart,
+} from "recharts";
 
 const COLORS = [
-  'hsl(var(--primary))',
-  'hsl(var(--success))',
-  'hsl(var(--warning))',
-  'hsl(var(--destructive))',
-  'hsl(var(--info))',
-  'hsl(var(--muted))'
+  "hsl(var(--primary))",
+  "hsl(var(--success))",
+  "hsl(var(--warning))",
+  "hsl(var(--destructive))",
+  "hsl(var(--info))",
+  "hsl(var(--muted))",
 ];
 
 export default function DashboardVendasPDV() {
   const { clinicId } = useAuth();
-  const [periodo, setPeriodo] = useState<'7d' | '30d' | '90d'>('30d');
+  const [periodo, setPeriodo] = useState<"7d" | "30d" | "90d">("30d");
 
   // Query de vendas
   const { data: vendas, isLoading } = useQuery({
-    queryKey: ['pdv-vendas-analytics', clinicId, periodo],
+    queryKey: ["pdv-vendas-analytics", clinicId, periodo],
     queryFn: async () => {
-      const diasAtras = periodo === '7d' ? 7 : periodo === '30d' ? 30 : 90;
+      const diasAtras = periodo === "7d" ? 7 : periodo === "30d" ? 30 : 90;
       const dataInicio = new Date();
       dataInicio.setDate(dataInicio.getDate() - diasAtras);
 
-      const { data, error } = await supabase
-        .from('pdv_vendas')
-        .select(`
-          *,
-          pdv_venda_itens(*),
-          pdv_pagamentos(*)
-        `)
-        .eq('clinic_id', clinicId)
-        .gte('created_at', dataInicio.toISOString())
-        .order('created_at', { ascending: false });
+      const params = new URLSearchParams();
+      params.append("select", "*, pdv_venda_itens(*), pdv_pagamentos(*)");
+      params.append("clinic_id", `eq.${clinicId}`);
+      params.append("created_at", `gte.${dataInicio.toISOString()}`);
+      params.append("order", "created_at.desc");
 
-      if (error) throw error;
-      return data;
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/pdv_vendas?${params.toString()}`,
+      );
+      return data || [];
     },
     enabled: !!clinicId,
   });
@@ -77,83 +74,118 @@ export default function DashboardVendasPDV() {
   const stats = {
     totalVendas: vendas?.length || 0,
     valorTotal: vendas?.reduce((sum, v) => sum + Number(v.valor_total), 0) || 0,
-    ticketMedio: vendas?.length ? (vendas.reduce((sum, v) => sum + Number(v.valor_total), 0) / vendas.length) : 0,
-    itensVendidos: vendas?.reduce((sum, v) => sum + (v.pdv_venda_itens?.length || 0), 0) || 0,
+    ticketMedio: vendas?.length
+      ? vendas.reduce((sum, v) => sum + Number(v.valor_total), 0) /
+        vendas.length
+      : 0,
+    itensVendidos:
+      vendas?.reduce((sum, v) => sum + (v.pdv_venda_itens?.length || 0), 0) ||
+      0,
   };
 
   // Vendas por vendedor
-  const vendasPorVendedor = vendas?.reduce((acc, venda) => {
-    const vendedorId = venda.created_by;
-    if (!acc[vendedorId]) {
-      acc[vendedorId] = { vendedor: vendedorId.slice(0, 8), total: 0, quantidade: 0 };
-    }
-    acc[vendedorId].total += Number(venda.valor_total);
-    acc[vendedorId].quantidade += 1;
-    return acc;
-  }, {} as Record<string, { vendedor: string; total: number; quantidade: number }>) || {};
+  const vendasPorVendedor =
+    vendas?.reduce(
+      (acc, venda) => {
+        const vendedorId = venda.created_by;
+        if (!acc[vendedorId]) {
+          acc[vendedorId] = {
+            vendedor: vendedorId.slice(0, 8),
+            total: 0,
+            quantidade: 0,
+          };
+        }
+        acc[vendedorId].total += Number(venda.valor_total);
+        acc[vendedorId].quantidade += 1;
+        return acc;
+      },
+      {} as Record<
+        string,
+        { vendedor: string; total: number; quantidade: number }
+      >,
+    ) || {};
 
   const vendedoresData = Object.values(vendasPorVendedor)
-    .sort((a, b) => b.total - a.total)
+    .sort((a: any, b: any) => b.total - a.total)
     .slice(0, 5);
 
   // Produtos mais vendidos
-  const produtosMaisVendidos = vendas?.reduce((acc, venda) => {
-    venda.pdv_venda_itens?.forEach((item: any) => {
-      const descricao = item.descricao || 'Sem descrição';
-      if (!acc[descricao]) {
-        acc[descricao] = { produto: descricao, quantidade: 0, valor: 0 };
-      }
-      acc[descricao].quantidade += Number(item.quantidade);
-      acc[descricao].valor += Number(item.valor_total);
-    });
-    return acc;
-  }, {} as Record<string, { produto: string; quantidade: number; valor: number }>) || {};
+  const produtosMaisVendidos =
+    vendas?.reduce(
+      (acc, venda) => {
+        venda.pdv_venda_itens?.forEach((item: any) => {
+          const descricao = item.descricao || "Sem descrição";
+          if (!acc[descricao]) {
+            acc[descricao] = { produto: descricao, quantidade: 0, valor: 0 };
+          }
+          acc[descricao].quantidade += Number(item.quantidade);
+          acc[descricao].valor += Number(item.valor_total);
+        });
+        return acc;
+      },
+      {} as Record<
+        string,
+        { produto: string; quantidade: number; valor: number }
+      >,
+    ) || {};
 
   const produtosData = Object.values(produtosMaisVendidos)
-    .sort((a, b) => b.quantidade - a.quantidade)
+    .sort((a: any, b: any) => b.quantidade - a.quantidade)
     .slice(0, 10);
 
   // Vendas por hora
-  const vendasPorHora = vendas?.reduce((acc, venda) => {
-    const hora = new Date(venda.created_at).getHours();
-    if (!acc[hora]) {
-      acc[hora] = { hora: `${hora}:00`, vendas: 0, valor: 0 };
-    }
-    acc[hora].vendas += 1;
-    acc[hora].valor += Number(venda.valor_total);
-    return acc;
-  }, {} as Record<number, { hora: string; vendas: number; valor: number }>) || {};
+  const vendasPorHora =
+    vendas?.reduce(
+      (acc, venda) => {
+        const hora = new Date(venda.created_at).getHours();
+        if (!acc[hora]) {
+          acc[hora] = { hora: `${hora}:00`, vendas: 0, valor: 0 };
+        }
+        acc[hora].vendas += 1;
+        acc[hora].valor += Number(venda.valor_total);
+        return acc;
+      },
+      {} as Record<number, { hora: string; vendas: number; valor: number }>,
+    ) || {};
 
-  const horariosData = Object.values(vendasPorHora).sort((a, b) => {
-    const horaA = parseInt(a.hora.split(':')[0]);
-    const horaB = parseInt(b.hora.split(':')[0]);
+  const horariosData = Object.values(vendasPorHora).sort((a: any, b: any) => {
+    const horaA = parseInt(a.hora.split(":")[0]);
+    const horaB = parseInt(b.hora.split(":")[0]);
     return horaA - horaB;
   });
 
   // Formas de pagamento
-  const formasPagamento = vendas?.reduce((acc, venda) => {
-    venda.pdv_pagamentos?.forEach((pag: any) => {
-      const forma = pag.forma_pagamento;
-      if (!acc[forma]) {
-        acc[forma] = { name: forma, value: 0 };
-      }
-      acc[forma].value += Number(pag.valor);
-    });
-    return acc;
-  }, {} as Record<string, { name: string; value: number }>) || {};
+  const formasPagamento =
+    vendas?.reduce(
+      (acc, venda) => {
+        venda.pdv_pagamentos?.forEach((pag: any) => {
+          const forma = pag.forma_pagamento;
+          if (!acc[forma]) {
+            acc[forma] = { name: forma, value: 0 };
+          }
+          acc[forma].value += Number(pag.valor);
+        });
+        return acc;
+      },
+      {} as Record<string, { name: string; value: number }>,
+    ) || {};
 
   const pagamentosData = Object.values(formasPagamento);
 
   // Vendas ao longo do tempo
-  const vendasTempo = vendas?.reduce((acc, venda) => {
-    const data = new Date(venda.created_at).toLocaleDateString('pt-BR');
-    if (!acc[data]) {
-      acc[data] = { data, vendas: 0, valor: 0 };
-    }
-    acc[data].vendas += 1;
-    acc[data].valor += Number(venda.valor_total);
-    return acc;
-  }, {} as Record<string, { data: string; vendas: number; valor: number }>) || {};
+  const vendasTempo =
+    vendas?.reduce(
+      (acc, venda) => {
+        const data = new Date(venda.created_at).toLocaleDateString("pt-BR");
+        if (!acc[data]) {
+          acc[data] = { data, vendas: 0, valor: 0 };
+        }
+        acc[data].vendas += 1;
+        acc[data].valor += Number(venda.valor_total);
+        return acc;
+      },
+      {} as Record<string, { data: string; vendas: number; valor: number }>,
+    ) || {};
 
   const tempoData = Object.values(vendasTempo).slice(-30);
 
@@ -166,19 +198,19 @@ export default function DashboardVendasPDV() {
       <PageHeader
         title="Dashboard de Vendas PDV"
         description="Analytics completo de performance de vendas e operação do PDV"
-        icon={<BarChart3 />}
+        icon={BarChart3}
       />
 
       {/* Filtros de Período */}
       <div className="flex gap-2">
-        {(['7d', '30d', '90d'] as const).map((p) => (
+        {(["7d", "30d", "90d"] as const).map((p) => (
           <Badge
             key={p}
-            variant={periodo === p ? 'default' : 'outline'}
+            variant={periodo === p ? "default" : "outline"}
             className="cursor-pointer"
             onClick={() => setPeriodo(p)}
           >
-            {p === '7d' ? '7 dias' : p === '30d' ? '30 dias' : '90 dias'}
+            {p === "7d" ? "7 dias" : p === "30d" ? "30 dias" : "90 dias"}
           </Badge>
         ))}
       </div>
@@ -205,9 +237,9 @@ export default function DashboardVendasPDV() {
             <div>
               <p className="text-sm text-muted-foreground">Valor Total</p>
               <p className="text-2xl font-bold">
-                {new Intl.NumberFormat('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL',
+                {new Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
                 }).format(stats.valorTotal)}
               </p>
             </div>
@@ -222,9 +254,9 @@ export default function DashboardVendasPDV() {
             <div>
               <p className="text-sm text-muted-foreground">Ticket Médio</p>
               <p className="text-2xl font-bold">
-                {new Intl.NumberFormat('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL',
+                {new Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
                 }).format(stats.ticketMedio)}
               </p>
             </div>
@@ -267,7 +299,9 @@ export default function DashboardVendasPDV() {
         <TabsContent value="vendedores" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Performance por Vendedor</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Performance por Vendedor
+              </h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={vendedoresData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -275,20 +309,26 @@ export default function DashboardVendasPDV() {
                   <YAxis />
                   <Tooltip
                     formatter={(value: number) =>
-                      new Intl.NumberFormat('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL',
+                      new Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
                       }).format(value)
                     }
                   />
                   <Legend />
-                  <Bar dataKey="total" fill="hsl(var(--primary))" name="Valor Total" />
+                  <Bar
+                    dataKey="total"
+                    fill="hsl(var(--primary))"
+                    name="Valor Total"
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </Card>
 
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Quantidade de Vendas</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Quantidade de Vendas
+              </h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={vendedoresData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -296,7 +336,11 @@ export default function DashboardVendasPDV() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="quantidade" fill="hsl(var(--success))" name="Vendas" />
+                  <Bar
+                    dataKey="quantidade"
+                    fill="hsl(var(--success))"
+                    name="Vendas"
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </Card>
@@ -305,7 +349,9 @@ export default function DashboardVendasPDV() {
 
         <TabsContent value="produtos" className="space-y-6">
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Top 10 Produtos Mais Vendidos</h3>
+            <h3 className="text-lg font-semibold mb-4">
+              Top 10 Produtos Mais Vendidos
+            </h3>
             <ResponsiveContainer width="100%" height={400}>
               <BarChart data={produtosData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" />
@@ -313,7 +359,11 @@ export default function DashboardVendasPDV() {
                 <YAxis dataKey="produto" type="category" width={150} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="quantidade" fill="hsl(var(--primary))" name="Quantidade" />
+                <Bar
+                  dataKey="quantidade"
+                  fill="hsl(var(--primary))"
+                  name="Quantidade"
+                />
               </BarChart>
             </ResponsiveContainer>
           </Card>
@@ -321,7 +371,9 @@ export default function DashboardVendasPDV() {
 
         <TabsContent value="horarios" className="space-y-6">
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Horários de Pico de Vendas</h3>
+            <h3 className="text-lg font-semibold mb-4">
+              Horários de Pico de Vendas
+            </h3>
             <ResponsiveContainer width="100%" height={400}>
               <AreaChart data={horariosData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -356,7 +408,9 @@ export default function DashboardVendasPDV() {
         <TabsContent value="pagamentos" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Formas de Pagamento</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Formas de Pagamento
+              </h3>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -364,20 +418,25 @@ export default function DashboardVendasPDV() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                    label={({ name, percent }) =>
+                      `${name} (${(percent * 100).toFixed(0)}%)`
+                    }
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
                   >
                     {pagamentosData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
                     ))}
                   </Pie>
                   <Tooltip
                     formatter={(value: number) =>
-                      new Intl.NumberFormat('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL',
+                      new Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
                       }).format(value)
                     }
                   />
@@ -394,9 +453,9 @@ export default function DashboardVendasPDV() {
                   <YAxis />
                   <Tooltip
                     formatter={(value: number) =>
-                      new Intl.NumberFormat('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL',
+                      new Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
                       }).format(value)
                     }
                   />

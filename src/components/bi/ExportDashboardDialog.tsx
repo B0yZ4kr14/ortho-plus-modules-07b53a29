@@ -1,26 +1,44 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
-import { Download, Calendar, Mail } from 'lucide-react';
-import { toast } from 'sonner';
-import jsPDF from 'jspdf';
-import * as XLSX from 'xlsx';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Download, Calendar, Mail } from "lucide-react";
+import { toast } from "sonner";
+import jsPDF from "jspdf";
+import * as XLSX from "xlsx";
+import { apiClient } from "@/lib/api/apiClient";
 
 interface ExportDashboardDialogProps {
   dashboardName: string;
   data: any[];
 }
 
-export function ExportDashboardDialog({ dashboardName, data }: ExportDashboardDialogProps) {
-  const [format, setFormat] = useState<'pdf' | 'excel' | 'csv'>('pdf');
+export function ExportDashboardDialog({
+  dashboardName,
+  data,
+}: ExportDashboardDialogProps) {
+  const [format, setFormat] = useState<"pdf" | "excel" | "csv">("pdf");
   const [scheduleExport, setScheduleExport] = useState(false);
-  const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
-  const [email, setEmail] = useState('');
+  const [frequency, setFrequency] = useState<"daily" | "weekly" | "monthly">(
+    "weekly",
+  );
+  const [email, setEmail] = useState("");
 
   const exportToPDF = () => {
     const doc = new jsPDF();
@@ -31,58 +49,58 @@ export function ExportDashboardDialog({ dashboardName, data }: ExportDashboardDi
     // Header
     doc.setFontSize(20);
     doc.setTextColor(33, 150, 243);
-    doc.text('ORTHO + Business Intelligence', margin, yPos);
-    
+    doc.text("ORTHO + Business Intelligence", margin, yPos);
+
     yPos += 10;
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.text(dashboardName, margin, yPos);
-    
+
     yPos += 5;
     doc.setFontSize(10);
     doc.setTextColor(100);
-    doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, margin, yPos);
-    
+    doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")}`, margin, yPos);
+
     yPos += 15;
     doc.setDrawColor(33, 150, 243);
     doc.setLineWidth(0.5);
     doc.line(margin, yPos, pageWidth - margin, yPos);
-    
+
     yPos += 15;
 
     // Data Summary
     doc.setFontSize(12);
     doc.setTextColor(0);
-    doc.text('Resumo dos Dados', margin, yPos);
-    
+    doc.text("Resumo dos Dados", margin, yPos);
+
     yPos += 10;
     doc.setFontSize(10);
     doc.setTextColor(60);
-    
+
     if (data && data.length > 0) {
       // Exibir os primeiros 10 itens dos dados
       const displayData = data.slice(0, 10);
       displayData.forEach((item, index) => {
         const text = Object.entries(item)
           .map(([key, value]) => `${key}: ${value}`)
-          .join(' | ');
-        
+          .join(" | ");
+
         doc.text(`${index + 1}. ${text}`, margin, yPos);
         yPos += 6;
-        
+
         if (yPos > 270) {
           doc.addPage();
           yPos = 20;
         }
       });
-      
+
       if (data.length > 10) {
         yPos += 5;
         doc.setTextColor(100);
         doc.text(`... e mais ${data.length - 10} registros`, margin, yPos);
       }
     } else {
-      doc.text('Nenhum dado disponível para exibição', margin, yPos);
+      doc.text("Nenhum dado disponível para exibição", margin, yPos);
     }
 
     // Footer
@@ -90,26 +108,34 @@ export function ExportDashboardDialog({ dashboardName, data }: ExportDashboardDi
     doc.setDrawColor(33, 150, 243);
     doc.setLineWidth(0.3);
     doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
-    
+
     doc.setFontSize(8);
     doc.setTextColor(100);
-    doc.text('Relatório gerado automaticamente pelo sistema ORTHO + BI', pageWidth / 2, footerY, { align: 'center' });
+    doc.text(
+      "Relatório gerado automaticamente pelo sistema ORTHO + BI",
+      pageWidth / 2,
+      footerY,
+      { align: "center" },
+    );
 
-    doc.save(`${dashboardName.replace(/\s+/g, '_')}_${Date.now()}.pdf`);
-    toast.success('PDF exportado com sucesso!');
+    doc.save(`${dashboardName.replace(/\s+/g, "_")}_${Date.now()}.pdf`);
+    toast.success("PDF exportado com sucesso!");
   };
 
   const exportToExcel = () => {
     try {
       const ws = XLSX.utils.json_to_sheet(data);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Dados');
-      
-      XLSX.writeFile(wb, `${dashboardName.replace(/\s+/g, '_')}_${Date.now()}.xlsx`);
-      toast.success('Excel exportado com sucesso!');
+      XLSX.utils.book_append_sheet(wb, ws, "Dados");
+
+      XLSX.writeFile(
+        wb,
+        `${dashboardName.replace(/\s+/g, "_")}_${Date.now()}.xlsx`,
+      );
+      toast.success("Excel exportado com sucesso!");
     } catch (error) {
-      console.error('Erro ao exportar Excel:', error);
-      toast.error('Erro ao exportar para Excel');
+      console.error("Erro ao exportar Excel:", error);
+      toast.error("Erro ao exportar para Excel");
     }
   };
 
@@ -117,40 +143,43 @@ export function ExportDashboardDialog({ dashboardName, data }: ExportDashboardDi
     try {
       const ws = XLSX.utils.json_to_sheet(data);
       const csv = XLSX.utils.sheet_to_csv(ws);
-      
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
-      
-      link.setAttribute('href', url);
-      link.setAttribute('download', `${dashboardName.replace(/\s+/g, '_')}_${Date.now()}.csv`);
-      link.style.visibility = 'hidden';
-      
+
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `${dashboardName.replace(/\s+/g, "_")}_${Date.now()}.csv`,
+      );
+      link.style.visibility = "hidden";
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      toast.success('CSV exportado com sucesso!');
+
+      toast.success("CSV exportado com sucesso!");
     } catch (error) {
-      console.error('Erro ao exportar CSV:', error);
-      toast.error('Erro ao exportar para CSV');
+      console.error("Erro ao exportar CSV:", error);
+      toast.error("Erro ao exportar para CSV");
     }
   };
 
   const handleExport = () => {
     if (!data || data.length === 0) {
-      toast.error('Nenhum dado disponível para exportação');
+      toast.error("Nenhum dado disponível para exportação");
       return;
     }
 
     switch (format) {
-      case 'pdf':
+      case "pdf":
         exportToPDF();
         break;
-      case 'excel':
+      case "excel":
         exportToExcel();
         break;
-      case 'csv':
+      case "csv":
         exportToCSV();
         break;
     }
@@ -158,30 +187,34 @@ export function ExportDashboardDialog({ dashboardName, data }: ExportDashboardDi
 
   const handleScheduleExport = async () => {
     if (!email) {
-      toast.error('Digite um email para agendamento');
+      toast.error("Digite um email para agendamento");
       return;
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke('schedule-bi-export', {
-        body: {
+      const data = await apiClient.post<any>(
+        "/functions/v1/schedule-bi-export",
+        {
           dashboardName,
           exportFormat: format,
           frequency,
           email,
         },
-      });
+      );
 
-      if (error) throw error;
-
-      toast.success(data.message || `Exportação agendada com sucesso! Você receberá relatórios ${
-        frequency === 'daily' ? 'diariamente' :
-        frequency === 'weekly' ? 'semanalmente' :
-        'mensalmente'
-      } em ${email}`);
+      toast.success(
+        data.message ||
+          `Exportação agendada com sucesso! Você receberá relatórios ${
+            frequency === "daily"
+              ? "diariamente"
+              : frequency === "weekly"
+                ? "semanalmente"
+                : "mensalmente"
+          } em ${email}`,
+      );
     } catch (error: any) {
-      console.error('Erro ao agendar exportação:', error);
-      toast.error(error.message || 'Erro ao agendar exportação');
+      console.error("Erro ao agendar exportação:", error);
+      toast.error(error.message || "Erro ao agendar exportação");
     }
   };
 
@@ -204,7 +237,10 @@ export function ExportDashboardDialog({ dashboardName, data }: ExportDashboardDi
         <div className="space-y-6">
           <div className="space-y-2">
             <Label>Formato de Exportação</Label>
-            <Select value={format} onValueChange={(value: any) => setFormat(value)}>
+            <Select
+              value={format}
+              onValueChange={(value: any) => setFormat(value)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -234,7 +270,10 @@ export function ExportDashboardDialog({ dashboardName, data }: ExportDashboardDi
               <div className="space-y-4 pl-4 border-l-2 border-primary/20">
                 <div className="space-y-2">
                   <Label>Frequência</Label>
-                  <Select value={frequency} onValueChange={(value: any) => setFrequency(value)}>
+                  <Select
+                    value={frequency}
+                    onValueChange={(value: any) => setFrequency(value)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -275,7 +314,11 @@ export function ExportDashboardDialog({ dashboardName, data }: ExportDashboardDi
                   </div>
                 </div>
 
-                <Button onClick={handleScheduleExport} className="w-full" variant="secondary">
+                <Button
+                  onClick={handleScheduleExport}
+                  className="w-full"
+                  variant="secondary"
+                >
                   <Calendar className="h-4 w-4 mr-2" />
                   Confirmar Agendamento
                 </Button>

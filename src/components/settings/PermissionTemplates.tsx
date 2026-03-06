@@ -1,25 +1,25 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Stethoscope, 
-  UserPlus, 
-  DollarSign, 
-  Briefcase, 
+import { useEffect, useState } from "react";
+import { apiClient } from "@/lib/api/apiClient";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Stethoscope,
+  UserPlus,
+  DollarSign,
+  Briefcase,
   HeartPulse,
   Loader2,
-  Check
-} from 'lucide-react';
-import { toast } from 'sonner';
+  Check,
+} from "lucide-react";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 
 interface Template {
   id: string;
@@ -35,17 +35,17 @@ interface User {
 }
 
 const templateIcons: Record<string, any> = {
-  'Stethoscope': Stethoscope,
-  'UserPlus': UserPlus,
-  'DollarSign': DollarSign,
-  'Briefcase': Briefcase,
-  'HeartPulse': HeartPulse,
+  Stethoscope: Stethoscope,
+  UserPlus: UserPlus,
+  DollarSign: DollarSign,
+  Briefcase: Briefcase,
+  HeartPulse: HeartPulse,
 };
 
 export function PermissionTemplates() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [selectedUser, setSelectedUser] = useState<string>('');
+  const [selectedUser, setSelectedUser] = useState<string>("");
   const [applying, setApplying] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -58,39 +58,34 @@ export function PermissionTemplates() {
       setLoading(true);
 
       // Buscar templates
-      const { data: templatesData, error: templatesError } = await supabase
-        .from('permission_templates')
-        .select('*')
-        .order('name');
-
-      if (templatesError) throw templatesError;
+      const templatesData = await apiClient.get<any[]>(
+        "/rest/v1/permission_templates?order=name.asc",
+      );
       setTemplates(templatesData || []);
 
       // Buscar usuários MEMBER
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .order('full_name');
-
-      if (profilesError) throw profilesError;
+      const profilesData = await apiClient.get<any[]>(
+        "/rest/v1/profiles?select=id,full_name&order=full_name.asc",
+      );
 
       // Buscar roles
-      const { data: rolesData, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
-
-      if (rolesError) throw rolesError;
+      const rolesData = await apiClient.get<any[]>(
+        "/rest/v1/user_roles?select=user_id,role",
+      );
 
       // Filtrar apenas MEMBERs
-      const memberUsers = profilesData?.filter(profile => {
-        const role = rolesData?.find((r: any) => r.user_id === profile.id)?.role;
-        return role === 'MEMBER';
-      }) || [];
+      const memberUsers =
+        profilesData?.filter((profile) => {
+          const role = rolesData?.find(
+            (r: any) => r.user_id === profile.id,
+          )?.role;
+          return role === "MEMBER";
+        }) || [];
 
       setUsers(memberUsers);
     } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-      toast.error('Erro ao carregar templates');
+      console.error("Erro ao carregar dados:", error);
+      toast.error("Erro ao carregar templates");
     } finally {
       setLoading(false);
     }
@@ -98,72 +93,64 @@ export function PermissionTemplates() {
 
   const applyTemplate = async (templateId: string) => {
     if (!selectedUser) {
-      toast.error('Selecione um usuário primeiro');
+      toast.error("Selecione um usuário primeiro");
       return;
     }
 
     try {
       setApplying(templateId);
 
-      const template = templates.find(t => t.id === templateId);
+      const template = templates.find((t) => t.id === templateId);
       if (!template) return;
 
       // Buscar IDs dos módulos
-      const { data: modulesData, error: modulesError } = await supabase
-        .from('module_catalog')
-        .select('id, module_key')
-        .in('module_key', template.module_keys);
-
-      if (modulesError) throw modulesError;
+      const modulesData = await apiClient.get<any[]>(
+        `/rest/v1/module_catalog?select=id,module_key&module_key=in.(${template.module_keys.join(",")})`,
+      );
 
       // Remover permissões existentes
-      await supabase
-        .from('user_module_permissions')
-        .delete()
-        .eq('user_id', selectedUser);
+      await apiClient.delete(
+        `/rest/v1/user_module_permissions?user_id=eq.${selectedUser}`,
+      );
 
       // Adicionar novas permissões
-      const permissions = modulesData?.map(module => ({
-        user_id: selectedUser,
-        module_catalog_id: module.id,
-        can_view: true,
-        can_edit: false,
-        can_delete: false
-      })) || [];
+      const permissions =
+        modulesData?.map((module) => ({
+          user_id: selectedUser,
+          module_catalog_id: module.id,
+          can_view: true,
+          can_edit: false,
+          can_delete: false,
+        })) || [];
 
-      const { error: insertError } = await supabase
-        .from('user_module_permissions')
-        .insert(permissions);
-
-      if (insertError) throw insertError;
+      await apiClient.post("/rest/v1/user_module_permissions", permissions);
 
       // Registrar auditoria
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('clinic_id')
-        .eq('id', user?.id)
-        .single();
+      const authUser = await apiClient.get<any>("/auth/me");
+      const user = authUser?.user;
 
-      await supabase
-        .from('permission_audit_logs')
-        .insert({
-          clinic_id: profileData?.clinic_id,
-          user_id: user?.id,
-          target_user_id: selectedUser,
-          action: 'TEMPLATE_APPLIED',
-          template_name: template.name,
-          details: {
-            module_keys: template.module_keys,
-            permissions_count: permissions.length
-          }
-        });
+      const profileDataArray = await apiClient.get<any[]>(
+        `/rest/v1/profiles?select=clinic_id&id=eq.${user?.id}`,
+      );
+      const profileData = profileDataArray?.[0];
+
+      await apiClient.post("/rest/v1/permission_audit_logs", {
+        clinic_id: profileData?.clinic_id,
+        user_id: user?.id,
+        target_user_id: selectedUser,
+        action: "TEMPLATE_APPLIED",
+        template_name: template.name,
+        details: {
+          module_keys: template.module_keys,
+          permissions_count: permissions.length,
+        },
+      });
 
       toast.success(`Template "${template.name}" aplicado com sucesso!`);
-      setSelectedUser('');
+      setSelectedUser("");
     } catch (error) {
-      console.error('Erro ao aplicar template:', error);
-      toast.error('Erro ao aplicar template');
+      console.error("Erro ao aplicar template:", error);
+      toast.error("Erro ao aplicar template");
     } finally {
       setApplying(null);
     }
@@ -186,13 +173,15 @@ export function PermissionTemplates() {
         </p>
 
         <div className="mb-6">
-          <label className="text-sm font-medium mb-2 block">Selecionar Usuário</label>
+          <label className="text-sm font-medium mb-2 block">
+            Selecionar Usuário
+          </label>
           <Select value={selectedUser} onValueChange={setSelectedUser}>
             <SelectTrigger>
               <SelectValue placeholder="Escolha um usuário MEMBER" />
             </SelectTrigger>
             <SelectContent>
-              {users.map(user => (
+              {users.map((user) => (
                 <SelectItem key={user.id} value={user.id}>
                   {user.full_name}
                 </SelectItem>
@@ -203,19 +192,24 @@ export function PermissionTemplates() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {templates.map(template => {
+        {templates.map((template) => {
           const Icon = templateIcons[template.icon] || Briefcase;
           const isApplying = applying === template.id;
 
           return (
-            <Card key={template.id} className="p-6 hover:shadow-lg transition-shadow">
+            <Card
+              key={template.id}
+              className="p-6 hover:shadow-lg transition-shadow"
+            >
               <div className="flex items-start gap-4 mb-4">
                 <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10">
                   <Icon className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold mb-1">{template.name}</h4>
-                  <p className="text-sm text-muted-foreground">{template.description}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {template.description}
+                  </p>
                 </div>
               </div>
 
@@ -224,7 +218,7 @@ export function PermissionTemplates() {
                   {template.module_keys.length} módulos incluídos:
                 </p>
                 <div className="flex flex-wrap gap-1">
-                  {template.module_keys.slice(0, 3).map(key => (
+                  {template.module_keys.slice(0, 3).map((key) => (
                     <Badge key={key} variant="secondary" className="text-xs">
                       {key}
                     </Badge>

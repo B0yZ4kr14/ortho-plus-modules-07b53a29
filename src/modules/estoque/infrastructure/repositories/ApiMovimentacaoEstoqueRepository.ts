@@ -1,6 +1,6 @@
 import { MovimentacaoEstoque } from "@/domain/entities/MovimentacaoEstoque";
 import { IMovimentacaoEstoqueRepository } from "@/domain/repositories/IMovimentacaoEstoqueRepository";
-import { apiClient } from "@/lib/apiClient";
+import { apiClient } from "@/lib/api/apiClient";
 
 /**
  * Implementação do repositório de MovimentacaoEstoque usando apiClient

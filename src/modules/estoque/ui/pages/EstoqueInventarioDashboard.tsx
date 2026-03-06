@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { BarChart3, TrendingUp, TrendingDown, AlertTriangle, Package } from 'lucide-react';
-import { useInventarioSupabase } from '@/modules/estoque/hooks/useInventarioSupabase';
+import { useInventario } from '@/modules/estoque/hooks/useInventario';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function EstoqueInventarioDashboard() {
-  const { inventarios, inventarioItems, loading } = useInventarioSupabase();
+  const { inventarios, inventarioItems, loading } = useInventario();
   const [selectedPeriod, setSelectedPeriod] = useState('30');
   const [selectedCategory, setSelectedCategory] = useState('all');
 

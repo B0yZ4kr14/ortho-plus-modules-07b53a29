@@ -1,58 +1,59 @@
-import { useState, useMemo } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { usePDVSupabase } from '@/hooks/usePDVSupabase';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AberturaCaixaDialog } from '@/components/pdv/AberturaCaixaDialog';
-import { FechamentoCaixaDialog } from '@/components/pdv/FechamentoCaixaDialog';
-import { 
-  CreditCard, 
-  DollarSign, 
-  ShoppingCart, 
+import { useState, useMemo } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { usePDV } from "@/hooks/usePDV";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AberturaCaixaDialog } from "@/components/pdv/AberturaCaixaDialog";
+import { FechamentoCaixaDialog } from "@/components/pdv/FechamentoCaixaDialog";
+import {
+  CreditCard,
+  DollarSign,
+  ShoppingCart,
   Lock,
   Plus,
   Trash2,
   AlertCircle,
   Receipt,
-  Wallet
-} from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+  Wallet,
+} from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const formasPagamento = [
-  { value: 'DINHEIRO', label: 'Dinheiro', icon: DollarSign },
-  { value: 'CARTAO_CREDITO', label: 'Cartão Crédito', icon: CreditCard },
-  { value: 'CARTAO_DEBITO', label: 'Cartão Débito', icon: CreditCard },
-  { value: 'PIX', label: 'PIX', icon: Wallet },
-  { value: 'TRANSFERENCIA', label: 'Transferência', icon: Wallet },
-  { value: 'CRYPTO', label: 'Criptomoeda', icon: Wallet },
+  { value: "DINHEIRO", label: "Dinheiro", icon: DollarSign },
+  { value: "CARTAO_CREDITO", label: "Cartão Crédito", icon: CreditCard },
+  { value: "CARTAO_DEBITO", label: "Cartão Débito", icon: CreditCard },
+  { value: "PIX", label: "PIX", icon: Wallet },
+  { value: "TRANSFERENCIA", label: "Transferência", icon: Wallet },
+  { value: "CRYPTO", label: "Criptomoeda", icon: Wallet },
 ];
 
 export default function PDVPage() {
   const { clinicId, user } = useAuth();
-  const { caixaAberto, loading, abrirCaixa, fecharCaixa, criarVenda } = usePDVSupabase(clinicId);
-  
+  const { caixaAberto, loading, abrirCaixa, fecharCaixa, criarVenda } =
+    usePDV(clinicId);
+
   const [showAbertura, setShowAbertura] = useState(false);
   const [showFechamento, setShowFechamento] = useState(false);
-  
-  const [itens, setItens] = useState<any[]>([]);
-  const [descricaoItem, setDescricaoItem] = useState('');
-  const [valorItem, setValorItem] = useState('');
-  const [quantidadeItem, setQuantidadeItem] = useState('1');
-  
-  const [formaPagamento, setFormaPagamento] = useState('DINHEIRO');
-  const [valorPagamento, setValorPagamento] = useState('');
-  const [parcelas, setParcelas] = useState('1');
 
-  const totalVenda = useMemo(() => 
-    itens.reduce((sum, item) => sum + item.valor_total, 0),
-    [itens]
+  const [itens, setItens] = useState<any[]>([]);
+  const [descricaoItem, setDescricaoItem] = useState("");
+  const [valorItem, setValorItem] = useState("");
+  const [quantidadeItem, setQuantidadeItem] = useState("1");
+
+  const [formaPagamento, setFormaPagamento] = useState("DINHEIRO");
+  const [valorPagamento, setValorPagamento] = useState("");
+  const [parcelas, setParcelas] = useState("1");
+
+  const totalVenda = useMemo(
+    () => itens.reduce((sum, item) => sum + item.valor_total, 0),
+    [itens],
   );
 
   const valorEsperado = caixaAberto ? caixaAberto.valor_inicial + 0 : 0;
@@ -63,18 +64,21 @@ export default function PDVPage() {
     const quantidade = parseFloat(quantidadeItem) || 1;
     const valor = parseFloat(valorItem) || 0;
 
-    setItens([...itens, {
-      tipo: 'SERVICO',
-      descricao: descricaoItem,
-      quantidade,
-      valor_unitario: valor,
-      desconto: 0,
-      valor_total: quantidade * valor,
-    }]);
+    setItens([
+      ...itens,
+      {
+        tipo: "SERVICO",
+        descricao: descricaoItem,
+        quantidade,
+        valor_unitario: valor,
+        desconto: 0,
+        valor_total: quantidade * valor,
+      },
+    ]);
 
-    setDescricaoItem('');
-    setValorItem('');
-    setQuantidadeItem('1');
+    setDescricaoItem("");
+    setValorItem("");
+    setQuantidadeItem("1");
   };
 
   const removerItem = (index: number) => {
@@ -84,7 +88,8 @@ export default function PDVPage() {
   const finalizarVenda = async () => {
     if (itens.length === 0 || !caixaAberto) return;
 
-    const taxaOperacao = formaPagamento === 'CARTAO_CREDITO' ? totalVenda * 0.035 : 0;
+    const taxaOperacao =
+      formaPagamento === "CARTAO_CREDITO" ? totalVenda * 0.035 : 0;
     const valorLiquido = totalVenda - taxaOperacao;
 
     await criarVenda(
@@ -92,26 +97,32 @@ export default function PDVPage() {
         valor_total: totalVenda,
         desconto: 0,
         valor_final: totalVenda,
-        status: 'PAGO',
+        status: "FINALIZADA",
       },
       itens,
-      [{
-        forma_pagamento: formaPagamento as any,
-        valor: totalVenda,
-        parcelas: parseInt(parcelas) || 1,
-        taxa_operacao: taxaOperacao,
-        valor_liquido: valorLiquido,
-      }]
+      [
+        {
+          forma_pagamento: formaPagamento as any,
+          valor: totalVenda,
+          parcelas: parseInt(parcelas) || 1,
+          taxa_operacao: taxaOperacao,
+          valor_liquido: valorLiquido,
+        },
+      ],
     );
 
     setItens([]);
-    setValorPagamento('');
+    setValorPagamento("");
   };
 
   if (loading) {
     return (
       <div className="container mx-auto py-6">
-        <PageHeader icon={ShoppingCart} title="Ponto de Venda (PDV)" />
+        <PageHeader
+          icon={ShoppingCart}
+          title="Ponto de Venda (PDV)"
+          description="Gerencie as vendas do seu Ponto de Venda"
+        />
         <div className="text-center py-12">Carregando...</div>
       </div>
     );
@@ -119,14 +130,22 @@ export default function PDVPage() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <PageHeader icon={ShoppingCart} title="Ponto de Venda (PDV)" />
+      <PageHeader
+        icon={ShoppingCart}
+        title="Ponto de Venda (PDV)"
+        description="Gerencie as vendas do seu Ponto de Venda"
+      />
 
       {!caixaAberto ? (
         <Alert>
           <Lock className="h-4 w-4" />
           <AlertDescription>
             O caixa está fechado. Abra o caixa para iniciar as vendas.
-            <Button onClick={() => setShowAbertura(true)} className="ml-4" size="sm">
+            <Button
+              onClick={() => setShowAbertura(true)}
+              className="ml-4"
+              size="sm"
+            >
               Abrir Caixa
             </Button>
           </AlertDescription>
@@ -141,10 +160,18 @@ export default function PDVPage() {
                   R$ {caixaAberto.valor_inicial.toFixed(2)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Aberto em {format(new Date(caixaAberto.aberto_em), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                  Aberto em{" "}
+                  {format(
+                    new Date(caixaAberto.created_at),
+                    "dd/MM/yyyy 'às' HH:mm",
+                    { locale: ptBR },
+                  )}
                 </p>
               </div>
-              <Button variant="destructive" onClick={() => setShowFechamento(true)}>
+              <Button
+                variant="destructive"
+                onClick={() => setShowFechamento(true)}
+              >
                 Fechar Caixa
               </Button>
             </div>
@@ -190,7 +217,11 @@ export default function PDVPage() {
                   />
                 </div>
                 <div className="col-span-2 flex items-end">
-                  <Button onClick={adicionarItem} disabled={!caixaAberto} className="w-full">
+                  <Button
+                    onClick={adicionarItem}
+                    disabled={!caixaAberto}
+                    className="w-full"
+                  >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
@@ -200,7 +231,10 @@ export default function PDVPage() {
                 <div className="space-y-2 mt-4">
                   <Label>Itens da Venda</Label>
                   {itens.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                    >
                       <div className="flex-1">
                         <p className="font-medium">{item.descricao}</p>
                         <p className="text-sm text-muted-foreground">
@@ -208,7 +242,9 @@ export default function PDVPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-4">
-                        <p className="font-bold">R$ {item.valor_total.toFixed(2)}</p>
+                        <p className="font-bold">
+                          R$ {item.valor_total.toFixed(2)}
+                        </p>
                         <Button
                           size="icon"
                           variant="ghost"
@@ -237,7 +273,9 @@ export default function PDVPage() {
                   {formasPagamento.map((forma) => (
                     <Button
                       key={forma.value}
-                      variant={formaPagamento === forma.value ? 'default' : 'outline'}
+                      variant={
+                        formaPagamento === forma.value ? "default" : "outline"
+                      }
                       onClick={() => setFormaPagamento(forma.value)}
                       disabled={!caixaAberto}
                       className="justify-start"
@@ -249,7 +287,7 @@ export default function PDVPage() {
                 </div>
               </div>
 
-              {formaPagamento === 'CARTAO_CREDITO' && (
+              {formaPagamento === "CARTAO_CREDITO" && (
                 <div className="space-y-2">
                   <Label>Parcelas</Label>
                   <Input
@@ -293,7 +331,9 @@ export default function PDVPage() {
       <AberturaCaixaDialog
         open={showAbertura}
         onOpenChange={setShowAbertura}
-        onConfirm={abrirCaixa}
+        onConfirm={async (v, o) => {
+          await abrirCaixa(v, o);
+        }}
       />
 
       <FechamentoCaixaDialog

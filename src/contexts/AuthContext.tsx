@@ -1,26 +1,52 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+
+import { apiClient } from "@/lib/api/apiClient";
+import { toast } from "sonner";
 
 interface Clinic {
   id: string;
   name: string;
 }
 
-type UserProfile = 'ADMIN' | 'MEMBER' | 'PATIENT';
+// Local user type that mirrors what the API returns
+export interface User {
+  id: string;
+  email?: string;
+  user_metadata?: Record<string, any>;
+  app_metadata?: Record<string, any>;
+  role?: string;
+  created_at?: string;
+}
+
+// Local session type that mirrors what the API returns
+export interface Session {
+  access_token: string;
+  token_type?: string;
+  expires_in?: number;
+  expires_at?: number;
+  refresh_token?: string;
+  user?: User;
+}
+
+type UserProfile = "ADMIN" | "MEMBER" | "PATIENT";
 
 interface PatientUser {
   id: string;
   email: string;
-  role: 'PATIENT';
+  role: "PATIENT";
 }
 
 interface AuthContextType {
   user: User | PatientUser | null;
   session: Session | string | null;
   loading: boolean;
-  userRole: 'ADMIN' | 'MEMBER' | null;
+  userRole: "ADMIN" | "MEMBER" | null;
   userProfile: UserProfile | null;
   clinicId: string | null;
   isAdmin: boolean;
@@ -31,10 +57,14 @@ interface AuthContextType {
   userPermissions: string[];
   activeModules: string[]; // List of active module keys for the clinic
   switchClinic: (clinicId: string) => void;
-  hasRole: (role: 'ADMIN' | 'MEMBER') => boolean;
+  hasRole: (role: "ADMIN" | "MEMBER") => boolean;
   hasModuleAccess: (moduleKey: string) => boolean;
   fetchUserMetadata: (userId: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
+  signUp: (
+    email: string,
+    password: string,
+    fullName: string,
+  ) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signInPatient: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -46,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | PatientUser | null>(null);
   const [session, setSession] = useState<Session | string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<'ADMIN' | 'MEMBER' | null>(null);
+  const [userRole, setUserRole] = useState<"ADMIN" | "MEMBER" | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [clinicId, setClinicId] = useState<string | null>(null);
   const [availableClinics, setAvailableClinics] = useState<Clinic[]>([]);
@@ -59,32 +89,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Fetch user role and clinics
   const fetchUserMetadata = async (userId: string) => {
     try {
-      // Get user role from user_roles table (novo sistema seguro)
-      const { data: roleData, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      // Get profile data including avatar_url and clinic_id
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('avatar_url, full_name, clinic_id')
-        .eq('id', userId)
-        .single();
+      // Get user metadata including profile, role and clinics
+      const response = await apiClient.get<{
+        roleData?: { role?: string };
+        profileData?: {
+          clinic_id?: string;
+          avatar_url?: string;
+          full_name?: string;
+        };
+        clinicData?: Clinic;
+        permissionsData?: string[];
+      }>(`/auth/user/${userId}/metadata`);
+      const { roleData, profileData, clinicData, permissionsData } = response;
 
       if (profileData?.clinic_id) {
         setClinicId(profileData.clinic_id);
-        
-        // Fetch clinic info
-        const { data: clinicData } = await supabase
-          .from('clinics')
-          .select('*')
-          .eq('id', profileData.clinic_id)
-          .single();
-        
+
         if (clinicData) {
           setSelectedClinic(clinicData);
           setAvailableClinics([clinicData]);
@@ -92,85 +112,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Definir role (ADMIN ou MEMBER)
-      const role = roleData?.role || 'MEMBER';
-      setUserRole(role as 'ADMIN' | 'MEMBER');
+      const role = roleData?.role || "MEMBER";
+      setUserRole(role as "ADMIN" | "MEMBER");
       setUserProfile(role as UserProfile);
-        
+
       // Update user object with avatar and full_name (only for User type)
       setUser((currentUser) => {
-        if (!currentUser || 'role' in currentUser) return currentUser;
+        if (!currentUser || "role" in currentUser) return currentUser;
         return {
           ...currentUser,
           user_metadata: {
             ...(currentUser as User).user_metadata,
             avatar_url: profileData?.avatar_url,
-            full_name: profileData?.full_name || (currentUser as User).user_metadata?.full_name,
-          }
+            full_name:
+              profileData?.full_name ||
+              (currentUser as User).user_metadata?.full_name,
+          },
         };
       });
-        
+
       // If ADMIN, grant access to all modules
-      if (role === 'ADMIN') {
-        setUserPermissions(['ALL']);
-        
+      if (role === "ADMIN") {
+        setUserPermissions(["ALL"]);
+
         // Fetch active modules for admin
         if (profileData?.clinic_id) {
           await fetchActiveModules(profileData.clinic_id);
         }
       } else {
-        // Fetch user module permissions for MEMBER
-        const { data: permissionsData } = await supabase
-          .from('user_module_permissions')
-          .select(`
-            module_catalog_id,
-            can_view,
-            module_catalog!inner (
-              module_key
-            )
-          `)
-          .eq('user_id', userId)
-          .eq('can_view', true);
-
         if (permissionsData) {
-          const moduleKeys = permissionsData.map((p: any) => 
-            p.module_catalog?.module_key?.toLowerCase()
-          ).filter(Boolean);
-          setUserPermissions(moduleKeys);
+          setUserPermissions(permissionsData);
         }
-        
+
         // Fetch active modules for member
         if (profileData?.clinic_id) {
           await fetchActiveModules(profileData.clinic_id);
         }
       }
     } catch (error) {
-      console.error('Error fetching user metadata:', error);
+      console.error("Error fetching user metadata:", error);
     }
   };
 
   // Fetch active modules for the clinic
   const fetchActiveModules = async (clinicId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('clinic_modules')
-        .select('module_catalog:module_catalog_id(module_key)')
-        .eq('clinic_id', clinicId)
-        .eq('is_active', true);
-
-      if (error) throw error;
-
-      const moduleKeys = data
-        ?.map((item: any) => item.module_catalog?.module_key)
-        .filter(Boolean) || [];
-
-      setActiveModules(moduleKeys);
+      const moduleKeys = await apiClient.get<string[]>(
+        `/clinics/${clinicId}/active-modules`,
+      );
+      setActiveModules(moduleKeys || []);
     } catch (error) {
-      console.error('Error fetching active modules:', error);
+      console.error("Error fetching active modules:", error);
     }
   };
 
   const switchClinic = (newClinicId: string) => {
-    const clinic = availableClinics.find(c => c.id === newClinicId);
+    const clinic = availableClinics.find((c) => c.id === newClinicId);
     if (clinic) {
       setSelectedClinic(clinic);
       setClinicId(clinic.id);
@@ -181,138 +178,150 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Defer metadata fetch to avoid blocking
-        if (session?.user) {
-          setTimeout(() => {
-            fetchUserMetadata(session.user.id);
-          }, 0);
+    const checkSession = async () => {
+      try {
+        const data = await apiClient.get<{ user?: User; session?: string }>(
+          "/auth/me",
+        );
+        if (data && data.user) {
+          setSession(data.session || "active");
+          setUser(data.user);
+          fetchUserMetadata(data.user.id);
         } else {
+          setSession(null);
+          setUser(null);
           setUserRole(null);
           setClinicId(null);
         }
+      } catch (error) {
+        setSession(null);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-    );
+    };
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchUserMetadata(session.user.id);
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    checkSession();
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          full_name: fullName,
-        },
-      },
-    });
-
-    if (error) {
-      toast.error('Erro ao criar conta', { description: error.message });
-    } else {
-      toast.success('Conta criada com sucesso!', { 
-        description: 'Você já pode fazer login.' 
+    try {
+      await apiClient.post("/auth/register", { email, password, fullName });
+      toast.success("Conta criada com sucesso!", {
+        description: "Você já pode fazer login.",
       });
+      return { error: null };
+    } catch (error: any) {
+      toast.error("Erro ao criar conta", { description: error.message });
+      return { error };
     }
-
-    return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const response = await apiClient.post<{
+        access_token?: string;
+        user?: User;
+      }>("/auth/token", { email, password });
 
-    if (error) {
-      toast.error('Erro ao fazer login', { description: error.message });
-    } else {
-      toast.success('Login realizado com sucesso!');
+      if (response && response.access_token) {
+        localStorage.setItem("access_token", response.access_token);
+        setSession(response.access_token);
+        setUser(response.user ?? null);
+        toast.success("Login realizado com sucesso!");
+
+        if (response.user?.id) {
+          fetchUserMetadata(response.user.id);
+        }
+
+        return { error: null };
+      } else {
+        throw new Error("Token não recebido.");
+      }
+    } catch (error: any) {
+      toast.error("Erro ao fazer login", { description: error.message });
+      return { error };
     }
-
-    return { error };
   };
 
   const signInPatient = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('patient-auth', {
-        body: { action: 'login', email, password },
+      const data = await apiClient.post<{
+        access_token?: string;
+        token?: string;
+        sessionId?: string;
+        user?: User;
+        patient?: User;
+      }>("/auth/patient-auth", {
+        action: "login",
+        email,
+        password,
       });
 
-      if (error) throw error;
+      localStorage.setItem(
+        "patient_token",
+        data.access_token || data.token || "",
+      );
+      if (data.sessionId) {
+        localStorage.setItem("patient_session_id", data.sessionId);
+      }
 
-      localStorage.setItem('patient_token', data.token);
-      localStorage.setItem('patient_session_id', data.sessionId);
+      setUser(data.user || data.patient || null);
+      setSession(data.access_token || data.token || null);
+      setUserProfile("PATIENT");
 
-      setUser(data.patient);
-      setSession(data.token);
-      setUserProfile('PATIENT');
-
-      toast.success('Bem-vindo ao Portal do Paciente!');
+      toast.success("Bem-vindo ao Portal do Paciente!");
       return { error: null };
     } catch (error: any) {
-      toast.error('Erro ao fazer login: ' + error.message);
+      toast.error("Erro ao fazer login: " + error.message);
       return { error };
     }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error('Erro ao sair', { description: error.message });
-    } else {
+    try {
+      await apiClient.post("/auth/logout", {});
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("patient_token");
+
+      setSession(null);
+      setUser(null);
       setUserRole(null);
       setClinicId(null);
-      toast.success('Logout realizado com sucesso');
+      toast.success("Logout realizado com sucesso");
+    } catch (error: any) {
+      toast.error("Erro ao sair", { description: error.message });
     }
   };
 
-  const hasRole = (role: 'ADMIN' | 'MEMBER') => {
+  const hasRole = (role: "ADMIN" | "MEMBER") => {
     return userRole === role;
   };
 
   const hasModuleAccess = (moduleKey: string) => {
     // Check if module is active for the clinic
     const isModuleActive = activeModules.includes(moduleKey);
-    
+
     // ADMIN can see all active modules
-    if (userRole === 'ADMIN') {
+    if (userRole === "ADMIN") {
       return isModuleActive;
     }
-    
+
     // MEMBER needs both module active AND user permission
-    if (userRole === 'MEMBER') {
-      const hasPermission = userPermissions.includes('ALL') || userPermissions.includes(moduleKey.toLowerCase());
+    if (userRole === "MEMBER") {
+      const hasPermission =
+        userPermissions.includes("ALL") ||
+        userPermissions.includes(moduleKey.toLowerCase());
       return isModuleActive && hasPermission;
     }
-    
+
     return false;
   };
 
   // Derived state
-  const isAdmin = userProfile === 'ADMIN';
-  const isMember = userProfile === 'MEMBER';
-  const isPatient = userProfile === 'PATIENT';
+  const isAdmin = userProfile === "ADMIN";
+  const isMember = userProfile === "MEMBER";
+  const isPatient = userProfile === "PATIENT";
 
   return (
     <AuthContext.Provider
@@ -348,7 +357,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
 }

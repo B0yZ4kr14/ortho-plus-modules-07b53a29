@@ -1,14 +1,33 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Shield, Calendar, User, FileText, AlertCircle } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Shield, Calendar, User, FileText, AlertCircle } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface AuditLog {
   id: number;
@@ -23,44 +42,44 @@ interface AuditLog {
 }
 
 export default function AuditTrailViewer() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [actionFilter, setActionFilter] = useState<string>('all');
-  const [sensitivityFilter, setSensitivityFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [actionFilter, setActionFilter] = useState<string>("all");
+  const [sensitivityFilter, setSensitivityFilter] = useState<string>("all");
 
   const { data: logs = [], isLoading } = useQuery({
-    queryKey: ['audit-trail', actionFilter, sensitivityFilter],
+    queryKey: ["audit-trail", actionFilter, sensitivityFilter],
     queryFn: async () => {
-      let query = supabase
-        .from('audit_trail')
-        .select('*')
-        .order('timestamp', { ascending: false })
-        .limit(1000);
+      const params = new URLSearchParams();
+      params.append("order", "timestamp.desc");
+      params.append("limit", "1000");
 
-      if (actionFilter !== 'all') {
-        query = query.eq('action', actionFilter);
+      if (actionFilter !== "all") {
+        params.append("action", `eq.${actionFilter}`);
       }
 
-      if (sensitivityFilter !== 'all') {
-        query = query.eq('sensitivity_level', sensitivityFilter);
+      if (sensitivityFilter !== "all") {
+        params.append("sensitivity_level", `eq.${sensitivityFilter}`);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as AuditLog[];
+      const data = await apiClient.get<AuditLog[]>(
+        `/rest/v1/audit_trail?${params.toString()}`,
+      );
+      return data || [];
     },
   });
 
-  const filteredLogs = logs.filter(log =>
-    log.entity_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    log.action.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredLogs = logs.filter(
+    (log) =>
+      log.entity_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.action.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getSensitivityBadge = (level: string) => {
     const variants: Record<string, any> = {
-      CRITICAL: { variant: 'destructive', icon: AlertCircle },
-      HIGH: { variant: 'default', icon: Shield },
-      MEDIUM: { variant: 'secondary', icon: FileText },
-      LOW: { variant: 'outline', icon: FileText },
+      CRITICAL: { variant: "destructive", icon: AlertCircle },
+      HIGH: { variant: "default", icon: Shield },
+      MEDIUM: { variant: "secondary", icon: FileText },
+      LOW: { variant: "outline", icon: FileText },
     };
 
     const config = variants[level] || variants.LOW;
@@ -76,18 +95,14 @@ export default function AuditTrailViewer() {
 
   const getActionBadge = (action: string) => {
     const colors: Record<string, string> = {
-      INSERT: 'bg-green-500/10 text-green-700 dark:text-green-400',
-      UPDATE: 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
-      DELETE: 'bg-red-500/10 text-red-700 dark:text-red-400',
-      SELECT: 'bg-gray-500/10 text-gray-700 dark:text-gray-400',
-      EXPORT: 'bg-purple-500/10 text-purple-700 dark:text-purple-400',
+      INSERT: "bg-green-500/10 text-green-700 dark:text-green-400",
+      UPDATE: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
+      DELETE: "bg-red-500/10 text-red-700 dark:text-red-400",
+      SELECT: "bg-gray-500/10 text-gray-700 dark:text-gray-400",
+      EXPORT: "bg-purple-500/10 text-purple-700 dark:text-purple-400",
     };
 
-    return (
-      <Badge className={colors[action] || ''}>
-        {action}
-      </Badge>
-    );
+    return <Badge className={colors[action] || ""}>{action}</Badge>;
   };
 
   return (
@@ -129,7 +144,10 @@ export default function AuditTrailViewer() {
               </SelectContent>
             </Select>
 
-            <Select value={sensitivityFilter} onValueChange={setSensitivityFilter}>
+            <Select
+              value={sensitivityFilter}
+              onValueChange={setSensitivityFilter}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Nível de sensibilidade" />
               </SelectTrigger>
@@ -151,9 +169,13 @@ export default function AuditTrailViewer() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Carregando logs...</div>
+            <div className="text-center py-8 text-muted-foreground">
+              Carregando logs...
+            </div>
           ) : filteredLogs.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">Nenhum log encontrado</div>
+            <div className="text-center py-8 text-muted-foreground">
+              Nenhum log encontrado
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -172,7 +194,11 @@ export default function AuditTrailViewer() {
                       <TableCell className="font-mono text-xs">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
-                          {format(new Date(log.timestamp), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR })}
+                          {format(
+                            new Date(log.timestamp),
+                            "dd/MM/yyyy HH:mm:ss",
+                            { locale: ptBR },
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>{getActionBadge(log.action)}</TableCell>
@@ -186,12 +212,17 @@ export default function AuditTrailViewer() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>{getSensitivityBadge(log.sensitivity_level)}</TableCell>
+                      <TableCell>
+                        {getSensitivityBadge(log.sensitivity_level)}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4 text-muted-foreground" />
                           <span className="text-xs font-mono">
-                            {log.user_id ? log.user_id.substring(0, 8) : 'SYSTEM'}...
+                            {log.user_id
+                              ? log.user_id.substring(0, 8)
+                              : "SYSTEM"}
+                            ...
                           </span>
                         </div>
                       </TableCell>

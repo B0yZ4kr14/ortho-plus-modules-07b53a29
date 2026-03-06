@@ -1,18 +1,18 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Shield, Check, X, FileText, Loader2, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useEffect, useState } from "react";
+import { apiClient } from "@/lib/api/apiClient";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Shield, Check, X, FileText, Loader2, Calendar } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 
 interface AuditLog {
   id: string;
@@ -31,18 +31,23 @@ interface AuditLog {
   };
 }
 
-const actionLabels: Record<string, { label: string; variant: 'success' | 'destructive' | 'default' }> = {
-  'PERMISSION_GRANTED': { label: 'Permissão Concedida', variant: 'success' },
-  'PERMISSION_REVOKED': { label: 'Permissão Revogada', variant: 'destructive' },
-  'TEMPLATE_APPLIED': { label: 'Template Aplicado', variant: 'default' },
+const actionLabels: Record<
+  string,
+  { label: string; variant: "success" | "destructive" | "default" }
+> = {
+  PERMISSION_GRANTED: { label: "Permissão Concedida", variant: "success" },
+  PERMISSION_REVOKED: { label: "Permissão Revogada", variant: "destructive" },
+  TEMPLATE_APPLIED: { label: "Template Aplicado", variant: "default" },
 };
 
 export function PermissionAuditLogs() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterUser, setFilterUser] = useState<string>('all');
-  const [filterAction, setFilterAction] = useState<string>('all');
-  const [users, setUsers] = useState<Array<{ id: string; full_name: string }>>([]);
+  const [filterUser, setFilterUser] = useState<string>("all");
+  const [filterAction, setFilterAction] = useState<string>("all");
+  const [users, setUsers] = useState<Array<{ id: string; full_name: string }>>(
+    [],
+  );
 
   useEffect(() => {
     fetchLogs();
@@ -51,15 +56,12 @@ export function PermissionAuditLogs() {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .order('full_name');
-
-      if (error) throw error;
+      const data = await apiClient.get<any[]>(
+        "/rest/v1/profiles?select=id,full_name&order=full_name.asc",
+      );
       setUsers(data || []);
     } catch (error) {
-      console.error('Erro ao carregar usuários:', error);
+      console.error("Erro ao carregar usuários:", error);
     }
   };
 
@@ -67,74 +69,65 @@ export function PermissionAuditLogs() {
     try {
       setLoading(true);
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const authUser = await apiClient.get<any>("/auth/me");
+      const user = authUser?.user;
       if (!user) return;
 
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('clinic_id')
-        .eq('id', user.id)
-        .single();
+      const profileDataArray = await apiClient.get<any[]>(
+        `/rest/v1/profiles?select=clinic_id&id=eq.${user.id}`,
+      );
+      const profileData = profileDataArray?.[0];
 
       if (!profileData) return;
 
-      const { data, error } = await supabase
-        .from('permission_audit_logs')
-        .select(`
-          id,
-          created_at,
-          action,
-          template_name,
-          details,
-          module_catalog_id,
-          user:user_id (
-            full_name:profiles(full_name)
-          ),
-          target_user:target_user_id (
-            full_name:profiles(full_name)
-          )
-        `)
-        .eq('clinic_id', profileData.clinic_id)
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (error) throw error;
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/permission_audit_logs?select=id,created_at,action,template_name,details,module_catalog_id,user:user_id(profiles(full_name)),target_user:target_user_id(profiles(full_name))&clinic_id=eq.${profileData.clinic_id}&order=created_at.desc&limit=100`,
+      );
 
       // Buscar informações dos módulos
-      const moduleIds = data?.map(log => log.module_catalog_id).filter(Boolean) || [];
+      const moduleIds =
+        data?.map((log) => log.module_catalog_id).filter(Boolean) || [];
       let modulesMap: Record<number, any> = {};
 
       if (moduleIds.length > 0) {
-        const { data: modulesData } = await supabase
-          .from('module_catalog')
-          .select('id, name')
-          .in('id', moduleIds);
+        const modulesData = await apiClient.get<any[]>(
+          `/rest/v1/module_catalog?select=id,name&id=in.(${moduleIds.join(",")})`,
+        );
 
         if (modulesData) {
-          modulesMap = Object.fromEntries(
-            modulesData.map(m => [m.id, m])
-          );
+          modulesMap = Object.fromEntries(modulesData.map((m) => [m.id, m]));
         }
       }
 
-      const processedLogs = data?.map(log => ({
-        ...log,
-        user: { full_name: (log.user as any)?.full_name?.[0]?.full_name || 'Desconhecido' },
-        target_user: { full_name: (log.target_user as any)?.full_name?.[0]?.full_name || 'Desconhecido' },
-        module: log.module_catalog_id ? modulesMap[log.module_catalog_id] : undefined
-      })) || [];
+      const processedLogs =
+        data?.map((log) => ({
+          ...log,
+          user: {
+            full_name:
+              (log.user as any)?.full_name?.[0]?.full_name || "Desconhecido",
+          },
+          target_user: {
+            full_name:
+              (log.target_user as any)?.full_name?.[0]?.full_name ||
+              "Desconhecido",
+          },
+          module: log.module_catalog_id
+            ? modulesMap[log.module_catalog_id]
+            : undefined,
+        })) || [];
 
       setLogs(processedLogs);
     } catch (error) {
-      console.error('Erro ao carregar logs:', error);
+      console.error("Erro ao carregar logs:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredLogs = logs.filter(log => {
-    if (filterUser !== 'all' && log.target_user.full_name !== filterUser) return false;
-    if (filterAction !== 'all' && log.action !== filterAction) return false;
+  const filteredLogs = logs.filter((log) => {
+    if (filterUser !== "all" && log.target_user.full_name !== filterUser)
+      return false;
+    if (filterAction !== "all" && log.action !== filterAction) return false;
     return true;
   });
 
@@ -163,8 +156,12 @@ export function PermissionAuditLogs() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os usuários</SelectItem>
-              {Array.from(new Set(logs.map(l => l.target_user.full_name))).map(name => (
-                <SelectItem key={name} value={name}>{name}</SelectItem>
+              {Array.from(
+                new Set(logs.map((l) => l.target_user.full_name)),
+              ).map((name) => (
+                <SelectItem key={name} value={name}>
+                  {name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -177,9 +174,15 @@ export function PermissionAuditLogs() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas as ações</SelectItem>
-              <SelectItem value="PERMISSION_GRANTED">Permissão Concedida</SelectItem>
-              <SelectItem value="PERMISSION_REVOKED">Permissão Revogada</SelectItem>
-              <SelectItem value="TEMPLATE_APPLIED">Template Aplicado</SelectItem>
+              <SelectItem value="PERMISSION_GRANTED">
+                Permissão Concedida
+              </SelectItem>
+              <SelectItem value="PERMISSION_REVOKED">
+                Permissão Revogada
+              </SelectItem>
+              <SelectItem value="TEMPLATE_APPLIED">
+                Template Aplicado
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -194,18 +197,21 @@ export function PermissionAuditLogs() {
                 <p>Nenhum registro de auditoria encontrado</p>
               </div>
             ) : (
-              filteredLogs.map(log => {
-                const actionConfig = actionLabels[log.action] || { label: log.action, variant: 'default' as const };
-                
+              filteredLogs.map((log) => {
+                const actionConfig = actionLabels[log.action] || {
+                  label: log.action,
+                  variant: "default" as const,
+                };
+
                 return (
                   <div
                     key={log.id}
                     className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
                   >
                     <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-                      {log.action === 'PERMISSION_GRANTED' ? (
+                      {log.action === "PERMISSION_GRANTED" ? (
                         <Check className="h-5 w-5 text-success" />
-                      ) : log.action === 'PERMISSION_REVOKED' ? (
+                      ) : log.action === "PERMISSION_REVOKED" ? (
                         <X className="h-5 w-5 text-destructive" />
                       ) : (
                         <FileText className="h-5 w-5 text-primary" />
@@ -214,7 +220,10 @@ export function PermissionAuditLogs() {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
-                        <Badge variant={actionConfig.variant} className="text-xs">
+                        <Badge
+                          variant={actionConfig.variant}
+                          className="text-xs"
+                        >
                           {actionConfig.label}
                         </Badge>
                         {log.template_name && (
@@ -225,9 +234,13 @@ export function PermissionAuditLogs() {
                       </div>
 
                       <p className="text-sm font-medium mb-1">
-                        <span className="text-primary">{log.user.full_name}</span>
-                        {' alterou permissões de '}
-                        <span className="text-primary">{log.target_user.full_name}</span>
+                        <span className="text-primary">
+                          {log.user.full_name}
+                        </span>
+                        {" alterou permissões de "}
+                        <span className="text-primary">
+                          {log.target_user.full_name}
+                        </span>
                       </p>
 
                       {log.module && (
@@ -244,7 +257,11 @@ export function PermissionAuditLogs() {
 
                       <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
                         <Calendar className="h-3 w-3" />
-                        {format(new Date(log.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                        {format(
+                          new Date(log.created_at),
+                          "dd/MM/yyyy 'às' HH:mm",
+                          { locale: ptBR },
+                        )}
                       </div>
                     </div>
                   </div>

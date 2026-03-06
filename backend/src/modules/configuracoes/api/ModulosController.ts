@@ -3,9 +3,9 @@
  * Migração da Edge Function get-my-modules e toggle-module-state
  */
 
-import { Request, Response, NextFunction } from 'express';
-import { IDatabaseConnection } from '@/infrastructure/database/IDatabaseConnection';
-import { EventBus } from '@/shared/events/EventBus';
+import { IDatabaseConnection } from "@/infrastructure/database/IDatabaseConnection";
+import { EventBus } from "@/shared/events/EventBus";
+import { NextFunction, Request, Response } from "express";
 
 export class ModulosController {
   constructor(private db: IDatabaseConnection) {}
@@ -16,36 +16,39 @@ export class ModulosController {
    */
   getMyModules = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const clinicId = req.query.clinicId as string || 'DEFAULT_CLINIC';
+      const clinicId = (req.query.clinicId as string) || "DEFAULT_CLINIC";
 
       // 1. Buscar todos os módulos do catálogo
       const catalogResult = await this.db.query(
-        `SELECT id, module_key, name, description, category, icon, ordem 
-         FROM configuracoes.modulo_catalog 
-         WHERE ativo = true 
-         ORDER BY ordem, name`
+        `SELECT id, module_key, name, description, category, icon, ordem
+         FROM configuracoes.modulo_catalog
+         WHERE ativo = true
+         ORDER BY ordem, name`,
       );
 
       // 2. Buscar módulos ativos da clínica
       const activeModulesResult = await this.db.query(
-        `SELECT module_catalog_id, is_active 
-         FROM configuracoes.clinic_modules 
+        `SELECT module_catalog_id, is_active
+         FROM configuracoes.clinic_modules
          WHERE clinic_id = $1`,
-        [clinicId]
+        [clinicId],
       );
 
       const activeModulesMap = new Map(
-        activeModulesResult.rows.map(row => [row.module_catalog_id, row.is_active])
+        activeModulesResult.rows.map((row) => [
+          row.module_catalog_id,
+          row.is_active,
+        ]),
       );
 
       // 3. Buscar dependências
       const dependenciesResult = await this.db.query(
-        `SELECT module_id, depends_on_module_id 
-         FROM configuracoes.module_dependencies`
+        `SELECT module_id, depends_on_module_id
+         FROM configuracoes.module_dependencies`,
       );
 
       const dependenciesMap = new Map<number, number[]>();
-      dependenciesResult.rows.forEach(row => {
+      dependenciesResult.rows.forEach((row) => {
         if (!dependenciesMap.has(row.module_id)) {
           dependenciesMap.set(row.module_id, []);
         }
@@ -53,7 +56,7 @@ export class ModulosController {
       });
 
       // 4. Montar resposta com informações de dependência
-      const modules = catalogResult.rows.map(module => {
+      const modules = catalogResult.rows.map((module) => {
         const isSubscribed = activeModulesMap.has(module.id);
         const isActive = activeModulesMap.get(module.id) || false;
         const dependencies = dependenciesMap.get(module.id) || [];
@@ -80,8 +83,8 @@ export class ModulosController {
         },
       });
     } catch (error: any) {
-      console.error('Erro ao buscar módulos:', error);
-      next(error);
+      console.error("Erro ao buscar módulos:", error);
+      return next(error);
     }
   };
 
@@ -89,15 +92,19 @@ export class ModulosController {
    * POST /api/configuracoes/modulos/:moduleKey/toggle
    * Ativa ou desativa um módulo para a clínica
    */
-  toggleModuleState = async (req: Request, res: Response, next: NextFunction) => {
+  toggleModuleState = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const { moduleKey } = req.params;
-      const clinicId = req.body.clinicId || 'DEFAULT_CLINIC';
+      const clinicId = req.body.clinicId || "DEFAULT_CLINIC";
 
       // 1. Buscar módulo no catálogo
       const moduleResult = await this.db.query(
         `SELECT id, module_key, name FROM configuracoes.modulo_catalog WHERE module_key = $1`,
-        [moduleKey]
+        [moduleKey],
       );
 
       if (moduleResult.rows.length === 0) {
@@ -111,9 +118,9 @@ export class ModulosController {
 
       // 2. Buscar estado atual
       const currentStateResult = await this.db.query(
-        `SELECT is_active FROM configuracoes.clinic_modules 
+        `SELECT is_active FROM configuracoes.clinic_modules
          WHERE clinic_id = $1 AND module_catalog_id = $2`,
-        [clinicId, module.id]
+        [clinicId, module.id],
       );
 
       if (currentStateResult.rows.length === 0) {
@@ -133,28 +140,34 @@ export class ModulosController {
            FROM configuracoes.module_dependencies md
            JOIN configuracoes.modulo_catalog mc ON mc.id = md.depends_on_module_id
            WHERE md.module_id = $1`,
-          [module.id]
+          [module.id],
         );
 
         if (dependenciesResult.rows.length > 0) {
           // Verificar se todas as dependências estão ativas
-          const requiredModuleIds = dependenciesResult.rows.map(r => r.depends_on_module_id);
+          const requiredModuleIds = dependenciesResult.rows.map(
+            (r) => r.depends_on_module_id,
+          );
           const activeRequiredResult = await this.db.query(
             `SELECT module_catalog_id FROM configuracoes.clinic_modules
              WHERE clinic_id = $1 AND module_catalog_id = ANY($2) AND is_active = true`,
-            [clinicId, requiredModuleIds]
+            [clinicId, requiredModuleIds],
           );
 
-          const activeDependencies = new Set(activeRequiredResult.rows.map(r => r.module_catalog_id));
+          const activeDependencies = new Set(
+            activeRequiredResult.rows.map((r) => r.module_catalog_id),
+          );
           const missingDependencies = dependenciesResult.rows.filter(
-            dep => !activeDependencies.has(dep.depends_on_module_id)
+            (dep) => !activeDependencies.has(dep.depends_on_module_id),
           );
 
           if (missingDependencies.length > 0) {
             return res.status(412).json({
               success: false,
-              error: `Falha ao ativar. Requer o(s) módulo(s): ${missingDependencies.map(d => d.name).join(', ')}`,
-              missing_dependencies: missingDependencies.map(d => d.module_key),
+              error: `Falha ao ativar. Requer o(s) módulo(s): ${missingDependencies.map((d) => d.name).join(", ")}`,
+              missing_dependencies: missingDependencies.map(
+                (d) => d.module_key,
+              ),
             });
           }
         }
@@ -167,24 +180,28 @@ export class ModulosController {
            FROM configuracoes.module_dependencies md
            JOIN configuracoes.modulo_catalog mc ON mc.id = md.module_id
            WHERE md.depends_on_module_id = $1`,
-          [module.id]
+          [module.id],
         );
 
         if (reverseDependenciesResult.rows.length > 0) {
-          const dependentModuleIds = reverseDependenciesResult.rows.map(r => r.module_id);
+          const dependentModuleIds = reverseDependenciesResult.rows.map(
+            (r) => r.module_id,
+          );
           const activeDependentsResult = await this.db.query(
             `SELECT cm.module_catalog_id, mc.name, mc.module_key
              FROM configuracoes.clinic_modules cm
              JOIN configuracoes.modulo_catalog mc ON mc.id = cm.module_catalog_id
              WHERE cm.clinic_id = $1 AND cm.module_catalog_id = ANY($2) AND cm.is_active = true`,
-            [clinicId, dependentModuleIds]
+            [clinicId, dependentModuleIds],
           );
 
           if (activeDependentsResult.rows.length > 0) {
             return res.status(412).json({
               success: false,
-              error: `Falha ao desativar. O(s) módulo(s) ${activeDependentsResult.rows.map(d => d.name).join(', ')} deve(m) ser desativado(s) primeiro.`,
-              active_dependents: activeDependentsResult.rows.map(d => d.module_key),
+              error: `Falha ao desativar. O(s) módulo(s) ${activeDependentsResult.rows.map((d) => d.name).join(", ")} deve(m) ser desativado(s) primeiro.`,
+              active_dependents: activeDependentsResult.rows.map(
+                (d) => d.module_key,
+              ),
             });
           }
         }
@@ -192,10 +209,10 @@ export class ModulosController {
 
       // 5. Atualizar estado
       await this.db.query(
-        `UPDATE configuracoes.clinic_modules 
+        `UPDATE configuracoes.clinic_modules
          SET is_active = $1, updated_at = now()
          WHERE clinic_id = $2 AND module_catalog_id = $3`,
-        [newState, clinicId, module.id]
+        [newState, clinicId, module.id],
       );
 
       // 6. Registrar em audit log
@@ -204,16 +221,20 @@ export class ModulosController {
          VALUES ($1, $2, $3, $4, $5)`,
         [
           clinicId,
-          newState ? 'MODULE_ACTIVATED' : 'MODULE_DEACTIVATED',
-          'MODULE',
+          newState ? "MODULE_ACTIVATED" : "MODULE_DEACTIVATED",
+          "MODULE",
           module.id,
           JSON.stringify({ module_key: moduleKey, is_active: newState }),
-        ]
+        ],
       );
 
       // 7. Emitir evento de domínio
       EventBus.getInstance().publish({
-        eventType: newState ? 'Configuracoes.ModuloAtivado' : 'Configuracoes.ModuloDesativado',
+        eventId: crypto.randomUUID(),
+        aggregateType: "Modulos",
+        eventType: newState
+          ? "Configuracoes.ModuloAtivado"
+          : "Configuracoes.ModuloDesativado",
         aggregateId: module.id.toString(),
         payload: {
           clinicId,
@@ -221,7 +242,9 @@ export class ModulosController {
           moduleName: module.name,
           isActive: newState,
         },
-        occurredAt: new Date(),
+        metadata: {
+          timestamp: new Date().toISOString(),
+        },
       });
 
       return res.json({
@@ -231,11 +254,11 @@ export class ModulosController {
           name: module.name,
           is_active: newState,
         },
-        message: `Módulo ${module.name} ${newState ? 'ativado' : 'desativado'} com sucesso`,
+        message: `Módulo ${module.name} ${newState ? "ativado" : "desativado"} com sucesso`,
       });
     } catch (error: any) {
-      console.error('Erro ao alternar estado do módulo:', error);
-      next(error);
+      console.error("Erro ao alternar estado do módulo:", error);
+      return next(error);
     }
   };
 
@@ -245,16 +268,16 @@ export class ModulosController {
    */
   getModuleStats = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const clinicId = req.query.clinicId as string || 'DEFAULT_CLINIC';
+      const clinicId = (req.query.clinicId as string) || "DEFAULT_CLINIC";
 
       const statsResult = await this.db.query(
-        `SELECT 
+        `SELECT
           COUNT(*) as total_modules,
           COUNT(*) FILTER (WHERE is_active = true) as active_modules,
           COUNT(*) FILTER (WHERE is_active = false) as inactive_modules
          FROM configuracoes.clinic_modules
          WHERE clinic_id = $1`,
-        [clinicId]
+        [clinicId],
       );
 
       return res.json({
@@ -262,7 +285,7 @@ export class ModulosController {
         data: statsResult.rows[0],
       });
     } catch (error: any) {
-      next(error);
+      return next(error);
     }
   };
 }

@@ -1,12 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Image as ImageIcon, Upload, ZoomIn } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { useState } from 'react';
-import { ImageViewer } from '@/components/imaging/ImageViewer';
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Image as ImageIcon, Upload, ZoomIn } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { useState } from "react";
+import { ImageViewer } from "@/components/imaging/ImageViewer";
 
 interface ImagingTabProps {
   patientId: string;
@@ -16,17 +16,13 @@ export function ImagingTab({ patientId }: ImagingTabProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const { data: images, isLoading } = useQuery({
-    queryKey: ['patient-images', patientId],
+    queryKey: ["patient-images", patientId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('analises_radiograficas')
-        .select('*')
-        .eq('patient_id', patientId)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
-    }
+      const data = await apiClient.get<any[]>(
+        `/pacientes/${patientId}/imaging`,
+      );
+      return data || [];
+    },
   });
 
   if (isLoading) {
@@ -65,22 +61,24 @@ export function ImagingTab({ patientId }: ImagingTabProps) {
       {images && images.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {images.map((image) => (
-            <Card 
-              key={image.id} 
+            <Card
+              key={image.id}
               className="cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => setSelectedImage(image.imagem_url)}
             >
               <CardContent className="p-4">
                 <div className="aspect-square bg-muted rounded-lg mb-2 flex items-center justify-center overflow-hidden">
-                  <img 
-                    src={image.imagem_url} 
+                  <img
+                    src={image.imagem_url}
                     alt={image.tipo_radiografia}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <p className="font-medium text-sm">{image.tipo_radiografia}</p>
                 <p className="text-xs text-muted-foreground">
-                  {format(new Date(image.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                  {format(new Date(image.created_at), "dd/MM/yyyy", {
+                    locale: ptBR,
+                  })}
                 </p>
                 {image.resultado_ia && (
                   <div className="mt-2">

@@ -1,20 +1,39 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { FileText, Plus, Edit, Trash2, Copy, Eye } from 'lucide-react';
-import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { FileText, Plus, Edit, Trash2, Copy, Eye } from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
 
 interface ReportTemplate {
   id: string;
@@ -33,33 +52,59 @@ export default function ReportTemplates() {
   const [templates, setTemplates] = useState<ReportTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<ReportTemplate | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<ReportTemplate | null>(
+    null,
+  );
 
   // Form states
-  const [templateName, setTemplateName] = useState('');
-  const [templateDescription, setTemplateDescription] = useState('');
-  const [templateCategory, setTemplateCategory] = useState('financeiro');
+  const [templateName, setTemplateName] = useState("");
+  const [templateDescription, setTemplateDescription] = useState("");
+  const [templateCategory, setTemplateCategory] = useState("financeiro");
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
-  const [templateLayout, setTemplateLayout] = useState('table');
+  const [templateLayout, setTemplateLayout] = useState("table");
 
   const availableMetrics = [
-    { id: 'receita_total', label: 'Receita Total', category: 'financeiro' },
-    { id: 'despesas_total', label: 'Despesas Total', category: 'financeiro' },
-    { id: 'lucro_liquido', label: 'Lucro Líquido', category: 'financeiro' },
-    { id: 'ticket_medio', label: 'Ticket Médio', category: 'financeiro' },
-    { id: 'total_pacientes', label: 'Total de Pacientes', category: 'pacientes' },
-    { id: 'novos_pacientes', label: 'Novos Pacientes', category: 'pacientes' },
-    { id: 'taxa_retorno', label: 'Taxa de Retorno', category: 'pacientes' },
-    { id: 'consultas_realizadas', label: 'Consultas Realizadas', category: 'agenda' },
-    { id: 'taxa_ocupacao', label: 'Taxa de Ocupação', category: 'agenda' },
-    { id: 'taxa_cancelamento', label: 'Taxa de Cancelamento', category: 'agenda' },
-    { id: 'procedimentos_total', label: 'Total de Procedimentos', category: 'procedimentos' },
-    { id: 'tratamentos_pendentes', label: 'Tratamentos Pendentes', category: 'tratamentos' },
-    { id: 'tratamentos_concluidos', label: 'Tratamentos Concluídos', category: 'tratamentos' },
+    { id: "receita_total", label: "Receita Total", category: "financeiro" },
+    { id: "despesas_total", label: "Despesas Total", category: "financeiro" },
+    { id: "lucro_liquido", label: "Lucro Líquido", category: "financeiro" },
+    { id: "ticket_medio", label: "Ticket Médio", category: "financeiro" },
+    {
+      id: "total_pacientes",
+      label: "Total de Pacientes",
+      category: "pacientes",
+    },
+    { id: "novos_pacientes", label: "Novos Pacientes", category: "pacientes" },
+    { id: "taxa_retorno", label: "Taxa de Retorno", category: "pacientes" },
+    {
+      id: "consultas_realizadas",
+      label: "Consultas Realizadas",
+      category: "agenda",
+    },
+    { id: "taxa_ocupacao", label: "Taxa de Ocupação", category: "agenda" },
+    {
+      id: "taxa_cancelamento",
+      label: "Taxa de Cancelamento",
+      category: "agenda",
+    },
+    {
+      id: "procedimentos_total",
+      label: "Total de Procedimentos",
+      category: "procedimentos",
+    },
+    {
+      id: "tratamentos_pendentes",
+      label: "Tratamentos Pendentes",
+      category: "tratamentos",
+    },
+    {
+      id: "tratamentos_concluidos",
+      label: "Tratamentos Concluídos",
+      category: "tratamentos",
+    },
   ];
 
   useEffect(() => {
-    if (hasRole('ADMIN')) {
+    if (hasRole("ADMIN")) {
       loadTemplates();
     }
   }, [hasRole, clinicId]);
@@ -70,32 +115,37 @@ export default function ReportTemplates() {
       // Mock data - em produção, buscaria do banco
       const mockTemplates: ReportTemplate[] = [
         {
-          id: '1',
-          name: 'Relatório Financeiro Mensal',
-          description: 'Análise completa de receitas, despesas e lucratividade',
-          category: 'financeiro',
-          metrics: ['receita_total', 'despesas_total', 'lucro_liquido', 'ticket_medio'],
-          filters: { period: 'monthly' },
-          layout: 'chart',
+          id: "1",
+          name: "Relatório Financeiro Mensal",
+          description: "Análise completa de receitas, despesas e lucratividade",
+          category: "financeiro",
+          metrics: [
+            "receita_total",
+            "despesas_total",
+            "lucro_liquido",
+            "ticket_medio",
+          ],
+          filters: { period: "monthly" },
+          layout: "chart",
           is_active: true,
           created_at: new Date().toISOString(),
         },
         {
-          id: '2',
-          name: 'Dashboard de Pacientes',
-          description: 'Visão geral da base de pacientes e taxa de retorno',
-          category: 'pacientes',
-          metrics: ['total_pacientes', 'novos_pacientes', 'taxa_retorno'],
-          filters: { period: 'quarterly' },
-          layout: 'cards',
+          id: "2",
+          name: "Dashboard de Pacientes",
+          description: "Visão geral da base de pacientes e taxa de retorno",
+          category: "pacientes",
+          metrics: ["total_pacientes", "novos_pacientes", "taxa_retorno"],
+          filters: { period: "quarterly" },
+          layout: "cards",
           is_active: true,
           created_at: new Date().toISOString(),
         },
       ];
       setTemplates(mockTemplates);
     } catch (error: any) {
-      console.error('Erro ao carregar templates:', error);
-      toast.error('Erro ao carregar templates');
+      console.error("Erro ao carregar templates:", error);
+      toast.error("Erro ao carregar templates");
     } finally {
       setLoading(false);
     }
@@ -103,7 +153,7 @@ export default function ReportTemplates() {
 
   const handleCreateTemplate = () => {
     if (!templateName || selectedMetrics.length === 0) {
-      toast.error('Preencha o nome e selecione pelo menos uma métrica');
+      toast.error("Preencha o nome e selecione pelo menos uma métrica");
       return;
     }
 
@@ -120,14 +170,14 @@ export default function ReportTemplates() {
     };
 
     setTemplates([...templates, newTemplate]);
-    toast.success('Template criado com sucesso!');
+    toast.success("Template criado com sucesso!");
     handleCloseDialog();
   };
 
   const handleUpdateTemplate = () => {
     if (!editingTemplate) return;
 
-    const updatedTemplates = templates.map(t =>
+    const updatedTemplates = templates.map((t) =>
       t.id === editingTemplate.id
         ? {
             ...t,
@@ -137,19 +187,19 @@ export default function ReportTemplates() {
             metrics: selectedMetrics,
             layout: templateLayout,
           }
-        : t
+        : t,
     );
 
     setTemplates(updatedTemplates);
-    toast.success('Template atualizado com sucesso!');
+    toast.success("Template atualizado com sucesso!");
     handleCloseDialog();
   };
 
   const handleDeleteTemplate = (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este template?')) return;
+    if (!confirm("Tem certeza que deseja excluir este template?")) return;
 
-    setTemplates(templates.filter(t => t.id !== id));
-    toast.success('Template excluído com sucesso!');
+    setTemplates(templates.filter((t) => t.id !== id));
+    toast.success("Template excluído com sucesso!");
   };
 
   const handleDuplicateTemplate = (template: ReportTemplate) => {
@@ -161,12 +211,12 @@ export default function ReportTemplates() {
     };
 
     setTemplates([...templates, duplicated]);
-    toast.success('Template duplicado com sucesso!');
+    toast.success("Template duplicado com sucesso!");
   };
 
   const handleToggleActive = (id: string) => {
-    const updatedTemplates = templates.map(t =>
-      t.id === id ? { ...t, is_active: !t.is_active } : t
+    const updatedTemplates = templates.map((t) =>
+      t.id === id ? { ...t, is_active: !t.is_active } : t,
     );
     setTemplates(updatedTemplates);
   };
@@ -184,22 +234,22 @@ export default function ReportTemplates() {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingTemplate(null);
-    setTemplateName('');
-    setTemplateDescription('');
-    setTemplateCategory('financeiro');
+    setTemplateName("");
+    setTemplateDescription("");
+    setTemplateCategory("financeiro");
     setSelectedMetrics([]);
-    setTemplateLayout('table');
+    setTemplateLayout("table");
   };
 
   const toggleMetric = (metricId: string) => {
-    setSelectedMetrics(prev =>
+    setSelectedMetrics((prev) =>
       prev.includes(metricId)
-        ? prev.filter(m => m !== metricId)
-        : [...prev, metricId]
+        ? prev.filter((m) => m !== metricId)
+        : [...prev, metricId],
     );
   };
 
-  if (!hasRole('ADMIN')) {
+  if (!hasRole("ADMIN")) {
     return <Navigate to="/" replace />;
   }
 
@@ -222,10 +272,11 @@ export default function ReportTemplates() {
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {editingTemplate ? 'Editar Template' : 'Criar Novo Template'}
+                {editingTemplate ? "Editar Template" : "Criar Novo Template"}
               </DialogTitle>
               <DialogDescription>
-                Configure as métricas, filtros e layout do seu relatório personalizado
+                Configure as métricas, filtros e layout do seu relatório
+                personalizado
               </DialogDescription>
             </DialogHeader>
 
@@ -260,7 +311,10 @@ export default function ReportTemplates() {
 
                 <div className="space-y-2">
                   <Label htmlFor="category">Categoria</Label>
-                  <Select value={templateCategory} onValueChange={setTemplateCategory}>
+                  <Select
+                    value={templateCategory}
+                    onValueChange={setTemplateCategory}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -268,7 +322,9 @@ export default function ReportTemplates() {
                       <SelectItem value="financeiro">Financeiro</SelectItem>
                       <SelectItem value="pacientes">Pacientes</SelectItem>
                       <SelectItem value="agenda">Agenda</SelectItem>
-                      <SelectItem value="procedimentos">Procedimentos</SelectItem>
+                      <SelectItem value="procedimentos">
+                        Procedimentos
+                      </SelectItem>
                       <SelectItem value="tratamentos">Tratamentos</SelectItem>
                       <SelectItem value="geral">Geral</SelectItem>
                     </SelectContent>
@@ -283,7 +339,7 @@ export default function ReportTemplates() {
 
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                   {availableMetrics
-                    .filter(m => m.category === templateCategory)
+                    .filter((m) => m.category === templateCategory)
                     .map((metric) => (
                       <div
                         key={metric.id}
@@ -311,7 +367,10 @@ export default function ReportTemplates() {
               <TabsContent value="layout" className="space-y-4">
                 <div className="space-y-2">
                   <Label>Tipo de Visualização</Label>
-                  <Select value={templateLayout} onValueChange={setTemplateLayout}>
+                  <Select
+                    value={templateLayout}
+                    onValueChange={setTemplateLayout}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -319,7 +378,9 @@ export default function ReportTemplates() {
                       <SelectItem value="table">Tabela</SelectItem>
                       <SelectItem value="cards">Cards</SelectItem>
                       <SelectItem value="chart">Gráfico</SelectItem>
-                      <SelectItem value="dashboard">Dashboard Completo</SelectItem>
+                      <SelectItem value="dashboard">
+                        Dashboard Completo
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -328,10 +389,10 @@ export default function ReportTemplates() {
                   <p className="text-sm font-medium mb-2">Preview do Layout</p>
                   <div className="h-32 bg-muted rounded flex items-center justify-center">
                     <p className="text-muted-foreground">
-                      {templateLayout === 'table' && 'Visualização em Tabela'}
-                      {templateLayout === 'cards' && 'Visualização em Cards'}
-                      {templateLayout === 'chart' && 'Visualização em Gráfico'}
-                      {templateLayout === 'dashboard' && 'Dashboard Completo'}
+                      {templateLayout === "table" && "Visualização em Tabela"}
+                      {templateLayout === "cards" && "Visualização em Cards"}
+                      {templateLayout === "chart" && "Visualização em Gráfico"}
+                      {templateLayout === "dashboard" && "Dashboard Completo"}
                     </p>
                   </div>
                 </div>
@@ -340,10 +401,12 @@ export default function ReportTemplates() {
 
             <div className="flex gap-2 mt-4">
               <Button
-                onClick={editingTemplate ? handleUpdateTemplate : handleCreateTemplate}
+                onClick={
+                  editingTemplate ? handleUpdateTemplate : handleCreateTemplate
+                }
                 className="flex-1"
               >
-                {editingTemplate ? 'Atualizar' : 'Criar'} Template
+                {editingTemplate ? "Atualizar" : "Criar"} Template
               </Button>
               <Button variant="outline" onClick={handleCloseDialog}>
                 Cancelar
@@ -364,7 +427,9 @@ export default function ReportTemplates() {
           <Card>
             <CardContent className="py-12 text-center">
               <FileText className="h-12 w-12 mx-auto mb-4 opacity-50 text-muted-foreground" />
-              <p className="text-muted-foreground">Nenhum template criado ainda</p>
+              <p className="text-muted-foreground">
+                Nenhum template criado ainda
+              </p>
             </CardContent>
           </Card>
         ) : (
@@ -378,14 +443,16 @@ export default function ReportTemplates() {
                       {template.description}
                     </CardDescription>
                   </div>
-                  <Badge variant={template.is_active ? 'default' : 'secondary'}>
-                    {template.is_active ? 'Ativo' : 'Inativo'}
+                  <Badge variant={template.is_active ? "default" : "secondary"}>
+                    {template.is_active ? "Ativo" : "Inativo"}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Categoria: {template.category}</p>
+                  <p className="text-sm font-medium">
+                    Categoria: {template.category}
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {template.metrics.length} métrica(s) configurada(s)
                   </p>
@@ -421,7 +488,10 @@ export default function ReportTemplates() {
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t">
-                  <Label htmlFor={`active-${template.id}`} className="text-sm cursor-pointer">
+                  <Label
+                    htmlFor={`active-${template.id}`}
+                    className="text-sm cursor-pointer"
+                  >
                     Ativo
                   </Label>
                   <Switch

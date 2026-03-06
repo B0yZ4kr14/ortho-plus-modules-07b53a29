@@ -1,14 +1,32 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Bitcoin, Loader2, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
-import { useCryptoSupabase } from '@/hooks/useCryptoSupabase';
-import { BitcoinQRCodeDialog } from '@/components/crypto/BitcoinQRCodeDialog';
-import { toast } from 'sonner';
-import QRCode from 'qrcode';
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import {
+  Bitcoin,
+  Loader2,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
+import { useCrypto } from "@/hooks/useCrypto";
+import { BitcoinQRCodeDialog } from "@/components/crypto/BitcoinQRCodeDialog";
+import { toast } from "sonner";
+import QRCode from "qrcode";
 
 interface CryptoPaymentPDVProps {
   vendaId: string;
@@ -25,39 +43,45 @@ interface PaymentData {
   invoiceId?: string;
 }
 
-export default function CryptoPaymentPDV({ 
-  vendaId, 
-  valorTotal, 
+export default function CryptoPaymentPDV({
+  vendaId,
+  valorTotal,
   onSuccess,
-  onCancel 
+  onCancel,
 }: CryptoPaymentPDVProps) {
-  const { wallets, offlineWallets, loading: loadingData } = useCryptoSupabase();
-  const [selectedWallet, setSelectedWallet] = useState<string>('');
-  const [selectedCoin, setSelectedCoin] = useState<string>('BTC');
+  const { wallets, offlineWallets, loading: loadingData } = useCrypto();
+  const [selectedWallet, setSelectedWallet] = useState<string>("");
+  const [selectedCoin, setSelectedCoin] = useState<string>("BTC");
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [generatingAddress, setGeneratingAddress] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'confirmed' | 'failed'>('pending');
-  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
+  const [paymentStatus, setPaymentStatus] = useState<
+    "pending" | "processing" | "confirmed" | "failed"
+  >("pending");
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
 
   const allWallets = [
-    ...wallets.map(w => ({ ...w, type: 'exchange', id: w.id.toString() })),
-    ...offlineWallets.map(w => ({ ...w, type: 'offline', id: w.id.toString() })),
+    ...wallets.map((w) => ({ ...w, type: "exchange", id: w.id.toString() })),
+    ...offlineWallets.map((w) => ({
+      ...w,
+      type: "offline",
+      id: w.id.toString(),
+    })),
   ];
 
   // Mock exchange rates (em produção, buscar de API)
   const exchangeRates: Record<string, number> = {
     BTC: 350000, // 1 BTC = R$ 350.000
-    ETH: 15000,  // 1 ETH = R$ 15.000
-    USDT: 5.50,  // 1 USDT = R$ 5,50
-    BNB: 2000,   // 1 BNB = R$ 2.000
+    ETH: 15000, // 1 ETH = R$ 15.000
+    USDT: 5.5, // 1 USDT = R$ 5,50
+    BNB: 2000, // 1 BNB = R$ 2.000
   };
 
   const cryptoAmount = (valorTotal / exchangeRates[selectedCoin]).toFixed(8);
 
   const handleGeneratePayment = async () => {
     if (!selectedWallet) {
-      toast.error('Selecione uma wallet ou exchange');
+      toast.error("Selecione uma wallet ou exchange");
       return;
     }
 
@@ -65,14 +89,16 @@ export default function CryptoPaymentPDV({
     try {
       // Em produção, chamar edge function 'generate-payment-address'
       // Aqui, simulando geração de endereço
-      
-      const wallet = allWallets.find(w => w.id === selectedWallet);
+
+      const wallet = allWallets.find((w) => w.id === selectedWallet);
       let mockAddress: string;
       let qrData: string;
 
-      if (wallet?.type === 'exchange') {
+      if (wallet?.type === "exchange") {
         // Exchange: usar endereço da config
-        mockAddress = (wallet as any).wallet_address || `bc1q${Math.random().toString(36).substring(2, 42)}`;
+        mockAddress =
+          (wallet as any).wallet_address ||
+          `bc1q${Math.random().toString(36).substring(2, 42)}`;
       } else {
         // Offline wallet: derivar do xPub (em produção)
         // Aqui, mock de endereço derivado
@@ -97,8 +123,8 @@ export default function CryptoPaymentPDV({
         width: 300,
         margin: 2,
         color: {
-          dark: '#000000',
-          light: '#FFFFFF',
+          dark: "#000000",
+          light: "#FFFFFF",
         },
       });
       setQrCodeDataUrl(dataUrl);
@@ -108,25 +134,25 @@ export default function CryptoPaymentPDV({
       // Iniciar monitoramento de pagamento (polling)
       startPaymentMonitoring(payment.address);
 
-      toast.success('Endereço de pagamento gerado!');
+      toast.success("Endereço de pagamento gerado!");
     } catch (error: any) {
-      console.error('Error generating payment address:', error);
-      toast.error('Erro ao gerar endereço de pagamento');
+      console.error("Error generating payment address:", error);
+      toast.error("Erro ao gerar endereço de pagamento");
     } finally {
       setGeneratingAddress(false);
     }
   };
 
   const startPaymentMonitoring = (address: string) => {
-    setPaymentStatus('processing');
-    
+    setPaymentStatus("processing");
+
     // Mock: simular confirmação após 5 segundos
     // Em produção, implementar polling real ou webhook subscription
     setTimeout(() => {
       const mockTxHash = `0x${Math.random().toString(16).substring(2, 66)}`;
-      setPaymentStatus('confirmed');
-      
-      toast.success('Pagamento confirmado na blockchain!', {
+      setPaymentStatus("confirmed");
+
+      toast.success("Pagamento confirmado na blockchain!", {
         description: `TxHash: ${mockTxHash.substring(0, 10)}...`,
       });
 
@@ -142,7 +168,7 @@ export default function CryptoPaymentPDV({
   };
 
   const handleCancel = () => {
-    setPaymentStatus('pending');
+    setPaymentStatus("pending");
     setPaymentData(null);
     setQrDialogOpen(false);
     if (onCancel) {
@@ -166,7 +192,7 @@ export default function CryptoPaymentPDV({
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Nenhuma wallet ou exchange configurada. Configure em{' '}
+            Nenhuma wallet ou exchange configurada. Configure em{" "}
             <a href="/settings/crypto" className="font-medium underline">
               Configurações → Crypto
             </a>
@@ -203,9 +229,9 @@ export default function CryptoPaymentPDV({
                 {allWallets.map((wallet) => (
                   <SelectItem key={wallet.id} value={wallet.id}>
                     <div className="flex items-center gap-2">
-                      <span>{wallet.wallet_name || 'Unnamed Wallet'}</span>
+                      <span>{wallet.wallet_name || "Unnamed Wallet"}</span>
                       <Badge variant="outline" className="text-xs">
-                        {wallet.type === 'exchange' ? 'Exchange' : 'Offline'}
+                        {wallet.type === "exchange" ? "Exchange" : "Offline"}
                       </Badge>
                     </div>
                   </SelectItem>
@@ -241,10 +267,12 @@ export default function CryptoPaymentPDV({
                   <strong>Valor em BRL:</strong> R$ {valorTotal.toFixed(2)}
                 </p>
                 <p>
-                  <strong>Valor em {selectedCoin}:</strong> {cryptoAmount} {selectedCoin}
+                  <strong>Valor em {selectedCoin}:</strong> {cryptoAmount}{" "}
+                  {selectedCoin}
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Taxa de câmbio: 1 {selectedCoin} = R$ {exchangeRates[selectedCoin].toLocaleString('pt-BR')}
+                  Taxa de câmbio: 1 {selectedCoin} = R${" "}
+                  {exchangeRates[selectedCoin].toLocaleString("pt-BR")}
                 </p>
               </div>
             </AlertDescription>
@@ -278,9 +306,11 @@ export default function CryptoPaymentPDV({
           </div>
 
           {/* Status do Pagamento */}
-          {paymentStatus !== 'pending' && (
-            <Alert variant={paymentStatus === 'confirmed' ? 'default' : 'default'}>
-              {paymentStatus === 'processing' && (
+          {paymentStatus !== "pending" && (
+            <Alert
+              variant={paymentStatus === "confirmed" ? "default" : "default"}
+            >
+              {paymentStatus === "processing" && (
                 <>
                   <Clock className="h-4 w-4 text-warning" />
                   <AlertDescription>
@@ -288,15 +318,13 @@ export default function CryptoPaymentPDV({
                   </AlertDescription>
                 </>
               )}
-              {paymentStatus === 'confirmed' && (
+              {paymentStatus === "confirmed" && (
                 <>
                   <CheckCircle2 className="h-4 w-4 text-success" />
-                  <AlertDescription>
-                    Pagamento confirmado! ✅
-                  </AlertDescription>
+                  <AlertDescription>Pagamento confirmado! ✅</AlertDescription>
                 </>
               )}
-              {paymentStatus === 'failed' && (
+              {paymentStatus === "failed" && (
                 <>
                   <AlertCircle className="h-4 w-4 text-destructive" />
                   <AlertDescription>
@@ -316,14 +344,14 @@ export default function CryptoPaymentPDV({
           onOpenChange={setQrDialogOpen}
           wallets={[
             {
-              id: paymentData.invoiceId || '1',
+              id: paymentData.invoiceId || "1",
               wallet_address: paymentData.address,
               coin_type: paymentData.coin,
               wallet_name: `Pagamento ${paymentData.coin}`,
             },
           ]}
           onGeneratePayment={async (data) => {
-            console.log('Payment generated:', data);
+            console.log("Payment generated:", data);
           }}
         />
       )}

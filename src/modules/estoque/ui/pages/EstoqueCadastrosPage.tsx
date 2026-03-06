@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog';
 import { Package, Users, Building2, Plus, Scan } from 'lucide-react';
-import { useEstoqueSupabase } from '@/modules/estoque/hooks/useEstoqueSupabase';
+import { useEstoque } from '@/modules/estoque/hooks/useEstoque';
 import { ProdutoForm } from '@/modules/estoque/components/ProdutoForm';
 import { ProdutosList } from '@/modules/estoque/components/ProdutosList';
 import { FornecedorForm } from '@/modules/estoque/components/FornecedorForm';
@@ -36,7 +36,7 @@ export default function EstoqueCadastrosPage() {
     addCategoria,
     updateCategoria,
     deleteCategoria,
-  } = useEstoqueSupabase();
+  } = useEstoque();
 
   const [produtoViewMode, setProdutoViewMode] = useState<ViewMode>('list');
   const [fornecedorViewMode, setFornecedorViewMode] = useState<ViewMode>('list');

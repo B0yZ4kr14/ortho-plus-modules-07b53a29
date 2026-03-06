@@ -1,24 +1,39 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'sonner';
-import { Lock } from 'lucide-react';
-import orthoLogo from '@/assets/ortho-logo-main.png';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { apiClient } from "@/lib/api/apiClient";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { toast } from "sonner";
+import { Lock } from "lucide-react";
+import orthoLogo from "@/assets/ortho-logo-main.png";
 
-const resetPasswordSchema = z.object({
-  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'As senhas não coincidem',
-  path: ['confirmPassword'],
-});
+const resetPasswordSchema = z
+  .object({
+    password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmPassword"],
+  });
 
 type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;
 
@@ -30,42 +45,50 @@ export default function ResetPassword() {
   const form = useForm<ResetPasswordValues>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
-      password: '',
-      confirmPassword: '',
+      password: "",
+      confirmPassword: "",
     },
   });
 
   useEffect(() => {
-    // Verify if we have a valid recovery token
-    supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setIsValidToken(true);
-      } else if (event === 'SIGNED_OUT') {
-        setIsValidToken(false);
-      }
-    });
+    // Verify if we have a valid recovery token from URL hash
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get("access_token");
+    const type = hashParams.get("type");
+    if (type === "recovery" && accessToken) {
+      setIsValidToken(true);
+      // Store token for password update
+      localStorage.setItem("reset_token", accessToken);
+    } else {
+      // Check if token was stored previously
+      const storedToken = localStorage.getItem("reset_token");
+      setIsValidToken(!!storedToken);
+    }
   }, []);
 
   const handleSubmit = async (values: ResetPasswordValues) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({
+      const token = localStorage.getItem("reset_token");
+      await apiClient.post("/auth/update-password", {
         password: values.password,
+        token,
       });
 
-      if (error) throw error;
+      localStorage.removeItem("reset_token");
 
-      toast.success('Senha redefinida!', {
-        description: 'Sua senha foi alterada com sucesso. Você já pode fazer login.',
+      toast.success("Senha redefinida!", {
+        description:
+          "Sua senha foi alterada com sucesso. Você já pode fazer login.",
       });
 
       // Redirect to auth page after 2 seconds
       setTimeout(() => {
-        navigate('/auth');
+        navigate("/auth");
       }, 2000);
     } catch (error: any) {
-      toast.error('Erro ao redefinir senha', {
-        description: error.message || 'Tente novamente mais tarde.',
+      toast.error("Erro ao redefinir senha", {
+        description: error.message || "Tente novamente mais tarde.",
       });
     } finally {
       setIsLoading(false);
@@ -77,7 +100,9 @@ export default function ResetPassword() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle className="text-destructive">Link Inválido ou Expirado</CardTitle>
+            <CardTitle className="text-destructive">
+              Link Inválido ou Expirado
+            </CardTitle>
             <CardDescription>
               Este link de recuperação de senha não é mais válido ou já expirou.
             </CardDescription>
@@ -86,7 +111,7 @@ export default function ResetPassword() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate("/auth")}
             >
               Voltar para Login
             </Button>
@@ -111,7 +136,10 @@ export default function ResetPassword() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-4"
+            >
               <FormField
                 control={form.control}
                 name="password"
@@ -149,7 +177,7 @@ export default function ResetPassword() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Redefinindo...' : 'Redefinir Senha'}
+                {isLoading ? "Redefinindo..." : "Redefinir Senha"}
               </Button>
             </form>
           </Form>

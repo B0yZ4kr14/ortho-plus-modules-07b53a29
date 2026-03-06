@@ -1,14 +1,20 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Calendar } from '@/components/ui/calendar';
-import { Bell, CheckCircle, Clock, XCircle, MessageSquare } from 'lucide-react';
-import { format, addDays, isAfter, isBefore } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Calendar } from "@/components/ui/calendar";
+import { Bell, CheckCircle, Clock, XCircle, MessageSquare } from "lucide-react";
+import { format, addDays, isAfter, isBefore } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { useToast } from "@/hooks/use-toast";
 
 interface Recall {
   id: string;
@@ -27,14 +33,14 @@ export default function RecallPage() {
 
   // Buscar recalls
   const { data: recalls = [], isLoading } = useQuery({
-    queryKey: ['recalls'],
+    queryKey: ["recalls"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('recalls')
-        .select('*')
-        .order('data_prevista', { ascending: true });
-      
-      if (error) throw error;
+      const data: any = await apiClient.get("/marketing/recalls", {
+        params: {
+          sort: "data_prevista.asc",
+        },
+      });
+
       return data as Recall[];
     },
   });
@@ -42,51 +48,56 @@ export default function RecallPage() {
   // Enviar notificação
   const sendNotification = useMutation({
     mutationFn: async (recallId: string) => {
-      const { error } = await supabase
-        .from('recalls')
-        .update({ 
-          notificacao_enviada: true,
-          metodo_notificacao: 'WHATSAPP'
-        })
-        .eq('id', recallId);
-      
-      if (error) throw error;
+      await apiClient.patch(`/marketing/recalls/${recallId}`, {
+        notificacao_enviada: true,
+        metodo_notificacao: "WHATSAPP",
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recalls'] });
+      queryClient.invalidateQueries({ queryKey: ["recalls"] });
       toast({
-        title: 'Notificação enviada',
-        description: 'O paciente foi notificado com sucesso.',
+        title: "Notificação enviada",
+        description: "O paciente foi notificado com sucesso.",
       });
     },
   });
 
   // Filtrar recalls por data selecionada
-  const recallsOnDate = recalls.filter(r => 
-    format(new Date(r.data_prevista), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
+  const recallsOnDate = recalls.filter(
+    (r) =>
+      format(new Date(r.data_prevista), "yyyy-MM-dd") ===
+      format(selectedDate, "yyyy-MM-dd"),
   );
 
   // Recalls próximos (7 dias)
-  const upcomingRecalls = recalls.filter(r => {
+  const upcomingRecalls = recalls.filter((r) => {
     const recallDate = new Date(r.data_prevista);
     const today = new Date();
     const inSevenDays = addDays(today, 7);
-    return isAfter(recallDate, today) && isBefore(recallDate, inSevenDays) && r.status === 'PENDENTE';
+    return (
+      isAfter(recallDate, today) &&
+      isBefore(recallDate, inSevenDays) &&
+      r.status === "PENDENTE"
+    );
   });
 
   // Recalls atrasados
-  const overdueRecalls = recalls.filter(r => {
+  const overdueRecalls = recalls.filter((r) => {
     const recallDate = new Date(r.data_prevista);
-    return isBefore(recallDate, new Date()) && r.status === 'PENDENTE';
+    return isBefore(recallDate, new Date()) && r.status === "PENDENTE";
   });
 
   const getStatusBadge = (status: string) => {
     const config: Record<string, any> = {
-      PENDENTE: { variant: 'secondary', icon: Clock, label: 'Pendente' },
-      AGENDADO: { variant: 'default', icon: Calendar, label: 'Agendado' },
-      CONFIRMADO: { variant: 'default', icon: CheckCircle, label: 'Confirmado' },
-      REALIZADO: { variant: 'outline', icon: CheckCircle, label: 'Realizado' },
-      CANCELADO: { variant: 'destructive', icon: XCircle, label: 'Cancelado' },
+      PENDENTE: { variant: "secondary", icon: Clock, label: "Pendente" },
+      AGENDADO: { variant: "default", icon: Calendar, label: "Agendado" },
+      CONFIRMADO: {
+        variant: "default",
+        icon: CheckCircle,
+        label: "Confirmado",
+      },
+      REALIZADO: { variant: "outline", icon: CheckCircle, label: "Realizado" },
+      CANCELADO: { variant: "destructive", icon: XCircle, label: "Cancelado" },
     };
 
     const { variant, icon: Icon, label } = config[status] || config.PENDENTE;
@@ -115,7 +126,9 @@ export default function RecallPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total de Recalls</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total de Recalls
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{recalls.length}</div>
@@ -124,10 +137,14 @@ export default function RecallPage() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Próximos 7 dias</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Próximos 7 dias
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{upcomingRecalls.length}</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {upcomingRecalls.length}
+            </div>
           </CardContent>
         </Card>
 
@@ -136,17 +153,21 @@ export default function RecallPage() {
             <CardTitle className="text-sm font-medium">Atrasados</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{overdueRecalls.length}</div>
+            <div className="text-2xl font-bold text-red-600">
+              {overdueRecalls.length}
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Notificações Enviadas</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Notificações Enviadas
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {recalls.filter(r => r.notificacao_enviada).length}
+              {recalls.filter((r) => r.notificacao_enviada).length}
             </div>
           </CardContent>
         </Card>
@@ -158,7 +179,9 @@ export default function RecallPage() {
         <Card>
           <CardHeader>
             <CardTitle>Calendário de Recalls</CardTitle>
-            <CardDescription>Selecione uma data para ver os recalls</CardDescription>
+            <CardDescription>
+              Selecione uma data para ver os recalls
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Calendar
@@ -175,7 +198,8 @@ export default function RecallPage() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>
-              Recalls para {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
+              Recalls para{" "}
+              {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
             </CardTitle>
             <CardDescription>
               {recallsOnDate.length} recall(s) agendado(s)
@@ -183,7 +207,9 @@ export default function RecallPage() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Carregando...</div>
+              <div className="text-center py-8 text-muted-foreground">
+                Carregando...
+              </div>
             ) : recallsOnDate.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 Nenhum recall para esta data
@@ -196,27 +222,30 @@ export default function RecallPage() {
                     className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex-1">
-                      <h4 className="font-semibold">Paciente ID: {recall.patient_id.substring(0, 8)}...</h4>
+                      <h4 className="font-semibold">
+                        Paciente ID: {recall.patient_id.substring(0, 8)}...
+                      </h4>
                       <p className="text-sm text-muted-foreground">
-                        Tipo: {recall.tipo_recall.replace('_', ' ')}
+                        Tipo: {recall.tipo_recall.replace("_", " ")}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-3">
                       {getStatusBadge(recall.status)}
-                      
-                      {!recall.notificacao_enviada && recall.status === 'PENDENTE' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="gap-2"
-                          onClick={() => sendNotification.mutate(recall.id)}
-                          disabled={sendNotification.isPending}
-                        >
-                          <MessageSquare className="h-4 w-4" />
-                          Notificar
-                        </Button>
-                      )}
+
+                      {!recall.notificacao_enviada &&
+                        recall.status === "PENDENTE" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-2"
+                            onClick={() => sendNotification.mutate(recall.id)}
+                            disabled={sendNotification.isPending}
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                            Notificar
+                          </Button>
+                        )}
 
                       {recall.notificacao_enviada && (
                         <Badge variant="outline" className="gap-1">
@@ -241,16 +270,24 @@ export default function RecallPage() {
               <XCircle className="h-5 w-5" />
               Recalls Atrasados ({overdueRecalls.length})
             </CardTitle>
-            <CardDescription>Estes recalls já passaram da data prevista</CardDescription>
+            <CardDescription>
+              Estes recalls já passaram da data prevista
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {overdueRecalls.slice(0, 5).map((recall) => (
-                <div key={recall.id} className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
+                <div
+                  key={recall.id}
+                  className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-950/20 rounded-lg"
+                >
                   <div>
-                    <p className="font-medium">ID: {recall.patient_id.substring(0, 8)}...</p>
+                    <p className="font-medium">
+                      ID: {recall.patient_id.substring(0, 8)}...
+                    </p>
                     <p className="text-sm text-muted-foreground">
-                      Previsto: {format(new Date(recall.data_prevista), 'dd/MM/yyyy')}
+                      Previsto:{" "}
+                      {format(new Date(recall.data_prevista), "dd/MM/yyyy")}
                     </p>
                   </div>
                   <Button size="sm" variant="destructive" className="gap-2">

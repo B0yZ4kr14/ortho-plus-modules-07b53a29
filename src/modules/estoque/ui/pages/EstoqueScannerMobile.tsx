@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarcodeScanner } from '@/components/BarcodeScanner';
-import { useEstoqueSupabase } from '@/modules/estoque/hooks/useEstoqueSupabase';
+import { useEstoque } from '@/modules/estoque/hooks/useEstoque';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingState } from '@/components/shared/LoadingState';
 import { 
@@ -35,7 +35,7 @@ interface ScanHistory {
 
 export default function EstoqueScannerMobile() {
   const { toast } = useToast();
-  const { produtos, addMovimentacao, loading } = useEstoqueSupabase();
+  const { produtos, addMovimentacao, loading } = useEstoque();
   const [scanMode, setScanMode] = useState<ScanMode>('consulta');
   const [isScanning, setIsScanning] = useState(false);
   const [scanHistory, setScanHistory] = useState<ScanHistory[]>([]);

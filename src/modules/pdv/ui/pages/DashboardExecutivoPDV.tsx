@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/lib/api/apiClient";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -64,103 +64,26 @@ export default function DashboardExecutivoPDV() {
     try {
       setLoading(true);
 
-      // KPIs Consolidados
-      const hoje = new Date();
-      const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
-
-      // Total de vendas e ticket médio (simulado via vendedor_metas)
-      const { data: metasData } = await supabase
-        .from("vendedor_metas")
-        .select("valor_atingido, meta_valor")
-        .eq("clinic_id", clinicId)
-        .gte("periodo_inicio", `${mesAtual}-01`);
-
-      const totalVendas = metasData?.reduce((sum, m) => sum + (m.valor_atingido || 0), 0) || 0;
-      const metasAtingidas = metasData?.filter((m) => m.valor_atingido >= m.meta_valor).length || 0;
-      const ticketMedio = metasData?.length ? totalVendas / metasData.length : 0;
-
-      // Transações TEF
-      const { data: tefData } = await supabase
-        .from("tef_transacoes")
-        .select("valor")
-        .eq("clinic_id", clinicId)
-        .eq("status", "APROVADA")
-        .gte("created_at", `${mesAtual}-01`);
-
-      // Ranking Top 5
-      const { data: rankingData } = await supabase
-        .from("vendedor_ranking")
-        .select(`
-          vendedor_id,
-          total_vendas,
-          profiles!inner(full_name)
-        `)
-        .eq("clinic_id", clinicId)
-        .eq("periodo", "MES")
-        .order("posicao", { ascending: true })
-        .limit(5);
-
-      // Vendas por vendedor (para gráfico)
-      const vendasChart = rankingData?.map((r, i) => ({
-        nome: r.profiles?.full_name || `Vendedor ${i + 1}`,
-        vendas: r.total_vendas || 0,
-      })) || [];
-
-      // Metas por período (últimos 6 meses)
-      const mesesAnteriores = [];
-      for (let i = 5; i >= 0; i--) {
-        const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
-        const mes = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}`;
-        mesesAnteriores.push(mes);
-      }
-
-      const { data: metasHistorico } = await supabase
-        .from("vendedor_metas")
-        .select("periodo_inicio, valor_atingido, meta_valor")
-        .eq("clinic_id", clinicId)
-        .in("periodo_inicio", mesesAnteriores.map((m) => `${m}-01`));
-
-      const metasChart = mesesAnteriores.map((mes) => {
-        const metasMes = metasHistorico?.filter((m) => m.periodo_inicio?.startsWith(mes)) || [];
-        const totalAtingido = metasMes.reduce((sum, m) => sum + (m.valor_atingido || 0), 0);
-        const totalMeta = metasMes.reduce((sum, m) => sum + (m.meta_valor || 0), 0);
-        return {
-          mes: mes.slice(5, 7) + "/" + mes.slice(0, 4),
-          atingido: totalAtingido,
-          meta: totalMeta,
-        };
+      // Call the unified backend endpoint for the executive dashboard data
+      // Carregar todas as informações do endpoint consolidado
+      const data = await apiClient.get<any>("/pdv/dashboard-executivo", {
+        params: { clinicId },
       });
 
-      // Transações por método (TEF)
-      const { data: tefMetodos } = await supabase
-        .from("tef_transacoes")
-        .select("tipo_pagamento, valor")
-        .eq("clinic_id", clinicId)
-        .eq("status", "APROVADA")
-        .gte("created_at", `${mesAtual}-01`);
+      setKpis(
+        data.kpis || {
+          totalVendas: data.kpis?.totalVendas || 0,
+          ticketMedio: data.kpis?.ticketMedio || 0,
+          metasAtingidas: data.kpis?.metasAtingidas || 0,
+          transacoesTEF: data.kpis?.transacoesTEF || 0,
+          vendedores: data.vendasPorVendedor?.length || 0,
+        },
+      );
 
-      const metodosChart = tefMetodos?.reduce((acc, t) => {
-        const tipo = t.tipo_pagamento || "OUTROS";
-        const existing = acc.find((x) => x.name === tipo);
-        if (existing) {
-          existing.value += t.valor || 0;
-        } else {
-          acc.push({ name: tipo, value: t.valor || 0 });
-        }
-        return acc;
-      }, [] as any[]) || [];
-
-      setKpis({
-        totalVendas,
-        ticketMedio,
-        metasAtingidas,
-        transacoesTEF: tefData?.length || 0,
-        vendedores: vendasChart.length,
-      });
-      setVendasPorVendedor(vendasChart);
-      setMetasPorPeriodo(metasChart);
-      setTransacoesPorMetodo(metodosChart);
-      setRankingTop5(rankingData || []);
+      setVendasPorVendedor(data.vendasPorVendedor || []);
+      setMetasPorPeriodo(data.metasPorPeriodo || []);
+      setTransacoesPorMetodo(data.transacoesPorMetodo || []);
+      setRankingTop5(data.rankingTop5 || []);
     } catch (error) {
       console.error("Erro ao carregar dashboard executivo:", error);
     } finally {
@@ -169,7 +92,9 @@ export default function DashboardExecutivoPDV() {
   };
 
   if (loading) {
-    return <LoadingState size="lg" message="Carregando dashboard executivo..." />;
+    return (
+      <LoadingState size="lg" message="Carregando dashboard executivo..." />
+    );
   }
 
   return (
@@ -177,7 +102,7 @@ export default function DashboardExecutivoPDV() {
       <PageHeader
         title="Dashboard Executivo PDV"
         description="Visão consolidada de vendas, metas, rankings e transações TEF"
-        icon={<TrendingUp />}
+        icon={<TrendingUp className="h-6 w-6" />}
       />
 
       {/* KPIs Row */}
@@ -253,7 +178,10 @@ export default function DashboardExecutivoPDV() {
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={vendasPorVendedor}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="hsl(var(--border))"
+              />
               <XAxis dataKey="nome" stroke="hsl(var(--muted-foreground))" />
               <YAxis stroke="hsl(var(--muted-foreground))" />
               <Tooltip
@@ -263,7 +191,11 @@ export default function DashboardExecutivoPDV() {
                   borderRadius: "8px",
                 }}
               />
-              <Bar dataKey="vendas" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+              <Bar
+                dataKey="vendas"
+                fill="hsl(var(--primary))"
+                radius={[8, 8, 0, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -276,7 +208,10 @@ export default function DashboardExecutivoPDV() {
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={metasPorPeriodo}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="hsl(var(--border))"
+              />
               <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" />
               <YAxis stroke="hsl(var(--muted-foreground))" />
               <Tooltip
@@ -324,13 +259,18 @@ export default function DashboardExecutivoPDV() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={(entry) => `${entry.name}: ${((entry.value / transacoesPorMetodo.reduce((sum, m) => sum + m.value, 0)) * 100).toFixed(1)}%`}
+                  label={(entry) =>
+                    `${entry.name}: ${((entry.value / transacoesPorMetodo.reduce((sum, m) => sum + m.value, 0)) * 100).toFixed(1)}%`
+                  }
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
                 >
                   {transacoesPorMetodo.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip
@@ -364,13 +304,23 @@ export default function DashboardExecutivoPDV() {
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
-                      {index === 0 && <Trophy className="h-5 w-5 text-warning" />}
-                      {index === 1 && <Award className="h-5 w-5 text-muted-foreground" />}
-                      {index === 2 && <Award className="h-5 w-5 text-amber-600" />}
-                      {index > 2 && <span className="font-bold text-sm">{index + 1}</span>}
+                      {index === 0 && (
+                        <Trophy className="h-5 w-5 text-warning" />
+                      )}
+                      {index === 1 && (
+                        <Award className="h-5 w-5 text-muted-foreground" />
+                      )}
+                      {index === 2 && (
+                        <Award className="h-5 w-5 text-amber-600" />
+                      )}
+                      {index > 2 && (
+                        <span className="font-bold text-sm">{index + 1}</span>
+                      )}
                     </div>
                     <div>
-                      <p className="font-medium">{vendedor.profiles?.full_name || "Vendedor"}</p>
+                      <p className="font-medium">
+                        {vendedor.profiles?.full_name || "Vendedor"}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {(vendedor.total_vendas || 0).toLocaleString("pt-BR", {
                           style: "currency",

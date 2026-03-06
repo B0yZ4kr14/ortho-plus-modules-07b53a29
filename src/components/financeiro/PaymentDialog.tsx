@@ -1,16 +1,29 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CreditCard, QrCode, Loader2, Bitcoin } from 'lucide-react';
-import { CryptoPaymentSelector } from '@/components/crypto/CryptoPaymentSelector';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import type { ContaReceber } from '@/modules/financeiro/types/financeiro-completo.types';
-import { useConfetti } from '@/hooks/useConfetti';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CreditCard, QrCode, Loader2, Bitcoin } from "lucide-react";
+import { CryptoPaymentSelector } from "@/components/crypto/CryptoPaymentSelector";
+import { toast } from "sonner";
+import { apiClient } from "@/lib/api/apiClient";
+import type { ContaReceber } from "@/modules/financeiro/types/financeiro-completo.types";
+import { useConfetti } from "@/hooks/useConfetti";
 
 interface PaymentDialogProps {
   open: boolean;
@@ -19,20 +32,29 @@ interface PaymentDialogProps {
   onSuccess: () => void;
 }
 
-export function PaymentDialog({ open, onClose, conta, onSuccess }: PaymentDialogProps) {
+export function PaymentDialog({
+  open,
+  onClose,
+  conta,
+  onSuccess,
+}: PaymentDialogProps) {
   const { triggerSuccessConfetti } = useConfetti();
   const [loading, setLoading] = useState(false);
-  const [metodo, setMetodo] = useState<'PIX' | 'CARTAO_CREDITO' | 'CARTAO_DEBITO' | 'CRYPTO'>('PIX');
-  const [valor, setValor] = useState((conta.valor - (conta.valor_pago || 0)).toString());
+  const [metodo, setMetodo] = useState<
+    "PIX" | "CARTAO_CREDITO" | "CARTAO_DEBITO" | "CRYPTO"
+  >("PIX");
+  const [valor, setValor] = useState(
+    (conta.valor - (conta.valor_pago || 0)).toString(),
+  );
 
   // Campos PIX
-  const [pixKey, setPixKey] = useState('');
+  const [pixKey, setPixKey] = useState("");
 
   // Campos Cartão
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardHolder, setCardHolder] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardHolder, setCardHolder] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvv, setCardCvv] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,42 +62,42 @@ export function PaymentDialog({ open, onClose, conta, onSuccess }: PaymentDialog
 
     try {
       const valorNumerico = parseFloat(valor);
-      
+
       if (isNaN(valorNumerico) || valorNumerico <= 0) {
-        throw new Error('Valor inválido');
+        throw new Error("Valor inválido");
       }
 
-      const { data, error } = await supabase.functions.invoke('processar-pagamento', {
-        body: {
+      const data = await apiClient.post<any>(
+        "/functions/v1/processar-pagamento",
+        {
           conta_receber_id: conta.id,
           valor: valorNumerico,
           metodo_pagamento: metodo,
-          dados_pagamento: metodo === 'PIX' 
-            ? { pix_key: pixKey }
-            : {
-                card_number: cardNumber,
-                card_holder: cardHolder,
-                card_expiry: cardExpiry,
-                card_cvv: cardCvv,
-              },
+          dados_pagamento:
+            metodo === "PIX"
+              ? { pix_key: pixKey }
+              : {
+                  card_number: cardNumber,
+                  card_holder: cardHolder,
+                  card_expiry: cardExpiry,
+                  card_cvv: cardCvv,
+                },
         },
-      });
-
-      if (error) throw error;
+      );
 
       // Trigger confetti celebration for successful payment
       triggerSuccessConfetti();
 
-      toast.success('Pagamento processado com sucesso!', {
+      toast.success("Pagamento processado com sucesso!", {
         description: `Transação: ${data.transacao_id}`,
       });
 
       onSuccess();
       onClose();
     } catch (error: any) {
-      console.error('Erro ao processar pagamento:', error);
-      toast.error('Erro ao processar pagamento', {
-        description: error.message || 'Tente novamente',
+      console.error("Erro ao processar pagamento:", error);
+      toast.error("Erro ao processar pagamento", {
+        description: error.message || "Tente novamente",
       });
     } finally {
       setLoading(false);
@@ -88,7 +110,8 @@ export function PaymentDialog({ open, onClose, conta, onSuccess }: PaymentDialog
         <DialogHeader>
           <DialogTitle>Processar Pagamento</DialogTitle>
           <DialogDescription>
-            Paciente: {conta.patient_name} | Valor restante: R$ {(conta.valor - (conta.valor_pago || 0)).toFixed(2)}
+            Paciente: {conta.patient_name} | Valor restante: R${" "}
+            {(conta.valor - (conta.valor_pago || 0)).toFixed(2)}
           </DialogDescription>
         </DialogHeader>
 
@@ -130,7 +153,7 @@ export function PaymentDialog({ open, onClose, conta, onSuccess }: PaymentDialog
                   value={pixKey}
                   onChange={(e) => setPixKey(e.target.value)}
                   placeholder="CPF, email, telefone ou chave aleatória"
-                  required={metodo === 'PIX'}
+                  required={metodo === "PIX"}
                 />
               </div>
             </TabsContent>
@@ -143,7 +166,7 @@ export function PaymentDialog({ open, onClose, conta, onSuccess }: PaymentDialog
                   value={cardNumber}
                   onChange={(e) => setCardNumber(e.target.value)}
                   placeholder="0000 0000 0000 0000"
-                  required={metodo !== 'PIX'}
+                  required={metodo !== "PIX"}
                   maxLength={19}
                 />
               </div>
@@ -155,7 +178,7 @@ export function PaymentDialog({ open, onClose, conta, onSuccess }: PaymentDialog
                   value={cardHolder}
                   onChange={(e) => setCardHolder(e.target.value)}
                   placeholder="NOME COMPLETO"
-                  required={metodo !== 'PIX'}
+                  required={metodo !== "PIX"}
                 />
               </div>
 
@@ -167,7 +190,7 @@ export function PaymentDialog({ open, onClose, conta, onSuccess }: PaymentDialog
                     value={cardExpiry}
                     onChange={(e) => setCardExpiry(e.target.value)}
                     placeholder="MM/AA"
-                    required={metodo !== 'PIX'}
+                    required={metodo !== "PIX"}
                     maxLength={5}
                   />
                 </div>
@@ -178,7 +201,7 @@ export function PaymentDialog({ open, onClose, conta, onSuccess }: PaymentDialog
                     value={cardCvv}
                     onChange={(e) => setCardCvv(e.target.value)}
                     placeholder="000"
-                    required={metodo !== 'PIX'}
+                    required={metodo !== "PIX"}
                     maxLength={4}
                   />
                 </div>
@@ -186,7 +209,10 @@ export function PaymentDialog({ open, onClose, conta, onSuccess }: PaymentDialog
 
               <div className="space-y-2">
                 <Label htmlFor="card-type">Tipo de Cartão</Label>
-                <Select value={metodo} onValueChange={(v) => setMetodo(v as any)}>
+                <Select
+                  value={metodo}
+                  onValueChange={(v) => setMetodo(v as any)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -200,7 +226,12 @@ export function PaymentDialog({ open, onClose, conta, onSuccess }: PaymentDialog
           </Tabs>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={loading}
+            >
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
@@ -210,7 +241,7 @@ export function PaymentDialog({ open, onClose, conta, onSuccess }: PaymentDialog
                   Processando...
                 </>
               ) : (
-                'Confirmar Pagamento'
+                "Confirmar Pagamento"
               )}
             </Button>
           </DialogFooter>

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { useOdontogramaSupabase } from '../hooks/useOdontogramaSupabase';
+import { useOdontograma } from '../hooks/useOdontograma';
 import { ToothDetailDialog } from './ToothDetailDialog';
 import {
   ToothStatus,
@@ -132,7 +132,7 @@ export const Odontograma3D = memo(({ prontuarioId }: Odontograma3DProps) => {
     updateToothNotes,
     resetOdontograma,
     getStatusCount,
-  } = useOdontogramaSupabase(prontuarioId);
+  } = useOdontograma(prontuarioId);
 
   const [selectedStatus, setSelectedStatus] = useState<ToothStatus>('higido');
   const [selectedTooth, setSelectedTooth] = useState<ToothData | null>(null);

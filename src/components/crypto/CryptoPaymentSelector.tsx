@@ -3,39 +3,51 @@
  * Seletor de pagamento crypto para integração em PaymentDialog e PDV
  */
 
-import { useState, useMemo, memo } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Bitcoin, Loader2, CheckCircle2, QrCode } from 'lucide-react';
-import { useCryptoSupabase } from '@/hooks/useCryptoSupabase';
-import { BitcoinQRCodeDialog } from './BitcoinQRCodeDialog';
-import { toast } from 'sonner';
+import { useState, useMemo, memo } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Bitcoin, Loader2, CheckCircle2, QrCode } from "lucide-react";
+import { useCrypto } from "@/hooks/useCrypto";
+import { BitcoinQRCodeDialog } from "./BitcoinQRCodeDialog";
+import { toast } from "sonner";
 
 interface CryptoPaymentSelectorProps {
   amount: number;
   onPaymentConfirmed: (txHash: string, cryptoCurrency: string) => void;
 }
 
-export const CryptoPaymentSelector = memo(function CryptoPaymentSelector({ amount, onPaymentConfirmed }: CryptoPaymentSelectorProps) {
-  const { wallets, offlineWallets, loading: loadingData } = useCryptoSupabase();
-  const [selectedWallet, setSelectedWallet] = useState<string>('');
-  const [selectedCoin, setSelectedCoin] = useState<string>('BTC');
+export const CryptoPaymentSelector = memo(function CryptoPaymentSelector({
+  amount,
+  onPaymentConfirmed,
+}: CryptoPaymentSelectorProps) {
+  const { wallets, offlineWallets, loading: loadingData } = useCrypto();
+  const [selectedWallet, setSelectedWallet] = useState<string>("");
+  const [selectedCoin, setSelectedCoin] = useState<string>("BTC");
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [paymentData, setPaymentData] = useState<any>(null);
   const [generatingAddress, setGeneratingAddress] = useState(false);
 
   // ✅ FASE 2: Memoizar lista combinada de wallets
-  const allWallets = useMemo(() => [
-    ...wallets.map(w => ({ ...w, type: 'exchange' })),
-    ...offlineWallets.map(w => ({ ...w, type: 'offline' })),
-  ], [wallets, offlineWallets]);
+  const allWallets = useMemo(
+    () => [
+      ...wallets.map((w) => ({ ...w, type: "exchange" })),
+      ...offlineWallets.map((w) => ({ ...w, type: "offline" })),
+    ],
+    [wallets, offlineWallets],
+  );
 
   const handleGeneratePayment = async () => {
     if (!selectedWallet) {
-      toast.error('Selecione uma wallet');
+      toast.error("Selecione uma wallet");
       return;
     }
 
@@ -55,8 +67,8 @@ export const CryptoPaymentSelector = memo(function CryptoPaymentSelector({ amoun
 
       setQrDialogOpen(true);
     } catch (error: any) {
-      console.error('Error generating payment address:', error);
-      toast.error('Erro ao gerar endereço de pagamento');
+      console.error("Error generating payment address:", error);
+      toast.error("Erro ao gerar endereço de pagamento");
     } finally {
       setGeneratingAddress(false);
     }
@@ -65,13 +77,15 @@ export const CryptoPaymentSelector = memo(function CryptoPaymentSelector({ amoun
   const handlePaymentGenerated = async (data: any) => {
     // Simular confirmação de pagamento
     // Em produção, implementar polling ou webhook
-    toast.success('Pagamento em processamento. Aguardando confirmações blockchain...');
-    
+    toast.success(
+      "Pagamento em processamento. Aguardando confirmações blockchain...",
+    );
+
     // Mock confirmation após 3 segundos
     setTimeout(() => {
       const mockTxHash = `0x${Math.random().toString(16).substring(2, 66)}`;
       onPaymentConfirmed(mockTxHash, selectedCoin);
-      toast.success('Pagamento confirmado!');
+      toast.success("Pagamento confirmado!");
     }, 3000);
   };
 
@@ -87,7 +101,8 @@ export const CryptoPaymentSelector = memo(function CryptoPaymentSelector({ amoun
     return (
       <Alert>
         <AlertDescription>
-          Nenhuma wallet configurada. Configure uma exchange ou wallet offline nas Configurações.
+          Nenhuma wallet configurada. Configure uma exchange ou wallet offline
+          nas Configurações.
         </AlertDescription>
       </Alert>
     );
@@ -98,7 +113,9 @@ export const CryptoPaymentSelector = memo(function CryptoPaymentSelector({ amoun
       <Card className="p-4">
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium mb-2 block">Wallet de Recebimento</label>
+            <label className="text-sm font-medium mb-2 block">
+              Wallet de Recebimento
+            </label>
             <Select value={selectedWallet} onValueChange={setSelectedWallet}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma wallet" />
@@ -106,9 +123,9 @@ export const CryptoPaymentSelector = memo(function CryptoPaymentSelector({ amoun
               <SelectContent>
                 {allWallets.map((wallet) => (
                   <SelectItem key={wallet.id} value={wallet.id}>
-                    {wallet.wallet_name} 
+                    {wallet.wallet_name}
                     <Badge variant="outline" className="ml-2">
-                      {wallet.type === 'exchange' ? 'Exchange' : 'Offline'}
+                      {wallet.type === "exchange" ? "Exchange" : "Offline"}
                     </Badge>
                   </SelectItem>
                 ))}
@@ -117,7 +134,9 @@ export const CryptoPaymentSelector = memo(function CryptoPaymentSelector({ amoun
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block">Criptomoeda</label>
+            <label className="text-sm font-medium mb-2 block">
+              Criptomoeda
+            </label>
             <Select value={selectedCoin} onValueChange={setSelectedCoin}>
               <SelectTrigger>
                 <SelectValue />

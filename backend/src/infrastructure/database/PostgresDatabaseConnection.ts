@@ -1,19 +1,19 @@
 /**
  * PostgresDatabaseConnection - Implementação PostgreSQL nativo
- * 
+ *
  * Suporta:
  * - Supabase Self-Hosted
  * - PostgreSQL local/on-premises
  */
 
-import { Pool, PoolClient } from 'pg';
+import { logger } from "@/infrastructure/logger";
+import { Pool } from "pg";
 import {
-  IDatabaseConnection,
   DatabaseConfig,
+  IDatabaseConnection,
   QueryResult,
   Transaction,
-} from './IDatabaseConnection';
-import { logger } from '@/infrastructure/logger';
+} from "./IDatabaseConnection";
 
 export class PostgresDatabaseConnection implements IDatabaseConnection {
   private pool: Pool;
@@ -32,16 +32,19 @@ export class PostgresDatabaseConnection implements IDatabaseConnection {
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 10000,
       statement_timeout: 30000,
-      ...(config.schema && { 
-        options: `-c search_path=${config.schema},public` 
+      ...(config.schema && {
+        options: `-c search_path=${config.schema},public`,
       }),
     });
 
-    this.pool.on('error', (err) => {
-      logger.error('Unexpected database pool error', { error: err, config: this.config });
+    this.pool.on("error", (err) => {
+      logger.error("Unexpected database pool error", {
+        error: err,
+        config: this.config,
+      });
     });
 
-    logger.info('PostgreSQL connection pool initialized', {
+    logger.info("PostgreSQL connection pool initialized", {
       host: config.host,
       database: config.database,
       schema: config.schema,
@@ -53,8 +56,8 @@ export class PostgresDatabaseConnection implements IDatabaseConnection {
     try {
       const result = await this.pool.query(sql, params);
       const duration = Date.now() - start;
-      
-      logger.debug('Query executed', {
+
+      logger.debug("Query executed", {
         sql: sql.substring(0, 100),
         params: params?.length,
         rowCount: result.rowCount,
@@ -66,7 +69,7 @@ export class PostgresDatabaseConnection implements IDatabaseConnection {
         rowCount: result.rowCount || 0,
       };
     } catch (error) {
-      logger.error('Query execution failed', {
+      logger.error("Query execution failed", {
         sql: sql.substring(0, 100),
         params: params?.length,
         error,
@@ -77,7 +80,7 @@ export class PostgresDatabaseConnection implements IDatabaseConnection {
 
   async beginTransaction(): Promise<Transaction> {
     const client = await this.pool.connect();
-    await client.query('BEGIN');
+    await client.query("BEGIN");
 
     return {
       query: async <T = any>(sql: string, params?: any[]) => {
@@ -89,14 +92,14 @@ export class PostgresDatabaseConnection implements IDatabaseConnection {
       },
       commit: async () => {
         try {
-          await client.query('COMMIT');
+          await client.query("COMMIT");
         } finally {
           client.release();
         }
       },
       rollback: async () => {
         try {
-          await client.query('ROLLBACK');
+          await client.query("ROLLBACK");
         } finally {
           client.release();
         }
@@ -107,7 +110,7 @@ export class PostgresDatabaseConnection implements IDatabaseConnection {
   async queryWithRetry<T = any>(
     sql: string,
     params?: any[],
-    maxRetries: number = 3
+    maxRetries: number = 3,
   ): Promise<QueryResult<T>> {
     let lastError: Error | undefined;
 
@@ -116,7 +119,7 @@ export class PostgresDatabaseConnection implements IDatabaseConnection {
         return await this.query<T>(sql, params);
       } catch (error) {
         lastError = error as Error;
-        logger.warn('Query retry attempt', {
+        logger.warn("Query retry attempt", {
           attempt,
           maxRetries,
           sql: sql.substring(0, 100),
@@ -126,7 +129,7 @@ export class PostgresDatabaseConnection implements IDatabaseConnection {
         if (attempt < maxRetries) {
           // Exponential backoff
           await new Promise((resolve) =>
-            setTimeout(resolve, Math.pow(2, attempt) * 100)
+            setTimeout(resolve, Math.pow(2, attempt) * 100),
           );
         }
       }
@@ -137,17 +140,17 @@ export class PostgresDatabaseConnection implements IDatabaseConnection {
 
   async healthCheck(): Promise<boolean> {
     try {
-      const result = await this.pool.query('SELECT 1 as health');
+      const result = await this.pool.query("SELECT 1 as health");
       return result.rows[0]?.health === 1;
     } catch (error) {
-      logger.error('Health check failed', { error });
+      logger.error("Health check failed", { error });
       return false;
     }
   }
 
   async close(): Promise<void> {
     await this.pool.end();
-    logger.info('PostgreSQL connection pool closed', {
+    logger.info("PostgreSQL connection pool closed", {
       database: this.config.database,
     });
   }

@@ -1,20 +1,27 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
-import { FileText, DollarSign, TrendingUp, TrendingDown, Calendar, Download } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { LoadingState } from '@/components/shared/LoadingState';
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { apiClient } from "@/lib/api/apiClient";
+import {
+  FileText,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Calendar,
+  Download,
+} from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { LoadingState } from "@/components/shared/LoadingState";
 
 export default function RelatorioCaixa() {
   const { clinicId } = useAuth();
   const [movimentos, setMovimentos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filtro, setFiltro] = useState<'hoje' | 'semana' | 'mes'>('hoje');
+  const [filtro, setFiltro] = useState<"hoje" | "semana" | "mes">("hoje");
 
   const loadMovimentos = async () => {
     if (!clinicId) return;
@@ -22,30 +29,28 @@ export default function RelatorioCaixa() {
     setLoading(true);
     try {
       const dataInicio = new Date();
-      
-      if (filtro === 'hoje') {
+
+      if (filtro === "hoje") {
         dataInicio.setHours(0, 0, 0, 0);
-      } else if (filtro === 'semana') {
+      } else if (filtro === "semana") {
         dataInicio.setDate(dataInicio.getDate() - 7);
       } else {
         dataInicio.setDate(dataInicio.getDate() - 30);
       }
 
-      const { data, error } = await supabase
-        .from('caixa_movimentos')
-        .select(`
-          *,
-          user:profiles!user_id(full_name)
-        `)
-        .eq('clinic_id', clinicId)
-        .eq('status', 'FECHADO')
-        .gte('fechado_em', dataInicio.toISOString())
-        .order('fechado_em', { ascending: false });
+      const params = new URLSearchParams();
+      params.append("select", "*, user:profiles!user_id(full_name)");
+      params.append("clinic_id", `eq.${clinicId}`);
+      params.append("status", `eq.FECHADO`);
+      params.append("fechado_em", `gte.${dataInicio.toISOString()}`);
+      params.append("order", "fechado_em.desc");
 
-      if (error) throw error;
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/caixa_movimentos?${params.toString()}`,
+      );
       setMovimentos(data || []);
     } catch (error) {
-      console.error('Error loading movimentos:', error);
+      console.error("Error loading movimentos:", error);
     } finally {
       setLoading(false);
     }
@@ -56,21 +61,23 @@ export default function RelatorioCaixa() {
   }, [clinicId, filtro]);
 
   const totalSobras = movimentos
-    .filter(m => (m.diferenca || 0) > 0)
+    .filter((m) => (m.diferenca || 0) > 0)
     .reduce((sum, m) => sum + (m.diferenca || 0), 0);
 
   const totalFaltas = movimentos
-    .filter(m => (m.diferenca || 0) < 0)
+    .filter((m) => (m.diferenca || 0) < 0)
     .reduce((sum, m) => sum + Math.abs(m.diferenca || 0), 0);
 
-  const totalMovimentado = movimentos
-    .reduce((sum, m) => sum + (m.valor_esperado || 0) - m.valor_inicial, 0);
+  const totalMovimentado = movimentos.reduce(
+    (sum, m) => sum + (m.valor_esperado || 0) - m.valor_inicial,
+    0,
+  );
 
   if (loading) {
     return (
       <div className="container mx-auto py-6">
-        <PageHeader 
-          icon={FileText} 
+        <PageHeader
+          icon={FileText}
           title="Relatório de Caixa"
           description="Histórico de movimentações e fechamentos"
         />
@@ -82,30 +89,30 @@ export default function RelatorioCaixa() {
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
-        <PageHeader 
-          icon={FileText} 
+        <PageHeader
+          icon={FileText}
           title="Relatório de Caixa"
           description="Histórico de movimentações e fechamentos"
         />
-        
+
         <div className="flex gap-2">
           <Button
-            variant={filtro === 'hoje' ? 'default' : 'outline'}
-            onClick={() => setFiltro('hoje')}
+            variant={filtro === "hoje" ? "default" : "outline"}
+            onClick={() => setFiltro("hoje")}
             size="sm"
           >
             Hoje
           </Button>
           <Button
-            variant={filtro === 'semana' ? 'default' : 'outline'}
-            onClick={() => setFiltro('semana')}
+            variant={filtro === "semana" ? "default" : "outline"}
+            onClick={() => setFiltro("semana")}
             size="sm"
           >
             7 dias
           </Button>
           <Button
-            variant={filtro === 'mes' ? 'default' : 'outline'}
-            onClick={() => setFiltro('mes')}
+            variant={filtro === "mes" ? "default" : "outline"}
+            onClick={() => setFiltro("mes")}
             size="sm"
           >
             30 dias
@@ -119,9 +126,14 @@ export default function RelatorioCaixa() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Total Movimentado</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Total Movimentado
+                </p>
                 <p className="text-2xl font-bold">
-                  R$ {totalMovimentado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  R${" "}
+                  {totalMovimentado.toLocaleString("pt-BR", {
+                    minimumFractionDigits: 2,
+                  })}
                 </p>
               </div>
               <DollarSign className="h-10 w-10 text-primary opacity-20" />
@@ -135,7 +147,10 @@ export default function RelatorioCaixa() {
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Sobras</p>
                 <p className="text-2xl font-bold text-green-600">
-                  +R$ {totalSobras.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  +R${" "}
+                  {totalSobras.toLocaleString("pt-BR", {
+                    minimumFractionDigits: 2,
+                  })}
                 </p>
               </div>
               <TrendingUp className="h-10 w-10 text-green-500 opacity-20" />
@@ -149,7 +164,10 @@ export default function RelatorioCaixa() {
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Faltas</p>
                 <p className="text-2xl font-bold text-red-600">
-                  -R$ {totalFaltas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  -R${" "}
+                  {totalFaltas.toLocaleString("pt-BR", {
+                    minimumFractionDigits: 2,
+                  })}
                 </p>
               </div>
               <TrendingDown className="h-10 w-10 text-red-500 opacity-20" />
@@ -183,28 +201,38 @@ export default function RelatorioCaixa() {
                       <div className="flex items-center gap-3">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">
-                          {format(new Date(mov.fechado_em), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                          {format(
+                            new Date(mov.fechado_em),
+                            "dd/MM/yyyy 'às' HH:mm",
+                            { locale: ptBR },
+                          )}
                         </span>
                         <Badge variant="secondary" className="text-xs">
-                          {mov.user?.full_name || 'Usuário'}
+                          {mov.user?.full_name || "Usuário"}
                         </Badge>
                       </div>
 
                       <div className="grid grid-cols-3 gap-4 text-sm">
                         <div>
-                          <span className="text-muted-foreground">Inicial:</span>
+                          <span className="text-muted-foreground">
+                            Inicial:
+                          </span>
                           <span className="ml-2 font-medium">
                             R$ {mov.valor_inicial.toFixed(2)}
                           </span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Esperado:</span>
+                          <span className="text-muted-foreground">
+                            Esperado:
+                          </span>
                           <span className="ml-2 font-medium">
                             R$ {(mov.valor_esperado || 0).toFixed(2)}
                           </span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Contado:</span>
+                          <span className="text-muted-foreground">
+                            Contado:
+                          </span>
                           <span className="ml-2 font-medium">
                             R$ {(mov.valor_final || 0).toFixed(2)}
                           </span>
@@ -220,14 +248,15 @@ export default function RelatorioCaixa() {
 
                     <div className="flex items-center gap-3">
                       {hasDiferenca && (
-                        <Badge variant={diferenca > 0 ? 'success' : 'destructive'}>
-                          {diferenca > 0 ? '+' : ''}R$ {Math.abs(diferenca).toFixed(2)}
+                        <Badge
+                          variant={diferenca > 0 ? "success" : "destructive"}
+                        >
+                          {diferenca > 0 ? "+" : ""}R${" "}
+                          {Math.abs(diferenca).toFixed(2)}
                         </Badge>
                       )}
                       {!hasDiferenca && (
-                        <Badge variant="secondary">
-                          ✓ Conferido
-                        </Badge>
+                        <Badge variant="secondary">✓ Conferido</Badge>
                       )}
                     </div>
                   </div>

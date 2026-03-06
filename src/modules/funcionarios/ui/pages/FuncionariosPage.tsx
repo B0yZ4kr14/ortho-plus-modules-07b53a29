@@ -1,40 +1,48 @@
-import { useState } from 'react';
-import { useFuncionariosSupabase } from '@/modules/funcionarios/hooks/useFuncionariosSupabase';
-import { FuncionariosList } from '@/modules/funcionarios/components/FuncionariosList';
-import { FuncionarioForm } from '@/modules/funcionarios/components/FuncionarioForm';
-import { FuncionarioDetails } from '@/modules/funcionarios/components/FuncionarioDetails';
-import { Funcionario } from '@/modules/funcionarios/types/funcionario.types';
+import { useState } from "react";
+import { useFuncionarios } from "@/modules/funcionarios/hooks/useFuncionarios";
+import { FuncionariosList } from "@/modules/funcionarios/components/FuncionariosList";
+import { FuncionarioForm } from "@/modules/funcionarios/components/FuncionarioForm";
+import { FuncionarioDetails } from "@/modules/funcionarios/components/FuncionarioDetails";
+import { Funcionario } from "@/modules/funcionarios/types/funcionario.types";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Users } from 'lucide-react';
+} from "@/components/ui/dialog";
+import { Users } from "lucide-react";
 
-type ViewMode = 'list' | 'form' | 'details';
+type ViewMode = "list" | "form" | "details";
 
 export default function FuncionariosPage() {
-  const { funcionarios, loading, addFuncionario, updateFuncionario, deleteFuncionario } = useFuncionariosSupabase();
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [selectedFuncionario, setSelectedFuncionario] = useState<Funcionario | undefined>();
+  const {
+    funcionarios,
+    loading,
+    addFuncionario,
+    updateFuncionario,
+    deleteFuncionario,
+  } = useFuncionarios();
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [selectedFuncionario, setSelectedFuncionario] = useState<
+    Funcionario | undefined
+  >();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleAdd = () => {
     setSelectedFuncionario(undefined);
-    setViewMode('form');
+    setViewMode("form");
     setDialogOpen(true);
   };
 
   const handleEdit = (funcionario: Funcionario) => {
     setSelectedFuncionario(funcionario);
-    setViewMode('form');
+    setViewMode("form");
     setDialogOpen(true);
   };
 
   const handleView = (funcionario: Funcionario) => {
     setSelectedFuncionario(funcionario);
-    setViewMode('details');
+    setViewMode("details");
     setDialogOpen(true);
   };
 
@@ -94,15 +102,15 @@ export default function FuncionariosPage() {
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {viewMode === 'form'
+              {viewMode === "form"
                 ? selectedFuncionario
-                  ? 'Editar Funcionário'
-                  : 'Novo Funcionário'
-                : 'Detalhes do Funcionário'}
+                  ? "Editar Funcionário"
+                  : "Novo Funcionário"
+                : "Detalhes do Funcionário"}
             </DialogTitle>
           </DialogHeader>
 
-          {viewMode === 'form' && (
+          {viewMode === "form" && (
             <FuncionarioForm
               funcionario={selectedFuncionario}
               onSubmit={handleSubmit}
@@ -110,10 +118,10 @@ export default function FuncionariosPage() {
             />
           )}
 
-          {viewMode === 'details' && selectedFuncionario && (
+          {viewMode === "details" && selectedFuncionario && (
             <FuncionarioDetails
               funcionario={selectedFuncionario}
-              onEdit={() => setViewMode('form')}
+              onEdit={() => setViewMode("form")}
               onClose={handleCancel}
             />
           )}

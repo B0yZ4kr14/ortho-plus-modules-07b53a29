@@ -1,18 +1,45 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Plus, Clock, DollarSign, Tag, Globe, Lock, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import { TableFilter } from '@/components/shared/TableFilter';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Plus,
+  Clock,
+  DollarSign,
+  Tag,
+  Globe,
+  Lock,
+  Trash2,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { TableFilter } from "@/components/shared/TableFilter";
 
 interface ProcedimentoTemplate {
   id: string;
@@ -28,8 +55,8 @@ interface ProcedimentoTemplate {
 }
 
 export default function TemplatesProcedimentosPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -37,64 +64,52 @@ export default function TemplatesProcedimentosPage() {
 
   // Fetch templates
   const { data: templates = [], isLoading } = useQuery({
-    queryKey: ['procedimento-templates', categoryFilter],
+    queryKey: ["procedimento-templates", categoryFilter],
     queryFn: async () => {
-      let query = supabase
-        .from('procedimento_templates')
-        .select('*')
-        .order('nome');
-
-      if (categoryFilter !== 'all') {
-        query = query.eq('categoria', categoryFilter);
+      let url = "/rest/v1/procedimento_templates?order=nome.asc";
+      if (categoryFilter !== "all") {
+        url = `/rest/v1/procedimento_templates?categoria=eq.${categoryFilter}&order=nome.asc`;
       }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as ProcedimentoTemplate[];
+      const data = await apiClient.get<ProcedimentoTemplate[]>(url);
+      return data;
     },
   });
 
   // Delete template
   const deleteMutation = useMutation({
     mutationFn: async (templateId: string) => {
-      const { error } = await supabase
-        .from('procedimento_templates')
-        .delete()
-        .eq('id', templateId);
-      
-      if (error) throw error;
+      await apiClient.delete(
+        `/rest/v1/procedimento_templates?id=eq.${templateId}`,
+      );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['procedimento-templates'] });
+      queryClient.invalidateQueries({ queryKey: ["procedimento-templates"] });
       toast({
-        title: 'Template excluído',
-        description: 'O template foi removido com sucesso.',
+        title: "Template excluído",
+        description: "O template foi removido com sucesso.",
       });
     },
   });
 
-  const filteredTemplates = templates.filter(t =>
-    t.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.descricao?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTemplates = templates.filter(
+    (t) =>
+      t.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.descricao?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getCategoryBadge = (categoria: string) => {
     const colors: Record<string, string> = {
-      RESTAURACAO: 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
-      ENDODONTIA: 'bg-red-500/10 text-red-700 dark:text-red-400',
-      PROTESE: 'bg-purple-500/10 text-purple-700 dark:text-purple-400',
-      ORTODONTIA: 'bg-green-500/10 text-green-700 dark:text-green-400',
-      CIRURGIA: 'bg-orange-500/10 text-orange-700 dark:text-orange-400',
-      PERIODONTIA: 'bg-pink-500/10 text-pink-700 dark:text-pink-400',
-      ESTETICA: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400',
-      PREVENTIVA: 'bg-teal-500/10 text-teal-700 dark:text-teal-400',
+      RESTAURACAO: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
+      ENDODONTIA: "bg-red-500/10 text-red-700 dark:text-red-400",
+      PROTESE: "bg-purple-500/10 text-purple-700 dark:text-purple-400",
+      ORTODONTIA: "bg-green-500/10 text-green-700 dark:text-green-400",
+      CIRURGIA: "bg-orange-500/10 text-orange-700 dark:text-orange-400",
+      PERIODONTIA: "bg-pink-500/10 text-pink-700 dark:text-pink-400",
+      ESTETICA: "bg-cyan-500/10 text-cyan-700 dark:text-cyan-400",
+      PREVENTIVA: "bg-teal-500/10 text-teal-700 dark:text-teal-400",
     };
 
-    return (
-      <Badge className={colors[categoria] || ''}>
-        {categoria}
-      </Badge>
-    );
+    return <Badge className={colors[categoria] || ""}>{categoria}</Badge>;
   };
 
   return (
@@ -133,31 +148,33 @@ export default function TemplatesProcedimentosPage() {
         searchPlaceholder="Buscar templates..."
         filters={[
           {
-            label: 'Categoria',
+            label: "Categoria",
             value: categoryFilter,
             options: [
-              { label: 'Todas as categorias', value: 'all' },
-              { label: 'Restauração', value: 'RESTAURACAO' },
-              { label: 'Endodontia', value: 'ENDODONTIA' },
-              { label: 'Prótese', value: 'PROTESE' },
-              { label: 'Ortodontia', value: 'ORTODONTIA' },
-              { label: 'Cirurgia', value: 'CIRURGIA' },
-              { label: 'Periodontia', value: 'PERIODONTIA' },
-              { label: 'Estética', value: 'ESTETICA' },
-              { label: 'Preventiva', value: 'PREVENTIVA' },
+              { label: "Todas as categorias", value: "all" },
+              { label: "Restauração", value: "RESTAURACAO" },
+              { label: "Endodontia", value: "ENDODONTIA" },
+              { label: "Prótese", value: "PROTESE" },
+              { label: "Ortodontia", value: "ORTODONTIA" },
+              { label: "Cirurgia", value: "CIRURGIA" },
+              { label: "Periodontia", value: "PERIODONTIA" },
+              { label: "Estética", value: "ESTETICA" },
+              { label: "Preventiva", value: "PREVENTIVA" },
             ],
             onChange: setCategoryFilter,
           },
         ]}
         onClear={() => {
-          setSearchTerm('');
-          setCategoryFilter('all');
+          setSearchTerm("");
+          setCategoryFilter("all");
         }}
       />
 
       {/* Templates Grid */}
       {isLoading ? (
-        <div className="text-center py-8 text-muted-foreground">Carregando templates...</div>
+        <div className="text-center py-8 text-muted-foreground">
+          Carregando templates...
+        </div>
       ) : filteredTemplates.length === 0 ? (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
@@ -167,7 +184,10 @@ export default function TemplatesProcedimentosPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredTemplates.map((template) => (
-            <Card key={template.id} className="hover:shadow-lg transition-shadow">
+            <Card
+              key={template.id}
+              className="hover:shadow-lg transition-shadow"
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -240,9 +260,9 @@ function TemplateForm({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [formData, setFormData] = useState({
-    nome: '',
-    descricao: '',
-    categoria: 'RESTAURACAO',
+    nome: "",
+    descricao: "",
+    categoria: "RESTAURACAO",
     tempo_estimado_minutos: 30,
     valor_sugerido: 0,
     is_public: false,
@@ -250,11 +270,10 @@ function TemplateForm({ onClose }: { onClose: () => void }) {
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      if (!user?.id) throw new Error('Usuário não autenticado');
-      
-      const { error } = await supabase
-        .from('procedimento_templates')
-        .insert([{
+      if (!user?.id) throw new Error("Usuário não autenticado");
+
+      await apiClient.post("/rest/v1/procedimento_templates", [
+        {
           nome: data.nome,
           descricao: data.descricao,
           categoria: data.categoria,
@@ -264,15 +283,14 @@ function TemplateForm({ onClose }: { onClose: () => void }) {
           is_public: data.is_public,
           tags: [],
           created_by: user.id,
-        }]);
-      
-      if (error) throw error;
+        },
+      ]);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['procedimento-templates'] });
+      queryClient.invalidateQueries({ queryKey: ["procedimento-templates"] });
       toast({
-        title: 'Template criado',
-        description: 'O template foi salvo com sucesso.',
+        title: "Template criado",
+        description: "O template foi salvo com sucesso.",
       });
       onClose();
     },
@@ -300,7 +318,9 @@ function TemplateForm({ onClose }: { onClose: () => void }) {
         <Textarea
           id="descricao"
           value={formData.descricao}
-          onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, descricao: e.target.value })
+          }
           rows={3}
         />
       </div>
@@ -310,7 +330,9 @@ function TemplateForm({ onClose }: { onClose: () => void }) {
           <Label htmlFor="categoria">Categoria</Label>
           <Select
             value={formData.categoria}
-            onValueChange={(value) => setFormData({ ...formData, categoria: value })}
+            onValueChange={(value) =>
+              setFormData({ ...formData, categoria: value })
+            }
           >
             <SelectTrigger>
               <SelectValue />
@@ -335,7 +357,12 @@ function TemplateForm({ onClose }: { onClose: () => void }) {
             type="number"
             min="1"
             value={formData.tempo_estimado_minutos}
-            onChange={(e) => setFormData({ ...formData, tempo_estimado_minutos: parseInt(e.target.value) })}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                tempo_estimado_minutos: parseInt(e.target.value),
+              })
+            }
             required
           />
         </div>
@@ -349,7 +376,12 @@ function TemplateForm({ onClose }: { onClose: () => void }) {
           min="0"
           step="0.01"
           value={formData.valor_sugerido}
-          onChange={(e) => setFormData({ ...formData, valor_sugerido: parseFloat(e.target.value) })}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              valor_sugerido: parseFloat(e.target.value),
+            })
+          }
           required
         />
       </div>
@@ -359,7 +391,9 @@ function TemplateForm({ onClose }: { onClose: () => void }) {
           type="checkbox"
           id="is_public"
           checked={formData.is_public}
-          onChange={(e) => setFormData({ ...formData, is_public: e.target.checked })}
+          onChange={(e) =>
+            setFormData({ ...formData, is_public: e.target.checked })
+          }
           className="rounded"
         />
         <Label htmlFor="is_public" className="font-normal">
@@ -368,11 +402,20 @@ function TemplateForm({ onClose }: { onClose: () => void }) {
       </div>
 
       <div className="flex items-center gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onClose}
+          className="flex-1"
+        >
           Cancelar
         </Button>
-        <Button type="submit" disabled={createMutation.isPending} className="flex-1">
-          {createMutation.isPending ? 'Salvando...' : 'Criar Template'}
+        <Button
+          type="submit"
+          disabled={createMutation.isPending}
+          className="flex-1"
+        >
+          {createMutation.isPending ? "Salvando..." : "Criar Template"}
         </Button>
       </div>
     </form>

@@ -1,12 +1,35 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Loader2, Sparkles, CheckCircle2, Building, Stethoscope, Activity, Zap, Baby, Rocket } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import { useState, useEffect } from "react";
+import { apiClient } from "@/lib/api/apiClient";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Loader2,
+  Sparkles,
+  CheckCircle2,
+  Building,
+  Stethoscope,
+  Activity,
+  Zap,
+  Baby,
+  Rocket,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface Template {
   id: string;
@@ -40,55 +63,57 @@ export function ModuleTemplateSelector({ onApply }: { onApply?: () => void }) {
 
   const fetchTemplates = async () => {
     try {
-      const { data, error } = await supabase
-        .from('module_configuration_templates')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
+      const data = await apiClient.get<any[]>(
+        "/module_configuration_templates?is_active=eq.true&order=name",
+      );
 
-      if (error) throw error;
-      
       // Cast modules from Json to string[]
-      const processedTemplates = (data || []).map(template => ({
+      const processedTemplates = (data || []).map((template) => ({
         ...template,
-        modules: Array.isArray(template.modules) ? template.modules as string[] : [],
+        modules: Array.isArray(template.modules)
+          ? (template.modules as string[])
+          : [],
       }));
-      
+
       setTemplates(processedTemplates);
     } catch (error) {
-      console.error('Error fetching templates:', error);
+      console.error("Error fetching templates:", error);
       toast({
-        title: 'Erro',
-        description: 'Erro ao carregar templates',
-        variant: 'destructive',
+        title: "Erro",
+        description: "Erro ao carregar templates",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApplyTemplate = async (templateId: string, templateName: string) => {
+  const handleApplyTemplate = async (
+    templateId: string,
+    templateName: string,
+  ) => {
     setApplying(templateId);
     try {
-      const { data, error } = await supabase.functions.invoke('apply-module-template', {
-        body: { template_id: templateId },
-      });
-
-      if (error) throw error;
+      const data = await apiClient.post<any>(
+        "/functions/v1/apply-module-template",
+        {
+          template_id: templateId,
+        },
+      );
 
       toast({
-        title: 'Template aplicado!',
+        title: "Template aplicado!",
         description: `${data.activated} módulos ativados com sucesso.`,
       });
 
       setDialogOpen(false);
       onApply?.();
     } catch (error: any) {
-      console.error('Error applying template:', error);
+      console.error("Error applying template:", error);
       toast({
-        title: 'Erro ao aplicar template',
-        description: error.message || 'Tente novamente mais tarde.',
-        variant: 'destructive',
+        title: "Erro ao aplicar template",
+        description: error.message || "Tente novamente mais tarde.",
+        variant: "destructive",
       });
     } finally {
       setApplying(null);
@@ -118,8 +143,9 @@ export function ModuleTemplateSelector({ onApply }: { onApply?: () => void }) {
             Templates de Configuração por Especialidade
           </DialogTitle>
           <DialogDescription>
-            Escolha um template pré-configurado baseado na especialidade da sua clínica.
-            Todos os módulos necessários serão ativados automaticamente.
+            Escolha um template pré-configurado baseado na especialidade da sua
+            clínica. Todos os módulos necessários serão ativados
+            automaticamente.
           </DialogDescription>
         </DialogHeader>
 
@@ -133,8 +159,8 @@ export function ModuleTemplateSelector({ onApply }: { onApply?: () => void }) {
                 key={template.id}
                 variant="elevated"
                 className={cn(
-                  'transition-all hover:shadow-xl hover:-translate-y-1',
-                  isApplying && 'opacity-60'
+                  "transition-all hover:shadow-xl hover:-translate-y-1",
+                  isApplying && "opacity-60",
                 )}
               >
                 <CardHeader className="pb-3">
@@ -144,7 +170,9 @@ export function ModuleTemplateSelector({ onApply }: { onApply?: () => void }) {
                         <Icon className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-base">{template.name}</CardTitle>
+                        <CardTitle className="text-base">
+                          {template.name}
+                        </CardTitle>
                         <CardDescription className="text-xs mt-1">
                           {template.description}
                         </CardDescription>
@@ -160,7 +188,9 @@ export function ModuleTemplateSelector({ onApply }: { onApply?: () => void }) {
                   </div>
 
                   <Button
-                    onClick={() => handleApplyTemplate(template.id, template.name)}
+                    onClick={() =>
+                      handleApplyTemplate(template.id, template.name)
+                    }
                     disabled={isApplying}
                     className="w-full gap-2"
                   >

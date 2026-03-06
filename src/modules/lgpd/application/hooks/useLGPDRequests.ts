@@ -1,41 +1,33 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export const useLGPDRequests = () => {
   const { clinicId, user } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: requests = [], isLoading } = useQuery({
-    queryKey: ['lgpd-requests', clinicId],
+    queryKey: ["lgpd-requests", clinicId],
     queryFn: async () => {
       if (!clinicId) return [];
-      
-      const { data, error } = await supabase
-        .from('lgpd_data_requests')
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
+
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/lgpd_data_requests?clinic_id=eq.${clinicId}&order=created_at.desc`,
+      );
       return data;
     },
     enabled: !!clinicId,
   });
 
   const { data: consents = [], isLoading: isLoadingConsents } = useQuery({
-    queryKey: ['lgpd-consents', clinicId],
+    queryKey: ["lgpd-consents", clinicId],
     queryFn: async () => {
       if (!clinicId) return [];
-      
-      const { data, error } = await supabase
-        .from('lgpd_consents')
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
+
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/lgpd_consents?clinic_id=eq.${clinicId}&order=created_at.desc`,
+      );
       return data;
     },
     enabled: !!clinicId,
@@ -43,40 +35,41 @@ export const useLGPDRequests = () => {
 
   const createRequest = useMutation({
     mutationFn: async (requestData: any) => {
-      const { data, error } = await supabase
-        .from('lgpd_data_requests')
-        .insert([{ 
-          ...requestData, 
-          clinic_id: clinicId,
-          requested_by: user?.id,
-        }])
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
+      const response = await apiClient.post<any[]>(
+        "/rest/v1/lgpd_data_requests",
+        [
+          {
+            ...requestData,
+            clinic_id: clinicId,
+            requested_by: user?.id,
+          },
+        ],
+        {
+          headers: {
+            Prefer: "return=representation",
+          },
+        },
+      );
+      return response[0];
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lgpd-requests', clinicId] });
-      toast.success('Solicitação criada!');
+      queryClient.invalidateQueries({ queryKey: ["lgpd-requests", clinicId] });
+      toast.success("Solicitação criada!");
     },
     onError: () => {
-      toast.error('Erro ao criar solicitação');
+      toast.error("Erro ao criar solicitação");
     },
   });
 
   const updateRequestStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase
-        .from('lgpd_data_requests')
-        .update({ status })
-        .eq('id', id);
-      
-      if (error) throw error;
+      await apiClient.patch(`/rest/v1/lgpd_data_requests?id=eq.${id}`, {
+        status,
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lgpd-requests', clinicId] });
-      toast.success('Status atualizado!');
+      queryClient.invalidateQueries({ queryKey: ["lgpd-requests", clinicId] });
+      toast.success("Status atualizado!");
     },
   });
 

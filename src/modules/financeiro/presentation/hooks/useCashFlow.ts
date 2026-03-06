@@ -1,10 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { SupabaseTransactionRepository } from '../../infrastructure/repositories/SupabaseTransactionRepository';
-import { GetCashFlowUseCase, CashFlowResult } from '../../application/use-cases/GetCashFlowUseCase';
-import { Period } from '../../domain/valueObjects/Period';
+import { useAuth } from "@/contexts/AuthContext";
+import { useCallback, useEffect, useState } from "react";
+import {
+  CashFlowResult,
+  GetCashFlowUseCase,
+} from "../../application/use-cases/GetCashFlowUseCase";
+import { Period } from "../../domain/valueObjects/Period";
+import { ApiTransactionRepository } from "../../infrastructure/repositories/ApiTransactionRepository";
 
-const repository = new SupabaseTransactionRepository();
+const repository = new ApiTransactionRepository();
 const getCashFlowUseCase = new GetCashFlowUseCase(repository);
 
 export function useCashFlow(period?: Period) {
@@ -27,7 +30,11 @@ export function useCashFlow(period?: Period) {
       });
       setCashFlow(result);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Erro ao carregar fluxo de caixa'));
+      setError(
+        err instanceof Error
+          ? err
+          : new Error("Erro ao carregar fluxo de caixa"),
+      );
     } finally {
       setLoading(false);
     }

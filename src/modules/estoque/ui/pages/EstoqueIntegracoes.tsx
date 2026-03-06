@@ -1,23 +1,31 @@
-import { useState, useEffect, useCallback } from 'react';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { LoadingState } from '@/components/shared/LoadingState';
-import { apiClient } from '@/lib/apiClient';
-import { 
-  Webhook, 
-  TrendingUp, 
-  TrendingDown, 
-  Clock, 
-  CheckCircle, 
+import { useState, useEffect, useCallback } from "react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { LoadingState } from "@/components/shared/LoadingState";
+import { apiClient } from "@/lib/api/apiClient";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Webhook,
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  CheckCircle,
   XCircle,
   AlertCircle,
   Send,
-  RefreshCw
-} from 'lucide-react';
-import { formatDate } from '@/lib/utils/date.utils';
+  RefreshCw,
+} from "lucide-react";
+import { formatDate } from "@/lib/utils/date.utils";
 import {
   LineChart,
   Line,
@@ -31,8 +39,8 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
-} from 'recharts';
+  ResponsiveContainer,
+} from "recharts";
 
 export default function EstoqueIntegracoes() {
   const { toast } = useToast();
@@ -54,8 +62,8 @@ export default function EstoqueIntegracoes() {
       setLoading(true);
 
       const [fornecedoresData, pedidosData] = await Promise.all([
-        apiClient.get<any[]>('/estoque/fornecedores?api_enabled=true'),
-        apiClient.get<any[]>('/estoque/pedidos/automaticos?limit=100')
+        apiClient.get<any[]>("/estoque/fornecedores?api_enabled=true"),
+        apiClient.get<any[]>("/estoque/pedidos/automaticos?limit=100"),
       ]);
 
       setFornecedores(fornecedoresData || []);
@@ -63,9 +71,14 @@ export default function EstoqueIntegracoes() {
 
       // Calcular métricas
       const total = pedidosData?.length || 0;
-      const enviados = pedidosData?.filter((p: any) => p.status === 'enviado' || p.status === 'confirmado').length || 0;
-      const confirmados = pedidosData?.filter((p: any) => p.status === 'confirmado').length || 0;
-      const falhos = pedidosData?.filter((p: any) => p.status === 'cancelado').length || 0;
+      const enviados =
+        pedidosData?.filter(
+          (p: any) => p.status === "enviado" || p.status === "confirmado",
+        ).length || 0;
+      const confirmados =
+        pedidosData?.filter((p: any) => p.status === "confirmado").length || 0;
+      const falhos =
+        pedidosData?.filter((p: any) => p.status === "cancelado").length || 0;
       const taxaSucesso = total > 0 ? (confirmados / total) * 100 : 0;
 
       // Calcular tempo médio de resposta (mock - deveria vir dos logs)
@@ -79,13 +92,12 @@ export default function EstoqueIntegracoes() {
         taxaSucesso,
         tempoMedioResposta: tempoMedio,
       });
-
     } catch (error) {
-      console.error('Erro ao carregar dados:', error);
+      console.error("Erro ao carregar dados:", error);
       toast({
-        title: 'Erro ao carregar dados',
-        description: 'Não foi possível carregar as informações de integração',
-        variant: 'destructive',
+        title: "Erro ao carregar dados",
+        description: "Não foi possível carregar as informações de integração",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -96,27 +108,26 @@ export default function EstoqueIntegracoes() {
     loadData();
   }, [loadData]);
 
-
   const handleTestarAPI = async (fornecedorId: string) => {
     try {
       setTestingAPI(fornecedorId);
-      
+
       const data = await apiClient.post(`/estoque/integracoes/testar-api`, {
-        fornecedor_id: fornecedorId
+        fornecedor_id: fornecedorId,
       });
 
       toast({
-        title: 'Teste concluído',
-        description: data.message || 'Pedido de teste enviado com sucesso',
+        title: "Teste concluído",
+        description: data.message || "Pedido de teste enviado com sucesso",
       });
 
       loadData();
     } catch (error: any) {
-      console.error('Erro ao testar API:', error);
+      console.error("Erro ao testar API:", error);
       toast({
-        title: 'Erro no teste',
-        description: error.message || 'Não foi possível testar a API',
-        variant: 'destructive',
+        title: "Erro no teste",
+        description: error.message || "Não foi possível testar a API",
+        variant: "destructive",
       });
     } finally {
       setTestingAPI(null);
@@ -126,21 +137,26 @@ export default function EstoqueIntegracoes() {
   const handleDisparaPedidosAutomaticos = async () => {
     try {
       setLoading(true);
-      
-      const data = await apiClient.post('/estoque/pedidos/disparar-automaticos', {});
+
+      const data = await apiClient.post(
+        "/estoque/pedidos/disparar-automaticos",
+        {},
+      );
 
       toast({
-        title: 'Pedidos enviados',
-        description: data.message || 'Pedidos automáticos processados com sucesso',
+        title: "Pedidos enviados",
+        description:
+          data.message || "Pedidos automáticos processados com sucesso",
       });
 
       loadData();
     } catch (error: any) {
-      console.error('Erro ao disparar pedidos:', error);
+      console.error("Erro ao disparar pedidos:", error);
       toast({
-        title: 'Erro ao disparar pedidos',
-        description: error.message || 'Não foi possível processar os pedidos automáticos',
-        variant: 'destructive',
+        title: "Erro ao disparar pedidos",
+        description:
+          error.message || "Não foi possível processar os pedidos automáticos",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -149,19 +165,32 @@ export default function EstoqueIntegracoes() {
 
   // Dados para gráficos
   const statusData = [
-    { name: 'Enviados', value: metrics.pedidosEnviados, color: '#3b82f6' },
-    { name: 'Confirmados', value: metrics.pedidosConfirmados, color: '#10b981' },
-    { name: 'Falhos', value: metrics.pedidosFalhos, color: '#ef4444' },
+    { name: "Enviados", value: metrics.pedidosEnviados, color: "#3b82f6" },
+    {
+      name: "Confirmados",
+      value: metrics.pedidosConfirmados,
+      color: "#10b981",
+    },
+    { name: "Falhos", value: metrics.pedidosFalhos, color: "#ef4444" },
   ];
 
-  const historicoData = pedidos.slice(0, 10).map(p => ({
-    data: formatDate(p.created_at, 'dd/MM'),
-    enviados: p.status === 'enviado' || p.status === 'confirmado' ? 1 : 0,
-    falhos: p.status === 'cancelado' ? 1 : 0,
-  })).reverse();
+  const historicoData = pedidos
+    .slice(0, 10)
+    .map((p) => ({
+      data: formatDate(p.created_at, "dd/MM"),
+      enviados: p.status === "enviado" || p.status === "confirmado" ? 1 : 0,
+      falhos: p.status === "cancelado" ? 1 : 0,
+    }))
+    .reverse();
 
   if (loading && fornecedores.length === 0) {
-    return <LoadingState variant="spinner" size="lg" message="Carregando integrações..." />;
+    return (
+      <LoadingState
+        variant="spinner"
+        size="lg"
+        message="Carregando integrações..."
+      />
+    );
   }
 
   return (
@@ -179,7 +208,9 @@ export default function EstoqueIntegracoes() {
           Disparar Pedidos Automáticos
         </Button>
         <Button variant="outline" onClick={loadData} disabled={loading}>
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+          />
           Atualizar
         </Button>
       </div>
@@ -188,18 +219,24 @@ export default function EstoqueIntegracoes() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Pedidos</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total de Pedidos
+            </CardTitle>
             <Send className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.totalPedidos}</div>
-            <p className="text-xs text-muted-foreground mt-1">Pedidos automáticos enviados</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Pedidos automáticos enviados
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Taxa de Sucesso</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Taxa de Sucesso
+            </CardTitle>
             {metrics.taxaSucesso >= 80 ? (
               <TrendingUp className="h-4 w-4 text-green-500" />
             ) : (
@@ -207,7 +244,9 @@ export default function EstoqueIntegracoes() {
             )}
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.taxaSucesso.toFixed(1)}%</div>
+            <div className="text-2xl font-bold">
+              {metrics.taxaSucesso.toFixed(1)}%
+            </div>
             <p className="text-xs text-muted-foreground mt-1">
               {metrics.pedidosConfirmados} de {metrics.totalPedidos} confirmados
             </p>
@@ -220,18 +259,26 @@ export default function EstoqueIntegracoes() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.tempoMedioResposta}s</div>
-            <p className="text-xs text-muted-foreground mt-1">Tempo de resposta da API</p>
+            <div className="text-2xl font-bold">
+              {metrics.tempoMedioResposta}s
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Tempo de resposta da API
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pedidos Falhos</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Pedidos Falhos
+            </CardTitle>
             <XCircle className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-500">{metrics.pedidosFalhos}</div>
+            <div className="text-2xl font-bold text-red-500">
+              {metrics.pedidosFalhos}
+            </div>
             <p className="text-xs text-muted-foreground mt-1">Requer atenção</p>
           </CardContent>
         </Card>
@@ -293,7 +340,8 @@ export default function EstoqueIntegracoes() {
         <CardHeader>
           <CardTitle>Fornecedores com API Integrada</CardTitle>
           <CardDescription>
-            Status das integrações configuradas ({fornecedores.length} fornecedores)
+            Status das integrações configuradas ({fornecedores.length}{" "}
+            fornecedores)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -302,19 +350,22 @@ export default function EstoqueIntegracoes() {
               <div className="text-center py-8 text-muted-foreground">
                 <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Nenhum fornecedor com API configurada</p>
-                <p className="text-sm mt-2">Configure APIs de fornecedores em Cadastros</p>
+                <p className="text-sm mt-2">
+                  Configure APIs de fornecedores em Cadastros
+                </p>
               </div>
             ) : (
               fornecedores.map((fornecedor) => {
                 const pedidosFornecedor = pedidos.filter(
-                  p => p.estoque_fornecedores?.id === fornecedor.id
+                  (p) => p.estoque_fornecedores?.id === fornecedor.id,
                 );
                 const sucessoFornecedor = pedidosFornecedor.filter(
-                  p => p.status === 'confirmado'
+                  (p) => p.status === "confirmado",
                 ).length;
-                const taxaSucessoFornecedor = pedidosFornecedor.length > 0
-                  ? (sucessoFornecedor / pedidosFornecedor.length) * 100
-                  : 0;
+                const taxaSucessoFornecedor =
+                  pedidosFornecedor.length > 0
+                    ? (sucessoFornecedor / pedidosFornecedor.length) * 100
+                    : 0;
 
                 return (
                   <div
@@ -325,30 +376,45 @@ export default function EstoqueIntegracoes() {
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="font-semibold">{fornecedor.nome}</h3>
                         {fornecedor.api_enabled && (
-                          <Badge variant="outline" className="bg-green-500/10 text-green-600">
+                          <Badge
+                            variant="outline"
+                            className="bg-green-500/10 text-green-600"
+                          >
                             <CheckCircle className="h-3 w-3 mr-1" />
                             API Ativa
                           </Badge>
                         )}
                         {fornecedor.auto_order_enabled && (
-                          <Badge variant="outline" className="bg-blue-500/10 text-blue-600">
+                          <Badge
+                            variant="outline"
+                            className="bg-blue-500/10 text-blue-600"
+                          >
                             Pedidos Automáticos
                           </Badge>
                         )}
                       </div>
                       <div className="grid grid-cols-3 gap-4 text-sm text-muted-foreground">
                         <div>
-                          <span className="font-medium">Endpoint:</span>{' '}
-                          <span className="text-xs">{fornecedor.api_endpoint || 'Não configurado'}</span>
+                          <span className="font-medium">Endpoint:</span>{" "}
+                          <span className="text-xs">
+                            {fornecedor.api_endpoint || "Não configurado"}
+                          </span>
                         </div>
                         <div>
-                          <span className="font-medium">Auth:</span> {fornecedor.api_auth_type || 'none'}
+                          <span className="font-medium">Auth:</span>{" "}
+                          {fornecedor.api_auth_type || "none"}
                         </div>
                         <div>
-                          <span className="font-medium">Taxa Sucesso:</span>{' '}
-                          <span className={taxaSucessoFornecedor >= 80 ? 'text-green-600' : 'text-red-600'}>
+                          <span className="font-medium">Taxa Sucesso:</span>{" "}
+                          <span
+                            className={
+                              taxaSucessoFornecedor >= 80
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }
+                          >
                             {taxaSucessoFornecedor.toFixed(1)}%
-                          </span>{' '}
+                          </span>{" "}
                           ({sucessoFornecedor}/{pedidosFornecedor.length})
                         </div>
                       </div>
@@ -383,7 +449,9 @@ export default function EstoqueIntegracoes() {
       <Card>
         <CardHeader>
           <CardTitle>Histórico de Pedidos Recentes</CardTitle>
-          <CardDescription>Últimos pedidos automáticos processados</CardDescription>
+          <CardDescription>
+            Últimos pedidos automáticos processados
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -399,9 +467,9 @@ export default function EstoqueIntegracoes() {
                   className="flex items-center justify-between p-3 border rounded-lg"
                 >
                   <div className="flex items-center gap-4">
-                    {pedido.status === 'confirmado' ? (
+                    {pedido.status === "confirmado" ? (
                       <CheckCircle className="h-5 w-5 text-green-500" />
-                    ) : pedido.status === 'enviado' ? (
+                    ) : pedido.status === "enviado" ? (
                       <Clock className="h-5 w-5 text-blue-500" />
                     ) : (
                       <XCircle className="h-5 w-5 text-red-500" />
@@ -409,18 +477,19 @@ export default function EstoqueIntegracoes() {
                     <div>
                       <p className="font-medium">{pedido.numero_pedido}</p>
                       <p className="text-sm text-muted-foreground">
-                        {pedido.estoque_fornecedores?.nome} • {formatDate(pedido.created_at, 'dd/MM/yyyy HH:mm')}
+                        {pedido.estoque_fornecedores?.nome} •{" "}
+                        {formatDate(pedido.created_at, "dd/MM/yyyy HH:mm")}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
                     <Badge
                       variant={
-                        pedido.status === 'confirmado'
-                          ? 'default'
-                          : pedido.status === 'enviado'
-                          ? 'secondary'
-                          : 'destructive'
+                        pedido.status === "confirmado"
+                          ? "default"
+                          : pedido.status === "enviado"
+                            ? "secondary"
+                            : "destructive"
                       }
                     >
                       {pedido.status}

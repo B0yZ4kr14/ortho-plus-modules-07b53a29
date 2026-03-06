@@ -3,7 +3,7 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Package, Plus, Settings, Play } from 'lucide-react';
-import { useEstoqueSupabase } from '@/modules/estoque/hooks/useEstoqueSupabase';
+import { useEstoque } from '@/modules/estoque/hooks/useEstoque';
 import { PedidosList } from '@/modules/estoque/components/PedidosList';
 import { PedidoConfigForm } from '@/modules/estoque/components/PedidoConfigForm';
 import type { PedidoConfig } from '@/modules/estoque/types/estoque.types';
@@ -24,7 +24,7 @@ export default function EstoquePedidosPage() {
     updatePedidoStatus,
     gerarPedidosAutomaticos,
     loading,
-  } = useEstoqueSupabase();
+  } = useEstoque();
 
   const [showConfigForm, setShowConfigForm] = useState(false);
   const [selectedConfig, setSelectedConfig] = useState<PedidoConfig | undefined>();

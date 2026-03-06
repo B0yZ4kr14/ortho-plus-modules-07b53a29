@@ -1,98 +1,74 @@
-import { useState } from 'react';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CreditCard, Plus, Search, Filter, Download, TrendingDown, Calendar, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useState } from "react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  CreditCard,
+  Plus,
+  Search,
+  Filter,
+  Download,
+  TrendingDown,
+  Calendar,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+} from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
-interface ContaPagar {
-  id: string;
-  fornecedor: string;
-  categoria: string;
-  descricao: string;
-  valor: number;
-  vencimento: Date;
-  status: 'pendente' | 'pago' | 'atrasado' | 'agendado';
-  formaPagamento?: string;
-  dataPagamento?: Date;
-  documento?: string;
-  observacoes?: string;
-}
+import { useFinanceiro } from "@/modules/financeiro/application/hooks/useFinanceiro";
+import type { ContaPagar } from "@/modules/financeiro/types/financeiro-completo.types";
 
 export default function ContasPagar() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('todas');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("todas");
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Mock data
-  const contasPagar: ContaPagar[] = [
-    {
-      id: '1',
-      fornecedor: 'Dental Supply Co.',
-      categoria: 'Materiais Odontológicos',
-      descricao: 'Compra de materiais ortodônticos',
-      valor: 2500.00,
-      vencimento: new Date('2024-01-25'),
-      status: 'pendente',
-      documento: 'NF-001234',
-    },
-    {
-      id: '2',
-      fornecedor: 'CEMIG',
-      categoria: 'Contas Fixas',
-      descricao: 'Conta de energia elétrica',
-      valor: 850.00,
-      vencimento: new Date('2024-01-15'),
-      status: 'pago',
-      formaPagamento: 'Débito Automático',
-      dataPagamento: new Date('2024-01-15'),
-      documento: 'Conta-202401',
-    },
-    {
-      id: '3',
-      fornecedor: 'Lab Próteses XYZ',
-      categoria: 'Laboratório',
-      descricao: 'Próteses paciente João Silva',
-      valor: 1800.00,
-      vencimento: new Date('2024-01-12'),
-      status: 'atrasado',
-      documento: 'OS-5678',
-    },
-    {
-      id: '4',
-      fornecedor: 'Conselho Regional de Odontologia',
-      categoria: 'Taxas e Impostos',
-      descricao: 'Anuidade CRO 2024',
-      valor: 750.00,
-      vencimento: new Date('2024-02-28'),
-      status: 'agendado',
-    },
-    {
-      id: '5',
-      fornecedor: 'Receita Federal',
-      categoria: 'Taxas e Impostos',
-      descricao: 'DAS - Simples Nacional',
-      valor: 1350.00,
-      vencimento: new Date('2024-01-20'),
-      status: 'pendente',
-      documento: 'DAS-202401',
-    },
-  ];
+  const { contasPagar, loading } = useFinanceiro();
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { label: string; variant: 'success' | 'warning' | 'error' | 'secondary' }> = {
-      pago: { label: 'Pago', variant: 'success' },
-      pendente: { label: 'Pendente', variant: 'warning' },
-      atrasado: { label: 'Atrasado', variant: 'error' },
-      agendado: { label: 'Agendado', variant: 'secondary' },
+    const variants: Record<
+      string,
+      { label: string; variant: "success" | "warning" | "error" | "secondary" }
+    > = {
+      pago: { label: "Pago", variant: "success" },
+      pendente: { label: "Pendente", variant: "warning" },
+      atrasado: { label: "Atrasado", variant: "error" },
+      agendado: { label: "Agendado", variant: "secondary" },
     };
     const config = variants[status];
     return <Badge variant={config.variant}>{config.label}</Badge>;
@@ -100,28 +76,30 @@ export default function ContasPagar() {
 
   const getCategoryBadge = (categoria: string) => {
     const colors: Record<string, string> = {
-      'Materiais Odontológicos': 'bg-blue-500/10 text-blue-700 border-blue-500/20',
-      'Contas Fixas': 'bg-purple-500/10 text-purple-700 border-purple-500/20',
-      'Laboratório': 'bg-cyan-500/10 text-cyan-700 border-cyan-500/20',
-      'Taxas e Impostos': 'bg-orange-500/10 text-orange-700 border-orange-500/20',
+      "Materiais Odontológicos":
+        "bg-blue-500/10 text-blue-700 border-blue-500/20",
+      "Contas Fixas": "bg-purple-500/10 text-purple-700 border-purple-500/20",
+      Laboratório: "bg-cyan-500/10 text-cyan-700 border-cyan-500/20",
+      "Taxas e Impostos":
+        "bg-orange-500/10 text-orange-700 border-orange-500/20",
     };
     return (
-      <Badge variant="outline" className={colors[categoria] || ''}>
+      <Badge variant="outline" className={colors[categoria] || ""}>
         {categoria}
       </Badge>
     );
   };
 
   const totalPagar = contasPagar
-    .filter(c => c.status !== 'pago')
+    .filter((c) => c.status !== "pago")
     .reduce((sum, c) => sum + c.valor, 0);
 
   const totalAtrasado = contasPagar
-    .filter(c => c.status === 'atrasado')
+    .filter((c) => c.status === "atrasado")
     .reduce((sum, c) => sum + c.valor, 0);
 
   const totalPago = contasPagar
-    .filter(c => c.status === 'pago')
+    .filter((c) => c.status === "pago")
     .reduce((sum, c) => sum + c.valor, 0);
 
   return (
@@ -143,10 +121,14 @@ export default function ContasPagar() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-warning">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPagar)}
+              {new Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }).format(totalPagar)}
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              {contasPagar.filter(c => c.status !== 'pago').length} contas pendentes
+              {contasPagar.filter((c) => c.status !== "pago").length} contas
+              pendentes
             </p>
           </CardContent>
         </Card>
@@ -160,10 +142,14 @@ export default function ContasPagar() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-destructive">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalAtrasado)}
+              {new Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }).format(totalAtrasado)}
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              {contasPagar.filter(c => c.status === 'atrasado').length} contas vencidas
+              {contasPagar.filter((c) => c.status === "atrasado").length} contas
+              vencidas
             </p>
           </CardContent>
         </Card>
@@ -177,10 +163,14 @@ export default function ContasPagar() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-success">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPago)}
+              {new Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }).format(totalPago)}
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              {contasPagar.filter(c => c.status === 'pago').length} contas quitadas
+              {contasPagar.filter((c) => c.status === "pago").length} contas
+              quitadas
             </p>
           </CardContent>
         </Card>
@@ -246,10 +236,16 @@ export default function ContasPagar() {
                           <SelectValue placeholder="Selecione" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="materiais">Materiais Odontológicos</SelectItem>
+                          <SelectItem value="materiais">
+                            Materiais Odontológicos
+                          </SelectItem>
                           <SelectItem value="contas">Contas Fixas</SelectItem>
-                          <SelectItem value="laboratorio">Laboratório</SelectItem>
-                          <SelectItem value="impostos">Taxas e Impostos</SelectItem>
+                          <SelectItem value="laboratorio">
+                            Laboratório
+                          </SelectItem>
+                          <SelectItem value="impostos">
+                            Taxas e Impostos
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -263,7 +259,10 @@ export default function ContasPagar() {
                     </div>
                     <div className="col-span-2 space-y-2">
                       <Label htmlFor="descricao">Descrição</Label>
-                      <Input id="descricao" placeholder="Descrição da despesa" />
+                      <Input
+                        id="descricao"
+                        placeholder="Descrição da despesa"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="documento">Número do Documento</Label>
@@ -278,18 +277,28 @@ export default function ContasPagar() {
                         <SelectContent>
                           <SelectItem value="dinheiro">Dinheiro</SelectItem>
                           <SelectItem value="pix">PIX</SelectItem>
-                          <SelectItem value="transferencia">Transferência</SelectItem>
-                          <SelectItem value="debito">Débito Automático</SelectItem>
+                          <SelectItem value="transferencia">
+                            Transferência
+                          </SelectItem>
+                          <SelectItem value="debito">
+                            Débito Automático
+                          </SelectItem>
                           <SelectItem value="boleto">Boleto</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
                   <div className="flex justify-end gap-3">
-                    <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setDialogOpen(false)}
+                    >
                       Cancelar
                     </Button>
-                    <Button variant="elevated" onClick={() => setDialogOpen(false)}>
+                    <Button
+                      variant="elevated"
+                      onClick={() => setDialogOpen(false)}
+                    >
                       Salvar
                     </Button>
                   </div>
@@ -305,13 +314,15 @@ export default function ContasPagar() {
         <TabsList>
           <TabsTrigger value="todas">Todas ({contasPagar.length})</TabsTrigger>
           <TabsTrigger value="pendentes">
-            Pendentes ({contasPagar.filter(c => c.status === 'pendente').length})
+            Pendentes (
+            {contasPagar.filter((c) => c.status === "pendente").length})
           </TabsTrigger>
           <TabsTrigger value="atrasadas">
-            Atrasadas ({contasPagar.filter(c => c.status === 'atrasado').length})
+            Atrasadas (
+            {contasPagar.filter((c) => c.status === "atrasado").length})
           </TabsTrigger>
           <TabsTrigger value="pagas">
-            Pagas ({contasPagar.filter(c => c.status === 'pago').length})
+            Pagas ({contasPagar.filter((c) => c.status === "pago").length})
           </TabsTrigger>
         </TabsList>
 
@@ -331,22 +342,35 @@ export default function ContasPagar() {
               </TableHeader>
               <TableBody>
                 {contasPagar.map((conta) => (
-                  <TableRow key={conta.id}>
-                    <TableCell className="font-medium">{conta.fornecedor}</TableCell>
+                  <TableRow key={conta.id || Math.random().toString()}>
+                    <TableCell className="font-medium">
+                      {conta.fornecedor_nome}
+                    </TableCell>
                     <TableCell>{getCategoryBadge(conta.categoria)}</TableCell>
                     <TableCell>
                       {conta.descricao}
                       {conta.documento && (
-                        <div className="text-xs text-muted-foreground">Doc: {conta.documento}</div>
+                        <div className="text-xs text-muted-foreground">
+                          Doc: {conta.documento}
+                        </div>
                       )}
                     </TableCell>
                     <TableCell>
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(conta.valor)}
+                      {new Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      }).format(conta.valor)}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
-                        {format(conta.vencimento, 'dd/MM/yyyy', { locale: ptBR })}
+                        {conta.data_vencimento
+                          ? format(
+                              new Date(conta.data_vencimento),
+                              "dd/MM/yyyy",
+                              { locale: ptBR },
+                            )
+                          : "-"}
                       </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(conta.status)}</TableCell>

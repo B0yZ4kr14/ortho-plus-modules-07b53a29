@@ -1,6 +1,6 @@
-import { IEventHandler } from '@/core/domain/events/EventBus';
-import { DomainEvent } from '@/core/domain/events/DomainEvent';
-import { supabase } from '@/integrations/supabase/client';
+import { DomainEvent } from "@/core/domain/events/DomainEvent";
+import { IEventHandler } from "@/core/domain/events/EventBus";
+import { apiClient } from "@/lib/api/apiClient";
 
 /**
  * Handler that logs all domain events to audit_logs table
@@ -8,23 +8,17 @@ import { supabase } from '@/integrations/supabase/client';
 export class AuditLogHandler implements IEventHandler<DomainEvent> {
   async handle(event: DomainEvent): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('audit_logs')
-        .insert([{
-          action: event.eventName,
-          details: {
-            event_id: event.eventId,
-            occurred_on: event.occurredOn.toISOString(),
-            aggregate_id: event.aggregateId,
-            event_name: event.eventName,
-          },
-        }]);
-
-      if (error) {
-        console.error('Error logging event to audit_logs:', error);
-      }
+      await apiClient.post("/audit_logs", {
+        action: event.eventName,
+        details: {
+          event_id: event.eventId,
+          occurred_on: event.occurredOn.toISOString(),
+          aggregate_id: event.aggregateId,
+          event_name: event.eventName,
+        },
+      });
     } catch (err) {
-      console.error('Failed to log event:', err);
+      console.error("Failed to log event:", err);
     }
   }
 }

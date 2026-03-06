@@ -1,9 +1,37 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, TrendingUp, TrendingDown, Clock, Users, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useState, useEffect } from "react";
+import { apiClient } from "@/lib/api/apiClient";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Loader2,
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  Users,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 interface AnalyticsData {
   totalStarts: number;
@@ -23,7 +51,7 @@ interface AnalyticsData {
   }>;
 }
 
-const COLORS = ['#2dd4bf', '#14b8a6', '#0d9488', '#fbbf24', '#f59e0b'];
+const COLORS = ["#2dd4bf", "#14b8a6", "#0d9488", "#fbbf24", "#f59e0b"];
 
 export function OnboardingAnalyticsDashboard() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
@@ -36,31 +64,40 @@ export function OnboardingAnalyticsDashboard() {
   const fetchAnalytics = async () => {
     try {
       // Buscar todos os eventos de onboarding da clínica
-      const { data: events, error } = await supabase
-        .from('onboarding_analytics')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const events = await apiClient.get<any[]>(
+        "/onboarding_analytics?order=created_at.desc",
+      );
 
       // Processar dados
-      const starts = events?.filter(e => e.event_type === 'started').length || 0;
-      const completions = events?.filter(e => e.event_type === 'completed').length || 0;
-      const abandoned = events?.filter(e => e.event_type === 'abandoned').length || 0;
+      const starts =
+        events?.filter((e) => e.event_type === "started").length || 0;
+      const completions =
+        events?.filter((e) => e.event_type === "completed").length || 0;
+      const abandoned =
+        events?.filter((e) => e.event_type === "abandoned").length || 0;
 
       // Calcular taxa de conclusão
       const completionRate = starts > 0 ? (completions / starts) * 100 : 0;
 
       // Calcular tempo médio
-      const completedSessions = events?.filter(e => e.event_type === 'completed') || [];
-      const totalTime = completedSessions.reduce((sum, e) => sum + (e.time_spent_seconds || 0), 0);
-      const averageTime = completedSessions.length > 0 ? totalTime / completedSessions.length : 0;
+      const completedSessions =
+        events?.filter((e) => e.event_type === "completed") || [];
+      const totalTime = completedSessions.reduce(
+        (sum, e) => sum + (e.time_spent_seconds || 0),
+        0,
+      );
+      const averageTime =
+        completedSessions.length > 0 ? totalTime / completedSessions.length : 0;
 
       // Estatísticas por passo
-      const stepEvents = events?.filter(e => e.event_type === 'step_completed') || [];
-      const stepStatsMap = new Map<string, { count: number; totalTime: number }>();
+      const stepEvents =
+        events?.filter((e) => e.event_type === "step_completed") || [];
+      const stepStatsMap = new Map<
+        string,
+        { count: number; totalTime: number }
+      >();
 
-      stepEvents.forEach(event => {
+      stepEvents.forEach((event) => {
         const key = `${event.step_number}-${event.step_name}`;
         const existing = stepStatsMap.get(key) || { count: 0, totalTime: 0 };
         stepStatsMap.set(key, {
@@ -69,30 +106,38 @@ export function OnboardingAnalyticsDashboard() {
         });
       });
 
-      const stepStats = Array.from(stepStatsMap.entries()).map(([key, value]) => {
-        const [stepNumber, stepName] = key.split('-');
-        return {
-          step_name: stepName,
-          step_number: parseInt(stepNumber),
-          completions: value.count,
-          average_time: value.totalTime / value.count,
-        };
-      }).sort((a, b) => a.step_number - b.step_number);
+      const stepStats = Array.from(stepStatsMap.entries())
+        .map(([key, value]) => {
+          const [stepNumber, stepName] = key.split("-");
+          return {
+            step_name: stepName,
+            step_number: parseInt(stepNumber),
+            completions: value.count,
+            average_time: value.totalTime / value.count,
+          };
+        })
+        .sort((a, b) => a.step_number - b.step_number);
 
       // Drop-off por passo
-      const abandonedEvents = events?.filter(e => e.event_type === 'abandoned') || [];
+      const abandonedEvents =
+        events?.filter((e) => e.event_type === "abandoned") || [];
       const dropOffMap = new Map<string, number>();
 
-      abandonedEvents.forEach(event => {
+      abandonedEvents.forEach((event) => {
         if (event.step_name) {
-          dropOffMap.set(event.step_name, (dropOffMap.get(event.step_name) || 0) + 1);
+          dropOffMap.set(
+            event.step_name,
+            (dropOffMap.get(event.step_name) || 0) + 1,
+          );
         }
       });
 
-      const dropOffByStep = Array.from(dropOffMap.entries()).map(([step_name, abandoned]) => ({
-        step_name,
-        abandoned,
-      }));
+      const dropOffByStep = Array.from(dropOffMap.entries()).map(
+        ([step_name, abandoned]) => ({
+          step_name,
+          abandoned,
+        }),
+      );
 
       setAnalytics({
         totalStarts: starts,
@@ -104,7 +149,7 @@ export function OnboardingAnalyticsDashboard() {
         dropOffByStep,
       });
     } catch (error) {
-      console.error('Error fetching analytics:', error);
+      console.error("Error fetching analytics:", error);
     } finally {
       setLoading(false);
     }
@@ -158,7 +203,9 @@ export function OnboardingAnalyticsDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-success">{analytics.totalCompletions}</div>
+            <div className="text-3xl font-bold text-success">
+              {analytics.totalCompletions}
+            </div>
           </CardContent>
         </Card>
 
@@ -171,7 +218,9 @@ export function OnboardingAnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold">{analytics.completionRate.toFixed(1)}%</span>
+              <span className="text-3xl font-bold">
+                {analytics.completionRate.toFixed(1)}%
+              </span>
               {analytics.completionRate >= 70 ? (
                 <Badge variant="success">Excelente</Badge>
               ) : analytics.completionRate >= 50 ? (
@@ -191,7 +240,9 @@ export function OnboardingAnalyticsDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{formatTime(analytics.averageTimeSeconds)}</div>
+            <div className="text-3xl font-bold">
+              {formatTime(analytics.averageTimeSeconds)}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -202,13 +253,20 @@ export function OnboardingAnalyticsDashboard() {
         <Card variant="elevated">
           <CardHeader>
             <CardTitle>Conclusão por Passo</CardTitle>
-            <CardDescription>Quantos usuários concluíram cada etapa</CardDescription>
+            <CardDescription>
+              Quantos usuários concluíram cada etapa
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={analytics.stepStats}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="step_name" angle={-45} textAnchor="end" height={100} />
+                <XAxis
+                  dataKey="step_name"
+                  angle={-45}
+                  textAnchor="end"
+                  height={100}
+                />
                 <YAxis />
                 <Tooltip />
                 <Legend />
@@ -222,20 +280,27 @@ export function OnboardingAnalyticsDashboard() {
         <Card variant="elevated">
           <CardHeader>
             <CardTitle>Tempo Médio por Passo</CardTitle>
-            <CardDescription>Tempo gasto em cada etapa do onboarding</CardDescription>
+            <CardDescription>
+              Tempo gasto em cada etapa do onboarding
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={analytics.stepStats}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="step_name" angle={-45} textAnchor="end" height={100} />
+                <XAxis
+                  dataKey="step_name"
+                  angle={-45}
+                  textAnchor="end"
+                  height={100}
+                />
                 <YAxis />
                 <Tooltip formatter={(value: number) => formatTime(value)} />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="average_time" 
-                  stroke="#14b8a6" 
+                <Line
+                  type="monotone"
+                  dataKey="average_time"
+                  stroke="#14b8a6"
                   strokeWidth={2}
                   name="Tempo Médio"
                 />

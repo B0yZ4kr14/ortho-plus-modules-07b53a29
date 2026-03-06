@@ -1,11 +1,17 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { FileText, Plus } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { FileText, Plus } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface PEPTabProps {
   patientId: string;
@@ -13,17 +19,14 @@ interface PEPTabProps {
 
 export function PEPTab({ patientId }: PEPTabProps) {
   const { data: prontuarios, isLoading } = useQuery({
-    queryKey: ['prontuarios', patientId],
+    queryKey: ["prontuarios", patientId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('prontuarios')
-        .select('*')
-        .eq('patient_id', patientId)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
-    }
+      const response = await apiClient.get(
+        `/pep/prontuarios/patient/${patientId}`,
+      );
+      // Assuming response.data comes sorted or we could sort it here
+      return response.data;
+    },
   });
 
   if (isLoading) {
@@ -34,7 +37,9 @@ export function PEPTab({ patientId }: PEPTabProps) {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Prontuário Eletrônico do Paciente</h2>
+          <h2 className="text-2xl font-bold">
+            Prontuário Eletrônico do Paciente
+          </h2>
           <p className="text-muted-foreground">Histórico clínico e evolução</p>
         </div>
         <Button>
@@ -50,7 +55,11 @@ export function PEPTab({ patientId }: PEPTabProps) {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5" />
-                  {format(new Date(prontuario.created_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}
+                  {format(
+                    new Date(prontuario.created_at),
+                    "dd 'de' MMMM 'de' yyyy 'às' HH:mm",
+                    { locale: ptBR },
+                  )}
                 </CardTitle>
                 <CardDescription>
                   Prontuário do Paciente: {prontuario.patient_name}

@@ -1,13 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Orcamento, StatusOrcamento } from '../../domain/entities/Orcamento';
-import { SupabaseOrcamentoRepository } from '../../infrastructure/repositories/SupabaseOrcamentoRepository';
-import { CreateOrcamentoUseCase } from '../../application/use-cases/CreateOrcamentoUseCase';
-import { ListOrcamentosUseCase } from '../../application/use-cases/ListOrcamentosUseCase';
-import { EnviarOrcamentoUseCase } from '../../application/use-cases/EnviarOrcamentoUseCase';
-import { AprovarOrcamentoUseCase } from '../../application/use-cases/AprovarOrcamentoUseCase';
+import { useAuth } from "@/contexts/AuthContext";
+import { useCallback, useEffect, useState } from "react";
+import { AprovarOrcamentoUseCase } from "../../application/use-cases/AprovarOrcamentoUseCase";
+import { CreateOrcamentoUseCase } from "../../application/use-cases/CreateOrcamentoUseCase";
+import { EnviarOrcamentoUseCase } from "../../application/use-cases/EnviarOrcamentoUseCase";
+import { ListOrcamentosUseCase } from "../../application/use-cases/ListOrcamentosUseCase";
+import { Orcamento, StatusOrcamento } from "../../domain/entities/Orcamento";
+import { OrcamentoRepositoryApi } from "../../infrastructure/repositories/OrcamentoRepositoryApi";
 
-const repository = new SupabaseOrcamentoRepository();
+const repository = new OrcamentoRepositoryApi();
 const createUseCase = new CreateOrcamentoUseCase(repository);
 const listUseCase = new ListOrcamentosUseCase(repository);
 const enviarUseCase = new EnviarOrcamentoUseCase(repository);
@@ -32,12 +32,14 @@ export function useOrcamentos() {
         });
         setOrcamentos(result.orcamentos);
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Erro ao carregar orçamentos'));
+        setError(
+          err instanceof Error ? err : new Error("Erro ao carregar orçamentos"),
+        );
       } finally {
         setLoading(false);
       }
     },
-    [clinicId, isPatient]
+    [clinicId, isPatient],
   );
 
   useEffect(() => {
@@ -57,7 +59,7 @@ export function useOrcamentos() {
       observacoes?: string;
     }) => {
       if (!clinicId || !user?.id || isPatient) {
-        throw new Error('Usuário não autenticado');
+        throw new Error("Usuário não autenticado");
       }
 
       await createUseCase.execute({
@@ -68,7 +70,7 @@ export function useOrcamentos() {
 
       await loadOrcamentos();
     },
-    [clinicId, user, isPatient, loadOrcamentos]
+    [clinicId, user, isPatient, loadOrcamentos],
   );
 
   const enviarOrcamento = useCallback(
@@ -76,16 +78,16 @@ export function useOrcamentos() {
       await enviarUseCase.execute({ orcamentoId });
       await loadOrcamentos();
     },
-    [loadOrcamentos]
+    [loadOrcamentos],
   );
 
   const aprovarOrcamento = useCallback(
     async (orcamentoId: string) => {
-      if (!user?.id) throw new Error('Usuário não autenticado');
+      if (!user?.id) throw new Error("Usuário não autenticado");
       await aprovarUseCase.execute({ orcamentoId, aprovadoPor: user.id });
       await loadOrcamentos();
     },
-    [user, loadOrcamentos]
+    [user, loadOrcamentos],
   );
 
   // Análises

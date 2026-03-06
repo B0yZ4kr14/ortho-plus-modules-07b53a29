@@ -1,10 +1,17 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, DollarSign, FileText, MessageSquare, Stethoscope, Activity } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Calendar,
+  DollarSign,
+  FileText,
+  MessageSquare,
+  Stethoscope,
+  Activity,
+} from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface TimelineTabProps {
   patientId: string;
@@ -13,7 +20,7 @@ interface TimelineTabProps {
 interface TimelineEvent {
   id: string;
   date: string;
-  type: 'consulta' | 'pagamento' | 'prontuario' | 'status_change' | 'budget';
+  type: "consulta" | "pagamento" | "prontuario" | "status_change" | "budget";
   title: string;
   description: string;
   metadata?: Record<string, any>;
@@ -21,83 +28,27 @@ interface TimelineEvent {
 
 export function TimelineTab({ patientId }: TimelineTabProps) {
   const { data: events, isLoading } = useQuery({
-    queryKey: ['patient-timeline', patientId],
+    queryKey: ["patient-timeline", patientId],
     queryFn: async () => {
-      // Buscar dados de múltiplas tabelas e consolidar em timeline
-      const [appointments, budgets, prontuarios] = await Promise.all([
-        supabase
-          .from('appointments')
-          .select('*')
-          .eq('patient_id', patientId)
-          .order('start_time', { ascending: false })
-          .limit(10),
-        supabase
-          .from('budgets')
-          .select('*')
-          .eq('patient_id', patientId)
-          .order('created_at', { ascending: false })
-          .limit(10),
-        supabase
-          .from('prontuarios')
-          .select('*')
-          .eq('patient_id', patientId)
-          .order('created_at', { ascending: false })
-          .limit(10)
-      ]);
-
-      const timeline: TimelineEvent[] = [];
-
-      // Adicionar consultas
-      appointments.data?.forEach(apt => {
-        timeline.push({
-          id: apt.id,
-          date: apt.start_time,
-          type: 'consulta',
-          title: 'Consulta Agendada',
-          description: apt.title || 'Consulta odontológica'
-        });
-      });
-
-      // Adicionar orçamentos
-      budgets.data?.forEach(budget => {
-        timeline.push({
-          id: budget.id,
-          date: budget.created_at,
-          type: 'budget',
-          title: `Orçamento ${budget.numero_orcamento}`,
-          description: `${budget.titulo} - R$ ${budget.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-        });
-      });
-
-      // Adicionar prontuários
-      prontuarios.data?.forEach(pep => {
-        timeline.push({
-          id: pep.id,
-          date: pep.created_at,
-          type: 'prontuario',
-          title: 'Evolução Clínica',
-          description: `Registro de prontuário - Paciente: ${pep.patient_name}`
-        });
-      });
-
-      // Ordenar por data (mais recente primeiro)
-      return timeline.sort((a, b) => 
-        new Date(b.date).getTime() - new Date(a.date).getTime()
+      // Fetch timeline data from the backend
+      const data = await apiClient.get<TimelineEvent[]>(
+        `/pacientes/${patientId}/timeline`,
       );
-    }
+      return data || [];
+    },
   });
 
   const getIconForType = (type: string) => {
     switch (type) {
-      case 'consulta':
+      case "consulta":
         return <Stethoscope className="h-5 w-5" />;
-      case 'pagamento':
+      case "pagamento":
         return <DollarSign className="h-5 w-5" />;
-      case 'prontuario':
+      case "prontuario":
         return <FileText className="h-5 w-5" />;
-      case 'status_change':
+      case "status_change":
         return <Activity className="h-5 w-5" />;
-      case 'budget':
+      case "budget":
         return <FileText className="h-5 w-5" />;
       default:
         return <Calendar className="h-5 w-5" />;
@@ -106,18 +57,18 @@ export function TimelineTab({ patientId }: TimelineTabProps) {
 
   const getColorForType = (type: string) => {
     switch (type) {
-      case 'consulta':
-        return 'text-blue-500 bg-blue-500/10';
-      case 'pagamento':
-        return 'text-green-500 bg-green-500/10';
-      case 'prontuario':
-        return 'text-purple-500 bg-purple-500/10';
-      case 'status_change':
-        return 'text-orange-500 bg-orange-500/10';
-      case 'budget':
-        return 'text-yellow-500 bg-yellow-500/10';
+      case "consulta":
+        return "text-blue-500 bg-blue-500/10";
+      case "pagamento":
+        return "text-green-500 bg-green-500/10";
+      case "prontuario":
+        return "text-purple-500 bg-purple-500/10";
+      case "status_change":
+        return "text-orange-500 bg-orange-500/10";
+      case "budget":
+        return "text-yellow-500 bg-yellow-500/10";
       default:
-        return 'text-gray-500 bg-gray-500/10';
+        return "text-gray-500 bg-gray-500/10";
     }
   };
 
@@ -129,7 +80,9 @@ export function TimelineTab({ patientId }: TimelineTabProps) {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold">Timeline do Paciente</h2>
-        <p className="text-muted-foreground">Histórico completo de interações e eventos</p>
+        <p className="text-muted-foreground">
+          Histórico completo de interações e eventos
+        </p>
       </div>
 
       {events && events.length > 0 ? (
@@ -139,7 +92,9 @@ export function TimelineTab({ patientId }: TimelineTabProps) {
               <CardContent className="pt-6">
                 <div className="flex gap-4">
                   <div className="flex-shrink-0">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${getColorForType(event.type)}`}>
+                    <div
+                      className={`w-12 h-12 rounded-full flex items-center justify-center ${getColorForType(event.type)}`}
+                    >
                       {getIconForType(event.type)}
                     </div>
                   </div>
@@ -147,9 +102,15 @@ export function TimelineTab({ patientId }: TimelineTabProps) {
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="font-semibold">{event.title}</p>
-                        <p className="text-sm text-muted-foreground">{event.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {event.description}
+                        </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {format(new Date(event.date), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}
+                          {format(
+                            new Date(event.date),
+                            "dd 'de' MMMM 'de' yyyy 'às' HH:mm",
+                            { locale: ptBR },
+                          )}
                         </p>
                       </div>
                       <Badge variant="outline" className="capitalize">

@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useEstoqueSupabase } from '@/modules/estoque/hooks/useEstoqueSupabase';
+import { useEstoque } from '@/modules/estoque/hooks/useEstoque';
 import { FileDown, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
@@ -20,7 +20,7 @@ type ReportType = 'movimentacoes' | 'produtos-fornecedor' | 'valor-inventario' |
 type ReportFormat = 'pdf' | 'excel';
 
 export function EstoqueRelatorios() {
-  const { produtos, movimentacoes, requisicoes, fornecedores, categorias } = useEstoqueSupabase();
+  const { produtos, movimentacoes, requisicoes, fornecedores, categorias } = useEstoque();
   const [reportType, setReportType] = useState<ReportType>('movimentacoes');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');

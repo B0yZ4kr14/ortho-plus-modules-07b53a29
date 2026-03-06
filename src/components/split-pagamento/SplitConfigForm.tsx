@@ -1,25 +1,45 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useSplitSupabase } from "@/modules/split-pagamento/hooks/useSplitSupabase";
+import { useSplit } from "@/modules/split-pagamento/hooks/useSplit";
 
-const splitConfigSchema = z.object({
-  dentist_id: z.string().uuid("Selecione um dentista válido"),
-  procedimento_id: z.string().uuid("Selecione um procedimento").optional().nullable(),
-  percentual_dentista: z.number().min(0).max(100),
-  percentual_clinica: z.number().min(0).max(100),
-  tipo_split: z.enum(["PROCEDIMENTO", "GLOBAL"]),
-  ativo: z.boolean()
-}).refine(data => data.percentual_dentista + data.percentual_clinica === 100, {
-  message: "A soma dos percentuais deve ser 100%",
-  path: ["percentual_clinica"]
-});
+const splitConfigSchema = z
+  .object({
+    dentist_id: z.string().uuid("Selecione um dentista válido"),
+    procedimento_id: z
+      .string()
+      .uuid("Selecione um procedimento")
+      .optional()
+      .nullable(),
+    percentual_dentista: z.number().min(0).max(100),
+    percentual_clinica: z.number().min(0).max(100),
+    tipo_split: z.enum(["PROCEDIMENTO", "GLOBAL"]),
+    ativo: z.boolean(),
+  })
+  .refine(
+    (data) => data.percentual_dentista + data.percentual_clinica === 100,
+    {
+      message: "A soma dos percentuais deve ser 100%",
+      path: ["percentual_clinica"],
+    },
+  );
 
 type SplitConfigFormData = z.infer<typeof splitConfigSchema>;
 
@@ -31,14 +51,14 @@ interface SplitConfigFormProps {
   editingConfig?: any;
 }
 
-export function SplitConfigForm({ 
-  open, 
-  onOpenChange, 
-  dentistas, 
+export function SplitConfigForm({
+  open,
+  onOpenChange,
+  dentistas,
   procedimentos,
-  editingConfig 
+  editingConfig,
 }: SplitConfigFormProps) {
-  const { createConfig, updateConfig } = useSplitSupabase();
+  const { createConfig, updateConfig } = useSplit();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<SplitConfigFormData>>({
     dentist_id: editingConfig?.dentist_id || "",
@@ -46,7 +66,7 @@ export function SplitConfigForm({
     percentual_dentista: editingConfig?.percentual_dentista || 50,
     percentual_clinica: editingConfig?.percentual_clinica || 50,
     tipo_split: editingConfig?.tipo_split || "PROCEDIMENTO",
-    ativo: editingConfig?.ativo ?? true
+    ativo: editingConfig?.ativo ?? true,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,7 +77,7 @@ export function SplitConfigForm({
       const validated = splitConfigSchema.parse({
         ...formData,
         percentual_dentista: Number(formData.percentual_dentista),
-        percentual_clinica: Number(formData.percentual_clinica)
+        percentual_clinica: Number(formData.percentual_clinica),
       });
 
       if (editingConfig) {
@@ -73,7 +93,7 @@ export function SplitConfigForm({
         percentual_dentista: 50,
         percentual_clinica: 50,
         tipo_split: "PROCEDIMENTO",
-        ativo: true
+        ativo: true,
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -90,7 +110,7 @@ export function SplitConfigForm({
     setFormData({
       ...formData,
       percentual_dentista: value,
-      percentual_clinica: 100 - value
+      percentual_clinica: 100 - value,
     });
   };
 
@@ -109,7 +129,9 @@ export function SplitConfigForm({
               <Label htmlFor="dentist">Dentista *</Label>
               <Select
                 value={formData.dentist_id}
-                onValueChange={(value) => setFormData({ ...formData, dentist_id: value })}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, dentist_id: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o dentista" />
@@ -128,7 +150,7 @@ export function SplitConfigForm({
               <Label htmlFor="tipo_split">Tipo de Split *</Label>
               <Select
                 value={formData.tipo_split}
-                onValueChange={(value: "PROCEDIMENTO" | "GLOBAL") => 
+                onValueChange={(value: "PROCEDIMENTO" | "GLOBAL") =>
                   setFormData({ ...formData, tipo_split: value })
                 }
               >
@@ -148,7 +170,9 @@ export function SplitConfigForm({
               <Label htmlFor="procedimento">Procedimento *</Label>
               <Select
                 value={formData.procedimento_id || ""}
-                onValueChange={(value) => setFormData({ ...formData, procedimento_id: value })}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, procedimento_id: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o procedimento" />
@@ -166,20 +190,26 @@ export function SplitConfigForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="percentual_dentista">Percentual Dentista (%) *</Label>
+              <Label htmlFor="percentual_dentista">
+                Percentual Dentista (%) *
+              </Label>
               <Input
                 id="percentual_dentista"
                 type="number"
                 min="0"
                 max="100"
                 value={formData.percentual_dentista}
-                onChange={(e) => handlePercentualDentistaChange(Number(e.target.value))}
+                onChange={(e) =>
+                  handlePercentualDentistaChange(Number(e.target.value))
+                }
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="percentual_clinica">Percentual Clínica (%) *</Label>
+              <Label htmlFor="percentual_clinica">
+                Percentual Clínica (%) *
+              </Label>
               <Input
                 id="percentual_clinica"
                 type="number"
@@ -196,7 +226,9 @@ export function SplitConfigForm({
             <Switch
               id="ativo"
               checked={formData.ativo}
-              onCheckedChange={(checked) => setFormData({ ...formData, ativo: checked })}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, ativo: checked })
+              }
             />
             <Label htmlFor="ativo">Configuração Ativa</Label>
           </div>

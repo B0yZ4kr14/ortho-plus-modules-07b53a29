@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useInventarioSupabase } from '@/modules/estoque/hooks/useInventarioSupabase';
+import { useInventario } from '@/modules/estoque/hooks/useInventario';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,7 +39,7 @@ export default function EstoqueInventario() {
     addInventario,
     updateInventario,
     deleteInventario,
-  } = useInventarioSupabase();
+  } = useInventario();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');

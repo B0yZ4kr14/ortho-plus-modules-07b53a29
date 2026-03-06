@@ -1,18 +1,18 @@
 /**
  * Patient - Aggregate Root do módulo PACIENTES
- * 
+ *
  * Representa a entidade principal do domínio de pacientes,
  * encapsulando dados pessoais, comerciais (CRM) e status.
  */
 
-import { PatientStatus } from '../value-objects/PatientStatus';
-import { DadosComerciaisVO } from '../value-objects/DadosComerciaisVO';
-import { DomainEvent } from '@/shared/events/EventBus';
+import { DomainEvent } from "@/shared/events/EventBus";
+import { DadosComerciaisVO } from "../value-objects/DadosComerciaisVO";
+import { PatientStatus } from "../value-objects/PatientStatus";
 
 export interface PatientProps {
   id: string;
   clinicId: string;
-  
+
   // Dados pessoais
   fullName: string;
   cpf?: string;
@@ -22,7 +22,7 @@ export interface PatientProps {
   email?: string;
   phone?: string;
   mobile?: string;
-  
+
   // Endereço
   addressStreet?: string;
   addressNumber?: string;
@@ -31,16 +31,19 @@ export interface PatientProps {
   addressCity?: string;
   addressState?: string;
   addressZipcode?: string;
-  
+
   // Status
   status: PatientStatus;
-  
+
   // Dados comerciais
   dadosComerciais?: DadosComerciaisVO;
-  
+
   // Observações
   notes?: string;
-  
+  totalDebt?: number;
+  totalPaid?: number;
+  paymentStatus?: string;
+
   // Metadados
   isActive: boolean;
   createdAt: Date;
@@ -60,21 +63,21 @@ export class Patient {
 
   private validate(): void {
     if (!this.props.fullName || this.props.fullName.trim().length < 3) {
-      throw new Error('Nome completo deve ter pelo menos 3 caracteres');
+      throw new Error("Nome completo deve ter pelo menos 3 caracteres");
     }
 
     if (!this.props.clinicId) {
-      throw new Error('Clínica é obrigatória');
+      throw new Error("Clínica é obrigatória");
     }
 
     // Validação de CPF (se fornecido)
     if (this.props.cpf && !this.isValidCPF(this.props.cpf)) {
-      throw new Error('CPF inválido');
+      throw new Error("CPF inválido");
     }
 
     // Validação de email (se fornecido)
     if (this.props.email && !this.isValidEmail(this.props.email)) {
-      throw new Error('Email inválido');
+      throw new Error("Email inválido");
     }
   }
 
@@ -115,14 +118,14 @@ export class Patient {
   alterarStatus(
     novoStatus: PatientStatus,
     reason: string,
-    changedBy: string
+    changedBy: string,
   ): void {
     const statusAnterior = this.props.status;
 
     // Validar transição de status
     if (!this.isValidStatusTransition(statusAnterior, novoStatus)) {
       throw new Error(
-        `Transição inválida: ${statusAnterior.code} -> ${novoStatus.code}`
+        `Transição inválida: ${statusAnterior.code} -> ${novoStatus.code}`,
       );
     }
 
@@ -133,9 +136,9 @@ export class Patient {
     // Emitir evento de domínio
     this.addDomainEvent({
       eventId: crypto.randomUUID(),
-      eventType: 'Pacientes.StatusAlterado',
+      eventType: "Pacientes.StatusAlterado",
       aggregateId: this.props.id,
-      aggregateType: 'Patient',
+      aggregateType: "Patient",
       payload: {
         patientId: this.props.id,
         patientName: this.props.fullName,
@@ -159,9 +162,9 @@ export class Patient {
 
     this.addDomainEvent({
       eventId: crypto.randomUUID(),
-      eventType: 'Pacientes.DadosComerciaisAtualizados',
+      eventType: "Pacientes.DadosComerciaisAtualizados",
       aggregateId: this.props.id,
-      aggregateType: 'Patient',
+      aggregateType: "Patient",
       payload: {
         patientId: this.props.id,
         campanhaId: dados.campanhaOrigemId,
@@ -176,10 +179,54 @@ export class Patient {
     });
   }
 
+  // Business logic: Atualizar dados pessoais e de contato
+  atualizarDadosPessoais(
+    dados: Partial<PatientProps>,
+    updatedBy: string,
+  ): void {
+    if (dados.fullName && dados.fullName.trim().length < 3) {
+      throw new Error("Nome completo deve ter pelo menos 3 caracteres");
+    }
+    if (dados.cpf && !this.isValidCPF(dados.cpf)) {
+      throw new Error("CPF inválido");
+    }
+    if (dados.email && !this.isValidEmail(dados.email)) {
+      throw new Error("Email inválido");
+    }
+
+    // Merge permitindo undefined mas respeitando tipagem
+    this.props = {
+      ...this.props,
+      ...dados,
+      id: this.props.id, // Protege o ID
+      clinicId: this.props.clinicId, // Protege a clínica associada
+      status: this.props.status, // Status só via método específico
+      dadosComerciais: this.props.dadosComerciais, // Dados comerciais via método específico
+      updatedAt: new Date(),
+      updatedBy,
+    };
+
+    this.addDomainEvent({
+      eventId: crypto.randomUUID(),
+      eventType: "Pacientes.DadosPessoaisAtualizados",
+      aggregateId: this.props.id,
+      aggregateType: "Patient",
+      payload: {
+        patientId: this.props.id,
+        patientName: this.props.fullName,
+      },
+      metadata: {
+        userId: updatedBy,
+        clinicId: this.props.clinicId,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  }
+
   // Business logic: Inativar paciente
   inativar(reason: string, inactivatedBy: string): void {
     if (!this.props.isActive) {
-      throw new Error('Paciente já está inativo');
+      throw new Error("Paciente já está inativo");
     }
 
     this.props.isActive = false;
@@ -188,9 +235,9 @@ export class Patient {
 
     this.addDomainEvent({
       eventId: crypto.randomUUID(),
-      eventType: 'Pacientes.Inativado',
+      eventType: "Pacientes.Inativado",
       aggregateId: this.props.id,
-      aggregateType: 'Patient',
+      aggregateType: "Patient",
       payload: {
         patientId: this.props.id,
         patientName: this.props.fullName,
@@ -218,22 +265,25 @@ export class Patient {
   }
 
   // Validações auxiliares
-  private isValidStatusTransition(from: PatientStatus, to: PatientStatus): boolean {
+  private isValidStatusTransition(
+    from: PatientStatus,
+    to: PatientStatus,
+  ): boolean {
     // Regras de negócio para transições válidas
     const invalidTransitions = [
-      ['CONCLUIDO', 'PROSPECT'],
-      ['CONCLUIDO', 'TRATAMENTO'],
-      ['CANCELADO', 'TRATAMENTO'],
+      ["CONCLUIDO", "PROSPECT"],
+      ["CONCLUIDO", "TRATAMENTO"],
+      ["CANCELADO", "TRATAMENTO"],
     ];
 
     return !invalidTransitions.some(
-      ([f, t]) => from.code === f && to.code === t
+      ([f, t]) => from.code === f && to.code === t,
     );
   }
 
   private isValidCPF(cpf: string): boolean {
     // Remove caracteres não numéricos
-    const cleanCPF = cpf.replace(/\D/g, '');
+    const cleanCPF = cpf.replace(/\D/g, "");
 
     if (cleanCPF.length !== 11) return false;
     if (/^(\d)\1+$/.test(cleanCPF)) return false; // Todos dígitos iguais
@@ -268,7 +318,9 @@ export class Patient {
     return { ...this.props };
   }
 
-  static create(props: Omit<PatientProps, 'id' | 'createdAt' | 'updatedAt'>): Patient {
+  static create(
+    props: Omit<PatientProps, "id" | "createdAt" | "updatedAt">,
+  ): Patient {
     return new Patient({
       ...props,
       id: crypto.randomUUID(),

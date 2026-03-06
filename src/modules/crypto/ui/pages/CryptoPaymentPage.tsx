@@ -1,20 +1,26 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CryptoPaymentCheckout } from '@/modules/crypto/presentation/components/CryptoPaymentCheckout';
-import { CryptoPaymentStatus } from '@/modules/crypto/presentation/components/CryptoPaymentStatus';
-import { CryptoPaymentHistory } from '@/modules/crypto/presentation/components/CryptoPaymentHistory';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { Loader2, Bitcoin, Shield, Zap } from 'lucide-react';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CryptoPaymentCheckout } from "@/modules/crypto/presentation/components/CryptoPaymentCheckout";
+import { CryptoPaymentStatus } from "@/modules/crypto/presentation/components/CryptoPaymentStatus";
+import { CryptoPaymentHistory } from "@/modules/crypto/presentation/components/CryptoPaymentHistory";
+import { apiClient } from "@/lib/api/apiClient";
+import { toast } from "sonner";
+import { Loader2, Bitcoin, Shield, Zap } from "lucide-react";
 
 export default function CryptoPaymentPage() {
   const [loading, setLoading] = useState(false);
-  const [amount, setAmount] = useState('');
-  const [orderId, setOrderId] = useState('');
+  const [amount, setAmount] = useState("");
+  const [orderId, setOrderId] = useState("");
   const [paymentData, setPaymentData] = useState<any>(null);
   const [activePaymentId, setActivePaymentId] = useState<string | null>(null);
 
@@ -23,49 +29,47 @@ export default function CryptoPaymentPage() {
 
     const amountBRL = parseFloat(amount);
     if (isNaN(amountBRL) || amountBRL <= 0) {
-      toast.error('Valor inválido', { description: 'Digite um valor maior que zero' });
+      toast.error("Valor inválido", {
+        description: "Digite um valor maior que zero",
+      });
       return;
     }
 
     if (!orderId.trim()) {
-      toast.error('ID do Pedido obrigatório');
+      toast.error("ID do Pedido obrigatório");
       return;
     }
 
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-crypto-invoice', {
-        body: {
-          amountBRL,
-          orderId: orderId.trim(),
-          patientEmail: 'paciente@example.com',
-          metadata: {
-            description: 'Pagamento de tratamento odontológico',
-          },
+      const data = await apiClient.post<any>("/crypto/invoices", {
+        amountBRL,
+        orderId: orderId.trim(),
+        patientEmail: "paciente@example.com",
+        metadata: {
+          description: "Pagamento de tratamento odontológico",
         },
       });
 
-      if (error) throw error;
-
       setPaymentData(data);
       setActivePaymentId(data.paymentId);
-      toast.success('Invoice criada!', {
-        description: 'Escaneie o QR Code para pagar',
+      toast.success("Invoice criada!", {
+        description: "Escaneie o QR Code para pagar",
       });
     } catch (error: any) {
-      console.error('Error creating invoice:', error);
-      if (error.message?.includes('Rate limit')) {
-        toast.error('Rate limit excedido', {
-          description: 'Aguarde alguns minutos e tente novamente',
+      console.error("Error creating invoice:", error);
+      if (error.message?.includes("Rate limit")) {
+        toast.error("Rate limit excedido", {
+          description: "Aguarde alguns minutos e tente novamente",
         });
-      } else if (error.message?.includes('Payment required')) {
-        toast.error('Créditos insuficientes', {
-          description: 'Adicione créditos ao workspace Lovable',
+      } else if (error.message?.includes("Payment required")) {
+        toast.error("Créditos insuficientes", {
+          description: "Adicione créditos ao workspace Lovable",
         });
       } else {
-        toast.error('Erro ao criar invoice', {
-          description: error.message || 'Tente novamente',
+        toast.error("Erro ao criar invoice", {
+          description: error.message || "Tente novamente",
         });
       }
     } finally {
@@ -123,7 +127,9 @@ export default function CryptoPaymentPage() {
       <Tabs defaultValue="new" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="new">Nova Cobrança</TabsTrigger>
-          <TabsTrigger value="status" disabled={!activePaymentId}>Status</TabsTrigger>
+          <TabsTrigger value="status" disabled={!activePaymentId}>
+            Status
+          </TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
         </TabsList>
 

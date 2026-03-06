@@ -1,6 +1,6 @@
 import { Produto } from "@/domain/entities/Produto";
 import { IProdutoRepository } from "@/domain/repositories/IProdutoRepository";
-import { apiClient } from "@/lib/apiClient";
+import { apiClient } from "@/lib/api/apiClient";
 
 /**
  * Implementação do repositório de Produto usando apiClient

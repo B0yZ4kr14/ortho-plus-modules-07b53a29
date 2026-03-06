@@ -1,14 +1,18 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Phone, Mail, Calendar, MapPin, Edit } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { STATUS_LABELS, STATUS_COLORS, PatientStatus } from '@/types/patient-status';
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Phone, Mail, Calendar, MapPin, Edit } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import {
+  STATUS_LABELS,
+  STATUS_COLORS,
+  PatientStatus,
+} from "@/types/patient-status";
 
 interface PatientHeaderProps {
   patientId: string;
@@ -18,17 +22,14 @@ export function PatientHeader({ patientId }: PatientHeaderProps) {
   const navigate = useNavigate();
 
   const { data: patient, isLoading } = useQuery({
-    queryKey: ['patient-header', patientId],
+    queryKey: ["patient-header", patientId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('patients')
-        .select('*')
-        .eq('id', patientId)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    }
+      const data = await apiClient.get<any[]>(
+        `/patients?id=eq.${patientId}&limit=1`,
+      );
+      if (!data || data.length === 0) throw new Error("Patient not found");
+      return data[0];
+    },
   });
 
   if (isLoading) {
@@ -36,18 +37,24 @@ export function PatientHeader({ patientId }: PatientHeaderProps) {
   }
 
   if (!patient) {
-    return <div className="text-center text-muted-foreground">Paciente não encontrado</div>;
+    return (
+      <div className="text-center text-muted-foreground">
+        Paciente não encontrado
+      </div>
+    );
   }
 
   const getInitials = (name: string) => {
-    const parts = name.split(' ');
-    return parts.length >= 2 
+    const parts = name.split(" ");
+    return parts.length >= 2
       ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
       : name.substring(0, 2).toUpperCase();
   };
 
-  const statusColor = STATUS_COLORS[patient.status as PatientStatus] || 'bg-muted';
-  const statusLabel = STATUS_LABELS[patient.status as PatientStatus] || patient.status;
+  const statusColor =
+    STATUS_COLORS[patient.status as PatientStatus] || "bg-muted";
+  const statusLabel =
+    STATUS_LABELS[patient.status as PatientStatus] || patient.status;
 
   return (
     <Card className="p-6">
@@ -65,15 +72,17 @@ export function PatientHeader({ patientId }: PatientHeaderProps) {
             <div>
               <h1 className="text-2xl font-bold">{patient.full_name}</h1>
               {patient.social_name && (
-                <p className="text-muted-foreground">Nome Social: {patient.social_name}</p>
+                <p className="text-muted-foreground">
+                  Nome Social: {patient.social_name}
+                </p>
               )}
             </div>
             <div className="flex gap-2">
               <Badge variant="outline" className={statusColor}>
                 {statusLabel}
               </Badge>
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 variant="outline"
                 onClick={() => navigate(`/pacientes/editar/${patientId}`)}
               >
@@ -101,16 +110,22 @@ export function PatientHeader({ patientId }: PatientHeaderProps) {
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span>
-                  {format(new Date(patient.birth_date), "dd/MM/yyyy", { locale: ptBR })}
-                  {' '}
-                  ({new Date().getFullYear() - new Date(patient.birth_date).getFullYear()} anos)
+                  {format(new Date(patient.birth_date), "dd/MM/yyyy", {
+                    locale: ptBR,
+                  })}{" "}
+                  (
+                  {new Date().getFullYear() -
+                    new Date(patient.birth_date).getFullYear()}{" "}
+                  anos)
                 </span>
               </div>
             )}
             {patient.address_city && (
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span>{patient.address_city}, {patient.address_state}</span>
+                <span>
+                  {patient.address_city}, {patient.address_state}
+                </span>
               </div>
             )}
           </div>
@@ -119,10 +134,14 @@ export function PatientHeader({ patientId }: PatientHeaderProps) {
           {(patient.marketing_campaign || patient.marketing_source) && (
             <div className="flex gap-2 text-xs text-muted-foreground">
               {patient.marketing_campaign && (
-                <Badge variant="outline">Campanha: {patient.marketing_campaign}</Badge>
+                <Badge variant="outline">
+                  Campanha: {patient.marketing_campaign}
+                </Badge>
               )}
               {patient.marketing_source && (
-                <Badge variant="outline">Origem: {patient.marketing_source}</Badge>
+                <Badge variant="outline">
+                  Origem: {patient.marketing_source}
+                </Badge>
               )}
             </div>
           )}

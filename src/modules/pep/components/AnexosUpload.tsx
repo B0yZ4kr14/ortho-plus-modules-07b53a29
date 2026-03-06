@@ -1,13 +1,18 @@
-import { useState, useRef, useEffect } from 'react';
-import { Upload, File, X, Eye, Download, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { toast } from 'sonner';
-import { useAnexos } from '@/modules/pep/hooks/useAnexos';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useRef, useEffect } from "react";
+import { Upload, File, X, Eye, Download, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { useAnexos } from "@/modules/pep/hooks/useAnexos";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
 
 interface AnexoFile {
   id: string;
@@ -15,7 +20,7 @@ interface AnexoFile {
   mime_type: string;
   tamanho_bytes: number;
   caminho_storage: string;
-  tipo_arquivo: 'IMAGEM' | 'PDF' | 'DOCUMENTO' | 'OUTRO';
+  tipo_arquivo: "IMAGEM" | "PDF" | "DOCUMENTO" | "OUTRO";
   created_at: string;
 }
 
@@ -25,57 +30,76 @@ interface AnexosUploadProps {
   onUploadSuccess?: () => void;
 }
 
-export function AnexosUpload({ prontuarioId, historicoId, onUploadSuccess }: AnexosUploadProps) {
+export function AnexosUpload({
+  prontuarioId,
+  historicoId,
+  onUploadSuccess,
+}: AnexosUploadProps) {
   const { user, clinicId } = useAuth();
-  const { anexos: anexosData, isUploading, uploadAnexo, deleteAnexo } = useAnexos(prontuarioId, clinicId || '');
+  const {
+    anexos: anexosData,
+    isUploading,
+    uploadAnexo,
+    deleteAnexo,
+  } = useAnexos(prontuarioId, clinicId || "");
   const [previewFile, setPreviewFile] = useState<AnexoFile | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Converter entidades de domínio para o formato do componente
-  const anexos = anexosData.map(a => ({
+  const anexos = anexosData.map((a) => ({
     id: a.id,
     nome_arquivo: a.nomeArquivo,
     mime_type: a.mimeType,
     tamanho_bytes: a.tamanhoBytes,
     caminho_storage: a.storagePath,
-    tipo_arquivo: a.tipo as 'IMAGEM' | 'PDF' | 'DOCUMENTO' | 'OUTRO',
+    tipo_arquivo: a.tipo as "IMAGEM" | "PDF" | "DOCUMENTO" | "OUTRO",
     created_at: a.createdAt.toISOString(),
   }));
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const files = event.target.files;
     if (!files || files.length === 0 || !user) return;
 
     try {
       for (const file of Array.from(files)) {
         // Determinar tipo de arquivo
-        let tipoArquivo: 'IMAGEM' | 'DOCUMENTO' | 'RAIO_X' | 'LAUDO' | 'EXAME' | 'RECEITA' | 'ATESTADO' | 'OUTRO' = 'OUTRO';
-        if (file.type.startsWith('image/')) tipoArquivo = 'IMAGEM';
-        else if (file.type === 'application/pdf') tipoArquivo = 'DOCUMENTO';
-        else if (file.type.includes('document') || file.type.includes('text')) tipoArquivo = 'DOCUMENTO';
+        let tipoArquivo:
+          | "IMAGEM"
+          | "DOCUMENTO"
+          | "RAIO_X"
+          | "LAUDO"
+          | "EXAME"
+          | "RECEITA"
+          | "ATESTADO"
+          | "OUTRO" = "OUTRO";
+        if (file.type.startsWith("image/")) tipoArquivo = "IMAGEM";
+        else if (file.type === "application/pdf") tipoArquivo = "DOCUMENTO";
+        else if (file.type.includes("document") || file.type.includes("text"))
+          tipoArquivo = "DOCUMENTO";
 
         await uploadAnexo(file, tipoArquivo, undefined, user.id, historicoId);
       }
 
       onUploadSuccess?.();
     } catch (error) {
-      console.error('Erro ao fazer upload:', error);
+      console.error("Erro ao fazer upload:", error);
       // Toast já exibido pelo hook
     } finally {
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   const handleDownload = async (anexo: AnexoFile) => {
     try {
-      const { data, error } = await supabase.storage
-        .from('pep-anexos')
-        .download(anexo.caminho_storage);
-
-      if (error) throw error;
+      const data = await apiClient.get<Blob>(
+        `/rest/v1/storage/pep-anexos/download?path=${encodeURIComponent(anexo.caminho_storage)}`,
+        { responseType: "blob" },
+      );
 
       const url = URL.createObjectURL(data);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = anexo.nome_arquivo;
       document.body.appendChild(a);
@@ -83,47 +107,49 @@ export function AnexosUpload({ prontuarioId, historicoId, onUploadSuccess }: Ane
       URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success('Download iniciado!');
+      toast.success("Download iniciado!");
     } catch (error: any) {
-      console.error('Erro ao baixar arquivo:', error);
-      toast.error('Erro ao baixar arquivo', { description: error.message });
+      console.error("Erro ao baixar arquivo:", error);
+      toast.error("Erro ao baixar arquivo", { description: error.message });
     }
   };
 
   const handlePreview = async (anexo: AnexoFile) => {
-    if (anexo.tipo_arquivo === 'IMAGEM' || anexo.tipo_arquivo === 'PDF') {
+    if (anexo.tipo_arquivo === "IMAGEM" || anexo.tipo_arquivo === "PDF") {
       setPreviewFile(anexo);
     } else {
-      toast.info('Preview não disponível para este tipo de arquivo');
+      toast.info("Preview não disponível para este tipo de arquivo");
     }
   };
 
   const handleDelete = async (anexoId: string, caminhoStorage: string) => {
-    const confirmed = window.confirm('Tem certeza que deseja excluir este anexo?');
+    const confirmed = window.confirm(
+      "Tem certeza que deseja excluir este anexo?",
+    );
     if (!confirmed) return;
 
     try {
       await deleteAnexo(anexoId, caminhoStorage);
     } catch (error: any) {
-      console.error('Erro ao excluir anexo:', error);
+      console.error("Erro ao excluir anexo:", error);
       // Toast já exibido pelo hook
     }
   };
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB'];
+    const sizes = ["Bytes", "KB", "MB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
   const getTipoLabel = (tipo: string) => {
     const labels: Record<string, string> = {
-      IMAGEM: 'Imagem',
-      PDF: 'PDF',
-      DOCUMENTO: 'Documento',
-      OUTRO: 'Outro'
+      IMAGEM: "Imagem",
+      PDF: "PDF",
+      DOCUMENTO: "Documento",
+      OUTRO: "Outro",
     };
     return labels[tipo] || tipo;
   };
@@ -178,18 +204,25 @@ export function AnexosUpload({ prontuarioId, historicoId, onUploadSuccess }: Ane
                   <div className="flex items-center gap-3 flex-1">
                     <File className="h-8 w-8 text-muted-foreground" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{anexo.nome_arquivo}</p>
+                      <p className="font-medium text-sm truncate">
+                        {anexo.nome_arquivo}
+                      </p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Badge variant="outline" className="text-xs">
                           {getTipoLabel(anexo.tipo_arquivo)}
                         </Badge>
                         <span>{formatBytes(anexo.tamanho_bytes)}</span>
-                        <span>{new Date(anexo.created_at).toLocaleDateString('pt-BR')}</span>
+                        <span>
+                          {new Date(anexo.created_at).toLocaleDateString(
+                            "pt-BR",
+                          )}
+                        </span>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    {(anexo.tipo_arquivo === 'IMAGEM' || anexo.tipo_arquivo === 'PDF') && (
+                    {(anexo.tipo_arquivo === "IMAGEM" ||
+                      anexo.tipo_arquivo === "PDF") && (
                       <Button
                         size="sm"
                         variant="ghost"
@@ -208,7 +241,9 @@ export function AnexosUpload({ prontuarioId, historicoId, onUploadSuccess }: Ane
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleDelete(anexo.id, anexo.caminho_storage)}
+                      onClick={() =>
+                        handleDelete(anexo.id, anexo.caminho_storage)
+                      }
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -221,22 +256,25 @@ export function AnexosUpload({ prontuarioId, historicoId, onUploadSuccess }: Ane
       )}
 
       {/* Dialog de Preview */}
-      <Dialog open={previewFile !== null} onOpenChange={() => setPreviewFile(null)}>
+      <Dialog
+        open={previewFile !== null}
+        onOpenChange={() => setPreviewFile(null)}
+      >
         <DialogContent className="max-w-4xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>{previewFile?.nome_arquivo}</DialogTitle>
           </DialogHeader>
           <div className="overflow-auto">
-            {previewFile?.tipo_arquivo === 'IMAGEM' && (
+            {previewFile?.tipo_arquivo === "IMAGEM" && (
               <img
-                src={`${supabase.storage.from('pep-anexos').getPublicUrl(previewFile.caminho_storage).data.publicUrl}`}
+                src={`${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api"}/rest/v1/storage/pep-anexos/public?path=${encodeURIComponent(previewFile.caminho_storage)}`}
                 alt={previewFile.nome_arquivo}
                 className="max-w-full h-auto"
               />
             )}
-            {previewFile?.tipo_arquivo === 'PDF' && (
+            {previewFile?.tipo_arquivo === "PDF" && (
               <iframe
-                src={`${supabase.storage.from('pep-anexos').getPublicUrl(previewFile.caminho_storage).data.publicUrl}`}
+                src={`${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api"}/rest/v1/storage/pep-anexos/public?path=${encodeURIComponent(previewFile.caminho_storage)}`}
                 className="w-full h-[70vh]"
                 title={previewFile.nome_arquivo}
               />

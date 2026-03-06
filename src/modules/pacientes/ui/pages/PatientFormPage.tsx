@@ -1,23 +1,28 @@
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate, useParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Form } from '@/components/ui/form';
-import { ArrowLeft, Save } from 'lucide-react';
-import { PatientFormTabs } from '@/components/patients/PatientFormTabs';
-import { PersonalDataTab } from '@/components/patients/form-tabs/PersonalDataTab';
-import { ContactAddressTab } from '@/components/patients/form-tabs/ContactAddressTab';
-import { MedicalHistoryTab } from '@/components/patients/form-tabs/MedicalHistoryTab';
-import { HabitsMeasuresTab } from '@/components/patients/form-tabs/HabitsMeasuresTab';
-import { DentalTab } from '@/components/patients/form-tabs/DentalTab';
-import { OtherTab } from '@/components/patients/form-tabs/OtherTab';
-import { MarketingTrackingTab } from '@/components/patients/form-tabs/MarketingTrackingTab';
-import { patientFormSchema, type PatientFormValues, calculateBMI } from '@/lib/patient-validation';
-import type { Patient } from '@/types/patient';
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { PatientAdapter } from "@/lib/adapters/patientAdapter";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
+import { ArrowLeft, Save } from "lucide-react";
+import { PatientFormTabs } from "@/components/patients/PatientFormTabs";
+import { PersonalDataTab } from "@/components/patients/form-tabs/PersonalDataTab";
+import { ContactAddressTab } from "@/components/patients/form-tabs/ContactAddressTab";
+import { MedicalHistoryTab } from "@/components/patients/form-tabs/MedicalHistoryTab";
+import { HabitsMeasuresTab } from "@/components/patients/form-tabs/HabitsMeasuresTab";
+import { DentalTab } from "@/components/patients/form-tabs/DentalTab";
+import { OtherTab } from "@/components/patients/form-tabs/OtherTab";
+import { MarketingTrackingTab } from "@/components/patients/form-tabs/MarketingTrackingTab";
+import {
+  patientFormSchema,
+  type PatientFormValues,
+  calculateBMI,
+} from "@/lib/patient-validation";
+import type { Patient } from "@/types/patient";
 
 export default function PatientFormPage() {
   const { id } = useParams();
@@ -29,9 +34,9 @@ export default function PatientFormPage() {
   const form = useForm<PatientFormValues>({
     resolver: zodResolver(patientFormSchema),
     defaultValues: {
-      full_name: '',
-      phone_primary: '',
-      status: 'PROSPECT',
+      full_name: "",
+      phone_primary: "",
+      status: "PROSPECT",
     },
   });
 
@@ -41,22 +46,18 @@ export default function PatientFormPage() {
 
     const fetchPatient = async () => {
       try {
-        const { data, error } = await supabase
-          .from('patients' as any)
-          .select('*')
-          .eq('id', id)
-          .single();
+        const response = await apiClient.get<{ data: any }>(`/pacientes/${id}`);
 
-        if (error) throw error;
-        if (data) {
-          // Converter data do banco para o formato do formulário
-          form.reset(data as any);
+        if (response.data) {
+          // Converter data da API para o formato do formulário
+          const formData = PatientAdapter.toFrontend(response.data);
+          form.reset(formData as any);
         }
       } catch (error: any) {
-        toast.error('Erro ao carregar paciente', {
-          description: error.message,
+        toast.error("Erro ao carregar paciente", {
+          description: error.message || "Erro desconhecido",
         });
-        navigate('/pacientes');
+        navigate("/pacientes");
       } finally {
         setIsFetching(false);
       }
@@ -68,10 +69,13 @@ export default function PatientFormPage() {
   // Calcular IMC automaticamente quando peso ou altura mudar
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
-      if (name === 'weight_kg' || name === 'height_cm') {
-        const bmi = calculateBMI(value.weight_kg ?? null, value.height_cm ?? null);
+      if (name === "weight_kg" || name === "height_cm") {
+        const bmi = calculateBMI(
+          value.weight_kg ?? null,
+          value.height_cm ?? null,
+        );
         if (bmi !== null && bmi !== value.bmi) {
-          form.setValue('bmi', bmi);
+          form.setValue("bmi", bmi);
         }
       }
     });
@@ -80,44 +84,45 @@ export default function PatientFormPage() {
 
   const onSubmit = async (values: PatientFormValues) => {
     if (!clinicId || !user) {
-      toast.error('Erro', { description: 'Usuário não autenticado' });
+      toast.error("Erro", { description: "Usuário não autenticado" });
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const dataToSave = {
-        ...values,
-        clinic_id: clinicId,
-        [id ? 'updated_by' : 'created_by']: user.id,
-      };
+      const apiData = PatientAdapter.toAPI(values as Patient);
 
+      // Ensure specific fields map back if needed
       if (id) {
         // Atualizar paciente existente
-        const { error } = await supabase
-          .from('patients' as any)
-          .update(dataToSave)
-          .eq('id', id);
+        await apiClient.put(`/pacientes/${id}`, apiData);
 
-        if (error) throw error;
+        // Se o status mudou, atualizar via endpoint de status
+        // A API REST prefere eventos de status explícitos
+        if (values.status) {
+          try {
+            await apiClient.patch(`/pacientes/${id}/status`, {
+              novoStatusCode: values.status,
+              reason: "Atualização de formulário",
+            });
+          } catch (e) {
+            console.warn("Status update failed:", e);
+          }
+        }
 
-        toast.success('Paciente atualizado com sucesso!');
+        toast.success("Paciente atualizado com sucesso!");
       } else {
         // Criar novo paciente
-        const { error } = await supabase
-          .from('patients' as any)
-          .insert([dataToSave]);
+        await apiClient.post("/pacientes", apiData);
 
-        if (error) throw error;
-
-        toast.success('Paciente cadastrado com sucesso!');
+        toast.success("Paciente cadastrado com sucesso!");
       }
 
-      navigate('/pacientes');
+      navigate("/pacientes");
     } catch (error: any) {
-      toast.error('Erro ao salvar paciente', {
-        description: error.message,
+      toast.error("Erro ao salvar paciente", {
+        description: error.message || "Erro desconhecido",
       });
     } finally {
       setIsLoading(false);
@@ -139,12 +144,16 @@ export default function PatientFormPage() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/pacientes')}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/pacientes")}
+        >
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1">
           <h1 className="text-3xl font-bold">
-            {id ? 'Editar Paciente' : 'Novo Paciente'}
+            {id ? "Editar Paciente" : "Novo Paciente"}
           </h1>
           <p className="text-muted-foreground mt-1">
             Preencha os dados do paciente com atenção
@@ -156,7 +165,7 @@ export default function PatientFormPage() {
           className="gap-2"
         >
           <Save className="h-4 w-4" />
-          {isLoading ? 'Salvando...' : 'Salvar'}
+          {isLoading ? "Salvando..." : "Salvar"}
         </Button>
       </div>
 

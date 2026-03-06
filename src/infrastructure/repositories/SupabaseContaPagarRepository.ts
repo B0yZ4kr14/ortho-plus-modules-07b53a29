@@ -1,151 +1,120 @@
-import { ContaPagar, CategoriaContaPagar } from '@/domain/entities/ContaPagar';
-import { IContaPagarRepository } from '@/domain/repositories/IContaPagarRepository';
-import { supabase } from '@/integrations/supabase/client';
-import { ContaPagarMapper } from './mappers/ContaPagarMapper';
+import { CategoriaContaPagar, ContaPagar } from "@/domain/entities/ContaPagar";
+import { IContaPagarRepository } from "@/domain/repositories/IContaPagarRepository";
+import { apiClient } from "@/lib/api/apiClient";
+import { ContaPagarMapper } from "./mappers/ContaPagarMapper";
 
-/**
- * Implementação do repositório de ContaPagar usando Supabase
- */
 export class SupabaseContaPagarRepository implements IContaPagarRepository {
   async findById(id: string): Promise<ContaPagar | null> {
-    const { data, error } = await supabase
-      .from('contas_pagar')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error || !data) {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/contas_pagar?id=eq.${id}`,
+      );
+      if (!data || data.length === 0) return null;
+      return ContaPagarMapper.toDomain(data[0]);
+    } catch {
       return null;
     }
-
-    return ContaPagarMapper.toDomain(data);
   }
 
   async findByClinicId(clinicId: string): Promise<ContaPagar[]> {
-    const { data, error } = await supabase
-      .from('contas_pagar')
-      .select('*')
-      .eq('clinic_id', clinicId)
-      .order('data_vencimento', { ascending: true });
-
-    if (error || !data) {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/contas_pagar?clinic_id=eq.${clinicId}&order=data_vencimento.asc`,
+      );
+      return (data || []).map((row) => ContaPagarMapper.toDomain(row));
+    } catch {
       return [];
     }
-
-    return data.map(row => ContaPagarMapper.toDomain(row));
   }
 
   async findPendentes(clinicId: string): Promise<ContaPagar[]> {
-    const { data, error } = await supabase
-      .from('contas_pagar')
-      .select('*')
-      .eq('clinic_id', clinicId)
-      .eq('status', 'PENDENTE')
-      .order('data_vencimento', { ascending: true });
-
-    if (error || !data) {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/contas_pagar?clinic_id=eq.${clinicId}&status=eq.PENDENTE&order=data_vencimento.asc`,
+      );
+      return (data || []).map((row) => ContaPagarMapper.toDomain(row));
+    } catch {
       return [];
     }
-
-    return data.map(row => ContaPagarMapper.toDomain(row));
   }
 
   async findVencidas(clinicId: string): Promise<ContaPagar[]> {
-    const hoje = new Date().toISOString().split('T')[0];
-    
-    const { data, error } = await supabase
-      .from('contas_pagar')
-      .select('*')
-      .eq('clinic_id', clinicId)
-      .eq('status', 'PENDENTE')
-      .lt('data_vencimento', hoje)
-      .order('data_vencimento', { ascending: true });
-
-    if (error || !data) {
+    const hoje = new Date().toISOString().split("T")[0];
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/contas_pagar?clinic_id=eq.${clinicId}&status=eq.PENDENTE&data_vencimento=lt.${hoje}&order=data_vencimento.asc`,
+      );
+      return (data || []).map((row) => ContaPagarMapper.toDomain(row));
+    } catch {
       return [];
     }
-
-    return data.map(row => ContaPagarMapper.toDomain(row));
   }
 
-  async findByFornecedor(clinicId: string, fornecedor: string): Promise<ContaPagar[]> {
-    const { data, error } = await supabase
-      .from('contas_pagar')
-      .select('*')
-      .eq('clinic_id', clinicId)
-      .ilike('fornecedor', `%${fornecedor}%`)
-      .order('data_vencimento', { ascending: true });
-
-    if (error || !data) {
+  async findByFornecedor(
+    clinicId: string,
+    fornecedor: string,
+  ): Promise<ContaPagar[]> {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/contas_pagar?clinic_id=eq.${clinicId}&fornecedor=ilike.*${fornecedor}*&order=data_vencimento.asc`,
+      );
+      return (data || []).map((row) => ContaPagarMapper.toDomain(row));
+    } catch {
       return [];
     }
-
-    return data.map(row => ContaPagarMapper.toDomain(row));
   }
 
-  async findByCategoria(clinicId: string, categoria: CategoriaContaPagar): Promise<ContaPagar[]> {
-    const { data, error } = await supabase
-      .from('contas_pagar')
-      .select('*')
-      .eq('clinic_id', clinicId)
-      .eq('categoria', categoria)
-      .order('data_vencimento', { ascending: true });
-
-    if (error || !data) {
+  async findByCategoria(
+    clinicId: string,
+    categoria: CategoriaContaPagar,
+  ): Promise<ContaPagar[]> {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/contas_pagar?clinic_id=eq.${clinicId}&categoria=eq.${categoria}&order=data_vencimento.asc`,
+      );
+      return (data || []).map((row) => ContaPagarMapper.toDomain(row));
+    } catch {
       return [];
     }
-
-    return data.map(row => ContaPagarMapper.toDomain(row));
   }
 
-  async findByPeriodo(clinicId: string, startDate: Date, endDate: Date): Promise<ContaPagar[]> {
-    const { data, error } = await supabase
-      .from('contas_pagar')
-      .select('*')
-      .eq('clinic_id', clinicId)
-      .gte('data_vencimento', startDate.toISOString())
-      .lte('data_vencimento', endDate.toISOString())
-      .order('data_vencimento', { ascending: true });
-
-    if (error || !data) {
+  async findByPeriodo(
+    clinicId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<ContaPagar[]> {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/contas_pagar?clinic_id=eq.${clinicId}&data_vencimento=gte.${startDate.toISOString()}&data_vencimento=lte.${endDate.toISOString()}&order=data_vencimento.asc`,
+      );
+      return (data || []).map((row) => ContaPagarMapper.toDomain(row));
+    } catch {
       return [];
     }
-
-    return data.map(row => ContaPagarMapper.toDomain(row));
   }
 
   async save(conta: ContaPagar): Promise<void> {
     const insert = ContaPagarMapper.toSupabaseInsert(conta);
-
-    const { error } = await supabase
-      .from('contas_pagar')
-      .insert(insert);
-
-    if (error) {
+    try {
+      await apiClient.post("/rest/v1/contas_pagar", insert);
+    } catch (error: any) {
       throw new Error(`Erro ao salvar conta a pagar: ${error.message}`);
     }
   }
 
   async update(conta: ContaPagar): Promise<void> {
     const insert = ContaPagarMapper.toSupabaseInsert(conta);
-
-    const { error } = await supabase
-      .from('contas_pagar')
-      .update(insert)
-      .eq('id', conta.id);
-
-    if (error) {
+    try {
+      await apiClient.patch(`/rest/v1/contas_pagar?id=eq.${conta.id}`, insert);
+    } catch (error: any) {
       throw new Error(`Erro ao atualizar conta a pagar: ${error.message}`);
     }
   }
 
   async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('contas_pagar')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
+    try {
+      await apiClient.delete(`/rest/v1/contas_pagar?id=eq.${id}`);
+    } catch (error: any) {
       throw new Error(`Erro ao deletar conta a pagar: ${error.message}`);
     }
   }

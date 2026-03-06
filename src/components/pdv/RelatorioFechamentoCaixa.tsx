@@ -1,20 +1,20 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { LoadingState } from '@/components/shared/LoadingState';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { LoadingState } from "@/components/shared/LoadingState";
 import {
   FileText,
   AlertTriangle,
   CheckCircle,
   Download,
   TrendingUp,
-  DollarSign
-} from 'lucide-react';
+  DollarSign,
+} from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -23,14 +23,16 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
-} from 'recharts';
+  ResponsiveContainer,
+} from "recharts";
 
 interface RelatorioFechamentoCaixaProps {
   caixaMovimentoId: string;
 }
 
-export const RelatorioFechamentoCaixa = ({ caixaMovimentoId }: RelatorioFechamentoCaixaProps) => {
+export const RelatorioFechamentoCaixa = ({
+  caixaMovimentoId,
+}: RelatorioFechamentoCaixaProps) => {
   const { clinicId } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -38,36 +40,36 @@ export const RelatorioFechamentoCaixa = ({ caixaMovimentoId }: RelatorioFechamen
 
   // Buscar dados do fechamento
   const { data: fechamento, isLoading } = useQuery({
-    queryKey: ['fechamento-caixa', caixaMovimentoId],
+    queryKey: ["fechamento-caixa", caixaMovimentoId],
     queryFn: async () => {
       // Buscar vendas PDV
-      const { data: vendas, error: vendasError } = await supabase
-        .from('pdv_vendas')
-        .select('*')
-        .eq('caixa_movimento_id', caixaMovimentoId);
+      const vendas: any[] = await apiClient.get("/pdv-vendas", {
+        caixa_movimento_id: caixaMovimentoId,
+      });
 
-      if (vendasError) throw vendasError;
-
-      const totalVendasPDV = vendas?.reduce((sum, v) => sum + Number(v.valor_total), 0) || 0;
+      const totalVendasPDV =
+        vendas?.reduce((sum, v) => sum + Number(v.valor_total), 0) || 0;
 
       // Buscar NFCe emitidas
-      const { data: nfces, error: nfcesError } = await supabase
-        .from('nfce_emitidas')
-        .select('*')
-        .in('venda_id', vendas?.map(v => v.id) || []);
+      const vendaIds = vendas?.map((v: any) => v.id) || [];
+      const nfces: any[] =
+        vendaIds.length > 0
+          ? await apiClient.get("/nfce-emitidas", {
+              venda_id: `in.(${vendaIds.join(",")})`,
+            })
+          : [];
 
-      if (nfcesError) throw nfcesError;
-
-      const totalNFCe = nfces?.reduce((sum, n) => sum + Number(n.valor_total), 0) || 0;
+      const totalNFCe =
+        nfces?.reduce((sum, n) => sum + Number(n.valor_total), 0) || 0;
 
       // Vendas sem NFCe
-      const vendasComNFCe = new Set(nfces?.map(n => n.venda_id) || []);
-      const vendasSemNFCe = vendas?.filter(v => !vendasComNFCe.has(v.id)).length || 0;
+      const vendasComNFCe = new Set(nfces?.map((n) => n.venda_id) || []);
+      const vendasSemNFCe =
+        vendas?.filter((v) => !vendasComNFCe.has(v.id)).length || 0;
 
       const divergencia = totalVendasPDV - totalNFCe;
-      const percentualDivergencia = totalVendasPDV > 0
-        ? (divergencia / totalVendasPDV) * 100
-        : 0;
+      const percentualDivergencia =
+        totalVendasPDV > 0 ? (divergencia / totalVendasPDV) * 100 : 0;
 
       return {
         totalVendasPDV,
@@ -78,7 +80,7 @@ export const RelatorioFechamentoCaixa = ({ caixaMovimentoId }: RelatorioFechamen
         quantidadeNFCe: nfces?.length || 0,
         vendasSemNFCe,
         vendas,
-        nfces
+        nfces,
       };
     },
     enabled: !!caixaMovimentoId,
@@ -87,43 +89,40 @@ export const RelatorioFechamentoCaixa = ({ caixaMovimentoId }: RelatorioFechamen
   const gerarSpedMutation = useMutation({
     mutationFn: async () => {
       setGerandoSped(true);
-      
-      const dataHoje = new Date().toISOString().split('T')[0];
-      
-      const { data, error } = await supabase.functions.invoke('gerar-sped-fiscal', {
-        body: {
-          clinicId,
-          dataInicio: dataHoje,
-          dataFim: dataHoje
-        }
+
+      const dataHoje = new Date().toISOString().split("T")[0];
+
+      const data = await apiClient.post("/gerar-sped-fiscal", {
+        clinicId,
+        dataInicio: dataHoje,
+        dataFim: dataHoje,
       });
 
-      if (error) throw error;
       return data;
     },
     onSuccess: (data) => {
       // Criar arquivo para download
-      const blob = new Blob([data.arquivo], { type: 'text/plain' });
+      const blob = new Blob([data.arquivo], { type: "text/plain" });
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `SPED_${new Date().toISOString().split('T')[0]}.txt`;
+      a.download = `SPED_${new Date().toISOString().split("T")[0]}.txt`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
       toast({
-        title: 'SPED Fiscal gerado',
+        title: "SPED Fiscal gerado",
         description: `${data.estatisticas.totalNFCe} NFCe processadas`,
       });
       setGerandoSped(false);
     },
     onError: (error: any) => {
       toast({
-        title: 'Erro ao gerar SPED',
+        title: "Erro ao gerar SPED",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
       setGerandoSped(false);
     },
@@ -135,15 +134,15 @@ export const RelatorioFechamentoCaixa = ({ caixaMovimentoId }: RelatorioFechamen
 
   const chartData = [
     {
-      name: 'Vendas PDV',
+      name: "Vendas PDV",
       valor: fechamento?.totalVendasPDV || 0,
-      quantidade: fechamento?.quantidadeVendasPDV || 0
+      quantidade: fechamento?.quantidadeVendasPDV || 0,
     },
     {
-      name: 'NFCe Emitidas',
+      name: "NFCe Emitidas",
       valor: fechamento?.totalNFCe || 0,
-      quantidade: fechamento?.quantidadeNFCe || 0
-    }
+      quantidade: fechamento?.quantidadeNFCe || 0,
+    },
   ];
 
   const hasDivergencia = Math.abs(fechamento?.divergencia || 0) > 0.01;
@@ -169,7 +168,7 @@ export const RelatorioFechamentoCaixa = ({ caixaMovimentoId }: RelatorioFechamen
             variant="outline"
           >
             <Download className="h-4 w-4 mr-2" />
-            {gerandoSped ? 'Gerando...' : 'Gerar SPED Fiscal'}
+            {gerandoSped ? "Gerando..." : "Gerar SPED Fiscal"}
           </Button>
         </div>
 
@@ -183,9 +182,9 @@ export const RelatorioFechamentoCaixa = ({ caixaMovimentoId }: RelatorioFechamen
               <div>
                 <p className="text-sm text-muted-foreground">Total PDV</p>
                 <p className="text-xl font-bold">
-                  {new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL',
+                  {new Intl.NumberFormat("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
                   }).format(fechamento?.totalVendasPDV || 0)}
                 </p>
               </div>
@@ -200,9 +199,9 @@ export const RelatorioFechamentoCaixa = ({ caixaMovimentoId }: RelatorioFechamen
               <div>
                 <p className="text-sm text-muted-foreground">Total NFCe</p>
                 <p className="text-xl font-bold">
-                  {new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL',
+                  {new Intl.NumberFormat("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
                   }).format(fechamento?.totalNFCe || 0)}
                 </p>
               </div>
@@ -211,7 +210,9 @@ export const RelatorioFechamentoCaixa = ({ caixaMovimentoId }: RelatorioFechamen
 
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${hasDivergencia ? 'bg-destructive/10' : 'bg-success/10'}`}>
+              <div
+                className={`p-2 rounded-lg ${hasDivergencia ? "bg-destructive/10" : "bg-success/10"}`}
+              >
                 {hasDivergencia ? (
                   <AlertTriangle className="h-5 w-5 text-destructive" />
                 ) : (
@@ -220,11 +221,13 @@ export const RelatorioFechamentoCaixa = ({ caixaMovimentoId }: RelatorioFechamen
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Divergência</p>
-                <p className={`text-xl font-bold ${hasDivergencia ? 'text-destructive' : 'text-success'}`}>
-                  {new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL',
-                    signDisplay: 'always'
+                <p
+                  className={`text-xl font-bold ${hasDivergencia ? "text-destructive" : "text-success"}`}
+                >
+                  {new Intl.NumberFormat("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                    signDisplay: "always",
                   }).format(fechamento?.divergencia || 0)}
                 </p>
               </div>
@@ -256,15 +259,19 @@ export const RelatorioFechamentoCaixa = ({ caixaMovimentoId }: RelatorioFechamen
               <YAxis />
               <Tooltip
                 formatter={(value: number) =>
-                  new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL',
+                  new Intl.NumberFormat("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
                   }).format(value)
                 }
               />
               <Legend />
               <Bar dataKey="valor" fill="hsl(var(--primary))" name="Valor" />
-              <Bar dataKey="quantidade" fill="hsl(var(--success))" name="Quantidade" />
+              <Bar
+                dataKey="quantidade"
+                fill="hsl(var(--success))"
+                name="Quantidade"
+              />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -276,10 +283,12 @@ export const RelatorioFechamentoCaixa = ({ caixaMovimentoId }: RelatorioFechamen
               <AlertTriangle className="h-5 w-5 text-destructive mt-0.5" />
               <div>
                 <p className="font-medium text-destructive">
-                  Divergência Detectada: {fechamento?.percentualDivergencia.toFixed(2)}%
+                  Divergência Detectada:{" "}
+                  {fechamento?.percentualDivergencia.toFixed(2)}%
                 </p>
                 <p className="text-sm text-destructive-foreground mt-1">
-                  {fechamento?.vendasSemNFCe} vendas sem NFCe emitida. Verifique se todas as vendas geraram cupom fiscal corretamente.
+                  {fechamento?.vendasSemNFCe} vendas sem NFCe emitida. Verifique
+                  se todas as vendas geraram cupom fiscal corretamente.
                 </p>
               </div>
             </div>
@@ -291,11 +300,10 @@ export const RelatorioFechamentoCaixa = ({ caixaMovimentoId }: RelatorioFechamen
             <div className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-success mt-0.5" />
               <div>
-                <p className="font-medium text-success">
-                  Fechamento Conferido
-                </p>
+                <p className="font-medium text-success">Fechamento Conferido</p>
                 <p className="text-sm text-success-foreground mt-1">
-                  Todos os valores estão corretos. Sistema fiscal em conformidade.
+                  Todos os valores estão corretos. Sistema fiscal em
+                  conformidade.
                 </p>
               </div>
             </div>

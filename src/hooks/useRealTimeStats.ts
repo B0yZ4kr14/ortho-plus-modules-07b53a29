@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { useQuery } from "@tanstack/react-query";
 
 interface UseRealTimeStatsOptions {
   table: string;
@@ -8,34 +8,28 @@ interface UseRealTimeStatsOptions {
   count?: boolean;
 }
 
-export function useRealTimeStats({ table, where, count = true }: UseRealTimeStatsOptions) {
+export function useRealTimeStats({
+  table,
+  where,
+  count = true,
+}: UseRealTimeStatsOptions) {
   const { clinicId } = useAuth();
 
   const { data: value = 0, isLoading } = useQuery({
-    queryKey: ['real-time-stats', table, where, clinicId],
+    queryKey: ["real-time-stats", table, where, clinicId],
     queryFn: async () => {
-      let query = supabase
-        .from(table as any)
-        .select('*', { count: 'exact', head: count });
-
-      if (clinicId) {
-        query = query.eq('clinic_id', clinicId);
-      }
-
-      if (where) {
-        Object.entries(where).forEach(([key, val]) => {
-          query = query.eq(key, val);
-        });
-      }
-
-      const { count: total, error } = await query;
-      
-      if (error) {
-        console.error('Error fetching stats:', error);
+      try {
+        const data = await apiClient.get<{ total: number }>(
+          "/analytics/real-time-stats",
+          {
+            params: { table, where: JSON.stringify(where), count },
+          },
+        );
+        return data.total || 0;
+      } catch (error) {
+        console.error("Error fetching stats:", error);
         return 0;
       }
-
-      return total || 0;
     },
     enabled: !!clinicId,
     refetchInterval: 30000, // Atualiza a cada 30 segundos

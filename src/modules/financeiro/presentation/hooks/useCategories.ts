@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Category, CategoryType } from '../../domain/entities/Category';
-import { SupabaseCategoryRepository } from '../../infrastructure/repositories/SupabaseCategoryRepository';
-import { CreateCategoryUseCase } from '../../application/use-cases/CreateCategoryUseCase';
+import { useAuth } from "@/contexts/AuthContext";
+import { useCallback, useEffect, useState } from "react";
+import { CreateCategoryUseCase } from "../../application/use-cases/CreateCategoryUseCase";
+import { Category, CategoryType } from "../../domain/entities/Category";
+import { ApiCategoryRepository } from "../../infrastructure/repositories/ApiCategoryRepository";
 
-const repository = new SupabaseCategoryRepository();
+const repository = new ApiCategoryRepository();
 const createUseCase = new CreateCategoryUseCase(repository);
 
 export function useCategories(type?: CategoryType) {
@@ -19,10 +19,15 @@ export function useCategories(type?: CategoryType) {
     try {
       setLoading(true);
       setError(null);
-      const result = await repository.findByClinic(clinicId, { type, isActive: true });
+      const result = await repository.findByClinic(clinicId, {
+        type,
+        isActive: true,
+      });
       setCategories(result);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Erro ao carregar categorias'));
+      setError(
+        err instanceof Error ? err : new Error("Erro ao carregar categorias"),
+      );
     } finally {
       setLoading(false);
     }
@@ -41,7 +46,7 @@ export function useCategories(type?: CategoryType) {
       description?: string;
     }) => {
       if (!clinicId) {
-        throw new Error('Usuário não autenticado');
+        throw new Error("Usuário não autenticado");
       }
 
       await createUseCase.execute({
@@ -51,7 +56,7 @@ export function useCategories(type?: CategoryType) {
 
       await loadCategories();
     },
-    [clinicId, loadCategories]
+    [clinicId, loadCategories],
   );
 
   return {

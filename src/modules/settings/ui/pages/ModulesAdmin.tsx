@@ -1,20 +1,53 @@
-import { useEffect, useState, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Settings, Info, AlertCircle, CheckCircle2, XCircle, Link2, Lock, Unlock, Loader2, Network, BookOpen, Download, Upload, Sparkles } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import { ModuleDependencyGraph } from '@/components/modules/ModuleDependencyGraph';
-import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
-import { ModuleTemplateSelector } from '@/components/modules/ModuleTemplateSelector';
-import confetti from 'canvas-confetti';
+import { useEffect, useState, useRef } from "react";
+import { apiClient } from "@/lib/api/apiClient";
+import { PageHeader } from "@/components/shared/PageHeader";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Settings,
+  Info,
+  AlertCircle,
+  CheckCircle2,
+  XCircle,
+  Link2,
+  Lock,
+  Unlock,
+  Loader2,
+  Network,
+  BookOpen,
+  Download,
+  Upload,
+  Sparkles,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { ModuleDependencyGraph } from "@/components/modules/ModuleDependencyGraph";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { ModuleTemplateSelector } from "@/components/modules/ModuleTemplateSelector";
+import confetti from "canvas-confetti";
 
 interface ModuleData {
   id: number;
@@ -43,7 +76,9 @@ export default function ModulesAdmin() {
 
   useEffect(() => {
     // Check if user has completed onboarding
-    const hasCompletedOnboarding = localStorage.getItem('ortho-onboarding-completed');
+    const hasCompletedOnboarding = localStorage.getItem(
+      "ortho-onboarding-completed",
+    );
     if (!hasCompletedOnboarding) {
       // Show onboarding for first-time users
       setOnboardingOpen(true);
@@ -52,16 +87,15 @@ export default function ModulesAdmin() {
 
   const fetchModules = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('get-my-modules');
-      if (error) throw error;
+      const data: any = await apiClient.post("/functions/v1/get-my-modules");
       // A Edge Function retorna {modules: [...]}
       setModules(data?.modules || []);
     } catch (error) {
-      console.error('Error fetching modules:', error);
-      toast({ 
-        title: 'Erro', 
-        description: 'Erro ao carregar módulos', 
-        variant: 'destructive' 
+      console.error("Error fetching modules:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar módulos",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -74,76 +108,79 @@ export default function ModulesAdmin() {
 
   const handleToggle = async (moduleKey: string, currentState: boolean) => {
     setToggling(moduleKey);
-    
+
     // Shake animation para tentativa de desativar bloqueado
-    const module = modules.find(m => m.module_key === moduleKey);
+    const module = modules.find((m) => m.module_key === moduleKey);
     if (currentState && module && !module.can_deactivate) {
       const cardElement = cardRefs.current[moduleKey];
       if (cardElement) {
-        cardElement.classList.add('animate-shake');
-        setTimeout(() => cardElement.classList.remove('animate-shake'), 500);
+        cardElement.classList.add("animate-shake");
+        setTimeout(() => cardElement.classList.remove("animate-shake"), 500);
       }
-      
-      toast({ 
-        title: 'Módulo bloqueado', 
-        description: `Este módulo não pode ser desativado pois é requerido por: ${module.blocking_dependencies.join(', ')}`,
-        variant: 'destructive'
+
+      toast({
+        title: "Módulo bloqueado",
+        description: `Este módulo não pode ser desativado pois é requerido por: ${module.blocking_dependencies.join(", ")}`,
+        variant: "destructive",
       });
       setToggling(null);
       return;
     }
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('toggle-module-state', {
-        body: { module_key: moduleKey },
-      });
 
-      if (error) throw error;
+    try {
+      const data: any = await apiClient.post(
+        "/functions/v1/toggle-module-state",
+        {
+          module_key: moduleKey,
+        },
+      );
 
       const newState = !currentState;
-      
+
       // Confetti ao ativar módulo pela primeira vez
       if (newState) {
-        const wasActivatedBefore = localStorage.getItem(`module-activated-${moduleKey}`);
+        const wasActivatedBefore = localStorage.getItem(
+          `module-activated-${moduleKey}`,
+        );
         if (!wasActivatedBefore) {
           const cardElement = cardRefs.current[moduleKey];
           if (cardElement) {
             const rect = cardElement.getBoundingClientRect();
             const x = (rect.left + rect.width / 2) / window.innerWidth;
             const y = (rect.top + rect.height / 2) / window.innerHeight;
-            
+
             confetti({
               particleCount: 100,
               spread: 70,
               origin: { x, y },
-              colors: ['#2dd4bf', '#14b8a6', '#0d9488', '#fbbf24', '#f59e0b'],
+              colors: ["#2dd4bf", "#14b8a6", "#0d9488", "#fbbf24", "#f59e0b"],
             });
           }
-          localStorage.setItem(`module-activated-${moduleKey}`, 'true');
+          localStorage.setItem(`module-activated-${moduleKey}`, "true");
         }
       }
-      
-      toast({ 
-        title: newState ? 'Módulo ativado!' : 'Módulo desativado!',
-        description: `O módulo ${moduleKey} foi ${newState ? 'ativado' : 'desativado'}.`
+
+      toast({
+        title: newState ? "Módulo ativado!" : "Módulo desativado!",
+        description: `O módulo ${moduleKey} foi ${newState ? "ativado" : "desativado"}.`,
       });
       await fetchModules();
     } catch (error: any) {
-      console.error('Toggle error:', error);
-      
+      console.error("Toggle error:", error);
+
       // Shake animation para erro
       const cardElement = cardRefs.current[moduleKey];
       if (cardElement) {
-        cardElement.classList.add('animate-shake');
-        setTimeout(() => cardElement.classList.remove('animate-shake'), 500);
+        cardElement.classList.add("animate-shake");
+        setTimeout(() => cardElement.classList.remove("animate-shake"), 500);
       }
-      
+
       // Parse error message to show dependency info
-      const errorMsg = error.message || 'Erro ao alterar estado do módulo';
-      toast({ 
-        title: 'Erro ao alterar módulo', 
-        description: errorMsg, 
-        variant: 'destructive' 
+      const errorMsg = error.message || "Erro ao alterar estado do módulo";
+      toast({
+        title: "Erro ao alterar módulo",
+        description: errorMsg,
+        variant: "destructive",
       });
     } finally {
       setToggling(null);
@@ -152,29 +189,31 @@ export default function ModulesAdmin() {
 
   const handleRequest = async (moduleKey: string, moduleName: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('request-new-module', {
-        body: { module_key: moduleKey },
-      });
+      const data: any = await apiClient.post(
+        "/functions/v1/request-new-module",
+        {
+          module_key: moduleKey,
+        },
+      );
 
-      if (error) throw error;
-      toast({ 
-        title: 'Solicitação enviada!', 
-        description: `Sua solicitação para o módulo ${moduleName} foi enviada ao time comercial.`
+      toast({
+        title: "Solicitação enviada!",
+        description: `Sua solicitação para o módulo ${moduleName} foi enviada ao time comercial.`,
       });
     } catch (error: any) {
-      console.error('Request error:', error);
-      toast({ 
-        title: 'Erro ao solicitar módulo', 
-        description: error.message || 'Tente novamente mais tarde.', 
-        variant: 'destructive' 
+      console.error("Request error:", error);
+      toast({
+        title: "Erro ao solicitar módulo",
+        description: error.message || "Tente novamente mais tarde.",
+        variant: "destructive",
       });
     }
   };
 
   const handleExportConfig = () => {
     const activeModules = modules
-      .filter(m => m.is_active)
-      .map(m => ({
+      .filter((m) => m.is_active)
+      .map((m) => ({
         module_key: m.module_key,
         name: m.name,
         category: m.category,
@@ -186,23 +225,27 @@ export default function ModulesAdmin() {
       modules: activeModules,
     };
 
-    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(config, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `ortho-modules-config-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `ortho-modules-config-${new Date().toISOString().split("T")[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
     toast({
-      title: 'Configuração exportada!',
+      title: "Configuração exportada!",
       description: `${activeModules.length} módulos exportados com sucesso.`,
     });
   };
 
-  const handleImportConfig = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportConfig = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -211,20 +254,26 @@ export default function ModulesAdmin() {
       const config = JSON.parse(text);
 
       if (!config.modules || !Array.isArray(config.modules)) {
-        throw new Error('Formato de arquivo inválido');
+        throw new Error("Formato de arquivo inválido");
       }
 
       toast({
-        title: 'Importando configuração...',
+        title: "Importando configuração...",
         description: `Processando ${config.modules.length} módulos...`,
       });
 
       // Activate modules from config
       let activated = 0;
       for (const mod of config.modules) {
-        const existingModule = modules.find(m => m.module_key === mod.module_key);
-        if (existingModule && !existingModule.is_active && existingModule.can_activate) {
-          await supabase.functions.invoke('toggle-module-state', {
+        const existingModule = modules.find(
+          (m) => m.module_key === mod.module_key,
+        );
+        if (
+          existingModule &&
+          !existingModule.is_active &&
+          existingModule.can_activate
+        ) {
+          await apiClient.post("/functions/v1/toggle-module-state", {
             body: { module_key: mod.module_key },
           });
           activated++;
@@ -233,15 +282,15 @@ export default function ModulesAdmin() {
 
       await fetchModules();
       toast({
-        title: 'Importação concluída!',
+        title: "Importação concluída!",
         description: `${activated} módulos ativados com sucesso.`,
       });
     } catch (error: any) {
-      console.error('Import error:', error);
+      console.error("Import error:", error);
       toast({
-        title: 'Erro ao importar',
-        description: error.message || 'Verifique o formato do arquivo.',
-        variant: 'destructive',
+        title: "Erro ao importar",
+        description: error.message || "Verifique o formato do arquivo.",
+        variant: "destructive",
       });
     }
   };
@@ -249,29 +298,33 @@ export default function ModulesAdmin() {
   const handleGetSuggestions = async () => {
     setLoadingSuggestions(true);
     try {
-      const activeModulesList = modules.filter(m => m.is_active).map(m => m.name).join(', ');
-      const inactiveModulesList = modules.filter(m => !m.is_active).map(m => m.name).join(', ');
+      const activeModulesList = modules
+        .filter((m) => m.is_active)
+        .map((m) => m.name)
+        .join(", ");
+      const inactiveModulesList = modules
+        .filter((m) => !m.is_active)
+        .map((m) => m.name)
+        .join(", ");
 
-      const { data, error } = await supabase.functions.invoke('suggest-modules', {
+      const data: any = await apiClient.post("/functions/v1/suggest-modules", {
         body: {
           activeModules: activeModulesList,
           inactiveModules: inactiveModulesList,
         },
       });
 
-      if (error) throw error;
-
       setSuggestions(data.suggestions || []);
       toast({
-        title: 'Sugestões geradas!',
-        description: 'Confira as recomendações de módulos abaixo.',
+        title: "Sugestões geradas!",
+        description: "Confira as recomendações de módulos abaixo.",
       });
     } catch (error: any) {
-      console.error('Suggestions error:', error);
+      console.error("Suggestions error:", error);
       toast({
-        title: 'Erro ao gerar sugestões',
-        description: error.message || 'Tente novamente mais tarde.',
-        variant: 'destructive',
+        title: "Erro ao gerar sugestões",
+        description: error.message || "Tente novamente mais tarde.",
+        variant: "destructive",
       });
     } finally {
       setLoadingSuggestions(false);
@@ -280,7 +333,7 @@ export default function ModulesAdmin() {
 
   const getModuleStatusIcon = (module: ModuleData) => {
     if (!module.is_subscribed) return null;
-    
+
     if (module.is_active) {
       return <CheckCircle2 className="h-5 w-5 text-success" />;
     }
@@ -288,9 +341,9 @@ export default function ModulesAdmin() {
   };
 
   const getModuleStatusColor = (module: ModuleData) => {
-    if (!module.is_subscribed) return 'border-muted';
-    if (module.is_active) return 'border-success/50 bg-success/5';
-    return 'border-muted';
+    if (!module.is_subscribed) return "border-muted";
+    if (module.is_active) return "border-success/50 bg-success/5";
+    return "border-muted";
   };
 
   const canToggle = (module: ModuleData) => {
@@ -308,35 +361,38 @@ export default function ModulesAdmin() {
     if (!module.is_active && hasUnmetDeps) {
       return {
         icon: Lock,
-        title: 'Não pode ser ativado',
-        description: `Requer os módulos: ${module.unmet_dependencies.join(', ')}`,
-        variant: 'destructive' as const,
+        title: "Não pode ser ativado",
+        description: `Requer os módulos: ${module.unmet_dependencies.join(", ")}`,
+        variant: "destructive" as const,
       };
     }
 
     if (module.is_active && hasBlockingDeps) {
       return {
         icon: Lock,
-        title: 'Não pode ser desativado',
-        description: `É necessário para: ${module.blocking_dependencies.join(', ')}`,
-        variant: 'destructive' as const,
+        title: "Não pode ser desativado",
+        description: `É necessário para: ${module.blocking_dependencies.join(", ")}`,
+        variant: "destructive" as const,
       };
     }
 
     return {
       icon: Unlock,
-      title: module.is_active ? 'Pode ser desativado' : 'Pode ser ativado',
-      description: 'Clique no switch para alterar o estado',
-      variant: 'default' as const,
+      title: module.is_active ? "Pode ser desativado" : "Pode ser ativado",
+      description: "Clique no switch para alterar o estado",
+      variant: "default" as const,
     };
   };
 
-  const groupedModules = Array.isArray(modules) 
-    ? modules.reduce((acc, module) => {
-        if (!acc[module.category]) acc[module.category] = [];
-        acc[module.category].push(module);
-        return acc;
-      }, {} as Record<string, ModuleData[]>)
+  const groupedModules = Array.isArray(modules)
+    ? modules.reduce(
+        (acc, module) => {
+          if (!acc[module.category]) acc[module.category] = [];
+          acc[module.category].push(module);
+          return acc;
+        },
+        {} as Record<string, ModuleData[]>,
+      )
     : {};
 
   if (loading) {
@@ -358,11 +414,11 @@ export default function ModulesAdmin() {
           title="Administração de Módulos"
           description="Gerencie quais módulos estão ativos na sua clínica"
         />
-        
+
         <div className="flex flex-wrap gap-3">
-          <Button 
-            variant="outline" 
-            size="lg" 
+          <Button
+            variant="outline"
+            size="lg"
             className="gap-2"
             onClick={() => setOnboardingOpen(true)}
           >
@@ -409,7 +465,7 @@ export default function ModulesAdmin() {
               variant="outline"
               size="lg"
               className="gap-2"
-              onClick={() => document.getElementById('import-config')?.click()}
+              onClick={() => document.getElementById("import-config")?.click()}
               asChild
             >
               <span>
@@ -418,7 +474,7 @@ export default function ModulesAdmin() {
               </span>
             </Button>
           </label>
-          
+
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" size="lg" className="gap-2">
@@ -433,7 +489,8 @@ export default function ModulesAdmin() {
                   Grafo de Dependências dos Módulos
                 </DialogTitle>
                 <DialogDescription>
-                  Visualização interativa das dependências entre os módulos. Use os controles para zoom e navegação.
+                  Visualização interativa das dependências entre os módulos. Use
+                  os controles para zoom e navegação.
                 </DialogDescription>
               </DialogHeader>
               <div className="h-[calc(90vh-120px)]">
@@ -451,8 +508,9 @@ export default function ModulesAdmin() {
         <Info className="h-4 w-4" />
         <AlertTitle>Gestão de Módulos</AlertTitle>
         <AlertDescription>
-          Alguns módulos dependem de outros para funcionar. O sistema indica automaticamente 
-          quando há dependências que impedem ativação ou desativação.
+          Alguns módulos dependem de outros para funcionar. O sistema indica
+          automaticamente quando há dependências que impedem ativação ou
+          desativação.
         </AlertDescription>
       </Alert>
 
@@ -462,7 +520,9 @@ export default function ModulesAdmin() {
           <AlertTitle>Sugestões Inteligentes de Módulos</AlertTitle>
           <AlertDescription>
             <div className="mt-2 space-y-2">
-              <p className="text-sm font-medium">Baseado no perfil da sua clínica, recomendamos:</p>
+              <p className="text-sm font-medium">
+                Baseado no perfil da sua clínica, recomendamos:
+              </p>
               <ul className="list-disc list-inside space-y-1 text-sm">
                 {suggestions.map((suggestion, index) => (
                   <li key={index}>{suggestion}</li>
@@ -478,10 +538,11 @@ export default function ModulesAdmin() {
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold text-foreground">{category}</h2>
             <Badge variant="info" className="text-xs">
-              {categoryModules.filter(m => m.is_active).length} / {categoryModules.length} ativos
+              {categoryModules.filter((m) => m.is_active).length} /{" "}
+              {categoryModules.length} ativos
             </Badge>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {categoryModules.map((module) => {
               const tooltipInfo = getToggleTooltip(module);
@@ -489,13 +550,13 @@ export default function ModulesAdmin() {
               const toggleEnabled = canToggle(module) && !isTogglingThis;
 
               return (
-                <Card 
+                <Card
                   key={module.module_key}
                   ref={(el) => (cardRefs.current[module.module_key] = el)}
                   variant="elevated"
                   className={cn(
                     getModuleStatusColor(module),
-                    isTogglingThis && "opacity-60"
+                    isTogglingThis && "opacity-60",
                   )}
                 >
                   <CardHeader className="pb-3">
@@ -519,24 +580,26 @@ export default function ModulesAdmin() {
                     <div className="flex flex-wrap gap-2">
                       {module.is_subscribed ? (
                         <>
-                          <Badge 
-                            variant={module.is_active ? 'success' : 'secondary'}
+                          <Badge
+                            variant={module.is_active ? "success" : "secondary"}
                             className="text-xs"
                           >
-                            {module.is_active ? 'Ativo' : 'Inativo'}
+                            {module.is_active ? "Ativo" : "Inativo"}
                           </Badge>
-                          {module.unmet_dependencies.length > 0 && !module.is_active && (
-                            <Badge variant="error" className="text-xs">
-                              <Lock className="h-3 w-3 mr-1" />
-                              Bloqueado
-                            </Badge>
-                          )}
-                          {module.blocking_dependencies.length > 0 && module.is_active && (
-                            <Badge variant="info" className="text-xs">
-                              <Link2 className="h-3 w-3 mr-1" />
-                              Em uso
-                            </Badge>
-                          )}
+                          {module.unmet_dependencies.length > 0 &&
+                            !module.is_active && (
+                              <Badge variant="error" className="text-xs">
+                                <Lock className="h-3 w-3 mr-1" />
+                                Bloqueado
+                              </Badge>
+                            )}
+                          {module.blocking_dependencies.length > 0 &&
+                            module.is_active && (
+                              <Badge variant="info" className="text-xs">
+                                <Link2 className="h-3 w-3 mr-1" />
+                                Em uso
+                              </Badge>
+                            )}
                         </>
                       ) : (
                         <Badge variant="outline" className="text-xs">
@@ -546,32 +609,38 @@ export default function ModulesAdmin() {
                     </div>
 
                     {/* Dependencies Info */}
-                    {module.is_subscribed && (module.unmet_dependencies.length > 0 || module.blocking_dependencies.length > 0) && (
-                      <div className="space-y-2 p-3 bg-muted/50 rounded-md text-xs">
-                        {module.unmet_dependencies.length > 0 && (
-                          <div className="flex items-start gap-2">
-                            <AlertCircle className="h-3 w-3 mt-0.5 text-destructive flex-shrink-0" />
-                            <div>
-                              <p className="font-medium text-destructive">Dependências não atendidas:</p>
-                              <p className="text-muted-foreground mt-0.5">
-                                {module.unmet_dependencies.join(', ')}
-                              </p>
+                    {module.is_subscribed &&
+                      (module.unmet_dependencies.length > 0 ||
+                        module.blocking_dependencies.length > 0) && (
+                        <div className="space-y-2 p-3 bg-muted/50 rounded-md text-xs">
+                          {module.unmet_dependencies.length > 0 && (
+                            <div className="flex items-start gap-2">
+                              <AlertCircle className="h-3 w-3 mt-0.5 text-destructive flex-shrink-0" />
+                              <div>
+                                <p className="font-medium text-destructive">
+                                  Dependências não atendidas:
+                                </p>
+                                <p className="text-muted-foreground mt-0.5">
+                                  {module.unmet_dependencies.join(", ")}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        )}
-                        {module.blocking_dependencies.length > 0 && (
-                          <div className="flex items-start gap-2">
-                            <Link2 className="h-3 w-3 mt-0.5 text-primary flex-shrink-0" />
-                            <div>
-                              <p className="font-medium text-primary">Requerido por:</p>
-                              <p className="text-muted-foreground mt-0.5">
-                                {module.blocking_dependencies.join(', ')}
-                              </p>
+                          )}
+                          {module.blocking_dependencies.length > 0 && (
+                            <div className="flex items-start gap-2">
+                              <Link2 className="h-3 w-3 mt-0.5 text-primary flex-shrink-0" />
+                              <div>
+                                <p className="font-medium text-primary">
+                                  Requerido por:
+                                </p>
+                                <p className="text-muted-foreground mt-0.5">
+                                  {module.blocking_dependencies.join(", ")}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                          )}
+                        </div>
+                      )}
 
                     {/* Action Controls */}
                     {module.is_subscribed ? (
@@ -580,23 +649,36 @@ export default function ModulesAdmin() {
                           <TooltipTrigger asChild>
                             <div className="flex items-center justify-between p-3 bg-background rounded-md border">
                               <div className="flex items-center gap-2">
-                                {tooltipInfo && <tooltipInfo.icon className="h-4 w-4 text-muted-foreground" />}
+                                {tooltipInfo && (
+                                  <tooltipInfo.icon className="h-4 w-4 text-muted-foreground" />
+                                )}
                                 <span className="text-sm font-medium text-foreground">
-                                  {module.is_active ? 'Desativar módulo' : 'Ativar módulo'}
+                                  {module.is_active
+                                    ? "Desativar módulo"
+                                    : "Ativar módulo"}
                                 </span>
                               </div>
                               <Switch
                                 checked={module.is_active}
                                 disabled={!toggleEnabled}
-                                onCheckedChange={() => handleToggle(module.module_key, module.is_active)}
+                                onCheckedChange={() =>
+                                  handleToggle(
+                                    module.module_key,
+                                    module.is_active,
+                                  )
+                                }
                               />
                             </div>
                           </TooltipTrigger>
                           {tooltipInfo && (
                             <TooltipContent side="bottom" className="max-w-xs">
                               <div className="space-y-1">
-                                <p className="font-semibold text-sm">{tooltipInfo.title}</p>
-                                <p className="text-xs text-muted-foreground">{tooltipInfo.description}</p>
+                                <p className="font-semibold text-sm">
+                                  {tooltipInfo.title}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {tooltipInfo.description}
+                                </p>
                               </div>
                             </TooltipContent>
                           )}
@@ -606,7 +688,9 @@ export default function ModulesAdmin() {
                       <Button
                         variant="outline"
                         className="w-full"
-                        onClick={() => handleRequest(module.module_key, module.name)}
+                        onClick={() =>
+                          handleRequest(module.module_key, module.name)
+                        }
                       >
                         <Info className="h-4 w-4 mr-2" />
                         Solicitar Contratação
@@ -626,7 +710,7 @@ export default function ModulesAdmin() {
           onClose={() => setOnboardingOpen(false)}
           onComplete={() => {
             setOnboardingOpen(false);
-            localStorage.setItem('ortho-onboarding-completed', 'true');
+            localStorage.setItem("ortho-onboarding-completed", "true");
             fetchModules();
           }}
         />

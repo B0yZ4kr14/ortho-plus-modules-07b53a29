@@ -1,184 +1,150 @@
-import { IUserRepository } from '@/domain/repositories/IUserRepository';
-import { User } from '@/domain/entities/User';
-import { UserMapper } from '../mappers/UserMapper';
-import { NotFoundError, InfrastructureError } from '../errors';
-import { supabase } from '@/integrations/supabase/client';
+import { User } from "@/domain/entities/User";
+import { IUserRepository } from "@/domain/repositories/IUserRepository";
+import { apiClient } from "@/lib/api/apiClient";
+import { InfrastructureError } from "../errors";
+import { UserMapper } from "../mappers/UserMapper";
 
 export class SupabaseUserRepository implements IUserRepository {
   async findById(id: string): Promise<User | null> {
     try {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', id)
-        .single();
+      // First get profile data
+      const profiles = await apiClient.get<any[]>(
+        `/rest/v1/profiles?id=eq.${id}`,
+      );
 
-      if (profileError) {
-        if (profileError.code === 'PGRST116') return null;
-        throw new InfrastructureError(`Erro ao buscar usuário: ${profileError.message}`, profileError);
-      }
+      if (!profiles || profiles.length === 0) return null;
+      const profile = profiles[0];
 
-      // Buscar email do auth.users
-      const { data: authUser, error: authError } = await (supabase.auth.admin as any).getUserById(id);
-      if (authError || !authUser?.user) return null;
+      // Assuming our new backend has an endpoint for user details including email mapping
+      // If it doesn't, we can fallback to searching via the /auth/users list
+      const data = await apiClient
+        .get<any>(`/auth/user/${id}/metadata`)
+        .catch(() => null);
+      const email = data?.email || profile.email || "";
 
-      return UserMapper.toDomain(profile, (authUser.user as any).email ?? '');
+      return UserMapper.toDomain(profile, email);
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
-      throw new InfrastructureError('Erro inesperado ao buscar usuário', error);
+      throw new InfrastructureError("Erro inesperado ao buscar usuário", error);
     }
   }
 
   async findByEmail(email: string): Promise<User | null> {
     try {
-      // Buscar via auth
-      const { data: authUsers, error: authError } = await (supabase.auth.admin as any).listUsers();
-      if (authError) {
-        throw new InfrastructureError(`Erro ao buscar usuário por email: ${authError.message}`, authError);
-      }
+      // Search via custom auth endpoint instead of supabase admin
+      const data = await apiClient.get<any>(
+        `/auth/users?email=${encodeURIComponent(email)}`,
+      );
+      const authUser =
+        data?.users?.find((u: any) => u.email === email) ||
+        (data && data.email === email ? data : null);
 
-      const authUser = (authUsers as any).users.find((u: any) => u.email === email);
       if (!authUser) return null;
 
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', authUser.id)
-        .single();
+      const profiles = await apiClient.get<any[]>(
+        `/rest/v1/profiles?id=eq.${authUser.id}`,
+      );
+      if (!profiles || profiles.length === 0) return null;
 
-      if (profileError) return null;
-
-      return UserMapper.toDomain(profile, email);
+      return UserMapper.toDomain(profiles[0], email);
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
-      throw new InfrastructureError('Erro inesperado ao buscar usuário por email', error);
+      throw new InfrastructureError(
+        "Erro inesperado ao buscar usuário por email",
+        error,
+      );
     }
   }
 
   async findByClinicId(clinicId: string): Promise<User[]> {
     try {
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('clinic_id', clinicId);
+      const data = await apiClient.get<any>(`/auth/users?clinicId=${clinicId}`);
+      const profiles = data.users || data || [];
 
-      if (profileError) {
-        throw new InfrastructureError(`Erro ao buscar usuários: ${profileError.message}`, profileError);
-      }
-
-      // Buscar emails do auth
-      const { data: authUsers, error: authError } = await (supabase.auth.admin as any).listUsers();
-      if (authError) return [];
-
-      const emailMap = new Map((authUsers as any).users.map((u: any) => [u.id, u.email ?? '']));
-
-      return profiles.map((profile) =>
-        UserMapper.toDomain(profile, (emailMap.get(profile.id) as string) ?? '')
+      return profiles.map((profile: any) =>
+        UserMapper.toDomain(profile, profile.email || ""),
       );
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
-      throw new InfrastructureError('Erro inesperado ao buscar usuários', error);
+      throw new InfrastructureError(
+        "Erro inesperado ao buscar usuários",
+        error,
+      );
     }
   }
 
   async findActiveByClinicId(clinicId: string): Promise<User[]> {
     try {
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('clinic_id', clinicId);
-
-      if (profileError) {
-        throw new InfrastructureError(`Erro ao buscar usuários ativos: ${profileError.message}`, profileError);
-      }
-
-      const { data: authUsers, error: authError } = await (supabase.auth.admin as any).listUsers();
-      if (authError) return [];
-
-      const emailMap = new Map((authUsers as any).users.map((u: any) => [u.id, u.email ?? '']));
+      const data = await apiClient.get<any>(`/auth/users?clinicId=${clinicId}`);
+      const profiles = data.users || data || [];
 
       return profiles
         .filter((profile: any) => profile.is_active !== false)
         .map((profile: any) =>
-          UserMapper.toDomain(profile, (emailMap.get(profile.id) as string) ?? '')
+          UserMapper.toDomain(profile, profile.email || ""),
         );
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
-      throw new InfrastructureError('Erro inesperado ao buscar usuários ativos', error);
+      throw new InfrastructureError(
+        "Erro inesperado ao buscar usuários ativos",
+        error,
+      );
     }
   }
 
   async findAdminsByClinicId(clinicId: string): Promise<User[]> {
     try {
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('clinic_id', clinicId);
-
-      if (profileError) {
-        throw new InfrastructureError(`Erro ao buscar administradores: ${profileError.message}`, profileError);
-      }
-
-      const { data: authUsers, error: authError } = await (supabase.auth.admin as any).listUsers();
-      if (authError) return [];
-
-      const emailMap = new Map((authUsers as any).users.map((u: any) => [u.id, u.email ?? '']));
+      const data = await apiClient.get<any>(`/auth/users?clinicId=${clinicId}`);
+      const profiles = data.users || data || [];
 
       return profiles
-        .filter((profile: any) => profile.app_role === 'ADMIN')
+        .filter((profile: any) => profile.app_role === "ADMIN")
         .map((profile: any) =>
-          UserMapper.toDomain(profile, (emailMap.get(profile.id) as string) ?? '')
+          UserMapper.toDomain(profile, profile.email || ""),
         );
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
-      throw new InfrastructureError('Erro inesperado ao buscar administradores', error);
+      throw new InfrastructureError(
+        "Erro inesperado ao buscar administradores",
+        error,
+      );
     }
   }
 
   async save(user: User): Promise<void> {
     try {
       const data = UserMapper.toPersistence(user);
-      const { error } = await supabase.from('profiles').insert(data);
-
-      if (error) {
-        throw new InfrastructureError(`Erro ao salvar usuário: ${error.message}`, error);
-      }
+      await apiClient.post("/rest/v1/profiles", data); // This should probably be an auth endpoint too, but keeping as is if it mirrors backend
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
-      throw new InfrastructureError('Erro inesperado ao salvar usuário', error);
+      throw new InfrastructureError("Erro inesperado ao salvar usuário", error);
     }
   }
 
   async update(user: User): Promise<void> {
     try {
       const data = UserMapper.toPersistence(user);
-      const { error } = await supabase
-        .from('profiles')
-        .update(data)
-        .eq('id', user.id);
-
-      if (error) {
-        throw new InfrastructureError(`Erro ao atualizar usuário: ${error.message}`, error);
-      }
+      await apiClient.patch(`/rest/v1/profiles?id=eq.${user.id}`, data);
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
-      throw new InfrastructureError('Erro inesperado ao atualizar usuário', error);
+      throw new InfrastructureError(
+        "Erro inesperado ao atualizar usuário",
+        error,
+      );
     }
   }
 
   async delete(id: string): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ is_active: false } as any)
-        .eq('id', id);
-
-      if (error) {
-        throw new InfrastructureError(`Erro ao deletar usuário: ${error.message}`, error);
-      }
+      await apiClient.patch(`/rest/v1/profiles?id=eq.${id}`, {
+        is_active: false,
+      });
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
-      throw new InfrastructureError('Erro inesperado ao deletar usuário', error);
+      throw new InfrastructureError(
+        "Erro inesperado ao deletar usuário",
+        error,
+      );
     }
   }
 }

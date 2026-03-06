@@ -1,52 +1,78 @@
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { FileJson, FileSpreadsheet, FileText, Loader2, Download } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  FileJson,
+  FileSpreadsheet,
+  FileText,
+  Loader2,
+  Download,
+} from "lucide-react";
+import { apiClient } from "@/lib/api/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
-type ExportFormat = 'json' | 'csv' | 'excel' | 'pdf';
+type ExportFormat = "json" | "csv" | "excel" | "pdf";
 
 export function BackupExportTab() {
   const { clinicId } = useAuth();
   const [isExporting, setIsExporting] = useState(false);
-  const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('json');
+  const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("json");
 
   const formats = [
-    { value: 'json', label: 'JSON', icon: FileJson, description: 'Formato estruturado' },
-    { value: 'csv', label: 'CSV', icon: FileSpreadsheet, description: 'Planilha Excel' },
-    { value: 'excel', label: 'Excel', icon: FileSpreadsheet, description: 'XLSX nativo' },
-    { value: 'pdf', label: 'PDF', icon: FileText, description: 'Documento' }
+    {
+      value: "json",
+      label: "JSON",
+      icon: FileJson,
+      description: "Formato estruturado",
+    },
+    {
+      value: "csv",
+      label: "CSV",
+      icon: FileSpreadsheet,
+      description: "Planilha Excel",
+    },
+    {
+      value: "excel",
+      label: "Excel",
+      icon: FileSpreadsheet,
+      description: "XLSX nativo",
+    },
+    { value: "pdf", label: "PDF", icon: FileText, description: "Documento" },
   ];
 
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('export-clinic-data', {
-        body: {
+      const data = await apiClient.post<any>(
+        "/functions/v1/export-clinic-data",
+        {
           clinic_id: clinicId,
-          format: selectedFormat
-        }
-      });
+          format: selectedFormat,
+        },
+      );
 
-      if (error) throw error;
-
-      const blob = new Blob([data], { 
-        type: selectedFormat === 'json' ? 'application/json' : 'text/csv' 
+      const blob = new Blob([JSON.stringify(data)], {
+        type: selectedFormat === "json" ? "application/json" : "text/csv",
       });
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `backup-${new Date().toISOString()}.${selectedFormat}`;
       a.click();
 
-      toast.success('Exportação concluída com sucesso');
+      toast.success("Exportação concluída com sucesso");
     } catch (error) {
-      console.error('Erro ao exportar:', error);
-      toast.error('Erro ao exportar dados');
+      console.error("Erro ao exportar:", error);
+      toast.error("Erro ao exportar dados");
     } finally {
       setIsExporting(false);
     }
@@ -61,7 +87,10 @@ export function BackupExportTab() {
         <CardContent className="space-y-6">
           <div className="space-y-2">
             <label className="text-sm font-medium">Formato de Exportação</label>
-            <Select value={selectedFormat} onValueChange={(v) => setSelectedFormat(v as ExportFormat)}>
+            <Select
+              value={selectedFormat}
+              onValueChange={(v) => setSelectedFormat(v as ExportFormat)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -74,7 +103,9 @@ export function BackupExportTab() {
                         <Icon className="h-4 w-4" />
                         <div>
                           <p className="font-medium">{format.label}</p>
-                          <p className="text-xs text-muted-foreground">{format.description}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {format.description}
+                          </p>
                         </div>
                       </div>
                     </SelectItem>
@@ -84,8 +115,8 @@ export function BackupExportTab() {
             </Select>
           </div>
 
-          <Button 
-            onClick={handleExport} 
+          <Button
+            onClick={handleExport}
             disabled={isExporting}
             className="w-full"
           >
@@ -119,8 +150,8 @@ export function BackupExportTab() {
 
       <Alert>
         <AlertDescription className="text-sm">
-          <strong>Conformidade LGPD:</strong> Todas as exportações são registradas no audit log 
-          para fins de compliance e rastreabilidade.
+          <strong>Conformidade LGPD:</strong> Todas as exportações são
+          registradas no audit log para fins de compliance e rastreabilidade.
         </AlertDescription>
       </Alert>
     </div>

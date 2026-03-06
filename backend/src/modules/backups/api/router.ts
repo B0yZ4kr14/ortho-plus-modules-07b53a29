@@ -1,18 +1,11 @@
-/**
- * Backups Module Router
- */
-
 import { Router } from 'express';
-import { BackupsController } from './BackupsController';
+import { backupController } from './backupController';
 
-export function createBackupsRouter(): Router {
-  const router = Router();
-  const controller = new BackupsController();
+const router = Router();
 
-  router.get('/', (req, res) => controller.listBackups(req, res));
-  router.post('/', (req, res) => controller.createBackup(req, res));
-  router.get('/statistics', (req, res) => controller.getBackupStatistics(req, res));
-  router.post('/:backupId/verify', (req, res) => controller.verifyBackup(req, res));
+// Endpoint que emula a Edge Function 'backup-manager'
+// Gerencia deduplication, immutability, streaming, integrity-check, auto-config,
+// download, replicate, test-restore, upload-cloud, validate, volatility-check
+router.post('/manager', backupController.manager);
 
-  return router;
-}
+export default router;

@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useFidelidadeSupabase } from "@/modules/fidelidade/hooks/useFidelidadeSupabase";
+import { useFidelidade } from "@/modules/fidelidade/hooks/useFidelidade";
 
 const badgeSchema = z.object({
   nome: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
@@ -40,7 +40,7 @@ const iconeOptions = [
 ];
 
 export function BadgeForm({ open, onOpenChange }: BadgeFormProps) {
-  const { createBadge } = useFidelidadeSupabase();
+  const { createBadge } = useFidelidade();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<BadgeFormData>>({
     nome: "",

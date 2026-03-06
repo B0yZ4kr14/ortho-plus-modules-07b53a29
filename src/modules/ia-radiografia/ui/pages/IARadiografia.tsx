@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useRadiografiaSupabase } from '@/modules/ia-radiografia/hooks/useRadiografiaSupabase';
+import { useRadiografia } from '@/modules/ia-radiografia/hooks/useRadiografia';
 import { tipoRadiografiaLabels } from '@/modules/ia-radiografia/types/radiografia.types';
 import type { AnaliseComplete } from '@/modules/ia-radiografia/types/radiografia.types';
 import { useToast } from '@/hooks/use-toast';
@@ -37,7 +37,7 @@ export default function IARadiografia() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   
-  const { analises, loading, uploadRadiografia } = useRadiografiaSupabase();
+  const { analises, loading, uploadRadiografia } = useRadiografia();
   const { toast } = useToast();
   
   // Filtrar análises

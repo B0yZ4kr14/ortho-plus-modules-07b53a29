@@ -18,7 +18,7 @@ import { OdontogramaAIAnalysis } from '@/modules/pep/components/OdontogramaAIAna
 import { PrescricaoForm } from '@/modules/pep/components/PrescricaoForm';
 import { ReceitaForm } from '@/modules/pep/components/ReceitaForm';
 import { ProntuarioPDF } from '@/modules/pep/components/ProntuarioPDF';
-import { useOdontogramaSupabase } from '@/modules/pep/hooks/useOdontogramaSupabase';
+import { useOdontograma } from '@/modules/pep/hooks/useOdontograma';
 import { useTratamentos } from '@/modules/pep/hooks/useTratamentos';
 import { PatientSelector } from '@/components/shared/PatientSelector';
 import type { Patient } from '@/types/patient';
@@ -46,7 +46,7 @@ export default function PEPPage() {
   // Estado para comparação de odontogramas (dois IDs)
   const [selectedForComparison, setSelectedForComparison] = useState<[string | null, string | null]>([null, null]);
   
-  const { history, restoreFromHistory } = useOdontogramaSupabase(prontuarioId || '');
+  const { history, restoreFromHistory } = useOdontograma(prontuarioId || '');
 
   const handleCompareSelect = (historyId: string) => {
     setSelectedForComparison(prev => {

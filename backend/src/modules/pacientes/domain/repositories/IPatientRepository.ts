@@ -1,11 +1,10 @@
 /**
  * IPatientRepository - Repository interface do agregado Patient
- * 
+ *
  * Define contrato para persistência de pacientes.
  */
 
-import { Patient } from '../entities/Patient';
-import { PatientStatus } from '../value-objects/PatientStatus';
+import { Patient } from "../entities/Patient";
 
 export interface PatientFilters {
   clinicId: string;
@@ -21,7 +20,7 @@ export interface PaginationOptions {
   page: number;
   limit: number;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 export interface PaginatedResult<T> {
@@ -63,7 +62,7 @@ export interface IPatientRepository {
    */
   findMany(
     filters: PatientFilters,
-    pagination: PaginationOptions
+    pagination: PaginationOptions,
   ): Promise<PaginatedResult<Patient>>;
 
   /**
@@ -80,7 +79,7 @@ export interface IPatientRepository {
     toStatus: string,
     reason: string,
     changedBy: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): Promise<void>;
 
   /**

@@ -1,13 +1,19 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { Github, ExternalLink, RefreshCw } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { apiClient } from "@/lib/api/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { Github, ExternalLink, RefreshCw } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 interface GitHubConfig {
   repository_url?: string;
@@ -22,9 +28,9 @@ export function GitHubIntegrationConfig() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [config, setConfig] = useState<GitHubConfig>({
-    repository_url: '',
+    repository_url: "",
     auto_sync_enabled: false,
-    branch_name: 'main',
+    branch_name: "main",
   });
 
   useEffect(() => {
@@ -33,23 +39,20 @@ export function GitHubIntegrationConfig() {
 
   const loadConfig = async () => {
     if (!selectedClinic) return;
-    
+
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('admin_configurations')
-        .select('config_data')
-        .eq('clinic_id', typeof selectedClinic === 'string' ? selectedClinic : selectedClinic.id)
-        .eq('config_type', 'github')
-        .single();
+      const dataArray = await apiClient.get<any[]>(
+        `/rest/v1/admin_configurations?select=config_data&clinic_id=eq.${typeof selectedClinic === "string" ? selectedClinic : selectedClinic.id}&config_type=eq.github`,
+      );
 
-      if (error && error.code !== 'PGRST116') throw error;
-      
+      const data = dataArray?.[0];
+
       if (data?.config_data) {
         setConfig(data.config_data as GitHubConfig);
       }
     } catch (error) {
-      console.error('Erro ao carregar config GitHub:', error);
+      console.error("Erro ao carregar config GitHub:", error);
     } finally {
       setLoading(false);
     }
@@ -60,28 +63,34 @@ export function GitHubIntegrationConfig() {
 
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('admin_configurations')
-        .upsert({
-          clinic_id: typeof selectedClinic === 'string' ? selectedClinic : selectedClinic.id,
-          config_type: 'github',
+      await apiClient.post(
+        "/rest/v1/admin_configurations",
+        {
+          clinic_id:
+            typeof selectedClinic === "string"
+              ? selectedClinic
+              : selectedClinic.id,
+          config_type: "github",
           config_data: config as any,
           is_active: true,
-        }, {
-          onConflict: 'clinic_id,config_type'
-        });
-
-      if (error) throw error;
+        },
+        {
+          headers: {
+            Prefer: "resolution=merge-duplicates",
+          },
+        },
+      );
 
       toast({
-        title: 'Configurações salvas',
-        description: 'Integração com GitHub configurada com sucesso',
+        title: "Configurações salvas",
+        description: "Integração com GitHub configurada com sucesso",
       });
     } catch (error) {
       toast({
-        title: 'Erro ao salvar',
-        description: error instanceof Error ? error.message : 'Erro desconhecido',
-        variant: 'destructive',
+        title: "Erro ao salvar",
+        description:
+          error instanceof Error ? error.message : "Erro desconhecido",
+        variant: "destructive",
       });
     } finally {
       setSaving(false);
@@ -91,29 +100,33 @@ export function GitHubIntegrationConfig() {
   const testConnection = async () => {
     if (!config.repository_url) {
       toast({
-        title: 'URL obrigatória',
-        description: 'Informe a URL do repositório GitHub',
-        variant: 'destructive',
+        title: "URL obrigatória",
+        description: "Informe a URL do repositório GitHub",
+        variant: "destructive",
       });
       return;
     }
 
     toast({
-      title: 'Testando conexão...',
-      description: 'Verificando acesso ao repositório',
+      title: "Testando conexão...",
+      description: "Verificando acesso ao repositório",
     });
 
     // Simular teste de conexão (em produção, fazer chamada real via Edge Function)
     setTimeout(() => {
       toast({
-        title: 'Conexão bem-sucedida',
-        description: 'Repositório acessível',
+        title: "Conexão bem-sucedida",
+        description: "Repositório acessível",
       });
     }, 1500);
   };
 
   if (loading) {
-    return <Card><CardContent className="pt-6">Carregando...</CardContent></Card>;
+    return (
+      <Card>
+        <CardContent className="pt-6">Carregando...</CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -135,11 +148,13 @@ export function GitHubIntegrationConfig() {
               <Input
                 id="repo-url"
                 placeholder="https://github.com/sua-organizacao/ortho-plus"
-                value={config.repository_url || ''}
-                onChange={(e) => setConfig({ ...config, repository_url: e.target.value })}
+                value={config.repository_url || ""}
+                onChange={(e) =>
+                  setConfig({ ...config, repository_url: e.target.value })
+                }
               />
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="icon"
                 onClick={testConnection}
                 title="Testar conexão"
@@ -157,8 +172,10 @@ export function GitHubIntegrationConfig() {
             <Input
               id="branch"
               placeholder="main"
-              value={config.branch_name || 'main'}
-              onChange={(e) => setConfig({ ...config, branch_name: e.target.value })}
+              value={config.branch_name || "main"}
+              onChange={(e) =>
+                setConfig({ ...config, branch_name: e.target.value })
+              }
             />
           </div>
 
@@ -171,7 +188,7 @@ export function GitHubIntegrationConfig() {
             </div>
             <Switch
               checked={config.auto_sync_enabled || false}
-              onCheckedChange={(checked) => 
+              onCheckedChange={(checked) =>
                 setConfig({ ...config, auto_sync_enabled: checked })
               }
             />
@@ -179,15 +196,17 @@ export function GitHubIntegrationConfig() {
 
           {config.last_sync_at && (
             <div className="p-3 bg-muted rounded-lg text-sm">
-              <span className="text-muted-foreground">Última sincronização:</span>{' '}
-              {new Date(config.last_sync_at).toLocaleString('pt-BR')}
+              <span className="text-muted-foreground">
+                Última sincronização:
+              </span>{" "}
+              {new Date(config.last_sync_at).toLocaleString("pt-BR")}
             </div>
           )}
         </div>
 
         <div className="flex gap-2">
           <Button onClick={saveConfig} disabled={saving}>
-            {saving ? 'Salvando...' : 'Salvar Configurações'}
+            {saving ? "Salvando..." : "Salvar Configurações"}
           </Button>
           <Button variant="outline" onClick={() => loadConfig()}>
             <RefreshCw className="h-4 w-4 mr-2" />

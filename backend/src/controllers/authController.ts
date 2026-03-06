@@ -62,3 +62,35 @@ export const getUser = async (req: Request, res: Response) => {
 export const logout = async (_req: Request, res: Response) => {
     res.status(204).send();
 };
+
+export const patientAuth = async (req: Request, res: Response) => {
+  const { cpf, birthDate } = req.body;
+  if (!cpf || !birthDate) {
+      res.status(400).json({ error: "CPF and birth date required" });
+      return;
+  }
+  
+  const dummyId = "patient-0000-0000-0000-000000000000";
+  const profile = { id: dummyId, email: `patient-${cpf}@example.com`, name: "Paciente", role: "patient" } as any; 
+
+  const token = jwt.sign(
+    { sub: profile.id, email: profile.email, role: "patient" },
+    process.env.JWT_SECRET || "supersecretmockjwt",
+    { expiresIn: "1h" }
+  );
+
+  res.json({
+    access_token: token,
+    token_type: "bearer",
+    expires_in: 3600,
+    refresh_token: token,
+    user: {
+      id: profile.id,
+      aud: "authenticated",
+      role: "patient",
+      email: profile.email,
+      app_metadata: { provider: "email", providers: ["email"] },
+      user_metadata: {}
+    }
+  });
+};

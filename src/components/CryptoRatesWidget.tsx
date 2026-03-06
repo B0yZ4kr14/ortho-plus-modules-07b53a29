@@ -1,10 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Bitcoin, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/logger';
+import { useState, useEffect } from "react";
+import { Bitcoin, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { apiClient } from "@/lib/api/apiClient";
+import { logger } from "@/lib/logger";
 
 interface CryptoRate {
   symbol: string;
@@ -24,14 +30,15 @@ export function CryptoRatesWidget() {
   const fetchRates = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('get-crypto-rates');
-
-      if (error) throw error;
+      const data = await apiClient.post<any>(
+        "/functions/v1/get-crypto-rates",
+        {},
+      );
 
       setRates(data.rates.slice(0, 4)); // Top 4 cryptos
       setLastUpdate(new Date());
     } catch (error) {
-      logger.error('Error fetching crypto rates:', error);
+      logger.error("Error fetching crypto rates:", error);
     } finally {
       setLoading(false);
     }
@@ -45,21 +52,28 @@ export function CryptoRatesWidget() {
   }, []);
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     }).format(price);
   };
 
   const formatChange = (change: number) => {
     const isPositive = change >= 0;
     return (
-      <div className={`flex items-center gap-1 ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
-        {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+      <div
+        className={`flex items-center gap-1 ${isPositive ? "text-green-500" : "text-red-500"}`}
+      >
+        {isPositive ? (
+          <TrendingUp className="h-3 w-3" />
+        ) : (
+          <TrendingDown className="h-3 w-3" />
+        )}
         <span className="text-sm font-medium">
-          {isPositive ? '+' : ''}{change.toFixed(2)}%
+          {isPositive ? "+" : ""}
+          {change.toFixed(2)}%
         </span>
       </div>
     );
@@ -89,7 +103,7 @@ export function CryptoRatesWidget() {
             onClick={fetchRates}
             disabled={loading}
           >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
           </Button>
         </div>
       </CardHeader>

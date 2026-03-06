@@ -1,7 +1,7 @@
-import { DragEndEvent } from '@dnd-kit/core';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
+import { useToast } from "@/hooks/use-toast";
+import { apiClient } from "@/lib/api/apiClient";
+import { DragEndEvent } from "@dnd-kit/core";
+import { format } from "date-fns";
 
 export function useAppointmentDragAndDrop() {
   const { toast } = useToast();
@@ -20,7 +20,7 @@ export function useAppointmentDragAndDrop() {
 
     try {
       // Calcular novo horário
-      const [hours, minutes] = timeSlot.split(':').map(Number);
+      const [hours, minutes] = timeSlot.split(":").map(Number);
       const newStartTime = new Date(date);
       newStartTime.setHours(hours, minutes, 0, 0);
 
@@ -28,28 +28,23 @@ export function useAppointmentDragAndDrop() {
       const newEndTime = new Date(newStartTime);
       newEndTime.setHours(newEndTime.getHours() + 1);
 
-      // Atualizar no banco
-      const { error } = await supabase
-        .from('appointments')
-        .update({
-          start_time: newStartTime.toISOString(),
-          end_time: newEndTime.toISOString(),
-          dentist_id: dentistId,
-        })
-        .eq('id', appointmentId);
-
-      if (error) throw error;
+      // Atualizar no banco via API
+      await apiClient.patch(`/agenda/${appointmentId}`, {
+        start_time: newStartTime.toISOString(),
+        end_time: newEndTime.toISOString(),
+        dentist_id: dentistId,
+      });
 
       toast({
-        title: 'Consulta reagendada',
-        description: `Novo horário: ${format(newStartTime, 'dd/MM/yyyy HH:mm')}`,
+        title: "Consulta reagendada",
+        description: `Novo horário: ${format(newStartTime, "dd/MM/yyyy HH:mm")}`,
       });
     } catch (error) {
-      console.error('Erro ao reagendar:', error);
+      console.error("Erro ao reagendar:", error);
       toast({
-        title: 'Erro ao reagendar',
-        description: 'Não foi possível mover a consulta. Tente novamente.',
-        variant: 'destructive',
+        title: "Erro ao reagendar",
+        description: "Não foi possível mover a consulta. Tente novamente.",
+        variant: "destructive",
       });
     }
   };

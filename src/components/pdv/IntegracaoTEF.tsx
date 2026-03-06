@@ -1,14 +1,31 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/lib/api/apiClient";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CreditCard, Loader2, CheckCircle, XCircle, Printer } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  CreditCard,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  Printer,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface IntegracaoTEFProps {
   vendaId: string;
@@ -16,7 +33,11 @@ interface IntegracaoTEFProps {
   onSuccess?: () => void;
 }
 
-export default function IntegracaoTEF({ vendaId, valorTotal, onSuccess }: IntegracaoTEFProps) {
+export default function IntegracaoTEF({
+  vendaId,
+  valorTotal,
+  onSuccess,
+}: IntegracaoTEFProps) {
   const { clinicId } = useAuth();
   const { toast } = useToast();
   const [processando, setProcessando] = useState(false);
@@ -29,18 +50,14 @@ export default function IntegracaoTEF({ vendaId, valorTotal, onSuccess }: Integr
     try {
       setProcessando(true);
 
-      const { data, error } = await supabase.functions.invoke("processar-pagamento-tef", {
-        body: {
-          clinic_id: clinicId,
-          venda_id: vendaId,
-          tipo_operacao: tipoOperacao,
-          valor: valorTotal,
-          num_parcelas: tipoOperacao === "CREDITO" ? numParcelas : 1,
-          provedor: "SITEF"
-        }
+      const data: any = await apiClient.post("/processar-pagamento-tef", {
+        clinic_id: clinicId,
+        venda_id: vendaId,
+        tipo_operacao: tipoOperacao,
+        valor: valorTotal,
+        num_parcelas: tipoOperacao === "CREDITO" ? numParcelas : 1,
+        provedor: "SITEF",
       });
-
-      if (error) throw error;
 
       if (data.success) {
         setTransacao(data.transacao);
@@ -54,7 +71,7 @@ export default function IntegracaoTEF({ vendaId, valorTotal, onSuccess }: Integr
         toast({
           title: "Pagamento Negado",
           description: data.error || "A transação foi negada pela operadora",
-          variant: "destructive"
+          variant: "destructive",
         });
       }
     } catch (error) {
@@ -62,7 +79,7 @@ export default function IntegracaoTEF({ vendaId, valorTotal, onSuccess }: Integr
       toast({
         title: "Erro",
         description: "Não foi possível processar o pagamento via TEF",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setProcessando(false);
@@ -72,11 +89,13 @@ export default function IntegracaoTEF({ vendaId, valorTotal, onSuccess }: Integr
   const imprimirComprovante = () => {
     if (!transacao?.comprovante_cliente) return;
 
-    const printWindow = window.open('', '', 'width=300,height=600');
+    const printWindow = window.open("", "", "width=300,height=600");
     if (printWindow) {
-      printWindow.document.write('<pre style="font-family: monospace; font-size: 12px;">');
+      printWindow.document.write(
+        '<pre style="font-family: monospace; font-size: 12px;">',
+      );
       printWindow.document.write(transacao.comprovante_cliente);
-      printWindow.document.write('</pre>');
+      printWindow.document.write("</pre>");
       printWindow.document.close();
       printWindow.print();
     }
@@ -117,7 +136,7 @@ export default function IntegracaoTEF({ vendaId, valorTotal, onSuccess }: Integr
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(n => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
                     <SelectItem key={n} value={n.toString()}>
                       {n}x de R$ {(valorTotal / n).toFixed(2)}
                     </SelectItem>
@@ -176,7 +195,9 @@ export default function IntegracaoTEF({ vendaId, valorTotal, onSuccess }: Integr
                   </div>
                   <div>
                     <p className="text-muted-foreground">Autorização</p>
-                    <p className="font-medium">{transacao.codigo_autorizacao}</p>
+                    <p className="font-medium">
+                      {transacao.codigo_autorizacao}
+                    </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Tipo</p>
@@ -184,7 +205,9 @@ export default function IntegracaoTEF({ vendaId, valorTotal, onSuccess }: Integr
                   </div>
                   <div>
                     <p className="text-muted-foreground">Valor</p>
-                    <p className="font-medium">R$ {parseFloat(transacao.valor).toFixed(2)}</p>
+                    <p className="font-medium">
+                      R$ {parseFloat(transacao.valor).toFixed(2)}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -198,7 +221,10 @@ export default function IntegracaoTEF({ vendaId, valorTotal, onSuccess }: Integr
                   <Printer className="mr-2 h-4 w-4" />
                   Imprimir Comprovante
                 </Button>
-                <Button variant="outline" onClick={() => setShowComprovante(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowComprovante(false)}
+                >
                   Fechar
                 </Button>
               </div>

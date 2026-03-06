@@ -1,67 +1,51 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export const useBIDashboards = () => {
   const { clinicId, user } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: dashboards = [], isLoading } = useQuery({
-    queryKey: ['bi-dashboards', clinicId],
+    queryKey: ["bi-dashboards", clinicId],
     queryFn: async () => {
       if (!clinicId) return [];
-      
-      const { data, error } = await supabase
-        .from('bi_dashboards')
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/bi_dashboards?clinic_id=eq.${clinicId}&order=created_at.desc`,
+      );
+      return data || [];
     },
     enabled: !!clinicId,
   });
 
   const { data: metrics = [], isLoading: isLoadingMetrics } = useQuery({
-    queryKey: ['bi-metrics', clinicId],
+    queryKey: ["bi-metrics", clinicId],
     queryFn: async () => {
       if (!clinicId) return [];
-      
-      const { data, error } = await supabase
-        .from('bi_metrics')
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/bi_metrics?clinic_id=eq.${clinicId}&order=created_at.desc`,
+      );
+      return data || [];
     },
     enabled: !!clinicId,
   });
 
   const createDashboard = useMutation({
     mutationFn: async (dashboardData: any) => {
-      const { data, error } = await supabase
-        .from('bi_dashboards')
-        .insert([{ 
-          ...dashboardData, 
-          clinic_id: clinicId,
-          created_by: user?.id,
-        }])
-        .select()
-        .single();
-      
-      if (error) throw error;
+      const data = await apiClient.post<any>("/rest/v1/bi_dashboards", {
+        ...dashboardData,
+        clinic_id: clinicId,
+        created_by: user?.id,
+      });
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bi-dashboards', clinicId] });
-      toast.success('Dashboard criado!');
+      queryClient.invalidateQueries({ queryKey: ["bi-dashboards", clinicId] });
+      toast.success("Dashboard criado!");
     },
     onError: () => {
-      toast.error('Erro ao criar dashboard');
+      toast.error("Erro ao criar dashboard");
     },
   });
 

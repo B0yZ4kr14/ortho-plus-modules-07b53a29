@@ -1,15 +1,29 @@
-import { useState, useEffect } from 'react';
-import { Github, GitBranch, GitCommit, GitPullRequest, Play, RefreshCw, Settings } from 'lucide-react';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { RepositoryManager } from '@/components/admin/RepositoryManager';
-import { WebhookManager } from '@/components/admin/WebhookManager';
-import { GitHubIntegrationConfig } from '@/components/settings/GitHubIntegrationConfig';
+import { useState, useEffect } from "react";
+import {
+  Github,
+  GitBranch,
+  GitCommit,
+  GitPullRequest,
+  Play,
+  RefreshCw,
+  Settings,
+} from "lucide-react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { apiClient } from "@/lib/api/apiClient";
+import { toast } from "sonner";
+import { RepositoryManager } from "@/components/admin/RepositoryManager";
+import { WebhookManager } from "@/components/admin/WebhookManager";
+import { GitHubIntegrationConfig } from "@/components/settings/GitHubIntegrationConfig";
 
 interface GitHubData {
   commits: any[];
@@ -25,16 +39,28 @@ export default function GitHubManagerPage() {
   const fetchGitHubData = async () => {
     setLoading(true);
     try {
-      const { data: response, error } = await supabase.functions.invoke('github-proxy', {
-        body: { action: 'VIEW' }
+      const reposRes = await apiClient.get<any>("/github/repositories");
+      const repo = reposRes.repositories?.[0];
+      if (!repo) {
+        throw new Error("Nenhum repositório conectado");
+      }
+
+      const [branchesRes, prsRes, workflowsRes] = await Promise.all([
+        apiClient.get<any>(`/github/repositories/${repo.id}/branches`),
+        apiClient.get<any>(`/github/repositories/${repo.id}/pull-requests`),
+        apiClient.get<any>(`/github/repositories/${repo.id}/workflows`),
+      ]);
+
+      setData({
+        commits: [], // Endpoint de commits retirado nesta versão
+        branches: branchesRes.branches || [],
+        pull_requests: prsRes.pullRequests || [],
+        workflows: workflowsRes.workflows || [],
       });
 
-      if (error) throw error;
-
-      setData(response.data);
-      toast.success('Dados atualizados');
+      toast.success("Dados atualizados");
     } catch (error) {
-      toast.error('Erro ao carregar dados do GitHub');
+      toast.error("Erro ao carregar dados do GitHub");
       console.error(error);
     } finally {
       setLoading(false);
@@ -54,7 +80,9 @@ export default function GitHubManagerPage() {
           icon={Github}
         />
         <Button onClick={fetchGitHubData} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+          />
           Atualizar
         </Button>
       </div>
@@ -84,12 +112,17 @@ export default function GitHubManagerPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Commits Recentes</CardTitle>
-                <CardDescription>Histórico de commits do repositório principal</CardDescription>
+                <CardDescription>
+                  Histórico de commits do repositório principal
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {data?.commits.map((commit) => (
-                    <div key={commit.sha} className="flex items-start gap-3 p-3 border rounded-lg">
+                    <div
+                      key={commit.sha}
+                      className="flex items-start gap-3 p-3 border rounded-lg"
+                    >
                       <GitCommit className="h-5 w-5 text-muted-foreground mt-0.5" />
                       <div className="flex-1 space-y-1">
                         <p className="font-medium">{commit.message}</p>
@@ -100,7 +133,9 @@ export default function GitHubManagerPage() {
                           <span>•</span>
                           <Badge variant="outline">{commit.branch}</Badge>
                         </div>
-                        <p className="font-mono text-xs text-muted-foreground">{commit.sha}</p>
+                        <p className="font-mono text-xs text-muted-foreground">
+                          {commit.sha}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -116,14 +151,21 @@ export default function GitHubManagerPage() {
               <CardContent>
                 <div className="space-y-3">
                   {data?.pull_requests.map((pr) => (
-                    <div key={pr.number} className="flex items-start gap-3 p-3 border rounded-lg">
+                    <div
+                      key={pr.number}
+                      className="flex items-start gap-3 p-3 border rounded-lg"
+                    >
                       <GitPullRequest className="h-5 w-5 text-green-500 mt-0.5" />
                       <div className="flex-1 space-y-1">
-                        <p className="font-medium">#{pr.number} - {pr.title}</p>
+                        <p className="font-medium">
+                          #{pr.number} - {pr.title}
+                        </p>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <span>por {pr.author}</span>
                           <span>•</span>
-                          <span>{new Date(pr.created_at).toLocaleString()}</span>
+                          <span>
+                            {new Date(pr.created_at).toLocaleString()}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">{pr.base}</Badge>
@@ -143,18 +185,24 @@ export default function GitHubManagerPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Branches</CardTitle>
-                <CardDescription>Branches ativos do repositório</CardDescription>
+                <CardDescription>
+                  Branches ativos do repositório
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   {data?.branches.map((branch) => (
-                    <div key={branch.name} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={branch.name}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div className="flex items-center gap-3">
                         <GitBranch className="h-5 w-5" />
                         <div>
                           <p className="font-medium">{branch.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            Último commit: {new Date(branch.last_commit).toLocaleString()}
+                            Último commit:{" "}
+                            {new Date(branch.last_commit).toLocaleString()}
                           </p>
                         </div>
                       </div>
@@ -170,24 +218,38 @@ export default function GitHubManagerPage() {
             <Card>
               <CardHeader>
                 <CardTitle>CI/CD Workflows</CardTitle>
-                <CardDescription>Status dos pipelines de deploy</CardDescription>
+                <CardDescription>
+                  Status dos pipelines de deploy
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {data?.workflows.map((workflow) => (
-                    <div key={workflow.name} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={workflow.name}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div className="flex items-center gap-3">
                         <Play className="h-5 w-5" />
                         <div>
                           <p className="font-medium">{workflow.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            Última execução: {new Date(workflow.last_run).toLocaleString()}
+                            Última execução:{" "}
+                            {new Date(workflow.last_run).toLocaleString()}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">{workflow.duration}</span>
-                        <Badge variant={workflow.status === 'success' ? 'default' : 'destructive'}>
+                        <span className="text-sm text-muted-foreground">
+                          {workflow.duration}
+                        </span>
+                        <Badge
+                          variant={
+                            workflow.status === "success"
+                              ? "default"
+                              : "destructive"
+                          }
+                        >
                           {workflow.status}
                         </Badge>
                       </div>
@@ -210,7 +272,6 @@ export default function GitHubManagerPage() {
         <TabsContent value="webhooks" className="space-y-4">
           <WebhookManager />
         </TabsContent>
-
       </Tabs>
     </div>
   );

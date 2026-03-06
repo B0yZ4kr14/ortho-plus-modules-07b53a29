@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { useEffect } from "react";
 
 interface WebVitalsMetric {
   name: string;
   value: number;
-  rating: 'good' | 'needs-improvement' | 'poor';
+  rating: "good" | "needs-improvement" | "poor";
   delta: number;
   id: string;
 }
@@ -22,7 +22,7 @@ export function useWebVitals(enabled: boolean = true) {
 
     const reportMetric = async (metric: WebVitalsMetric) => {
       try {
-        await supabase.from('rum_metrics').insert([{
+        await apiClient.post("/analytics/rum-metrics", {
           clinic_id: clinicId,
           user_id: user.id,
           metric_name: metric.name,
@@ -30,9 +30,9 @@ export function useWebVitals(enabled: boolean = true) {
           rating: metric.rating,
           page_url: window.location.pathname,
           user_agent: navigator.userAgent,
-        }]);
+        });
       } catch (error) {
-        console.error('[WebVitals] Error reporting metric:', error);
+        console.error("[WebVitals] Error reporting metric:", error);
       }
     };
 
@@ -40,19 +40,24 @@ export function useWebVitals(enabled: boolean = true) {
     const observeFCP = () => {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (entry.name === 'first-contentful-paint') {
+          if (entry.name === "first-contentful-paint") {
             const value = entry.startTime;
             reportMetric({
-              name: 'FCP',
+              name: "FCP",
               value,
-              rating: value < 1800 ? 'good' : value < 3000 ? 'needs-improvement' : 'poor',
+              rating:
+                value < 1800
+                  ? "good"
+                  : value < 3000
+                    ? "needs-improvement"
+                    : "poor",
               delta: value,
               id: entry.entryType,
             });
           }
         }
       });
-      observer.observe({ entryTypes: ['paint'] });
+      observer.observe({ entryTypes: ["paint"] });
     };
 
     // Observer para LCP (Largest Contentful Paint)
@@ -61,16 +66,17 @@ export function useWebVitals(enabled: boolean = true) {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1];
         const value = lastEntry.startTime;
-        
+
         reportMetric({
-          name: 'LCP',
+          name: "LCP",
           value,
-          rating: value < 2500 ? 'good' : value < 4000 ? 'needs-improvement' : 'poor',
+          rating:
+            value < 2500 ? "good" : value < 4000 ? "needs-improvement" : "poor",
           delta: value,
           id: lastEntry.entryType,
         });
       });
-      observer.observe({ entryTypes: ['largest-contentful-paint'] });
+      observer.observe({ entryTypes: ["largest-contentful-paint"] });
     };
 
     // Observer para CLS (Cumulative Layout Shift)
@@ -82,16 +88,21 @@ export function useWebVitals(enabled: boolean = true) {
             clsValue += (entry as any).value;
           }
         }
-        
+
         reportMetric({
-          name: 'CLS',
+          name: "CLS",
           value: clsValue,
-          rating: clsValue < 0.1 ? 'good' : clsValue < 0.25 ? 'needs-improvement' : 'poor',
+          rating:
+            clsValue < 0.1
+              ? "good"
+              : clsValue < 0.25
+                ? "needs-improvement"
+                : "poor",
           delta: clsValue,
-          id: 'layout-shift',
+          id: "layout-shift",
         });
       });
-      observer.observe({ entryTypes: ['layout-shift'] });
+      observer.observe({ entryTypes: ["layout-shift"] });
     };
 
     // Observer para FID (First Input Delay)
@@ -99,36 +110,41 @@ export function useWebVitals(enabled: boolean = true) {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const firstInput = entries[0];
-        const value = (firstInput as any).processingStart - firstInput.startTime;
-        
+        const value =
+          (firstInput as any).processingStart - firstInput.startTime;
+
         reportMetric({
-          name: 'FID',
+          name: "FID",
           value,
-          rating: value < 100 ? 'good' : value < 300 ? 'needs-improvement' : 'poor',
+          rating:
+            value < 100 ? "good" : value < 300 ? "needs-improvement" : "poor",
           delta: value,
           id: firstInput.entryType,
         });
       });
-      observer.observe({ entryTypes: ['first-input'] });
+      observer.observe({ entryTypes: ["first-input"] });
     };
 
     // TTFB (Time to First Byte)
     const observeTTFB = () => {
-      const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      const navEntry = performance.getEntriesByType(
+        "navigation",
+      )[0] as PerformanceNavigationTiming;
       if (navEntry) {
         const value = navEntry.responseStart - navEntry.requestStart;
         reportMetric({
-          name: 'TTFB',
+          name: "TTFB",
           value,
-          rating: value < 800 ? 'good' : value < 1800 ? 'needs-improvement' : 'poor',
+          rating:
+            value < 800 ? "good" : value < 1800 ? "needs-improvement" : "poor",
           delta: value,
-          id: 'navigation',
+          id: "navigation",
         });
       }
     };
 
     // Iniciar observers
-    if ('PerformanceObserver' in window) {
+    if ("PerformanceObserver" in window) {
       try {
         observeFCP();
         observeLCP();
@@ -136,7 +152,7 @@ export function useWebVitals(enabled: boolean = true) {
         observeFID();
         observeTTFB();
       } catch (error) {
-        console.error('[WebVitals] Error setting up observers:', error);
+        console.error("[WebVitals] Error setting up observers:", error);
       }
     }
   }, [enabled, user, clinicId]);

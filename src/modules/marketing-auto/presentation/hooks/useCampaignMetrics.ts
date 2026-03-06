@@ -1,8 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
-import { SupabaseCampaignRepository } from '../../infrastructure/repositories/SupabaseCampaignRepository';
-import { GetCampaignMetricsUseCase, CampaignMetricsResult } from '../../application/use-cases/GetCampaignMetricsUseCase';
+import { useCallback, useEffect, useState } from "react";
+import {
+  CampaignMetricsResult,
+  GetCampaignMetricsUseCase,
+} from "../../application/use-cases/GetCampaignMetricsUseCase";
+import { CampaignRepositoryApi } from "../../infrastructure/repositories/CampaignRepositoryApi";
 
-const repository = new SupabaseCampaignRepository();
+const repository = new CampaignRepositoryApi();
 const getMetricsUseCase = new GetCampaignMetricsUseCase(repository);
 
 export function useCampaignMetrics(campaignId: string) {
@@ -19,7 +22,9 @@ export function useCampaignMetrics(campaignId: string) {
       const result = await getMetricsUseCase.execute({ campaignId });
       setMetrics(result);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Erro ao carregar métricas'));
+      setError(
+        err instanceof Error ? err : new Error("Erro ao carregar métricas"),
+      );
     } finally {
       setLoading(false);
     }

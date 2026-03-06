@@ -3,7 +3,7 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { LoadingState } from '@/components/shared/LoadingState';
 import { Card } from '@/components/ui/card';
 import { ShoppingCart, TrendingUp, Clock, DollarSign, Package, AlertCircle } from 'lucide-react';
-import { useEstoqueSupabase } from '@/modules/estoque/hooks/useEstoqueSupabase';
+import { useEstoque } from '@/modules/estoque/hooks/useEstoque';
 import { formatCurrency } from '@/lib/utils/validation.utils';
 import { formatDate } from '@/lib/utils/date.utils';
 import {
@@ -31,7 +31,7 @@ export default function EstoqueAnalisePedidos() {
     produtos,
     fornecedores,
     loading,
-  } = useEstoqueSupabase();
+  } = useEstoque();
 
   const [stats, setStats] = useState({
     totalPedidos: 0,

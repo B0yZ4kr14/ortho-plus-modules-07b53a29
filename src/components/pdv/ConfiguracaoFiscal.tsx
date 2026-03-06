@@ -1,23 +1,23 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { LoadingState } from '@/components/shared/LoadingState';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { FileText, Shield, Check, AlertTriangle } from 'lucide-react';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { LoadingState } from "@/components/shared/LoadingState";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { FileText, Shield, Check, AlertTriangle } from "lucide-react";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 
 export const ConfiguracaoFiscal = () => {
   const { clinicId } = useAuth();
@@ -25,64 +25,59 @@ export const ConfiguracaoFiscal = () => {
   const queryClient = useQueryClient();
 
   const { data: fiscalConfig, isLoading } = useQuery({
-    queryKey: ['fiscal-config', clinicId],
+    queryKey: ["fiscal-config", clinicId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('fiscal_config')
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
+      try {
+        const data = await apiClient.get("/fiscal-config", {
+          clinic_id: clinicId,
+        });
+        return Array.isArray(data) ? data[0] : data;
+      } catch (error: any) {
+        if (error?.status !== 404) throw error;
+        return null;
+      }
     },
     enabled: !!clinicId,
   });
 
   const [formData, setFormData] = useState({
-    ambiente: 'HOMOLOGACAO',
-    tipo_emissao: 'NFCE',
-    cnpj: '',
-    razao_social: '',
-    nome_fantasia: '',
-    inscricao_estadual: '',
-    regime_tributario: 'SIMPLES_NACIONAL',
+    ambiente: "HOMOLOGACAO",
+    tipo_emissao: "NFCE",
+    cnpj: "",
+    razao_social: "",
+    nome_fantasia: "",
+    inscricao_estadual: "",
+    regime_tributario: "SIMPLES_NACIONAL",
     codigo_regime_tributario: 1,
-    csc_id: '',
-    csc_token: '',
+    csc_id: "",
+    csc_token: "",
     serie_nfce: 1,
-    email_contabilidade: '',
+    email_contabilidade: "",
     contingencia_enabled: false,
     is_active: true,
   });
 
   const saveMutation = useMutation({
     mutationFn: async (data: any) => {
+      const payload = { ...data, clinic_id: clinicId };
       if (fiscalConfig) {
-        const { error } = await supabase
-          .from('fiscal_config')
-          .update(data)
-          .eq('id', fiscalConfig.id);
-        if (error) throw error;
+        await apiClient.patch(`/fiscal-config/${fiscalConfig.id}`, payload);
       } else {
-        const { error } = await supabase
-          .from('fiscal_config')
-          .insert({ ...data, clinic_id: clinicId });
-        if (error) throw error;
+        await apiClient.post("/fiscal-config", payload);
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fiscal-config'] });
+      queryClient.invalidateQueries({ queryKey: ["fiscal-config"] });
       toast({
-        title: 'Configuração salva',
-        description: 'Configuração fiscal atualizada com sucesso',
+        title: "Configuração salva",
+        description: "Configuração fiscal atualizada com sucesso",
       });
     },
     onError: (error: any) => {
       toast({
-        title: 'Erro ao salvar',
+        title: "Erro ao salvar",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     },
   });
@@ -227,9 +222,7 @@ export const ConfiguracaoFiscal = () => {
                 <SelectItem value="SIMPLES_NACIONAL">
                   Simples Nacional
                 </SelectItem>
-                <SelectItem value="LUCRO_PRESUMIDO">
-                  Lucro Presumido
-                </SelectItem>
+                <SelectItem value="LUCRO_PRESUMIDO">Lucro Presumido</SelectItem>
                 <SelectItem value="LUCRO_REAL">Lucro Real</SelectItem>
               </SelectContent>
             </Select>
@@ -314,7 +307,7 @@ export const ConfiguracaoFiscal = () => {
 
         <div className="flex justify-end gap-3 mt-6">
           <Button type="submit" disabled={saveMutation.isPending}>
-            {saveMutation.isPending ? 'Salvando...' : 'Salvar Configuração'}
+            {saveMutation.isPending ? "Salvando..." : "Salvar Configuração"}
           </Button>
         </div>
       </Card>

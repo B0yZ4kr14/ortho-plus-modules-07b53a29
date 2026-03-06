@@ -10,7 +10,7 @@ import { Bitcoin, Wallet, Server } from 'lucide-react';
 import { ExchangeConfigForm } from '@/components/crypto/ExchangeConfigForm';
 import { WalletForm } from '@/components/crypto/WalletForm';
 import { XPubConfigForm } from '@/components/crypto/XPubConfigForm';
-import { useCryptoSupabase } from '@/hooks/useCryptoSupabase';
+import { useCrypto } from '@/hooks/useCrypto';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 export default function CryptoConfig() {
-  const { exchanges, wallets, offlineWallets, reloadData } = useCryptoSupabase();
+  const { exchanges, wallets, offlineWallets, reloadData } = useCrypto();
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
   const [showWalletDialog, setShowWalletDialog] = useState(false);
   const [showXPubDialog, setShowXPubDialog] = useState(false);

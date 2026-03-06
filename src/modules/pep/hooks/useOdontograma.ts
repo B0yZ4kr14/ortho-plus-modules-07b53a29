@@ -1,175 +1,416 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { container } from '@/infrastructure/di/Container';
-import { SERVICE_KEYS } from '@/infrastructure/di/ServiceKeys';
-import { toast } from 'sonner';
-import type { IOdontogramaRepository } from '@/domain/repositories/IOdontogramaRepository';
-import type {
-  GetOdontogramaUseCase,
-  UpdateToothStatusUseCase,
-  UpdateToothSurfaceUseCase,
-  UpdateToothNotesUseCase,
-  UpdateToothStatusInput,
-  UpdateToothSurfaceInput,
-  UpdateToothNotesInput,
-} from '@/application/use-cases/odontograma';
-import type { ToothStatus, ToothSurface } from '../types/odontograma.types';
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import {
+  ALL_TEETH,
+  OdontogramaHistoryEntry,
+  ToothData,
+  ToothStatus,
+  ToothSurface,
+} from "../types/odontograma.types";
 
-/**
- * Hook para gerenciar Odontograma
- * 
- * Fornece:
- * - Busca/criação automática de odontograma
- * - Atualização de status de dentes
- * - Atualização de superfícies
- * - Atualização de notas
- * - Estatísticas por status
- * - Histórico de alterações
- */
-export function useOdontograma(prontuarioId: string | null) {
-  const queryClient = useQueryClient();
+const createInitialToothData = (number: number): ToothData => ({
+  number,
+  status: "higido",
+  surfaces: {
+    mesial: "higido",
+    distal: "higido",
+    oclusal: "higido",
+    vestibular: "higido",
+    lingual: "higido",
+  },
+  updatedAt: new Date().toISOString(),
+});
 
-  // Repositories e Use Cases
-  const odontogramaRepository = container.resolve<IOdontogramaRepository>(SERVICE_KEYS.ODONTOGRAMA_REPOSITORY);
-  const getOdontogramaUseCase = container.resolve<GetOdontogramaUseCase>(SERVICE_KEYS.GET_ODONTOGRAMA_USE_CASE);
-  const updateToothStatusUseCase = container.resolve<UpdateToothStatusUseCase>(SERVICE_KEYS.UPDATE_TOOTH_STATUS_USE_CASE);
-  const updateToothSurfaceUseCase = container.resolve<UpdateToothSurfaceUseCase>(SERVICE_KEYS.UPDATE_TOOTH_SURFACE_USE_CASE);
-  const updateToothNotesUseCase = container.resolve<UpdateToothNotesUseCase>(SERVICE_KEYS.UPDATE_TOOTH_NOTES_USE_CASE);
+export const useOdontograma = (prontuarioId: string) => {
+  const [teethData, setTeethData] = useState<Record<number, ToothData>>({});
+  const [history, setHistory] = useState<OdontogramaHistoryEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
 
-  // Query: Buscar ou criar odontograma
-  const { data: odontograma, isLoading, error } = useQuery({
-    queryKey: ['odontograma', prontuarioId],
-    queryFn: async () => {
-      if (!prontuarioId) return null;
-      
-      const { odontograma } = await getOdontogramaUseCase.execute({
-        prontuarioId,
+  // Carregar dados do prontuário específico do Supabase (via apiClient)
+  const loadData = useCallback(async () => {
+    if (!prontuarioId) {
+      // Inicializar com todos os dentes hígidos se não houver prontuarioId
+      const processedTeeth: Record<number, ToothData> = {};
+      ALL_TEETH.forEach((num) => {
+        processedTeeth[num] = createInitialToothData(num);
       });
-      
-      return odontograma;
-    },
-    enabled: !!prontuarioId,
-  });
+      setTeethData(processedTeeth);
+      setIsLoading(false);
+      return;
+    }
 
-  // Mutation: Atualizar status de dente
-  const updateToothStatusMutation = useMutation({
-    mutationFn: async (input: {
-      toothNumber: number;
-      newStatus: ToothStatus;
-      notes?: string;
-    }) => {
-      if (!odontograma) {
-        throw new Error('Odontograma não encontrado');
+    setIsLoading(true);
+    try {
+      // Buscar dados do odontograma
+      const odontogramaData = await apiClient.get<any[]>(
+        `/rest/v1/pep_odontograma_data?prontuario_id=eq.${prontuarioId}&select=*,pep_tooth_surfaces(*)`,
+      );
+
+      // Buscar histórico
+      const historyData = await apiClient.get<any[]>(
+        `/rest/v1/pep_odontograma_history?prontuario_id=eq.${prontuarioId}&order=created_at.desc`,
+      );
+
+      // Processar dados dos dentes
+      const processedTeeth: Record<number, ToothData> = {};
+
+      if (odontogramaData && odontogramaData.length > 0) {
+        odontogramaData.forEach((tooth: any) => {
+          const surfaces: any = {
+            mesial: "higido",
+            distal: "higido",
+            oclusal: "higido",
+            vestibular: "higido",
+            lingual: "higido",
+          };
+
+          if (tooth.pep_tooth_surfaces) {
+            tooth.pep_tooth_surfaces.forEach((surface: any) => {
+              surfaces[surface.surface] = surface.status;
+            });
+          }
+
+          processedTeeth[tooth.tooth_number] = {
+            number: tooth.tooth_number,
+            status: tooth.status,
+            notes: tooth.notes,
+            surfaces,
+            updatedAt: tooth.updated_at,
+          };
+        });
+      } else {
+        // Inicializar com todos os dentes hígidos se não houver dados
+        ALL_TEETH.forEach((num) => {
+          processedTeeth[num] = createInitialToothData(num);
+        });
       }
 
-      const updateInput: UpdateToothStatusInput = {
-        odontogramaId: odontograma.id,
-        toothNumber: input.toothNumber,
-        newStatus: input.newStatus,
-        notes: input.notes,
-      };
+      setTeethData(processedTeeth);
 
-      const { odontograma: updated } = await updateToothStatusUseCase.execute(updateInput);
-      return updated;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['odontograma', prontuarioId] });
-      toast.success('Status do dente atualizado!');
-    },
-    onError: (error: Error) => {
-      toast.error(`Erro ao atualizar dente: ${error.message}`);
-    },
-  });
-
-  // Mutation: Atualizar superfície de dente
-  const updateToothSurfaceMutation = useMutation({
-    mutationFn: async (input: {
-      toothNumber: number;
-      surface: ToothSurface;
-      newStatus: ToothStatus;
-    }) => {
-      if (!odontograma) {
-        throw new Error('Odontograma não encontrado');
+      // Processar histórico
+      if (historyData) {
+        const processedHistory: OdontogramaHistoryEntry[] = historyData.map(
+          (entry: any) => ({
+            id: entry.id,
+            timestamp: entry.created_at,
+            teeth: entry.snapshot_data,
+            changedTeeth: entry.changed_teeth || [],
+            description: entry.description,
+          }),
+        );
+        setHistory(processedHistory);
       }
+    } catch (error: any) {
+      console.error("Erro ao carregar odontograma:", error);
+      toast.error("Erro ao carregar dados do odontograma");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [prontuarioId]);
 
-      const updateInput: UpdateToothSurfaceInput = {
-        odontogramaId: odontograma.id,
-        toothNumber: input.toothNumber,
-        surface: input.surface,
-        newStatus: input.newStatus,
-      };
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
-      const { odontograma: updated } = await updateToothSurfaceUseCase.execute(updateInput);
-      return updated;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['odontograma', prontuarioId] });
-      toast.success('Superfície do dente atualizada!');
-    },
-    onError: (error: Error) => {
-      toast.error(`Erro ao atualizar superfície: ${error.message}`);
-    },
-  });
+  // Adicionar entrada ao histórico
+  const addHistoryEntry = useCallback(
+    async (changedTeeth: number[], description?: string) => {
+      try {
+        if (!user) throw new Error("Usuário não autenticado");
 
-  // Mutation: Atualizar notas de dente
-  const updateToothNotesMutation = useMutation({
-    mutationFn: async (input: {
-      toothNumber: number;
-      notes: string;
-    }) => {
-      if (!odontograma) {
-        throw new Error('Odontograma não encontrado');
+        await apiClient.post("/rest/v1/pep_odontograma_history", {
+          prontuario_id: prontuarioId,
+          snapshot_data: teethData as any,
+          changed_teeth: changedTeeth,
+          description: description || null,
+          created_by: user.id,
+        });
+
+        // Recarregar histórico
+        await loadData();
+      } catch (error: any) {
+        console.error("Erro ao adicionar ao histórico:", error);
+        toast.error("Erro ao salvar histórico");
       }
-
-      const updateInput: UpdateToothNotesInput = {
-        odontogramaId: odontograma.id,
-        toothNumber: input.toothNumber,
-        notes: input.notes,
-      };
-
-      const { odontograma: updated } = await updateToothNotesUseCase.execute(updateInput);
-      return updated;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['odontograma', prontuarioId] });
-      toast.success('Notas do dente atualizadas!');
+    [prontuarioId, teethData, loadData, user],
+  );
+
+  // Atualizar status geral de um dente
+  const updateToothStatus = useCallback(
+    async (toothNumber: number, status: ToothStatus, addToHistory = true) => {
+      try {
+        if (!user) throw new Error("Usuário não autenticado");
+
+        // Verificar se o dente já existe
+        const existingData = await apiClient.get<any[]>(
+          `/rest/v1/pep_odontograma_data?prontuario_id=eq.${prontuarioId}&tooth_number=eq.${toothNumber}&select=id`,
+        );
+
+        const existing =
+          existingData && existingData.length > 0 ? existingData[0] : null;
+
+        if (existing) {
+          // Atualizar
+          await apiClient.patch(
+            `/rest/v1/pep_odontograma_data?id=eq.${existing.id}`,
+            {
+              status,
+              updated_by: user.id,
+              updated_at: new Date().toISOString(),
+            },
+          );
+        } else {
+          // Inserir
+          await apiClient.post(`/rest/v1/pep_odontograma_data`, {
+            prontuario_id: prontuarioId,
+            tooth_number: toothNumber,
+            status,
+            created_by: user.id,
+          });
+        }
+
+        // Atualizar estado local
+        setTeethData((prev) => ({
+          ...prev,
+          [toothNumber]: {
+            ...prev[toothNumber],
+            status,
+            updatedAt: new Date().toISOString(),
+          },
+        }));
+
+        if (addToHistory) {
+          await addHistoryEntry(
+            [toothNumber],
+            `Dente ${toothNumber} marcado como ${status}`,
+          );
+        }
+
+        toast.success("Dente atualizado com sucesso");
+      } catch (error: any) {
+        console.error("Erro ao atualizar dente:", error);
+        toast.error("Erro ao atualizar dente");
+      }
     },
-    onError: (error: Error) => {
-      toast.error(`Erro ao atualizar notas: ${error.message}`);
+    [prontuarioId, addHistoryEntry, user],
+  );
+
+  // Atualizar status de uma face específica
+  const updateToothSurface = useCallback(
+    async (
+      toothNumber: number,
+      surface: ToothSurface,
+      status: ToothStatus,
+      addToHistory = true,
+    ) => {
+      try {
+        if (!user) throw new Error("Usuário não autenticado");
+
+        // Buscar ou criar registro do dente
+        const existingToothData = await apiClient.get<any[]>(
+          `/rest/v1/pep_odontograma_data?prontuario_id=eq.${prontuarioId}&tooth_number=eq.${toothNumber}&select=id`,
+        );
+
+        let toothData =
+          existingToothData && existingToothData.length > 0
+            ? existingToothData[0]
+            : null;
+
+        if (!toothData) {
+          const insertedData = await apiClient.post<any[]>(
+            `/rest/v1/pep_odontograma_data`,
+            {
+              prontuario_id: prontuarioId,
+              tooth_number: toothNumber,
+              status: "higido",
+              created_by: user.id,
+            },
+            { headers: { Prefer: "return=representation" } },
+          );
+          toothData =
+            insertedData && insertedData.length > 0 ? insertedData[0] : null;
+        }
+
+        if (!toothData?.id) throw new Error("Falha ao obter ID do dente.");
+
+        // Atualizar ou inserir superfície
+        const existingSurfaceData = await apiClient.get<any[]>(
+          `/rest/v1/pep_tooth_surfaces?odontograma_data_id=eq.${toothData.id}&surface=eq.${surface}&select=id`,
+        );
+        const existingSurface =
+          existingSurfaceData && existingSurfaceData.length > 0
+            ? existingSurfaceData[0]
+            : null;
+
+        if (existingSurface) {
+          await apiClient.patch(
+            `/rest/v1/pep_tooth_surfaces?id=eq.${existingSurface.id}`,
+            { status },
+          );
+        } else {
+          await apiClient.post(`/rest/v1/pep_tooth_surfaces`, {
+            odontograma_data_id: toothData.id,
+            surface,
+            status,
+          });
+        }
+
+        // Atualizar estado local
+        setTeethData((prev) => ({
+          ...prev,
+          [toothNumber]: {
+            ...prev[toothNumber],
+            surfaces: {
+              ...prev[toothNumber].surfaces,
+              [surface]: status,
+            },
+            updatedAt: new Date().toISOString(),
+          },
+        }));
+
+        if (addToHistory) {
+          await addHistoryEntry(
+            [toothNumber],
+            `Face ${surface} do dente ${toothNumber} marcada como ${status}`,
+          );
+        }
+
+        toast.success("Superfície atualizada com sucesso");
+      } catch (error: any) {
+        console.error("Erro ao atualizar superfície:", error);
+        toast.error("Erro ao atualizar superfície");
+      }
     },
-  });
+    [prontuarioId, addHistoryEntry, user],
+  );
 
-  // Estatísticas
-  const statistics = odontograma ? {
-    counts: odontograma.contarDentesPorStatus(),
-    total: 32,
-  } : null;
+  // Atualizar notas de um dente
+  const updateToothNotes = useCallback(
+    async (toothNumber: number, notes: string) => {
+      try {
+        const existingToothData = await apiClient.get<any[]>(
+          `/rest/v1/pep_odontograma_data?prontuario_id=eq.${prontuarioId}&tooth_number=eq.${toothNumber}&select=id`,
+        );
 
-  // Dados dos dentes
-  const teeth = odontograma?.teeth || {};
+        const toothData =
+          existingToothData && existingToothData.length > 0
+            ? existingToothData[0]
+            : null;
 
-  // Histórico
-  const history = odontograma?.history || [];
+        if (!toothData) {
+          toast.error(
+            "Dente não encontrado para adicionar nota. Altere o status dele primeiro.",
+          );
+          return;
+        }
+
+        await apiClient.patch(
+          `/rest/v1/pep_odontograma_data?id=eq.${toothData.id}`,
+          { notes },
+        );
+
+        setTeethData((prev) => ({
+          ...prev,
+          [toothNumber]: {
+            ...prev[toothNumber],
+            notes,
+            updatedAt: new Date().toISOString(),
+          },
+        }));
+
+        toast.success("Notas atualizadas");
+      } catch (error: any) {
+        console.error("Erro ao atualizar notas:", error);
+        toast.error("Erro ao atualizar notas");
+      }
+    },
+    [prontuarioId],
+  );
+
+  // Restaurar odontograma de uma entrada do histórico
+  const restoreFromHistory = useCallback(
+    async (historyId: string) => {
+      const entry = history.find((h) => h.id === historyId);
+      if (entry) {
+        setTeethData(JSON.parse(JSON.stringify(entry.teeth)));
+        await addHistoryEntry([], "Odontograma restaurado do histórico");
+        toast.success("Odontograma restaurado");
+      }
+    },
+    [history, addHistoryEntry],
+  );
+
+  // Resetar odontograma
+  const resetOdontograma = useCallback(async () => {
+    try {
+      // Deletar todos os dentes do prontuário
+      await apiClient.delete(
+        `/rest/v1/pep_odontograma_data?prontuario_id=eq.${prontuarioId}`,
+      );
+
+      const resetData: Record<number, ToothData> = {};
+      ALL_TEETH.forEach((num) => {
+        resetData[num] = createInitialToothData(num);
+      });
+
+      setTeethData(resetData);
+      await addHistoryEntry(ALL_TEETH, "Odontograma resetado");
+      toast.success("Odontograma resetado");
+    } catch (error: any) {
+      console.error("Erro ao resetar:", error);
+      toast.error("Erro ao resetar odontograma");
+    }
+  }, [prontuarioId, addHistoryEntry]);
+
+  // Obter estatísticas
+  const getStatusCount = useCallback(
+    (status: ToothStatus) => {
+      return Object.values(teethData).filter((t) => t.status === status).length;
+    },
+    [teethData],
+  );
+
+  // Comparar dois estados do odontograma
+  const compareStates = useCallback(
+    (historyId1: string, historyId2: string) => {
+      const state1 = history.find((h) => h.id === historyId1);
+      const state2 = history.find((h) => h.id === historyId2);
+
+      if (!state1 || !state2) return [];
+
+      const changes: number[] = [];
+      ALL_TEETH.forEach((num) => {
+        const tooth1 = state1.teeth[num];
+        const tooth2 = state2.teeth[num];
+
+        if (
+          tooth1?.status !== tooth2?.status ||
+          JSON.stringify(tooth1?.surfaces) !== JSON.stringify(tooth2?.surfaces)
+        ) {
+          changes.push(num);
+        }
+      });
+
+      return changes;
+    },
+    [history],
+  );
 
   return {
-    // Data
-    odontograma,
-    teeth,
+    teethData,
     history,
-    statistics,
     isLoading,
-    error,
-
-    // Actions
-    updateToothStatus: updateToothStatusMutation.mutateAsync,
-    updateToothSurface: updateToothSurfaceMutation.mutateAsync,
-    updateToothNotes: updateToothNotesMutation.mutateAsync,
-
-    // Loading states
-    isUpdatingStatus: updateToothStatusMutation.isPending,
-    isUpdatingSurface: updateToothSurfaceMutation.isPending,
-    isUpdatingNotes: updateToothNotesMutation.isPending,
-    isUpdating: updateToothStatusMutation.isPending || 
-                updateToothSurfaceMutation.isPending || 
-                updateToothNotesMutation.isPending,
+    updateToothStatus,
+    updateToothSurface,
+    updateToothNotes,
+    resetOdontograma,
+    restoreFromHistory,
+    getStatusCount,
+    compareStates,
+    refreshData: loadData,
   };
-}
+};

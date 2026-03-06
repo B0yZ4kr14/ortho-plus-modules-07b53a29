@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { useOdontogramaSupabase } from '../hooks/useOdontogramaSupabase';
+import { useOdontograma } from '../hooks/useOdontograma';
 import {
   ToothStatus,
   TOOTH_STATUS_COLORS,
@@ -31,7 +31,7 @@ export const Odontograma2D = ({ prontuarioId }: Odontograma2DProps) => {
     updateToothStatus,
     resetOdontograma,
     getStatusCount,
-  } = useOdontogramaSupabase(prontuarioId);
+  } = useOdontograma(prontuarioId);
 
   useEffect(() => {
     if (!canvasRef.current) return;

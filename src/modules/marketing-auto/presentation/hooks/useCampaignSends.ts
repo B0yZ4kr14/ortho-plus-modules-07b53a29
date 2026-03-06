@@ -1,17 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
-import { CampaignSend } from '../../domain/entities/CampaignSend';
-import { SupabaseCampaignRepository } from '../../infrastructure/repositories/SupabaseCampaignRepository';
-import { SupabaseCampaignSendRepository } from '../../infrastructure/repositories/SupabaseCampaignSendRepository';
-import { SendCampaignMessageUseCase } from '../../application/use-cases/SendCampaignMessageUseCase';
-import { ListCampaignSendsUseCase } from '../../application/use-cases/ListCampaignSendsUseCase';
-import { CampaignSendFilters } from '../../domain/repositories/ICampaignSendRepository';
+import { useCallback, useEffect, useState } from "react";
+import { ListCampaignSendsUseCase } from "../../application/use-cases/ListCampaignSendsUseCase";
+import { SendCampaignMessageUseCase } from "../../application/use-cases/SendCampaignMessageUseCase";
+import { CampaignSend } from "../../domain/entities/CampaignSend";
+import { CampaignSendFilters } from "../../domain/repositories/ICampaignSendRepository";
+import { CampaignRepositoryApi } from "../../infrastructure/repositories/CampaignRepositoryApi";
+import { CampaignSendRepositoryApi } from "../../infrastructure/repositories/CampaignSendRepositoryApi";
 
-const campaignRepository = new SupabaseCampaignRepository();
-const sendRepository = new SupabaseCampaignSendRepository();
-const sendMessageUseCase = new SendCampaignMessageUseCase(campaignRepository, sendRepository);
+const campaignRepository = new CampaignRepositoryApi();
+const sendRepository = new CampaignSendRepositoryApi();
+const sendMessageUseCase = new SendCampaignMessageUseCase(
+  campaignRepository,
+  sendRepository,
+);
 const listSendsUseCase = new ListCampaignSendsUseCase(sendRepository);
 
-export function useCampaignSends(campaignId: string, filters?: CampaignSendFilters) {
+export function useCampaignSends(
+  campaignId: string,
+  filters?: CampaignSendFilters,
+) {
   const [sends, setSends] = useState<CampaignSend[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -25,7 +31,9 @@ export function useCampaignSends(campaignId: string, filters?: CampaignSendFilte
       const result = await listSendsUseCase.execute({ campaignId, filters });
       setSends(result);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Erro ao carregar envios'));
+      setError(
+        err instanceof Error ? err : new Error("Erro ao carregar envios"),
+      );
     } finally {
       setLoading(false);
     }
@@ -51,18 +59,18 @@ export function useCampaignSends(campaignId: string, filters?: CampaignSendFilte
       await loadSends();
       return send;
     },
-    [campaignId, loadSends]
+    [campaignId, loadSends],
   );
 
   // Analytics
   const totalSends = sends.length;
-  const scheduledSends = sends.filter(s => s.isScheduled()).length;
-  const sentSends = sends.filter(s => s.isSent()).length;
-  const deliveredSends = sends.filter(s => s.isDelivered()).length;
-  const openedSends = sends.filter(s => s.isOpened()).length;
-  const clickedSends = sends.filter(s => s.isClicked()).length;
-  const convertedSends = sends.filter(s => s.isConverted()).length;
-  const errorSends = sends.filter(s => s.hasError()).length;
+  const scheduledSends = sends.filter((s) => s.isScheduled()).length;
+  const sentSends = sends.filter((s) => s.isSent()).length;
+  const deliveredSends = sends.filter((s) => s.isDelivered()).length;
+  const openedSends = sends.filter((s) => s.isOpened()).length;
+  const clickedSends = sends.filter((s) => s.isClicked()).length;
+  const convertedSends = sends.filter((s) => s.isConverted()).length;
+  const errorSends = sends.filter((s) => s.hasError()).length;
 
   return {
     sends,

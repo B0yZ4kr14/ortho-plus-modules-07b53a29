@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/lib/api/apiClient";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -31,24 +31,22 @@ export default function ScheduledBackupsManagement() {
   const { data: scheduledBackups, isLoading } = useQuery({
     queryKey: ["scheduled-backups"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("scheduled_backups" as any)
-        .select("*")
-        .order("created_at", { ascending: false });
+      const data = await apiClient.get<any[]>("/rest/v1/scheduled_backups", {
+        params: {
+          select: "*",
+          order: "created_at.desc",
+        },
+      });
 
-      if (error) throw error;
-      return data as any[];
+      return data;
     },
   });
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, enabled }: { id: string; enabled: boolean }) => {
-      const { error } = await supabase
-        .from("scheduled_backups" as any)
-        .update({ enabled })
-        .eq("id", id);
-
-      if (error) throw error;
+      await apiClient.patch(`/rest/v1/scheduled_backups?id=eq.${id}`, {
+        enabled,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["scheduled-backups"] });
@@ -61,12 +59,7 @@ export default function ScheduledBackupsManagement() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("scheduled_backups" as any)
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
+      await apiClient.delete(`/rest/v1/scheduled_backups?id=eq.${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["scheduled-backups"] });
@@ -129,7 +122,9 @@ export default function ScheduledBackupsManagement() {
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Gerenciamento de Backups Agendados</h1>
+        <h1 className="text-3xl font-bold">
+          Gerenciamento de Backups Agendados
+        </h1>
         <p className="text-muted-foreground mt-2">
           Gerencie todos os backups automáticos configurados para sua clínica
         </p>
@@ -160,16 +155,22 @@ export default function ScheduledBackupsManagement() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Calendar className="h-4 w-4" />
-                      <span>Frequência: {getFrequencyLabel(backup.frequency)}</span>
+                      <span>
+                        Frequência: {getFrequencyLabel(backup.frequency)}
+                      </span>
                     </div>
 
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Clock className="h-4 w-4" />
                       <span>
                         Próxima execução:{" "}
-                        {format(new Date(backup.next_run_at), "dd/MM/yyyy 'às' HH:mm", {
-                          locale: ptBR,
-                        })}
+                        {format(
+                          new Date(backup.next_run_at),
+                          "dd/MM/yyyy 'às' HH:mm",
+                          {
+                            locale: ptBR,
+                          },
+                        )}
                       </span>
                     </div>
 
@@ -178,9 +179,13 @@ export default function ScheduledBackupsManagement() {
                         <Clock className="h-4 w-4" />
                         <span>
                           Última execução:{" "}
-                          {format(new Date(backup.last_run_at), "dd/MM/yyyy 'às' HH:mm", {
-                            locale: ptBR,
-                          })}
+                          {format(
+                            new Date(backup.last_run_at),
+                            "dd/MM/yyyy 'às' HH:mm",
+                            {
+                              locale: ptBR,
+                            },
+                          )}
                         </span>
                       </div>
                     )}
@@ -220,7 +225,9 @@ export default function ScheduledBackupsManagement() {
                     )}
                     <Switch
                       checked={backup.enabled}
-                      onCheckedChange={() => handleToggle(backup.id, backup.enabled)}
+                      onCheckedChange={() =>
+                        handleToggle(backup.id, backup.enabled)
+                      }
                     />
                   </div>
 
@@ -266,13 +273,15 @@ export default function ScheduledBackupsManagement() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja remover este backup agendado? Esta ação não pode
-              ser desfeita.
+              Tem certeza que deseja remover este backup agendado? Esta ação não
+              pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Confirmar</AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete}>
+              Confirmar
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

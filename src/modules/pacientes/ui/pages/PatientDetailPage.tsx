@@ -1,37 +1,42 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, User, ClipboardList, Stethoscope, Smile, FileText, DollarSign, FileImage, History } from 'lucide-react';
-import { RiskScoreBadge } from '@/components/patients/RiskScoreBadge';
-import { IdentificacaoTab } from '@/components/patients/tabs/IdentificacaoTab';
-import { AnamneseTab } from '@/components/patients/tabs/AnamneseTab';
-import { ExameClinicoTab } from '@/components/patients/tabs/ExameClinicoTab';
-import { OdontogramaTab } from '@/components/patients/tabs/OdontogramaTab';
-import { TratamentosTab } from '@/components/patients/tabs/TratamentosTab';
-import { FinanceiroTab } from '@/components/patients/tabs/FinanceiroTab';
-import { DocumentosTab } from '@/components/patients/tabs/DocumentosTab';
-import { HistoricoTab } from '@/components/patients/tabs/HistoricoTab';
-import type { Patient } from '@/types/patient';
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import { PatientAdapter } from "@/lib/adapters/patientAdapter";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  ArrowLeft,
+  User,
+  ClipboardList,
+  Stethoscope,
+  Smile,
+  FileText,
+  DollarSign,
+  FileImage,
+  History,
+} from "lucide-react";
+import { RiskScoreBadge } from "@/components/patients/RiskScoreBadge";
+import { IdentificacaoTab } from "@/components/patients/tabs/IdentificacaoTab";
+import { AnamneseTab } from "@/components/patients/tabs/AnamneseTab";
+import { ExameClinicoTab } from "@/components/patients/tabs/ExameClinicoTab";
+import { OdontogramaTab } from "@/components/patients/tabs/OdontogramaTab";
+import { TratamentosTab } from "@/components/patients/tabs/TratamentosTab";
+import { FinanceiroTab } from "@/components/patients/tabs/FinanceiroTab";
+import { DocumentosTab } from "@/components/patients/tabs/DocumentosTab";
+import { HistoricoTab } from "@/components/patients/tabs/HistoricoTab";
+import type { Patient } from "@/types/patient";
 
 export default function PatientDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const { data: patient, isLoading } = useQuery<Patient>({
-    queryKey: ['patient', id],
+    queryKey: ["patient", id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('patients' as any)
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-      return data as unknown as Patient;
+      const data = await apiClient.get<any>(`/pacientes/${id}`);
+      return PatientAdapter.toFrontend(data);
     },
-    enabled: !!id
+    enabled: !!id,
   });
 
   if (isLoading) {
@@ -49,7 +54,7 @@ export default function PatientDetailPage() {
     return (
       <div className="p-8 text-center">
         <h2 className="text-2xl font-bold mb-4">Paciente não encontrado</h2>
-        <Button onClick={() => navigate('/pacientes')}>Voltar</Button>
+        <Button onClick={() => navigate("/pacientes")}>Voltar</Button>
       </div>
     );
   }
@@ -58,7 +63,11 @@ export default function PatientDetailPage() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/pacientes')}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/pacientes")}
+        >
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1">

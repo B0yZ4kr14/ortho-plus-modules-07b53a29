@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { useQuery } from "@tanstack/react-query";
 
 export interface BIMetric {
   id: string;
@@ -33,58 +33,49 @@ export function useBIMetrics() {
   const { user, clinicId } = useAuth();
 
   const { data: metrics = [], isLoading: loadingMetrics } = useQuery({
-    queryKey: ['bi-metrics', clinicId],
+    queryKey: ["bi-metrics", clinicId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('bi_metrics')
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data as BIMetric[];
+      const data = await apiClient.get<BIMetric[]>(
+        `/rest/v1/bi_metrics?clinic_id=eq.${clinicId}&order=created_at.desc`,
+      );
+      return data || [];
     },
     enabled: !!clinicId,
   });
 
   const { data: dashboards = [], isLoading: loadingDashboards } = useQuery({
-    queryKey: ['bi-dashboards', clinicId],
+    queryKey: ["bi-dashboards", clinicId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('bi_dashboards')
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data;
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/bi_dashboards?clinic_id=eq.${clinicId}&order=created_at.desc`,
+      );
+      return data || [];
     },
     enabled: !!clinicId,
   });
 
   const { data: widgets = [], isLoading: loadingWidgets } = useQuery({
-    queryKey: ['bi-widgets', clinicId],
+    queryKey: ["bi-widgets", clinicId],
     queryFn: async () => {
       if (dashboards.length === 0) return [];
 
-      const { data, error } = await supabase
-        .from('bi_widgets')
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .order('position_y', { ascending: true });
-
-      if (error) throw error;
-      return data as BIWidget[];
+      const data = await apiClient.get<BIWidget[]>(
+        `/rest/v1/bi_widgets?clinic_id=eq.${clinicId}&order=position_y.asc`,
+      );
+      return data || [];
     },
     enabled: !!clinicId && dashboards.length > 0,
   });
 
   // Calculated metrics from existing data
   const calculatedMetrics = {
-    totalRevenue: metrics.find(m => m.metric_key === 'total_revenue')?.value || 0,
-    newPatients: metrics.find(m => m.metric_key === 'new_patients')?.value || 0,
-    occupancyRate: metrics.find(m => m.metric_key === 'occupancy_rate')?.value || 0,
-    avgTicket: metrics.find(m => m.metric_key === 'avg_ticket')?.value || 0,
+    totalRevenue:
+      metrics.find((m) => m.metric_key === "total_revenue")?.value || 0,
+    newPatients:
+      metrics.find((m) => m.metric_key === "new_patients")?.value || 0,
+    occupancyRate:
+      metrics.find((m) => m.metric_key === "occupancy_rate")?.value || 0,
+    avgTicket: metrics.find((m) => m.metric_key === "avg_ticket")?.value || 0,
   };
 
   return {

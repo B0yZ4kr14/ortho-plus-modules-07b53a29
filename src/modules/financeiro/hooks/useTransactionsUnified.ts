@@ -1,34 +1,12 @@
 /**
  * useTransactionsUnified Hook
- * Hook unificado que alterna entre Supabase e REST API automaticamente
+ * Legacy unifier updated to directly use the REST API
  */
 
-import { useDataSource } from '@/lib/providers/DataSourceProvider';
-import { useTransactionsAPI } from './useTransactionsAPI';
-import { useState } from 'react';
-
-// Implementação placeholder para Supabase (manter compatibilidade)
-function useTransactionsSupabase() {
-  const [transactions] = useState([]);
-  const [loading] = useState(false);
-  
-  return {
-    transactions,
-    loading,
-    createTransaction: async () => {},
-    updateTransaction: async () => {},
-    deleteTransaction: async () => {},
-    reloadTransactions: async () => {},
-  };
-}
+import { useTransactionsAPI } from "./useTransactionsAPI";
 
 export function useTransactionsUnified() {
-  const { useRESTAPI } = useDataSource();
-  
-  const supabaseHook = useTransactionsSupabase();
-  const apiHook = useTransactionsAPI();
-  
-  return useRESTAPI ? apiHook : supabaseHook;
+  return useTransactionsAPI();
 }
 
 export { useTransactionsUnified as useTransactions };

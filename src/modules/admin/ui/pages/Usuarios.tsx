@@ -1,32 +1,38 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Plus, 
-  Users, 
-  UserCircle, 
-  Shield, 
-  Mail, 
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Plus,
+  Users,
+  UserCircle,
+  Shield,
+  Mail,
   MoreVertical,
   Edit,
   Trash2,
   CheckCircle2,
-  XCircle
-} from 'lucide-react';
-import { TableFilter } from '@/components/shared/TableFilter';
-import { 
+  XCircle,
+} from "lucide-react";
+import { TableFilter } from "@/components/shared/TableFilter";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,16 +40,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { UserForm } from '@/components/usuarios/UserForm';
-import { toast } from 'sonner';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+} from "@/components/ui/dropdown-menu";
+import { UserForm } from "@/components/usuarios/UserForm";
+import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface User {
   id: string;
   email: string;
   full_name: string;
-  app_role: 'ADMIN' | 'MEMBER';
+  app_role: "ADMIN" | "MEMBER";
   clinic_id: string;
   avatar_url?: string;
   is_active: boolean;
@@ -54,68 +60,44 @@ interface User {
 export default function Usuarios() {
   const { clinicId, isAdmin } = useAuth();
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Fetch users
   const { data: users, isLoading } = useQuery<User[]>({
-    queryKey: ['users', clinicId],
+    queryKey: ["users", clinicId],
     queryFn: async () => {
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Buscar informações de email do auth.users
-      const usersWithEmail = await Promise.all(
-        (profiles || []).map(async (profile: any) => {
-          const { data: userData } = await supabase.auth.admin.getUserById(profile.id);
-          return {
-            id: profile.id,
-            email: userData?.user?.email || 'N/A',
-            full_name: profile.full_name,
-            app_role: profile.app_role || 'MEMBER',
-            clinic_id: profile.clinic_id,
-            avatar_url: profile.avatar_url,
-            is_active: profile.is_active ?? true,
-            last_sign_in_at: userData?.user?.last_sign_in_at,
-            created_at: profile.created_at,
-          } as User;
-        })
-      );
-
-      return usersWithEmail;
+      const response = await apiClient.get<User[]>("/usuarios");
+      return response.data;
     },
     enabled: !!clinicId,
   });
 
-  const filteredUsers = users?.filter(user => {
-    const matchesSearch = !searchTerm || 
-      user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesRole = roleFilter === 'all' || user.app_role === roleFilter;
-    
-    return matchesSearch && matchesRole;
-  }) || [];
+  const filteredUsers =
+    users?.filter((user) => {
+      const matchesSearch =
+        !searchTerm ||
+        user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesRole = roleFilter === "all" || user.app_role === roleFilter;
+
+      return matchesSearch && matchesRole;
+    }) || [];
 
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const { error } = await supabase.auth.admin.deleteUser(userId);
-      if (error) throw error;
+      await apiClient.delete(`/usuarios/${userId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users', clinicId] });
-      toast.success('Usuário excluído com sucesso!');
+      queryClient.invalidateQueries({ queryKey: ["users", clinicId] });
+      toast.success("Usuário excluído com sucesso!");
     },
     onError: (error: any) => {
-      toast.error('Erro ao excluir usuário', {
+      toast.error("Erro ao excluir usuário", {
         description: error.message,
       });
     },
@@ -123,16 +105,19 @@ export default function Usuarios() {
 
   // Toggle active status mutation
   const toggleActiveMutation = useMutation({
-    mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ is_active: !isActive } as any) // Type will be regenerated after migration
-        .eq('id', userId);
-      
-      if (error) throw error;
+    mutationFn: async ({
+      userId,
+      isActive,
+    }: {
+      userId: string;
+      isActive: boolean;
+    }) => {
+      await apiClient.post(`/usuarios/${userId}/toggle-active`, {
+        is_active: !isActive,
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users', clinicId] });
+      queryClient.invalidateQueries({ queryKey: ["users", clinicId] });
     },
   });
 
@@ -142,7 +127,11 @@ export default function Usuarios() {
   };
 
   const handleDelete = (userId: string) => {
-    if (confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')) {
+    if (
+      confirm(
+        "Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.",
+      )
+    ) {
       deleteUserMutation.mutate(userId);
     }
   };
@@ -156,19 +145,28 @@ export default function Usuarios() {
     setSelectedUser(null);
   };
 
-
-  const getRoleBadge = (role: 'ADMIN' | 'MEMBER') => {
-    if (role === 'ADMIN') {
-      return <Badge variant="default" className="gap-1"><Shield className="h-3 w-3" />Administrador</Badge>;
+  const getRoleBadge = (role: "ADMIN" | "MEMBER") => {
+    if (role === "ADMIN") {
+      return (
+        <Badge variant="default" className="gap-1">
+          <Shield className="h-3 w-3" />
+          Administrador
+        </Badge>
+      );
     }
-    return <Badge variant="secondary" className="gap-1"><UserCircle className="h-3 w-3" />Membro</Badge>;
+    return (
+      <Badge variant="secondary" className="gap-1">
+        <UserCircle className="h-3 w-3" />
+        Membro
+      </Badge>
+    );
   };
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
       .toUpperCase()
       .substring(0, 2);
   };
@@ -222,16 +220,16 @@ export default function Usuarios() {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
-                {selectedUser ? 'Editar Usuário' : 'Novo Usuário'}
+                {selectedUser ? "Editar Usuário" : "Novo Usuário"}
               </DialogTitle>
               <DialogDescription>
-                {selectedUser 
-                  ? 'Atualize as informações do usuário' 
-                  : 'Preencha os dados para criar um novo usuário'}
+                {selectedUser
+                  ? "Atualize as informações do usuário"
+                  : "Preencha os dados para criar um novo usuário"}
               </DialogDescription>
             </DialogHeader>
-            <UserForm 
-              user={selectedUser} 
+            <UserForm
+              user={selectedUser}
               onSuccess={handleDialogClose}
               onCancel={handleDialogClose}
             />
@@ -239,12 +237,13 @@ export default function Usuarios() {
         </Dialog>
       </div>
 
-
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total de Usuários
+            </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -253,23 +252,27 @@ export default function Usuarios() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Administradores</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Administradores
+            </CardTitle>
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {users?.filter(u => u.app_role === 'ADMIN').length || 0}
+              {users?.filter((u) => u.app_role === "ADMIN").length || 0}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Usuários Ativos</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Usuários Ativos
+            </CardTitle>
             <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {users?.filter(u => u.is_active).length || 0}
+              {users?.filter((u) => u.is_active).length || 0}
             </div>
           </CardContent>
         </Card>
@@ -294,19 +297,27 @@ export default function Usuarios() {
                   <div className="flex items-center gap-4">
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={user.avatar_url} />
-                      <AvatarFallback>{getInitials(user.full_name || 'User')}</AvatarFallback>
+                      <AvatarFallback>
+                        {getInitials(user.full_name || "User")}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="font-medium">{user.full_name}</p>
                         {getRoleBadge(user.app_role)}
                         {user.is_active ? (
-                          <Badge variant="outline" className="gap-1 text-success">
+                          <Badge
+                            variant="outline"
+                            className="gap-1 text-success"
+                          >
                             <CheckCircle2 className="h-3 w-3" />
                             Ativo
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="gap-1 text-muted-foreground">
+                          <Badge
+                            variant="outline"
+                            className="gap-1 text-muted-foreground"
+                          >
                             <XCircle className="h-3 w-3" />
                             Inativo
                           </Badge>
@@ -319,7 +330,10 @@ export default function Usuarios() {
                         </p>
                         {user.last_sign_in_at && (
                           <p className="text-sm text-muted-foreground">
-                            Último acesso: {new Date(user.last_sign_in_at).toLocaleDateString('pt-BR')}
+                            Último acesso:{" "}
+                            {new Date(user.last_sign_in_at).toLocaleDateString(
+                              "pt-BR",
+                            )}
                           </p>
                         )}
                       </div>
@@ -339,7 +353,11 @@ export default function Usuarios() {
                         <Edit className="h-4 w-4 mr-2" />
                         Editar
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleToggleActive(user.id, user.is_active)}>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          handleToggleActive(user.id, user.is_active)
+                        }
+                      >
                         {user.is_active ? (
                           <>
                             <XCircle className="h-4 w-4 mr-2" />
@@ -353,7 +371,7 @@ export default function Usuarios() {
                         )}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={() => handleDelete(user.id)}
                         className="text-destructive"
                       >

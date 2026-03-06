@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/lib/api/apiClient";
 import {
   Dialog,
   DialogContent,
@@ -41,7 +41,10 @@ interface DiffSummary {
   financial: DiffResult;
 }
 
-export function BackupDiffViewer({ open, onOpenChange }: BackupDiffViewerProps) {
+export function BackupDiffViewer({
+  open,
+  onOpenChange,
+}: BackupDiffViewerProps) {
   const [backup1, setBackup1] = useState<string>("");
   const [backup2, setBackup2] = useState<string>("");
   const [diffResult, setDiffResult] = useState<DiffSummary | null>(null);
@@ -49,14 +52,9 @@ export function BackupDiffViewer({ open, onOpenChange }: BackupDiffViewerProps) 
   const { data: backups } = useQuery({
     queryKey: ["backup-history-for-diff"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("backup_history")
-        .select("*")
-        .eq("status", "success")
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
+      const data = await apiClient.get<any[]>(
+        "/backup_history?status=eq.success&order=created_at.desc&limit=50",
+      );
       return data;
     },
     enabled: open,
@@ -67,12 +65,12 @@ export function BackupDiffViewer({ open, onOpenChange }: BackupDiffViewerProps) 
 
     try {
       // Buscar dados dos dois backups
-      const { data: data1 } = await supabase.functions.invoke("download-backup", {
-        body: { backup_id: backup1 },
+      const data1 = await apiClient.post<any>("/functions/v1/download-backup", {
+        backup_id: backup1,
       });
 
-      const { data: data2 } = await supabase.functions.invoke("download-backup", {
-        body: { backup_id: backup2 },
+      const data2 = await apiClient.post<any>("/functions/v1/download-backup", {
+        backup_id: backup2,
       });
 
       if (!data1?.data || !data2?.data) {
@@ -84,18 +82,21 @@ export function BackupDiffViewer({ open, onOpenChange }: BackupDiffViewerProps) 
 
       // Comparar dados
       const diff: DiffSummary = {
-        patients: compareArrays(backup1Data.patients || [], backup2Data.patients || []),
+        patients: compareArrays(
+          backup1Data.patients || [],
+          backup2Data.patients || [],
+        ),
         appointments: compareArrays(
           backup1Data.appointments || [],
-          backup2Data.appointments || []
+          backup2Data.appointments || [],
         ),
         clinical_history: compareArrays(
           backup1Data.clinical_history || [],
-          backup2Data.clinical_history || []
+          backup2Data.clinical_history || [],
         ),
         financial: compareArrays(
           backup1Data.financial || [],
-          backup2Data.financial || []
+          backup2Data.financial || [],
         ),
       };
 
@@ -170,7 +171,8 @@ export function BackupDiffViewer({ open, onOpenChange }: BackupDiffViewerProps) 
             <div className="flex items-center gap-2 mb-3">
               <Edit className="h-4 w-4 text-warning" />
               <span className="font-medium text-warning">
-                {diff.modified.length} Modificado{diff.modified.length > 1 ? "s" : ""}
+                {diff.modified.length} Modificado
+                {diff.modified.length > 1 ? "s" : ""}
               </span>
             </div>
             <ScrollArea className="h-40">
@@ -193,7 +195,8 @@ export function BackupDiffViewer({ open, onOpenChange }: BackupDiffViewerProps) 
             <div className="flex items-center gap-2 mb-3">
               <Minus className="h-4 w-4 text-destructive" />
               <span className="font-medium text-destructive">
-                {diff.removed.length} Removido{diff.removed.length > 1 ? "s" : ""}
+                {diff.removed.length} Removido
+                {diff.removed.length > 1 ? "s" : ""}
               </span>
             </div>
             <ScrollArea className="h-40">
@@ -296,7 +299,10 @@ export function BackupDiffViewer({ open, onOpenChange }: BackupDiffViewerProps) 
                   {renderDiffSection("Agendamentos", diffResult.appointments)}
                 </TabsContent>
                 <TabsContent value="clinical">
-                  {renderDiffSection("Histórico Clínico", diffResult.clinical_history)}
+                  {renderDiffSection(
+                    "Histórico Clínico",
+                    diffResult.clinical_history,
+                  )}
                 </TabsContent>
                 <TabsContent value="financial">
                   {renderDiffSection("Financeiro", diffResult.financial)}

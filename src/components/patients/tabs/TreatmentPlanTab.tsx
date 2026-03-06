@@ -1,11 +1,17 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ClipboardPlus, Plus, CheckCircle, Clock, XCircle } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ClipboardPlus, Plus, CheckCircle, Clock, XCircle } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface Treatment {
   id: string;
@@ -25,29 +31,24 @@ interface TreatmentPlanTabProps {
 
 export function TreatmentPlanTab({ patientId }: TreatmentPlanTabProps) {
   const { data, isLoading } = useQuery({
-    queryKey: ['patient-treatments', patientId],
+    queryKey: ["patient-treatments", patientId],
     queryFn: async () => {
-      const result = (supabase as any)
-        .from('pep_tratamentos')
-        .select('*')
-        .eq('patient_id', patientId)
-        .order('created_at', { ascending: false });
-      
-      const { data: rawData, error } = await result;
-      if (error) throw error;
-      return (rawData || []) as Treatment[];
-    }
+      const response = await apiClient.get<Treatment[]>(
+        `/pep/tratamentos/patient/${patientId}`,
+      );
+      return response || [];
+    },
   });
 
   const treatments = (data || []) as Treatment[];
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'concluido':
+      case "concluido":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'em_andamento':
+      case "em_andamento":
         return <Clock className="h-4 w-4 text-yellow-500" />;
-      case 'cancelado':
+      case "cancelado":
         return <XCircle className="h-4 w-4 text-red-500" />;
       default:
         return <Clock className="h-4 w-4" />;
@@ -56,10 +57,10 @@ export function TreatmentPlanTab({ patientId }: TreatmentPlanTabProps) {
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      planejado: 'Planejado',
-      em_andamento: 'Em Andamento',
-      concluido: 'Concluído',
-      cancelado: 'Cancelado'
+      planejado: "Planejado",
+      em_andamento: "Em Andamento",
+      concluido: "Concluído",
+      cancelado: "Cancelado",
     };
     return labels[status] || status;
   };
@@ -73,7 +74,9 @@ export function TreatmentPlanTab({ patientId }: TreatmentPlanTabProps) {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">Plano de Tratamento</h2>
-          <p className="text-muted-foreground">Procedimentos planejados e realizados</p>
+          <p className="text-muted-foreground">
+            Procedimentos planejados e realizados
+          </p>
         </div>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
@@ -93,7 +96,7 @@ export function TreatmentPlanTab({ patientId }: TreatmentPlanTabProps) {
                       {treatment.titulo}
                     </CardTitle>
                     <CardDescription>
-                      Dente: {treatment.dente_codigo || 'Não especificado'}
+                      Dente: {treatment.dente_codigo || "Não especificado"}
                     </CardDescription>
                   </div>
                   <Badge variant="outline" className="flex items-center gap-1">
@@ -105,33 +108,43 @@ export function TreatmentPlanTab({ patientId }: TreatmentPlanTabProps) {
               <CardContent>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="font-semibold">Data Início:</span>{' '}
-                    {treatment.data_inicio 
-                      ? format(new Date(treatment.data_inicio), "dd/MM/yyyy", { locale: ptBR })
-                      : 'Não iniciado'}
+                    <span className="font-semibold">Data Início:</span>{" "}
+                    {treatment.data_inicio
+                      ? format(new Date(treatment.data_inicio), "dd/MM/yyyy", {
+                          locale: ptBR,
+                        })
+                      : "Não iniciado"}
                   </div>
                   <div>
-                    <span className="font-semibold">Data Conclusão:</span>{' '}
-                    {treatment.data_conclusao 
-                      ? format(new Date(treatment.data_conclusao), "dd/MM/yyyy", { locale: ptBR })
-                      : 'Em andamento'}
+                    <span className="font-semibold">Data Conclusão:</span>{" "}
+                    {treatment.data_conclusao
+                      ? format(
+                          new Date(treatment.data_conclusao),
+                          "dd/MM/yyyy",
+                          { locale: ptBR },
+                        )
+                      : "Em andamento"}
                   </div>
                   {treatment.valor_estimado && (
                     <div>
-                      <span className="font-semibold">Valor Estimado:</span>{' '}
-                      R$ {treatment.valor_estimado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      <span className="font-semibold">Valor Estimado:</span> R${" "}
+                      {treatment.valor_estimado.toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                      })}
                     </div>
                   )}
                   {treatment.descricao && (
                     <div>
-                      <span className="font-semibold">Descrição:</span>{' '}
+                      <span className="font-semibold">Descrição:</span>{" "}
                       {treatment.descricao}
                     </div>
                   )}
                 </div>
                 {treatment.observacoes && (
                   <div className="mt-4 pt-4 border-t">
-                    <p className="text-sm text-muted-foreground">{treatment.observacoes}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {treatment.observacoes}
+                    </p>
                   </div>
                 )}
               </CardContent>

@@ -1,13 +1,18 @@
-import { useState } from 'react';
-import { RadiografiaUpload } from '@/modules/ia/presentation/components/RadiografiaUpload';
-import { RadiografiaViewer } from '@/modules/ia/presentation/components/RadiografiaViewer';
-import { RadiografiaList } from '@/modules/ia/presentation/components/RadiografiaList';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { Brain, History } from 'lucide-react';
+import { useState } from "react";
+import { RadiografiaUpload } from "@/modules/ia/presentation/components/RadiografiaUpload";
+import { RadiografiaViewer } from "@/modules/ia/presentation/components/RadiografiaViewer";
+import { RadiografiaList } from "@/modules/ia/presentation/components/RadiografiaList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { toast } from "sonner";
+import { Brain, History } from "lucide-react";
 
 const RadiografiaPage = () => {
   const { user } = useAuth();
@@ -17,7 +22,7 @@ const RadiografiaPage = () => {
 
   const handleUpload = async (file: File, tipo: string) => {
     if (!user) {
-      toast.error('Usuário não autenticado');
+      toast.error("Usuário não autenticado");
       return;
     }
 
@@ -35,21 +40,20 @@ const RadiografiaPage = () => {
       const imageBase64 = await base64Promise;
 
       // Chamar Edge Function
-      const { data, error } = await supabase.functions.invoke('analyze-radiografia', {
-        body: {
+      const data = await apiClient.post<any>(
+        "/rest/v1/functions/analyze-radiografia",
+        {
           imageBase64,
           tipoRadiografia: tipo,
-          patientId: 'demo-patient-id', // TODO: Conectar com paciente real
+          patientId: "demo-patient-id", // TODO: Conectar com paciente real
         },
-      });
+      );
 
-      if (error) throw error;
+      toast.success("Análise concluída com sucesso!");
 
-      toast.success('Análise concluída com sucesso!');
-      
       // Recarregar lista de análises
       loadAnalises();
-      
+
       // Abrir resultado
       setSelectedAnalise({
         imagemUrl: data.imagemUrl,
@@ -58,13 +62,13 @@ const RadiografiaPage = () => {
         tipo,
       });
     } catch (error: any) {
-      console.error('Erro na análise:', error);
-      if (error.message.includes('429')) {
-        toast.error('Rate limit excedido. Aguarde alguns minutos.');
-      } else if (error.message.includes('402')) {
-        toast.error('Créditos insuficientes no workspace Lovable.');
+      console.error("Erro na análise:", error);
+      if (error.message.includes("429")) {
+        toast.error("Rate limit excedido. Aguarde alguns minutos.");
+      } else if (error.message.includes("402")) {
+        toast.error("Créditos insuficientes no workspace Lovable.");
       } else {
-        toast.error(error.message || 'Erro ao analisar radiografia');
+        toast.error(error.message || "Erro ao analisar radiografia");
       }
     } finally {
       setIsUploading(false);
@@ -73,16 +77,13 @@ const RadiografiaPage = () => {
 
   const loadAnalises = async () => {
     try {
-      const { data, error } = await supabase
-        .from('analises_radiograficas')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20);
+      const data = await apiClient.get<any[]>(
+        "/rest/v1/analises_radiograficas?order=created_at.desc&limit=20",
+      );
 
-      if (error) throw error;
       setAnalises(data || []);
     } catch (error) {
-      console.error('Erro ao carregar análises:', error);
+      console.error("Erro ao carregar análises:", error);
     }
   };
 
@@ -131,14 +132,14 @@ const RadiografiaPage = () => {
         </TabsContent>
 
         <TabsContent value="history">
-          <RadiografiaList
-            analises={analises}
-            onView={handleViewAnalise}
-          />
+          <RadiografiaList analises={analises} onView={handleViewAnalise} />
         </TabsContent>
       </Tabs>
 
-      <Dialog open={!!selectedAnalise} onOpenChange={(open) => !open && setSelectedAnalise(null)}>
+      <Dialog
+        open={!!selectedAnalise}
+        onOpenChange={(open) => !open && setSelectedAnalise(null)}
+      >
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Resultado da Análise</DialogTitle>

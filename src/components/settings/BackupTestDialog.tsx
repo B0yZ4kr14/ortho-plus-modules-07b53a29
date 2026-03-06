@@ -1,12 +1,23 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, XCircle, Loader2, AlertTriangle, Info } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import {
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  AlertTriangle,
+  Info,
+} from "lucide-react";
+import { apiClient } from "@/lib/api/apiClient";
+import { toast } from "sonner";
 
 interface BackupTestDialogProps {
   open: boolean;
@@ -26,7 +37,12 @@ interface TestResult {
   timestamp: string;
 }
 
-export function BackupTestDialog({ open, onOpenChange, backupId, backupName }: BackupTestDialogProps) {
+export function BackupTestDialog({
+  open,
+  onOpenChange,
+  backupId,
+  backupName,
+}: BackupTestDialogProps) {
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [progress, setProgress] = useState(0);
@@ -39,35 +55,37 @@ export function BackupTestDialog({ open, onOpenChange, backupId, backupName }: B
     try {
       // Simulate progress
       const progressInterval = setInterval(() => {
-        setProgress(prev => Math.min(prev + 15, 90));
+        setProgress((prev) => Math.min(prev + 15, 90));
       }, 500);
 
-      const { data, error } = await supabase.functions.invoke('test-backup-restore', {
-        body: { backupId, testEnvironment: 'sandbox' },
-      });
+      const data = await apiClient.post<TestResult>(
+        "/functions/v1/test-backup-restore",
+        {
+          backupId,
+          testEnvironment: "sandbox",
+        },
+      );
 
       clearInterval(progressInterval);
       setProgress(100);
 
-      if (error) throw error;
-
-      setTestResult(data as TestResult);
+      setTestResult(data);
 
       if (data.success) {
-        toast.success('Teste de restauração concluído com sucesso!');
+        toast.success("Teste de restauração concluído com sucesso!");
       } else {
         toast.error(`Teste falhou: ${data.testsFailed} erro(s) encontrado(s)`);
       }
     } catch (error: any) {
-      console.error('Error running backup test:', error);
-      toast.error('Erro ao executar teste de restauração');
+      console.error("Error running backup test:", error);
+      toast.error("Erro ao executar teste de restauração");
       setTestResult({
         success: false,
         backupId,
         testsRun: 1,
         testsPassed: 0,
         testsFailed: 1,
-        errors: [error.message || 'Erro desconhecido'],
+        errors: [error.message || "Erro desconhecido"],
         duration: 0,
         timestamp: new Date().toISOString(),
       });
@@ -77,15 +95,17 @@ export function BackupTestDialog({ open, onOpenChange, backupId, backupName }: B
   };
 
   const getStatusIcon = () => {
-    if (testing) return <Loader2 className="h-5 w-5 animate-spin text-blue-500" />;
+    if (testing)
+      return <Loader2 className="h-5 w-5 animate-spin text-blue-500" />;
     if (!testResult) return <Info className="h-5 w-5 text-muted-foreground" />;
-    if (testResult.success) return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+    if (testResult.success)
+      return <CheckCircle2 className="h-5 w-5 text-green-500" />;
     return <XCircle className="h-5 w-5 text-red-500" />;
   };
 
   const getStatusColor = () => {
-    if (!testResult) return 'border-border';
-    return testResult.success ? 'border-green-500/50' : 'border-red-500/50';
+    if (!testResult) return "border-border";
+    return testResult.success ? "border-green-500/50" : "border-red-500/50";
   };
 
   return (
@@ -102,8 +122,9 @@ export function BackupTestDialog({ open, onOpenChange, backupId, backupName }: B
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              Este teste valida a integridade e restaurabilidade do backup sem aplicar mudanças reais.
-              Ideal para garantir que seus backups estão funcionando corretamente.
+              Este teste valida a integridade e restaurabilidade do backup sem
+              aplicar mudanças reais. Ideal para garantir que seus backups estão
+              funcionando corretamente.
             </AlertDescription>
           </Alert>
 
@@ -117,7 +138,9 @@ export function BackupTestDialog({ open, onOpenChange, backupId, backupName }: B
           {testing && (
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Executando testes...</span>
+                <span className="text-muted-foreground">
+                  Executando testes...
+                </span>
                 <span className="font-medium">{progress}%</span>
               </div>
               <Progress value={progress} className="h-2" />
@@ -130,8 +153,10 @@ export function BackupTestDialog({ open, onOpenChange, backupId, backupName }: B
                 {/* Summary */}
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold">Resultado do Teste</h3>
-                  <Badge variant={testResult.success ? 'success' : 'destructive'}>
-                    {testResult.success ? 'Aprovado' : 'Reprovado'}
+                  <Badge
+                    variant={testResult.success ? "success" : "destructive"}
+                  >
+                    {testResult.success ? "Aprovado" : "Reprovado"}
                   </Badge>
                 </div>
 
@@ -139,14 +164,20 @@ export function BackupTestDialog({ open, onOpenChange, backupId, backupName }: B
                 <div className="grid grid-cols-3 gap-4">
                   <div className="text-center p-3 bg-muted/50 rounded">
                     <p className="text-2xl font-bold">{testResult.testsRun}</p>
-                    <p className="text-xs text-muted-foreground">Testes Executados</p>
+                    <p className="text-xs text-muted-foreground">
+                      Testes Executados
+                    </p>
                   </div>
                   <div className="text-center p-3 bg-green-500/10 rounded">
-                    <p className="text-2xl font-bold text-green-600">{testResult.testsPassed}</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {testResult.testsPassed}
+                    </p>
                     <p className="text-xs text-muted-foreground">Aprovados</p>
                   </div>
                   <div className="text-center p-3 bg-red-500/10 rounded">
-                    <p className="text-2xl font-bold text-red-600">{testResult.testsFailed}</p>
+                    <p className="text-2xl font-bold text-red-600">
+                      {testResult.testsFailed}
+                    </p>
                     <p className="text-xs text-muted-foreground">Reprovados</p>
                   </div>
                 </div>
@@ -176,7 +207,8 @@ export function BackupTestDialog({ open, onOpenChange, backupId, backupName }: B
                   <Alert className="bg-green-500/10 border-green-500/20">
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
                     <AlertDescription className="text-green-600 dark:text-green-400">
-                      ✓ Backup validado com sucesso! Todos os testes passaram e o backup está pronto para ser restaurado caso necessário.
+                      ✓ Backup validado com sucesso! Todos os testes passaram e
+                      o backup está pronto para ser restaurado caso necessário.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -197,7 +229,7 @@ export function BackupTestDialog({ open, onOpenChange, backupId, backupName }: B
               ) : (
                 <>
                   <CheckCircle2 className="h-4 w-4 mr-2" />
-                  {testResult ? 'Executar Novamente' : 'Iniciar Teste'}
+                  {testResult ? "Executar Novamente" : "Iniciar Teste"}
                 </>
               )}
             </Button>

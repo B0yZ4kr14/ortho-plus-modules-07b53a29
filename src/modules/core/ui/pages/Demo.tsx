@@ -1,19 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Activity, 
-  Users, 
-  Calendar, 
-  FileText, 
-  DollarSign, 
-  Shield, 
+import {
+  Activity,
+  Users,
+  Calendar,
+  FileText,
+  DollarSign,
+  Shield,
   Zap,
   Bot,
   Video,
   Bitcoin,
   CheckCircle2,
-  ArrowRight
+  ArrowRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -25,57 +25,57 @@ export default function Demo() {
       icon: Activity,
       title: "Prontuário Eletrônico",
       description: "PEP completo com Odontograma 2D/3D e IA",
-      badge: "IA"
+      badge: "IA",
     },
     {
       icon: Users,
       title: "Gestão de Pacientes",
       description: "Cadastro completo e histórico longitudinal",
-      badge: "Core"
+      badge: "Core",
     },
     {
       icon: Calendar,
       title: "Agenda Inteligente",
       description: "Automação WhatsApp e confirmações",
-      badge: "Automação"
+      badge: "Automação",
     },
     {
       icon: DollarSign,
       title: "Financeiro Completo",
       description: "DRE, Fluxo de Caixa, Split, PIX",
-      badge: "Premium"
+      badge: "Premium",
     },
     {
       icon: Bot,
       title: "IA Radiografia",
       description: "Análise automática com Gemini Vision",
-      badge: "IA"
+      badge: "IA",
     },
     {
       icon: Video,
       title: "Teleodontologia",
       description: "Videochamadas e prescrição remota",
-      badge: "Telemedicina"
+      badge: "Telemedicina",
     },
     {
       icon: Bitcoin,
       title: "Pagamentos Crypto",
       description: "Bitcoin, integração exchanges",
-      badge: "Inovação"
+      badge: "Inovação",
     },
     {
       icon: Shield,
       title: "LGPD Nativo",
       description: "Compliance total desde o design",
-      badge: "Compliance"
-    }
+      badge: "Compliance",
+    },
   ];
 
   const stats = [
     { value: "22", label: "Módulos Plug-and-Play" },
     { value: "100%", label: "Arquitetura Modular" },
     { value: "3", label: "Temas Premium" },
-    { value: "∞", label: "Escalabilidade" }
+    { value: "∞", label: "Escalabilidade" },
   ];
 
   return (
@@ -93,22 +93,28 @@ export default function Demo() {
             Sistema de Gestão Odontológica Completo
           </p>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Plataforma 100% modular com IA integrada, automação inteligente e compliance LGPD nativo.
-            Transforme sua clínica odontológica com tecnologia de ponta.
+            Plataforma 100% modular com IA integrada, automação inteligente e
+            compliance LGPD nativo. Transforme sua clínica odontológica com
+            tecnologia de ponta.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="text-lg px-8"
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate("/auth")}
             >
               Começar Agora <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
+            <Button
+              size="lg"
+              variant="outline"
               className="text-lg px-8"
-              onClick={() => window.open('https://github.com/tsitelecom/ortho-plus', '_blank')}
+              onClick={() =>
+                window.open(
+                  "https://github.com/tsitelecom/ortho-plus",
+                  "_blank",
+                )
+              }
             >
               Ver no GitHub
             </Button>
@@ -119,7 +125,9 @@ export default function Demo() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20">
           {stats.map((stat, index) => (
             <Card key={index} className="p-6 text-center">
-              <div className="text-4xl font-bold text-primary mb-2">{stat.value}</div>
+              <div className="text-4xl font-bold text-primary mb-2">
+                {stat.value}
+              </div>
               <div className="text-sm text-muted-foreground">{stat.label}</div>
             </Card>
           ))}
@@ -141,8 +149,8 @@ export default function Demo() {
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
-              <Card 
-                key={index} 
+              <Card
+                key={index}
                 className="p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
               >
                 <div className="flex items-start justify-between mb-4">
@@ -152,7 +160,9 @@ export default function Demo() {
                   <Badge variant="secondary">{feature.badge}</Badge>
                 </div>
                 <h3 className="font-semibold mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {feature.description}
+                </p>
               </Card>
             );
           })}
@@ -176,7 +186,7 @@ export default function Demo() {
             "Design Premium (3 Temas + Animações)",
             "LGPD Native (Compliance desde o design)",
             "Tour Guiado (Onboarding interativo)",
-            "Crypto Ready (Bitcoin nativo)"
+            "Crypto Ready (Bitcoin nativo)",
           ].map((item, index) => (
             <div key={index} className="flex items-start gap-3">
               <CheckCircle2 className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
@@ -199,11 +209,24 @@ export default function Demo() {
 
         <div className="flex flex-wrap justify-center gap-4 max-w-3xl mx-auto">
           {[
-            "React 18", "TypeScript 5", "Vite", "Tailwind CSS", 
-            "Supabase", "PostgreSQL", "Edge Functions", "React Query",
-            "Shadcn/ui", "Zod", "React Joyride", "Recharts"
+            "React 18",
+            "TypeScript 5",
+            "Vite",
+            "Tailwind CSS",
+            "Node.js",
+            "PostgreSQL",
+            "Express.js",
+            "React Query",
+            "Shadcn/ui",
+            "Zod",
+            "React Joyride",
+            "Recharts",
           ].map((tech, index) => (
-            <Badge key={index} variant="outline" className="px-4 py-2 text-base">
+            <Badge
+              key={index}
+              variant="outline"
+              className="px-4 py-2 text-base"
+            >
               {tech}
             </Badge>
           ))}
@@ -218,12 +241,13 @@ export default function Demo() {
             Pronto para Transformar sua Clínica?
           </h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Sistema completo, modular e escalável. Comece agora e ative apenas os módulos que você precisa.
+            Sistema completo, modular e escalável. Comece agora e ative apenas
+            os módulos que você precisa.
           </p>
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             className="text-lg px-8"
-            onClick={() => navigate('/auth')}
+            onClick={() => navigate("/auth")}
           >
             Começar Gratuitamente <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
@@ -244,13 +268,22 @@ export default function Demo() {
               © 2025 TSI Telecom - Todos os direitos reservados
             </p>
             <div className="flex justify-center gap-6 pt-4">
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a
+                href="#"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
                 Documentação
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a
+                href="#"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
                 GitHub
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a
+                href="#"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
                 Contato
               </a>
             </div>

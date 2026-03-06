@@ -1,102 +1,74 @@
-import { useState } from 'react';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Plus, Search, Filter, Download, Send, CheckCircle2, Clock, XCircle, Eye } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useState } from "react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  FileText,
+  Plus,
+  Search,
+  Filter,
+  Download,
+  Send,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  Eye,
+} from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
-interface NotaFiscal {
-  id: string;
-  numero: string;
-  serie: string;
-  tipo: 'NFe' | 'NFSe';
-  cliente: string;
-  cpfCnpj: string;
-  valor: number;
-  dataEmissao: Date;
-  status: 'emitida' | 'pendente' | 'cancelada' | 'enviada';
-  chaveAcesso?: string;
-  protocolo?: string;
-  servicos: string[];
-}
+import { useFinanceiro } from "@/modules/financeiro/application/hooks/useFinanceiro";
+import type { NotaFiscal } from "@/modules/financeiro/types/financeiro-completo.types";
 
 export default function NotasFiscais() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('todas');
-  const [filterTipo, setFilterTipo] = useState('todos');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("todas");
+  const [filterTipo, setFilterTipo] = useState("todos");
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Mock data
-  const notasFiscais: NotaFiscal[] = [
-    {
-      id: '1',
-      numero: '000001',
-      serie: '1',
-      tipo: 'NFSe',
-      cliente: 'João Silva',
-      cpfCnpj: '123.456.789-00',
-      valor: 450.00,
-      dataEmissao: new Date('2024-01-10'),
-      status: 'emitida',
-      chaveAcesso: '35240112345678000190650010000000011234567890',
-      protocolo: '135240000000001',
-      servicos: ['Consulta Ortodôntica', 'Manutenção Aparelho'],
-    },
-    {
-      id: '2',
-      numero: '000002',
-      serie: '1',
-      tipo: 'NFe',
-      cliente: 'Maria Santos',
-      cpfCnpj: '987.654.321-00',
-      valor: 3500.00,
-      dataEmissao: new Date('2024-01-12'),
-      status: 'enviada',
-      chaveAcesso: '35240112345678000190550010000000021234567891',
-      protocolo: '135240000000002',
-      servicos: ['Implante Dentário'],
-    },
-    {
-      id: '3',
-      numero: '000003',
-      serie: '1',
-      tipo: 'NFSe',
-      cliente: 'Carlos Oliveira',
-      cpfCnpj: '111.222.333-44',
-      valor: 800.00,
-      dataEmissao: new Date('2024-01-15'),
-      status: 'pendente',
-      servicos: ['Clareamento Dental'],
-    },
-    {
-      id: '4',
-      numero: '000004',
-      serie: '1',
-      tipo: 'NFSe',
-      cliente: 'Ana Costa',
-      cpfCnpj: '555.666.777-88',
-      valor: 1200.00,
-      dataEmissao: new Date('2024-01-08'),
-      status: 'cancelada',
-      chaveAcesso: '35240112345678000190650010000000041234567893',
-      servicos: ['Tratamento de Canal'],
-    },
-  ];
+  const { notasFiscais, loading } = useFinanceiro();
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { label: string; variant: 'success' | 'warning' | 'error' | 'secondary' }> = {
-      emitida: { label: 'Emitida', variant: 'success' },
-      pendente: { label: 'Pendente', variant: 'warning' },
-      cancelada: { label: 'Cancelada', variant: 'error' },
-      enviada: { label: 'Enviada ao Cliente', variant: 'secondary' },
+    const variants: Record<
+      string,
+      { label: string; variant: "success" | "warning" | "error" | "secondary" }
+    > = {
+      emitida: { label: "Emitida", variant: "success" },
+      pendente: { label: "Pendente", variant: "warning" },
+      cancelada: { label: "Cancelada", variant: "error" },
+      enviada: { label: "Enviada ao Cliente", variant: "secondary" },
     };
     const config = variants[status];
     return <Badge variant={config.variant}>{config.label}</Badge>;
@@ -104,8 +76,8 @@ export default function NotasFiscais() {
 
   const getTipoBadge = (tipo: string) => {
     const colors: Record<string, string> = {
-      'NFe': 'bg-blue-500/10 text-blue-700 border-blue-500/20',
-      'NFSe': 'bg-purple-500/10 text-purple-700 border-purple-500/20',
+      NFe: "bg-blue-500/10 text-blue-700 border-blue-500/20",
+      NFSe: "bg-purple-500/10 text-purple-700 border-purple-500/20",
     };
     return (
       <Badge variant="outline" className={colors[tipo]}>
@@ -115,12 +87,12 @@ export default function NotasFiscais() {
   };
 
   const totalEmitido = notasFiscais
-    .filter(n => n.status === 'emitida' || n.status === 'enviada')
-    .reduce((sum, n) => sum + n.valor, 0);
+    .filter((n) => n.status === "emitida" || n.status === "enviada")
+    .reduce((sum, n) => sum + n.valor_total, 0);
 
   const totalPendente = notasFiscais
-    .filter(n => n.status === 'pendente')
-    .reduce((sum, n) => sum + n.valor, 0);
+    .filter((n) => n.status === "pendente")
+    .reduce((sum, n) => sum + n.valor_total, 0);
 
   return (
     <div className="flex-1 space-y-8 p-8">
@@ -141,10 +113,18 @@ export default function NotasFiscais() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-success">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalEmitido)}
+              {new Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }).format(totalEmitido)}
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              {notasFiscais.filter(n => n.status === 'emitida' || n.status === 'enviada').length} notas
+              {
+                notasFiscais.filter(
+                  (n) => n.status === "emitida" || n.status === "enviada",
+                ).length
+              }{" "}
+              notas
             </p>
           </CardContent>
         </Card>
@@ -158,10 +138,13 @@ export default function NotasFiscais() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-warning">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPendente)}
+              {new Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }).format(totalPendente)}
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              {notasFiscais.filter(n => n.status === 'pendente').length} notas
+              {notasFiscais.filter((n) => n.status === "pendente").length} notas
             </p>
           </CardContent>
         </Card>
@@ -175,7 +158,11 @@ export default function NotasFiscais() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-foreground">
-              {notasFiscais.filter(n => n.tipo === 'NFSe' && n.status === 'emitida').length}
+              {
+                notasFiscais.filter(
+                  (n) => n.tipo === "NFSe" && n.status === "emitida",
+                ).length
+              }
             </div>
             <p className="text-xs text-muted-foreground mt-2">Este mês</p>
           </CardContent>
@@ -190,7 +177,11 @@ export default function NotasFiscais() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-foreground">
-              {notasFiscais.filter(n => n.tipo === 'NFe' && n.status === 'emitida').length}
+              {
+                notasFiscais.filter(
+                  (n) => n.tipo === "NFe" && n.status === "emitida",
+                ).length
+              }
             </div>
             <p className="text-xs text-muted-foreground mt-2">Este mês</p>
           </CardContent>
@@ -263,8 +254,12 @@ export default function NotasFiscais() {
                           <SelectValue placeholder="Selecione" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="NFe">NFe - Nota Fiscal Eletrônica</SelectItem>
-                          <SelectItem value="NFSe">NFSe - Nota Fiscal de Serviço</SelectItem>
+                          <SelectItem value="NFe">
+                            NFe - Nota Fiscal Eletrônica
+                          </SelectItem>
+                          <SelectItem value="NFSe">
+                            NFSe - Nota Fiscal de Serviço
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -296,7 +291,10 @@ export default function NotasFiscais() {
 
                     <div className="col-span-2 space-y-2">
                       <Label htmlFor="descricao">Descrição dos Serviços</Label>
-                      <Input id="descricao" placeholder="Ex: Consulta Ortodôntica, Implante..." />
+                      <Input
+                        id="descricao"
+                        placeholder="Ex: Consulta Ortodôntica, Implante..."
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="valor">Valor Total</Label>
@@ -308,7 +306,9 @@ export default function NotasFiscais() {
                     </div>
 
                     <div className="col-span-2 border-t pt-4">
-                      <h3 className="font-semibold mb-3">Informações Fiscais</h3>
+                      <h3 className="font-semibold mb-3">
+                        Informações Fiscais
+                      </h3>
                     </div>
 
                     <div className="space-y-2">
@@ -330,10 +330,16 @@ export default function NotasFiscais() {
                     </div>
                   </div>
                   <div className="flex justify-end gap-3">
-                    <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setDialogOpen(false)}
+                    >
                       Cancelar
                     </Button>
-                    <Button variant="elevated" onClick={() => setDialogOpen(false)}>
+                    <Button
+                      variant="elevated"
+                      onClick={() => setDialogOpen(false)}
+                    >
                       Emitir Nota Fiscal
                     </Button>
                   </div>
@@ -349,10 +355,12 @@ export default function NotasFiscais() {
         <TabsList>
           <TabsTrigger value="todas">Todas ({notasFiscais.length})</TabsTrigger>
           <TabsTrigger value="emitidas">
-            Emitidas ({notasFiscais.filter(n => n.status === 'emitida').length})
+            Emitidas (
+            {notasFiscais.filter((n) => n.status === "emitida").length})
           </TabsTrigger>
           <TabsTrigger value="pendentes">
-            Pendentes ({notasFiscais.filter(n => n.status === 'pendente').length})
+            Pendentes (
+            {notasFiscais.filter((n) => n.status === "pendente").length})
           </TabsTrigger>
         </TabsList>
 
@@ -373,18 +381,27 @@ export default function NotasFiscais() {
               </TableHeader>
               <TableBody>
                 {notasFiscais.map((nota) => (
-                  <TableRow key={nota.id}>
+                  <TableRow key={nota.id || Math.random().toString()}>
                     <TableCell className="font-medium">
                       {nota.numero}/{nota.serie}
                     </TableCell>
                     <TableCell>{getTipoBadge(nota.tipo)}</TableCell>
-                    <TableCell>{nota.cliente}</TableCell>
-                    <TableCell className="text-muted-foreground">{nota.cpfCnpj}</TableCell>
-                    <TableCell>
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(nota.valor)}
+                    <TableCell>{nota.cliente_nome}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {nota.cliente_cpf_cnpj}
                     </TableCell>
                     <TableCell>
-                      {format(nota.dataEmissao, 'dd/MM/yyyy', { locale: ptBR })}
+                      {new Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      }).format(nota.valor_total)}
+                    </TableCell>
+                    <TableCell>
+                      {nota.data_emissao
+                        ? format(new Date(nota.data_emissao), "dd/MM/yyyy", {
+                            locale: ptBR,
+                          })
+                        : "-"}
                     </TableCell>
                     <TableCell>{getStatusBadge(nota.status)}</TableCell>
                     <TableCell className="text-right">
@@ -395,7 +412,7 @@ export default function NotasFiscais() {
                         <Button variant="ghost" size="sm">
                           <Download className="h-4 w-4" />
                         </Button>
-                        {nota.status === 'emitida' && (
+                        {nota.status === "emitida" && (
                           <Button variant="ghost" size="sm">
                             <Send className="h-4 w-4" />
                           </Button>

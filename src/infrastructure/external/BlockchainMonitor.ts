@@ -1,12 +1,11 @@
 /**
  * FASE 3 - SPRINT 3: Blockchain Monitor
- * 
+ *
  * Monitora endereços Bitcoin/Crypto na blockchain para detectar pagamentos recebidos.
  * Usa APIs públicas (Blockstream, BlockCypher) ou nó próprio.
  */
 
-import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 export interface BlockchainTransaction {
   txHash: string;
@@ -20,7 +19,7 @@ export interface BlockchainTransaction {
 export interface MonitorConfig {
   address: string;
   expectedAmount: number;
-  cryptocurrency: 'BTC' | 'ETH' | 'USDT' | 'BNB';
+  cryptocurrency: "BTC" | "ETH" | "USDT" | "BNB";
   transactionId: string; // ID da crypto_transactions
   onConfirmed: (tx: BlockchainTransaction) => void;
   onError?: (error: Error) => void;
@@ -35,11 +34,15 @@ export class BlockchainMonitor {
    * Inicia monitoramento de um endereço
    */
   async watchAddress(config: MonitorConfig): Promise<void> {
-    logger.info(`[BlockchainMonitor] Starting watch for ${config.address} (${config.cryptocurrency})`);
+    logger.info(
+      `[BlockchainMonitor] Starting watch for ${config.address} (${config.cryptocurrency})`,
+    );
 
     // Verificar se já está sendo monitorado
     if (this.activeMonitors.has(config.address)) {
-      logger.warn(`[BlockchainMonitor] Address ${config.address} already being monitored`);
+      logger.warn(
+        `[BlockchainMonitor] Address ${config.address} already being monitored`,
+      );
       return;
     }
 
@@ -47,18 +50,24 @@ export class BlockchainMonitor {
     const intervalId = setInterval(async () => {
       try {
         const tx = await this.checkAddressBalance(config);
-        
+
         if (tx && tx.confirmations >= this.MIN_CONFIRMATIONS) {
-          logger.info(`[BlockchainMonitor] Payment confirmed for ${config.address}`, { tx });
-          
+          logger.info(
+            `[BlockchainMonitor] Payment confirmed for ${config.address}`,
+            { tx },
+          );
+
           // Parar monitoramento
           this.stopWatching(config.address);
-          
+
           // Callback de confirmação
           config.onConfirmed(tx);
         }
       } catch (error) {
-        logger.error(`[BlockchainMonitor] Error checking address ${config.address}`, error);
+        logger.error(
+          `[BlockchainMonitor] Error checking address ${config.address}`,
+          error,
+        );
         if (config.onError) {
           config.onError(error as Error);
         }
@@ -68,10 +77,15 @@ export class BlockchainMonitor {
     this.activeMonitors.set(config.address, intervalId);
 
     // Timeout: parar após 2 horas
-    setTimeout(() => {
-      this.stopWatching(config.address);
-      logger.info(`[BlockchainMonitor] Timeout expired for ${config.address}`);
-    }, 2 * 60 * 60 * 1000);
+    setTimeout(
+      () => {
+        this.stopWatching(config.address);
+        logger.info(
+          `[BlockchainMonitor] Timeout expired for ${config.address}`,
+        );
+      },
+      2 * 60 * 60 * 1000,
+    );
   }
 
   /**
@@ -90,17 +104,19 @@ export class BlockchainMonitor {
    * Verifica saldo e transações de um endereço
    */
   private async checkAddressBalance(
-    config: MonitorConfig
+    config: MonitorConfig,
   ): Promise<BlockchainTransaction | null> {
     switch (config.cryptocurrency) {
-      case 'BTC':
+      case "BTC":
         return await this.checkBitcoinAddress(config);
-      case 'ETH':
+      case "ETH":
         return await this.checkEthereumAddress(config);
-      case 'USDT':
+      case "USDT":
         return await this.checkUSDTAddress(config);
       default:
-        throw new Error(`Cryptocurrency ${config.cryptocurrency} not supported`);
+        throw new Error(
+          `Cryptocurrency ${config.cryptocurrency} not supported`,
+        );
     }
   }
 
@@ -109,14 +125,16 @@ export class BlockchainMonitor {
    * Documentação: https://github.com/Blockstream/esplora/blob/master/API.md
    */
   private async checkBitcoinAddress(
-    config: MonitorConfig
+    config: MonitorConfig,
   ): Promise<BlockchainTransaction | null> {
     try {
       // Blockstream API (mainnet)
-      const baseUrl = 'https://blockstream.info/api';
-      
+      const baseUrl = "https://blockstream.info/api";
+
       // 1. Buscar informações do endereço
-      const addressResponse = await fetch(`${baseUrl}/address/${config.address}`);
+      const addressResponse = await fetch(
+        `${baseUrl}/address/${config.address}`,
+      );
       if (!addressResponse.ok) {
         throw new Error(`Blockstream API error: ${addressResponse.status}`);
       }
@@ -135,7 +153,9 @@ export class BlockchainMonitor {
       }
 
       // 4. Buscar última transação recebida
-      const txsResponse = await fetch(`${baseUrl}/address/${config.address}/txs`);
+      const txsResponse = await fetch(
+        `${baseUrl}/address/${config.address}/txs`,
+      );
       const txs = await txsResponse.json();
 
       if (!txs || txs.length === 0) {
@@ -160,7 +180,10 @@ export class BlockchainMonitor {
         timestamp: new Date(latestTx.status.block_time * 1000),
       };
     } catch (error) {
-      console.error('[BlockchainMonitor] Error checking Bitcoin address:', error);
+      console.error(
+        "[BlockchainMonitor] Error checking Bitcoin address:",
+        error,
+      );
       throw error;
     }
   }
@@ -170,17 +193,22 @@ export class BlockchainMonitor {
    * Alternativa: Infura, Alchemy
    */
   private async checkEthereumAddress(
-    config: MonitorConfig
+    config: MonitorConfig,
   ): Promise<BlockchainTransaction | null> {
     try {
       // Mock: Em produção, usar Etherscan ou Infura
       // const response = await fetch(`https://api.etherscan.io/api?module=account&action=balance&address=${config.address}`);
-      
+
       // Por enquanto, retornar null (não implementado)
-      console.warn('[BlockchainMonitor] Ethereum monitoring not fully implemented');
+      console.warn(
+        "[BlockchainMonitor] Ethereum monitoring not fully implemented",
+      );
       return null;
     } catch (error) {
-      console.error('[BlockchainMonitor] Error checking Ethereum address:', error);
+      console.error(
+        "[BlockchainMonitor] Error checking Ethereum address:",
+        error,
+      );
       throw error;
     }
   }
@@ -189,7 +217,7 @@ export class BlockchainMonitor {
    * Verifica endereço USDT (Tether - ERC20 no Ethereum ou TRC20 no Tron)
    */
   private async checkUSDTAddress(
-    config: MonitorConfig
+    config: MonitorConfig,
   ): Promise<BlockchainTransaction | null> {
     // USDT pode ser ERC20 (Ethereum) ou TRC20 (Tron)
     // Por padrão, assumir ERC20
@@ -201,11 +229,13 @@ export class BlockchainMonitor {
    */
   private async getCurrentBlockHeight(): Promise<number> {
     try {
-      const response = await fetch('https://blockstream.info/api/blocks/tip/height');
+      const response = await fetch(
+        "https://blockstream.info/api/blocks/tip/height",
+      );
       const height = await response.text();
       return parseInt(height, 10);
     } catch (error) {
-      console.error('[BlockchainMonitor] Error fetching block height:', error);
+      console.error("[BlockchainMonitor] Error fetching block height:", error);
       return 0;
     }
   }

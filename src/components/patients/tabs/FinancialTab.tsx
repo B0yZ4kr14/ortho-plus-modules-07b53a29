@@ -1,10 +1,17 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { DollarSign, TrendingUp, TrendingDown, Clock } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import { PatientAdapter } from "@/lib/adapters/patientAdapter";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { DollarSign, TrendingUp, TrendingDown, Clock } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface FinancialTabProps {
   patientId: string;
@@ -12,49 +19,53 @@ interface FinancialTabProps {
 
 export function FinancialTab({ patientId }: FinancialTabProps) {
   const { data: patient } = useQuery({
-    queryKey: ['patient-financial', patientId],
+    queryKey: ["patient-financial", patientId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('patients')
-        .select('total_debt, total_paid, payment_status')
-        .eq('id', patientId)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    }
+      const data = await apiClient.get<any>(`/pacientes/${patientId}`);
+      return PatientAdapter.toFrontend(data);
+    },
   });
 
   const { data: budgets } = useQuery({
-    queryKey: ['patient-budgets', patientId],
+    queryKey: ["patient-budgets", patientId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('budgets')
-        .select('*')
-        .eq('patient_id', patientId)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
-    }
+      // Fetch timeline which contains the budgets associated with the patient
+      const data = await apiClient.get<any[]>(
+        `/pacientes/${patientId}/timeline`,
+      );
+      const events = data || [];
+      return events.filter((e: any) => e.type === "budget");
+    },
   });
 
   const getPaymentStatusBadge = (status: string) => {
-    const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-      em_dia: { label: 'Em Dia', variant: 'default' },
-      pendente: { label: 'Pendente', variant: 'secondary' },
-      atrasado: { label: 'Atrasado', variant: 'destructive' }
+    const statusConfig: Record<
+      string,
+      {
+        label: string;
+        variant: "default" | "secondary" | "destructive" | "outline";
+      }
+    > = {
+      em_dia: { label: "Em Dia", variant: "default" },
+      pendente: { label: "Pendente", variant: "secondary" },
+      atrasado: { label: "Atrasado", variant: "destructive" },
     };
     const config = statusConfig[status] || statusConfig.pendente;
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
   const getBudgetStatusBadge = (status: string) => {
-    const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-      aprovado: { label: 'Aprovado', variant: 'default' },
-      pendente: { label: 'Pendente', variant: 'secondary' },
-      rejeitado: { label: 'Rejeitado', variant: 'destructive' },
-      rascunho: { label: 'Rascunho', variant: 'outline' }
+    const statusConfig: Record<
+      string,
+      {
+        label: string;
+        variant: "default" | "secondary" | "destructive" | "outline";
+      }
+    > = {
+      aprovado: { label: "Aprovado", variant: "default" },
+      pendente: { label: "Pendente", variant: "secondary" },
+      rejeitado: { label: "Rejeitado", variant: "destructive" },
+      rascunho: { label: "Rascunho", variant: "outline" },
     };
     const config = statusConfig[status] || statusConfig.pendente;
     return <Badge variant={config.variant}>{config.label}</Badge>;
@@ -64,19 +75,26 @@ export function FinancialTab({ patientId }: FinancialTabProps) {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold">Situação Financeira</h2>
-        <p className="text-muted-foreground">Resumo de contas e orçamentos do paciente</p>
+        <p className="text-muted-foreground">
+          Resumo de contas e orçamentos do paciente
+        </p>
       </div>
 
       {/* Resumo Financeiro */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total em Aberto</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total em Aberto
+            </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              R$ {(patient?.total_debt || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              R${" "}
+              {(patient?.total_debt || 0).toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+              })}
             </div>
           </CardContent>
         </Card>
@@ -88,19 +106,25 @@ export function FinancialTab({ patientId }: FinancialTabProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              R$ {(patient?.total_paid || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              R${" "}
+              {(patient?.total_paid || 0).toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+              })}
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Status de Pagamento</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Status de Pagamento
+            </CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {patient && getPaymentStatusBadge(patient.payment_status || 'pendente')}
+              {patient &&
+                getPaymentStatusBadge(patient.payment_status || "pendente")}
             </div>
           </CardContent>
         </Card>
@@ -116,9 +140,14 @@ export function FinancialTab({ patientId }: FinancialTabProps) {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className="text-base">{budget.titulo}</CardTitle>
+                      <CardTitle className="text-base">
+                        {budget.titulo}
+                      </CardTitle>
                       <CardDescription>
-                        Nº {budget.numero_orcamento} • {format(new Date(budget.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                        Nº {budget.numero_orcamento} •{" "}
+                        {format(new Date(budget.created_at), "dd/MM/yyyy", {
+                          locale: ptBR,
+                        })}
                       </CardDescription>
                     </div>
                     {getBudgetStatusBadge(budget.status)}
@@ -127,23 +156,29 @@ export function FinancialTab({ patientId }: FinancialTabProps) {
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="font-semibold">Valor Total:</span>{' '}
-                      R$ {budget.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      <span className="font-semibold">Valor Total:</span> R${" "}
+                      {budget.valor_total.toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                      })}
                     </div>
                     <div>
-                      <span className="font-semibold">Tipo de Plano:</span>{' '}
+                      <span className="font-semibold">Tipo de Plano:</span>{" "}
                       {budget.tipo_plano}
                     </div>
                     {budget.data_expiracao && (
                       <div>
-                        <span className="font-semibold">Validade:</span>{' '}
-                        {format(new Date(budget.data_expiracao), "dd/MM/yyyy", { locale: ptBR })}
+                        <span className="font-semibold">Validade:</span>{" "}
+                        {format(new Date(budget.data_expiracao), "dd/MM/yyyy", {
+                          locale: ptBR,
+                        })}
                       </div>
                     )}
                   </div>
                   {budget.descricao && (
                     <div className="mt-4 pt-4 border-t">
-                      <p className="text-sm text-muted-foreground">{budget.descricao}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {budget.descricao}
+                      </p>
                     </div>
                   )}
                 </CardContent>
@@ -154,7 +189,9 @@ export function FinancialTab({ patientId }: FinancialTabProps) {
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-8">
               <DollarSign className="h-8 w-8 text-muted-foreground mb-2" />
-              <p className="text-muted-foreground text-sm">Nenhum orçamento encontrado</p>
+              <p className="text-muted-foreground text-sm">
+                Nenhum orçamento encontrado
+              </p>
             </CardContent>
           </Card>
         )}

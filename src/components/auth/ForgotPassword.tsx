@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api/apiClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -35,11 +35,10 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
   const handleSubmit = async (values: ForgotPasswordValues) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
+      await apiClient.post('/auth/reset-password', {
+        email: values.email,
         redirectTo: `${window.location.origin}/reset-password`,
       });
-
-      if (error) throw error;
 
       setEmailSent(true);
       toast.success('Email enviado!', {

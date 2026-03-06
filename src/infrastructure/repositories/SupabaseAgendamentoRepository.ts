@@ -1,173 +1,141 @@
-import { supabase } from '@/integrations/supabase/client';
-import { Agendamento } from '@/domain/entities/Agendamento';
-import { IAgendamentoRepository } from '@/domain/repositories/IAgendamentoRepository';
-import { AgendamentoMapper } from './mappers/AgendamentoMapper';
+import { Agendamento } from "@/domain/entities/Agendamento";
+import { IAgendamentoRepository } from "@/domain/repositories/IAgendamentoRepository";
+import { apiClient } from "@/lib/api/apiClient";
+import { AgendamentoMapper } from "./mappers/AgendamentoMapper";
 
 export class SupabaseAgendamentoRepository implements IAgendamentoRepository {
   async findById(id: string): Promise<Agendamento | null> {
-    const { data, error } = await supabase
-      .from('appointments')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error || !data) {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/appointments?id=eq.${id}`,
+      );
+      if (!data || data.length === 0) return null;
+      return AgendamentoMapper.toDomain(data[0]);
+    } catch {
       return null;
     }
-
-    return AgendamentoMapper.toDomain(data);
   }
 
   async findByDentistAndDateRange(
     dentistId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<Agendamento[]> {
-    const { data, error } = await supabase
-      .from('appointments')
-      .select('*')
-      .eq('dentist_id', dentistId)
-      .gte('start_time', startDate.toISOString())
-      .lte('end_time', endDate.toISOString())
-      .order('start_time', { ascending: true });
-
-    if (error || !data) {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/appointments?dentist_id=eq.${dentistId}&start_time=gte.${startDate.toISOString()}&end_time=lte.${endDate.toISOString()}&order=start_time.asc`,
+      );
+      return (data || []).map(AgendamentoMapper.toDomain);
+    } catch {
       return [];
     }
-
-    return data.map(AgendamentoMapper.toDomain);
   }
 
-  async findByPatientId(patientId: string, clinicId: string): Promise<Agendamento[]> {
-    const { data, error } = await supabase
-      .from('appointments')
-      .select('*')
-      .eq('patient_id', patientId)
-      .eq('clinic_id', clinicId)
-      .order('start_time', { ascending: false });
-
-    if (error || !data) {
+  async findByPatientId(
+    patientId: string,
+    clinicId: string,
+  ): Promise<Agendamento[]> {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/appointments?patient_id=eq.${patientId}&clinic_id=eq.${clinicId}&order=start_time.desc`,
+      );
+      return (data || []).map(AgendamentoMapper.toDomain);
+    } catch {
       return [];
     }
-
-    return data.map(AgendamentoMapper.toDomain);
   }
 
   async findByClinicAndDateRange(
     clinicId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<Agendamento[]> {
-    const { data, error } = await supabase
-      .from('appointments')
-      .select('*')
-      .eq('clinic_id', clinicId)
-      .gte('start_time', startDate.toISOString())
-      .lte('end_time', endDate.toISOString())
-      .order('start_time', { ascending: true });
-
-    if (error || !data) {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/appointments?clinic_id=eq.${clinicId}&start_time=gte.${startDate.toISOString()}&end_time=lte.${endDate.toISOString()}&order=start_time.asc`,
+      );
+      return (data || []).map(AgendamentoMapper.toDomain);
+    } catch {
       return [];
     }
-
-    return data.map(AgendamentoMapper.toDomain);
   }
 
   async findByStatus(
     clinicId: string,
-    status: 'AGENDADO' | 'CONFIRMADO' | 'EM_ATENDIMENTO' | 'CONCLUIDO' | 'CANCELADO' | 'FALTOU'
+    status:
+      | "AGENDADO"
+      | "CONFIRMADO"
+      | "EM_ATENDIMENTO"
+      | "CONCLUIDO"
+      | "CANCELADO"
+      | "FALTOU",
   ): Promise<Agendamento[]> {
-    // Mapear status para o formato do banco
     const dbStatus = status.toLowerCase();
-
-    const { data, error } = await supabase
-      .from('appointments')
-      .select('*')
-      .eq('clinic_id', clinicId)
-      .eq('status', dbStatus)
-      .order('start_time', { ascending: true });
-
-    if (error || !data) {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/appointments?clinic_id=eq.${clinicId}&status=eq.${dbStatus}&order=start_time.asc`,
+      );
+      return (data || []).map(AgendamentoMapper.toDomain);
+    } catch {
       return [];
     }
-
-    return data.map(AgendamentoMapper.toDomain);
   }
 
   async findAtivos(clinicId: string): Promise<Agendamento[]> {
-    const { data, error } = await supabase
-      .from('appointments')
-      .select('*')
-      .eq('clinic_id', clinicId)
-      .not('status', 'in', '(cancelado,concluido,faltou)')
-      .order('start_time', { ascending: true });
-
-    if (error || !data) {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/appointments?clinic_id=eq.${clinicId}&status=not.in.(cancelado,concluido,faltou)&order=start_time.asc`,
+      );
+      return (data || []).map(AgendamentoMapper.toDomain);
+    } catch {
       return [];
     }
-
-    return data.map(AgendamentoMapper.toDomain);
   }
 
   async hasConflict(
     dentistId: string,
     startTime: Date,
     endTime: Date,
-    excludeId?: string
+    excludeId?: string,
   ): Promise<boolean> {
-    let query = supabase
-      .from('appointments')
-      .select('id')
-      .eq('dentist_id', dentistId)
-      .not('status', 'in', '(cancelado,faltou)')
-      .or(`start_time.lte.${endTime.toISOString()},end_time.gte.${startTime.toISOString()}`);
-
-    if (excludeId) {
-      query = query.neq('id', excludeId);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error('Erro ao verificar conflito:', error);
+    try {
+      let url = `/rest/v1/appointments?dentist_id=eq.${dentistId}&status=not.in.(cancelado,faltou)&or=(start_time.lte.${startTime.toISOString()},end_time.gte.${endTime.toISOString()})&select=id`;
+      if (excludeId) {
+        url += `&id=neq.${excludeId}`;
+      }
+      const data = await apiClient.get<any[]>(url);
+      return Array.isArray(data) && data.length > 0;
+    } catch (error) {
+      console.error("Erro ao verificar conflito:", error);
       return false;
     }
-
-    return (data?.length || 0) > 0;
   }
 
   async save(agendamento: Agendamento): Promise<void> {
     const dbData = AgendamentoMapper.toDatabase(agendamento);
-
-    const { error } = await supabase
-      .from('appointments')
-      .insert(dbData);
-
-    if (error) {
+    try {
+      await apiClient.post("/rest/v1/appointments", dbData);
+    } catch (error: any) {
       throw new Error(`Erro ao salvar agendamento: ${error.message}`);
     }
   }
 
   async update(agendamento: Agendamento): Promise<void> {
     const dbData = AgendamentoMapper.toDatabase(agendamento);
-
-    const { error } = await supabase
-      .from('appointments')
-      .update(dbData)
-      .eq('id', agendamento.id);
-
-    if (error) {
+    try {
+      await apiClient.patch(
+        `/rest/v1/appointments?id=eq.${agendamento.id}`,
+        dbData,
+      );
+    } catch (error: any) {
       throw new Error(`Erro ao atualizar agendamento: ${error.message}`);
     }
   }
 
   async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('appointments')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
+    try {
+      await apiClient.delete(`/rest/v1/appointments?id=eq.${id}`);
+    } catch (error: any) {
       throw new Error(`Erro ao deletar agendamento: ${error.message}`);
     }
   }

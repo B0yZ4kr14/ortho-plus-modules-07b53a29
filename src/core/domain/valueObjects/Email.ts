@@ -10,27 +10,30 @@ export class Email {
   }
 
   static create(email: string): Email {
-    if (!Email.isValid(email)) {
-      throw new Error('Email inválido');
+    const cleanedEmail = email.trim();
+    if (!Email.isValid(cleanedEmail)) {
+      throw new Error("Email inválido");
     }
-    return new Email(email);
+    return new Email(cleanedEmail);
   }
 
   static isValid(email: string): boolean {
     if (!email || email.trim().length === 0) {
       return false;
     }
+    const cleaned = email.trim();
 
     // RFC 5322 simplified regex
-    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-    
-    if (!emailRegex.test(email)) {
+    const emailRegex =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
+    if (!emailRegex.test(cleaned)) {
       return false;
     }
 
     // Additional checks
-    const [local, domain] = email.split('@');
-    
+    const [local, domain] = cleaned.split("@");
+
     if (!local || !domain) {
       return false;
     }
@@ -47,11 +50,11 @@ export class Email {
   }
 
   getDomain(): string {
-    return this.value.split('@')[1];
+    return this.value.split("@")[1];
   }
 
   getLocalPart(): string {
-    return this.value.split('@')[0];
+    return this.value.split("@")[0];
   }
 
   equals(other: Email): boolean {

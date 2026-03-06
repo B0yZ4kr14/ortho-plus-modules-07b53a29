@@ -1,21 +1,44 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { TableFilter } from '@/components/shared/TableFilter';
-import { Shield, Calendar as CalendarIcon, User, Filter, Download, Search } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { apiClient } from "@/lib/api/apiClient";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { TableFilter } from "@/components/shared/TableFilter";
+import {
+  Shield,
+  Calendar as CalendarIcon,
+  User,
+  Filter,
+  Download,
+  Search,
+} from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
 
 interface AuditLog {
   id: number;
@@ -25,6 +48,7 @@ interface AuditLog {
   action: string;
   details: any;
   target_module_id: number | null;
+  profiles?: { full_name: string | null } | null;
 }
 
 interface User {
@@ -37,16 +61,16 @@ export default function AuditLogs() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Filtros
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedUser, setSelectedUser] = useState<string>('all');
-  const [selectedAction, setSelectedAction] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUser, setSelectedUser] = useState<string>("all");
+  const [selectedAction, setSelectedAction] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
 
   useEffect(() => {
-    if (hasRole('ADMIN')) {
+    if (hasRole("ADMIN")) {
       loadUsers();
       loadLogs();
     }
@@ -54,54 +78,30 @@ export default function AuditLogs() {
 
   const loadUsers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .eq('clinic_id', clinicId);
-
-      if (error) throw error;
+      const data = await apiClient.get<User[]>("/usuarios");
       setUsers(data || []);
     } catch (error: any) {
-      console.error('Erro ao carregar usuários:', error);
+      console.error("Erro ao carregar usuários:", error);
     }
   };
 
   const loadLogs = async () => {
     try {
       setLoading(true);
-      let query = supabase
-        .from('audit_logs')
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .order('created_at', { ascending: false })
-        .limit(100);
 
-      // Aplicar filtros
-      if (selectedUser !== 'all') {
-        query = query.eq('user_id', selectedUser);
-      }
+      const params = new URLSearchParams();
+      if (selectedUser !== "all") params.append("user_id", selectedUser);
+      if (selectedAction !== "all") params.append("action", selectedAction);
+      if (dateFrom) params.append("from", dateFrom.toISOString());
+      if (dateTo) params.append("to", dateTo.toISOString());
 
-      if (selectedAction !== 'all') {
-        query = query.eq('action', selectedAction);
-      }
-
-      if (dateFrom) {
-        query = query.gte('created_at', dateFrom.toISOString());
-      }
-
-      if (dateTo) {
-        const endDate = new Date(dateTo);
-        endDate.setHours(23, 59, 59, 999);
-        query = query.lte('created_at', endDate.toISOString());
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
+      const data = await apiClient.get<AuditLog[]>(
+        `/db/audit_logs?${params.toString()}`,
+      );
       setLogs(data || []);
     } catch (error: any) {
-      console.error('Erro ao carregar logs:', error);
-      toast.error('Erro ao carregar logs de auditoria');
+      console.error("Erro ao carregar logs:", error);
+      toast.error("Erro ao carregar logs de auditoria");
     } finally {
       setLoading(false);
     }
@@ -112,9 +112,9 @@ export default function AuditLogs() {
   };
 
   const handleClearFilters = () => {
-    setSearchTerm('');
-    setSelectedUser('all');
-    setSelectedAction('all');
+    setSearchTerm("");
+    setSelectedUser("all");
+    setSelectedAction("all");
     setDateFrom(undefined);
     setDateTo(undefined);
     loadLogs();
@@ -122,53 +122,62 @@ export default function AuditLogs() {
 
   const exportLogs = () => {
     const csvContent = [
-      ['Data/Hora', 'Usuário', 'Ação', 'Detalhes'].join(','),
-      ...logs.map(log => [
-        format(new Date(log.created_at), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR }),
-        users.find(u => u.id === log.user_id)?.full_name || log.user_id,
-        log.action,
-        JSON.stringify(log.details)
-      ].join(','))
-    ].join('\n');
+      ["Data/Hora", "Usuário", "Ação", "Detalhes"].join(","),
+      ...logs.map((log) =>
+        [
+          format(new Date(log.created_at), "dd/MM/yyyy HH:mm:ss", {
+            locale: ptBR,
+          }),
+          log.profiles?.full_name ||
+            users.find((u) => u.id === log.user_id)?.full_name ||
+            log.user_id,
+          log.action,
+          JSON.stringify(log.details),
+        ].join(","),
+      ),
+    ].join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `audit_logs_${Date.now()}.csv`);
-    link.style.visibility = 'hidden';
-    
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", `audit_logs_${Date.now()}.csv`);
+    link.style.visibility = "hidden";
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
-    toast.success('Logs exportados com sucesso!');
+
+    toast.success("Logs exportados com sucesso!");
   };
 
   const getActionColor = (action: string) => {
-    if (action.includes('DELETE') || action.includes('DEACTIVATE')) return 'destructive';
-    if (action.includes('CREATE') || action.includes('ACTIVATE')) return 'default';
-    if (action.includes('UPDATE') || action.includes('EDIT')) return 'secondary';
-    return 'outline';
+    if (action.includes("DELETE") || action.includes("DEACTIVATE"))
+      return "destructive";
+    if (action.includes("CREATE") || action.includes("ACTIVATE"))
+      return "default";
+    if (action.includes("UPDATE") || action.includes("EDIT"))
+      return "secondary";
+    return "outline";
   };
 
   const getActionLabel = (action: string) => {
     const labels: Record<string, string> = {
-      'MODULE_ACTIVATED': 'Módulo Ativado',
-      'MODULE_DEACTIVATED': 'Módulo Desativado',
-      'USER_CREATED': 'Usuário Criado',
-      'USER_UPDATED': 'Usuário Atualizado',
-      'USER_DELETED': 'Usuário Removido',
-      'BACKUP_MANUAL': 'Backup Manual',
-      'BACKUP_CLEANUP': 'Limpeza de Backups',
-      'BI_EXPORT_SCHEDULED': 'Exportação BI Agendada',
-      'ODONTOGRAMA_UPDATED': 'Odontograma Atualizado',
+      MODULE_ACTIVATED: "Módulo Ativado",
+      MODULE_DEACTIVATED: "Módulo Desativado",
+      USER_CREATED: "Usuário Criado",
+      USER_UPDATED: "Usuário Atualizado",
+      USER_DELETED: "Usuário Removido",
+      BACKUP_MANUAL: "Backup Manual",
+      BACKUP_CLEANUP: "Limpeza de Backups",
+      BI_EXPORT_SCHEDULED: "Exportação BI Agendada",
+      ODONTOGRAMA_UPDATED: "Odontograma Atualizado",
     };
     return labels[action] || action;
   };
 
-  if (!hasRole('ADMIN')) {
+  if (!hasRole("ADMIN")) {
     return <Navigate to="/" replace />;
   }
 
@@ -215,9 +224,9 @@ export default function AuditLogs() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos os Usuários</SelectItem>
-                  {users.map(user => (
+                  {users.map((user) => (
                     <SelectItem key={user.id} value={user.id}>
-                      {user.full_name || 'Sem nome'}
+                      {user.full_name || "Sem nome"}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -232,13 +241,21 @@ export default function AuditLogs() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas as Ações</SelectItem>
-                  <SelectItem value="MODULE_ACTIVATED">Módulo Ativado</SelectItem>
-                  <SelectItem value="MODULE_DEACTIVATED">Módulo Desativado</SelectItem>
+                  <SelectItem value="MODULE_ACTIVATED">
+                    Módulo Ativado
+                  </SelectItem>
+                  <SelectItem value="MODULE_DEACTIVATED">
+                    Módulo Desativado
+                  </SelectItem>
                   <SelectItem value="USER_CREATED">Usuário Criado</SelectItem>
-                  <SelectItem value="USER_UPDATED">Usuário Atualizado</SelectItem>
+                  <SelectItem value="USER_UPDATED">
+                    Usuário Atualizado
+                  </SelectItem>
                   <SelectItem value="USER_DELETED">Usuário Removido</SelectItem>
                   <SelectItem value="BACKUP_MANUAL">Backup Manual</SelectItem>
-                  <SelectItem value="BI_EXPORT_SCHEDULED">Exportação BI</SelectItem>
+                  <SelectItem value="BI_EXPORT_SCHEDULED">
+                    Exportação BI
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -250,7 +267,9 @@ export default function AuditLogs() {
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="flex-1">
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateFrom ? format(dateFrom, 'dd/MM', { locale: ptBR }) : 'De'}
+                      {dateFrom
+                        ? format(dateFrom, "dd/MM", { locale: ptBR })
+                        : "De"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -267,7 +286,9 @@ export default function AuditLogs() {
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="flex-1">
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateTo ? format(dateTo, 'dd/MM', { locale: ptBR }) : 'Até'}
+                      {dateTo
+                        ? format(dateTo, "dd/MM", { locale: ptBR })
+                        : "Até"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -320,7 +341,10 @@ export default function AuditLogs() {
           ) : (
             <div className="space-y-3">
               {logs.map((log) => {
-                const user = users.find(u => u.id === log.user_id);
+                const userName =
+                  log.profiles?.full_name ||
+                  users.find((u) => u.id === log.user_id)?.full_name ||
+                  "Usuário desconhecido";
                 return (
                   <Card key={log.id}>
                     <CardContent className="pt-6">
@@ -335,11 +359,15 @@ export default function AuditLogs() {
                                 {getActionLabel(log.action)}
                               </Badge>
                               <span className="text-sm text-muted-foreground">
-                                por {user?.full_name || 'Usuário desconhecido'}
+                                por {userName}
                               </span>
                             </div>
                             <p className="text-sm">
-                              {format(new Date(log.created_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}
+                              {format(
+                                new Date(log.created_at),
+                                "dd 'de' MMMM 'de' yyyy 'às' HH:mm",
+                                { locale: ptBR },
+                              )}
                             </p>
                             {log.details && (
                               <div className="mt-2 p-3 bg-muted rounded-md">

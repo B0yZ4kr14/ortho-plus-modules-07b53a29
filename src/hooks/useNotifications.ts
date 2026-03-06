@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { useEffect, useState } from "react";
 
 interface Notification {
   id: string;
@@ -23,19 +23,13 @@ export const useNotifications = () => {
     if (!user || !selectedClinic) return;
 
     try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('clinic_id', selectedClinic.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-
-      setNotifications(data || []);
-      setUnreadCount(data?.filter(n => !n.lida).length || 0);
+      const data = await apiClient.get<{ notifications: Notification[] }>(
+        "/notifications",
+      );
+      setNotifications(data.notifications || []);
+      setUnreadCount(data.notifications?.filter((n) => !n.lida).length || 0);
     } catch (error) {
-      console.error('Error loading notifications:', error);
+      console.error("Error loading notifications:", error);
     } finally {
       setLoading(false);
     }
@@ -43,16 +37,10 @@ export const useNotifications = () => {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ lida: true, lida_em: new Date().toISOString() })
-        .eq('id', notificationId);
-
-      if (error) throw error;
-
+      await apiClient.patch(`/notifications/${notificationId}/read`, {});
       await loadNotifications();
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      console.error("Error marking notification as read:", error);
     }
   };
 
@@ -60,42 +48,23 @@ export const useNotifications = () => {
     if (!user || !selectedClinic) return;
 
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ lida: true, lida_em: new Date().toISOString() })
-        .eq('clinic_id', selectedClinic.id)
-        .eq('lida', false);
-
-      if (error) throw error;
-
+      await apiClient.post("/notifications/mark-all-read", {});
       await loadNotifications();
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      console.error("Error marking all notifications as read:", error);
     }
   };
 
   useEffect(() => {
     loadNotifications();
 
-    // Subscribe to realtime changes
-    const channel = supabase
-      .channel('notifications-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `clinic_id=eq.${selectedClinic?.id}`
-        },
-        () => {
-          loadNotifications();
-        }
-      )
-      .subscribe();
+    // Poll every 30 seconds instead of realtime websocket
+    const interval = setInterval(() => {
+      loadNotifications();
+    }, 30000);
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, [user, selectedClinic]);
 
@@ -105,6 +74,6 @@ export const useNotifications = () => {
     loading,
     markAsRead,
     markAllAsRead,
-    refresh: loadNotifications
+    refresh: loadNotifications,
   };
 };

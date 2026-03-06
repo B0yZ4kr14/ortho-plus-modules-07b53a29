@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { ClipboardList, Plus, AlertCircle } from 'lucide-react';
-import { useEstoqueSupabase } from '@/modules/estoque/hooks/useEstoqueSupabase';
+import { useEstoque } from '@/modules/estoque/hooks/useEstoque';
 import { RequisicaoForm } from '@/modules/estoque/components/RequisicaoForm';
 import { RequisicoesList } from '@/modules/estoque/components/RequisicoesList';
 import { AlertasEstoque } from '@/modules/estoque/components/AlertasEstoque';
@@ -26,7 +26,7 @@ export default function EstoqueRequisicoes() {
     rejeitarRequisicao,
     marcarAlertaComoLido,
     limparAlertasLidos,
-  } = useEstoqueSupabase();
+  } = useEstoque();
 
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');

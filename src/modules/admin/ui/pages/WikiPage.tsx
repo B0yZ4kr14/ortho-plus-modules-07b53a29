@@ -1,17 +1,36 @@
-import { useState, useEffect } from 'react';
-import { BookText, Plus, Search, Edit, Trash2, Eye, Clock } from 'lucide-react';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import { BookText, Plus, Search, Edit, Trash2, Eye, Clock } from "lucide-react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { toast } from "sonner";
 
 interface WikiPage {
   id: string;
@@ -26,27 +45,27 @@ interface WikiPage {
 }
 
 export default function WikiPage() {
-  const { clinicId } = useAuth();
+  const { clinicId, user } = useAuth();
   const [pages, setPages] = useState<WikiPage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPage, setEditingPage] = useState<WikiPage | null>(null);
 
   const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    category: 'general',
-    is_published: false
+    title: "",
+    content: "",
+    category: "general",
+    is_published: false,
   });
 
   const categories = [
-    { value: 'general', label: 'Geral' },
-    { value: 'processes', label: 'Processos' },
-    { value: 'apis', label: 'APIs' },
-    { value: 'troubleshooting', label: 'Troubleshooting' },
-    { value: 'guides', label: 'Guias' }
+    { value: "general", label: "Geral" },
+    { value: "processes", label: "Processos" },
+    { value: "apis", label: "APIs" },
+    { value: "troubleshooting", label: "Troubleshooting" },
+    { value: "guides", label: "Guias" },
   ];
 
   const fetchPages = async () => {
@@ -54,17 +73,12 @@ export default function WikiPage() {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('wiki_pages')
-        .select('*')
-        .eq('clinic_id', clinicId)
-        .order('updated_at', { ascending: false });
-
-      if (error) throw error;
-
+      const data = await apiClient.get<WikiPage[]>(
+        `/rest/v1/wiki_pages?clinic_id=eq.${clinicId}&order=updated_at.desc`,
+      );
       setPages(data || []);
     } catch (error) {
-      toast.error('Erro ao carregar páginas');
+      toast.error("Erro ao carregar páginas");
       console.error(error);
     } finally {
       setLoading(false);
@@ -77,80 +91,76 @@ export default function WikiPage() {
 
   const handleSave = async () => {
     if (!clinicId || !formData.title.trim() || !formData.content.trim()) {
-      toast.error('Preencha todos os campos obrigatórios');
+      toast.error("Preencha todos os campos obrigatórios");
       return;
     }
 
     try {
-      const slug = formData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+      const slug = formData.title
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^\w-]/g, "");
 
       if (editingPage) {
         // Update
-        const { error } = await supabase
-          .from('wiki_pages')
-          .update({
-            title: formData.title,
-            content: formData.content,
-            category: formData.category,
-            is_published: formData.is_published
-          })
-          .eq('id', editingPage.id);
+        await apiClient.patch(`/rest/v1/wiki_pages?id=eq.${editingPage.id}`, {
+          title: formData.title,
+          content: formData.content,
+          category: formData.category,
+          is_published: formData.is_published,
+        });
 
-        if (error) throw error;
-
-        toast.success('Página atualizada');
+        toast.success("Página atualizada");
       } else {
         // Create
-        const { error } = await supabase
-          .from('wiki_pages')
-          .insert({
-            clinic_id: clinicId,
-            title: formData.title,
-            slug,
-            content: formData.content,
-            category: formData.category,
-            is_published: formData.is_published,
-            created_by: (await supabase.auth.getUser()).data.user?.id
-          });
+        await apiClient.post("/rest/v1/wiki_pages", {
+          clinic_id: clinicId,
+          title: formData.title,
+          slug,
+          content: formData.content,
+          category: formData.category,
+          is_published: formData.is_published,
+          created_by: user?.id,
+        });
 
-        if (error) throw error;
-
-        toast.success('Página criada');
+        toast.success("Página criada");
       }
 
       setDialogOpen(false);
       setEditingPage(null);
-      setFormData({ title: '', content: '', category: 'general', is_published: false });
+      setFormData({
+        title: "",
+        content: "",
+        category: "general",
+        is_published: false,
+      });
       fetchPages();
     } catch (error) {
-      toast.error('Erro ao salvar página');
+      toast.error("Erro ao salvar página");
       console.error(error);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja deletar esta página?')) return;
+    if (!confirm("Tem certeza que deseja deletar esta página?")) return;
 
     try {
-      const { error } = await supabase
-        .from('wiki_pages')
-        .delete()
-        .eq('id', id);
+      await apiClient.delete(`/rest/v1/wiki_pages?id=eq.${id}`);
 
-      if (error) throw error;
-
-      toast.success('Página deletada');
+      toast.success("Página deletada");
       fetchPages();
     } catch (error) {
-      toast.error('Erro ao deletar página');
+      toast.error("Erro ao deletar página");
       console.error(error);
     }
   };
 
-  const filteredPages = pages.filter(page => {
-    const matchesSearch = page.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         page.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || page.category === selectedCategory;
+  const filteredPages = pages.filter((page) => {
+    const matchesSearch =
+      page.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      page.content.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "all" || page.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -164,85 +174,105 @@ export default function WikiPage() {
         />
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => {
-              setEditingPage(null);
-              setFormData({ title: '', content: '', category: 'general', is_published: false });
-            }}>
+            <Button
+              onClick={() => {
+                setEditingPage(null);
+                setFormData({
+                  title: "",
+                  content: "",
+                  category: "general",
+                  is_published: false,
+                });
+              }}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Nova Página
             </Button>
           </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>{editingPage ? 'Editar' : 'Nova'} Página Wiki</DialogTitle>
-                <DialogDescription>
-                  Crie ou edite páginas de documentação usando Markdown
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {editingPage ? "Editar" : "Nova"} Página Wiki
+              </DialogTitle>
+              <DialogDescription>
+                Crie ou edite páginas de documentação usando Markdown
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Título</label>
+                <Input
+                  value={formData.title}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
+                  placeholder="Ex: Como realizar um backup"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Título</label>
-                  <Input
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Ex: Como realizar um backup"
-                  />
+                  <label className="text-sm font-medium">Categoria</label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, category: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">Categoria</label>
-                    <Select
-                      value={formData.category}
-                      onValueChange={(value) => setFormData({ ...formData, category: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.value} value={cat.value}>
-                            {cat.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex items-end">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={formData.is_published}
-                        onChange={(e) => setFormData({ ...formData, is_published: e.target.checked })}
-                        className="rounded"
-                      />
-                      <span className="text-sm font-medium">Publicado</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">Conteúdo (Markdown)</label>
-                  <Textarea
-                    value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    placeholder="# Título&#10;&#10;Conteúdo da página..."
-                    rows={15}
-                    className="font-mono"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button onClick={handleSave}>
-                    Salvar
-                  </Button>
+                <div className="flex items-end">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.is_published}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          is_published: e.target.checked,
+                        })
+                      }
+                      className="rounded"
+                    />
+                    <span className="text-sm font-medium">Publicado</span>
+                  </label>
                 </div>
               </div>
-            </DialogContent>
+
+              <div>
+                <label className="text-sm font-medium">
+                  Conteúdo (Markdown)
+                </label>
+                <Textarea
+                  value={formData.content}
+                  onChange={(e) =>
+                    setFormData({ ...formData, content: e.target.value })
+                  }
+                  placeholder="# Título&#10;&#10;Conteúdo da página..."
+                  rows={15}
+                  className="font-mono"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSave}>Salvar</Button>
+              </div>
+            </div>
+          </DialogContent>
         </Dialog>
       </div>
 
@@ -280,7 +310,7 @@ export default function WikiPage() {
                   <CardTitle className="line-clamp-2">{page.title}</CardTitle>
                   <CardDescription className="mt-1">
                     <Badge variant="outline" className="mr-2">
-                      {categories.find(c => c.value === page.category)?.label}
+                      {categories.find((c) => c.value === page.category)?.label}
                     </Badge>
                     {page.is_published ? (
                       <Badge variant="default">Publicado</Badge>
@@ -298,7 +328,9 @@ export default function WikiPage() {
 
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
-                <span>Atualizado: {new Date(page.updated_at).toLocaleDateString()}</span>
+                <span>
+                  Atualizado: {new Date(page.updated_at).toLocaleDateString()}
+                </span>
                 <span>• v{page.version}</span>
               </div>
 
@@ -313,7 +345,7 @@ export default function WikiPage() {
                       title: page.title,
                       content: page.content,
                       category: page.category,
-                      is_published: page.is_published
+                      is_published: page.is_published,
                     });
                     setDialogOpen(true);
                   }}

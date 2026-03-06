@@ -1,23 +1,43 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from 'sonner';
-import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { apiClient } from "@/lib/api/apiClient";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 const userFormSchema = z.object({
-  full_name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres').max(200),
-  email: z.string().email('Email inválido'),
-  app_role: z.enum(['ADMIN', 'MEMBER']),
+  full_name: z
+    .string()
+    .min(3, "Nome deve ter pelo menos 3 caracteres")
+    .max(200),
+  email: z.string().email("Email inválido"),
+  app_role: z.enum(["ADMIN", "MEMBER"]),
   is_active: z.boolean().default(true),
-  password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres').optional(),
+  password: z
+    .string()
+    .min(6, "Senha deve ter pelo menos 6 caracteres")
+    .optional(),
 });
 
 type UserFormValues = z.infer<typeof userFormSchema>;
@@ -26,7 +46,7 @@ interface User {
   id: string;
   email: string;
   full_name: string;
-  app_role: 'ADMIN' | 'MEMBER';
+  app_role: "ADMIN" | "MEMBER";
   is_active: boolean;
 }
 
@@ -43,17 +63,17 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
-      full_name: user?.full_name || '',
-      email: user?.email || '',
-      app_role: user?.app_role || 'MEMBER',
+      full_name: user?.full_name || "",
+      email: user?.email || "",
+      app_role: user?.app_role || "MEMBER",
       is_active: user?.is_active ?? true,
-      password: '',
+      password: "",
     },
   });
 
   const onSubmit = async (values: UserFormValues) => {
     if (!clinicId) {
-      toast.error('Erro', { description: 'Clínica não identificada' });
+      toast.error("Erro", { description: "Clínica não identificada" });
       return;
     }
 
@@ -62,65 +82,35 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
     try {
       if (user) {
         // Atualizar usuário existente
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            full_name: values.full_name,
-            app_role: values.app_role,
-            is_active: values.is_active,
-          })
-          .eq('id', user.id);
-
-        if (profileError) throw profileError;
-
-        // Se forneceu nova senha, atualizar
-        if (values.password) {
-          const { error: passwordError } = await supabase.auth.admin.updateUserById(
-            user.id,
-            { password: values.password }
-          );
-          if (passwordError) throw passwordError;
-        }
-
-        toast.success('Usuário atualizado com sucesso!');
-      } else {
-        // Criar novo usuário
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-          email: values.email,
-          password: values.password || `temp${Date.now()}`, // Senha temporária se não fornecida
-          email_confirm: true,
-          user_metadata: {
-            full_name: values.full_name,
-          },
+        await apiClient.patch(`/usuarios/${user.id}`, {
+          full_name: values.full_name,
+          app_role: values.app_role,
+          is_active: values.is_active,
+          password: values.password || undefined,
         });
 
-        if (authError) throw authError;
-        if (!authData.user) throw new Error('Usuário não foi criado');
+        toast.success("Usuário atualizado com sucesso!");
+      } else {
+        // Criar novo usuário
+        await apiClient.post("/usuarios", {
+          email: values.email,
+          password: values.password || `temp${Date.now()}`,
+          full_name: values.full_name,
+          app_role: values.app_role,
+          is_active: values.is_active,
+        });
 
-        // Criar perfil
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user.id,
-            clinic_id: clinicId,
-            full_name: values.full_name,
-            app_role: values.app_role,
-            is_active: values.is_active,
-          });
-
-        if (profileError) throw profileError;
-
-        toast.success('Usuário criado com sucesso!', {
-          description: values.password 
-            ? 'O usuário pode fazer login com a senha fornecida.' 
-            : 'Foi enviado um email de confirmação com instruções para definir a senha.',
+        toast.success("Usuário criado com sucesso!", {
+          description: values.password
+            ? "O usuário pode fazer login com a senha fornecida."
+            : "Foi enviado um email de confirmação com instruções para definir a senha.",
         });
       }
 
       onSuccess();
     } catch (error: any) {
-      console.error('Erro ao salvar usuário:', error);
-      toast.error('Erro ao salvar usuário', {
+      console.error("Erro ao salvar usuário:", error);
+      toast.error("Erro ao salvar usuário", {
         description: error.message,
       });
     } finally {
@@ -152,9 +142,9 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             <FormItem>
               <FormLabel>Email *</FormLabel>
               <FormControl>
-                <Input 
-                  type="email" 
-                  placeholder="email@exemplo.com" 
+                <Input
+                  type="email"
+                  placeholder="email@exemplo.com"
                   {...field}
                   disabled={!!user} // Não permite alterar email de usuário existente
                 />
@@ -175,12 +165,16 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                {user ? 'Nova Senha (opcional)' : 'Senha *'}
+                {user ? "Nova Senha (opcional)" : "Senha *"}
               </FormLabel>
               <FormControl>
-                <Input 
-                  type="password" 
-                  placeholder={user ? 'Deixe em branco para manter a senha atual' : 'Mínimo 6 caracteres'}
+                <Input
+                  type="password"
+                  placeholder={
+                    user
+                      ? "Deixe em branco para manter a senha atual"
+                      : "Mínimo 6 caracteres"
+                  }
                   {...field}
                 />
               </FormControl>
@@ -207,7 +201,8 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
                 </SelectContent>
               </Select>
               <FormDescription>
-                Administradores têm acesso total ao sistema, incluindo configurações e gerenciamento de módulos
+                Administradores têm acesso total ao sistema, incluindo
+                configurações e gerenciamento de módulos
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -246,7 +241,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           </Button>
           <Button type="submit" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {user ? 'Atualizar' : 'Criar'} Usuário
+            {user ? "Atualizar" : "Criar"} Usuário
           </Button>
         </div>
       </form>

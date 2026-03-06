@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from "@/lib/api/apiClient";
+import { useQuery } from "@tanstack/react-query";
 
 export interface TimelineEvent {
   id: string;
-  type: 'appointment' | 'treatment' | 'budget' | 'status_change';
+  type: "appointment" | "treatment" | "budget" | "status_change";
   title: string;
   description: string;
   date: string;
@@ -12,16 +12,14 @@ export interface TimelineEvent {
 
 export function usePatientTimeline(patientId: string | undefined) {
   return useQuery({
-    queryKey: ['patient-timeline', patientId],
+    queryKey: ["patient-timeline", patientId],
     queryFn: async () => {
-      if (!patientId) throw new Error('Patient ID is required');
+      if (!patientId) throw new Error("Patient ID is required");
 
-      const { data, error } = await supabase.functions.invoke('patient-timeline', {
-        body: { patientId }
-      });
-
-      if (error) throw error;
-      return data.timeline as TimelineEvent[];
+      const data = await apiClient.get<{ timeline: TimelineEvent[] }>(
+        `/pacientes/${patientId}/timeline`,
+      );
+      return data.timeline;
     },
     enabled: !!patientId,
     staleTime: 1000 * 60 * 5, // 5 minutos

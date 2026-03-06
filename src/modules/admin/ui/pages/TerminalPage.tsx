@@ -1,13 +1,19 @@
-import { useState, useRef, useEffect } from 'react';
-import { Terminal, Send, Trash2, History } from 'lucide-react';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useState, useRef, useEffect } from "react";
+import { Terminal, Send, Trash2, History } from "lucide-react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { toast } from "sonner";
 
 interface CommandHistory {
   command: string;
@@ -18,7 +24,7 @@ interface CommandHistory {
 
 export default function TerminalPage() {
   const { clinicId } = useAuth();
-  const [command, setCommand] = useState('');
+  const [command, setCommand] = useState("");
   const [history, setHistory] = useState<CommandHistory[]>([]);
   const [isExecuting, setIsExecuting] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -34,36 +40,46 @@ export default function TerminalPage() {
 
     setIsExecuting(true);
     const currentCommand = command;
-    setCommand('');
+    setCommand("");
 
     try {
-      const { data, error } = await supabase.functions.invoke('execute-command', {
-        body: { command: currentCommand }
+      const data = await apiClient.post<{
+        output: { stdout: string; stderr: string; exitCode: number };
+      }>("/terminal/execute", {
+        sessionId: crypto.randomUUID(),
+        command: currentCommand,
       });
 
-      if (error) throw error;
+      setHistory((prev) => [
+        ...prev,
+        {
+          command: currentCommand,
+          output:
+            data.output.stdout +
+            (data.output.stderr ? "\n" + data.output.stderr : ""),
+          exitCode: data.output.exitCode,
+          timestamp: new Date(),
+        },
+      ]);
 
-      setHistory(prev => [...prev, {
-        command: currentCommand,
-        output: data.output || '',
-        exitCode: data.exitCode || 0,
-        timestamp: new Date()
-      }]);
-
-      if (data.exitCode !== 0) {
-        toast.error('Comando falhou');
+      if (data.output.exitCode !== 0) {
+        toast.error("Comando falhou");
       } else {
-        toast.success('Comando executado');
+        toast.success("Comando executado");
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      setHistory(prev => [...prev, {
-        command: currentCommand,
-        output: `Error: ${errorMessage}`,
-        exitCode: 1,
-        timestamp: new Date()
-      }]);
-      toast.error('Erro ao executar comando');
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro desconhecido";
+      setHistory((prev) => [
+        ...prev,
+        {
+          command: currentCommand,
+          output: `Error: ${errorMessage}`,
+          exitCode: 1,
+          timestamp: new Date(),
+        },
+      ]);
+      toast.error("Erro ao executar comando");
     } finally {
       setIsExecuting(false);
     }
@@ -71,11 +87,11 @@ export default function TerminalPage() {
 
   const clearHistory = () => {
     setHistory([]);
-    toast.success('Histórico limpo');
+    toast.success("Histórico limpo");
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !isExecuting) {
+    if (e.key === "Enter" && !isExecuting) {
       executeCommand();
     }
   };
@@ -92,7 +108,8 @@ export default function TerminalPage() {
         <CardHeader>
           <CardTitle>Console Interativo</CardTitle>
           <CardDescription>
-            Comandos permitidos: ls, pwd, whoami, date, uptime, df, free, ps, git status, etc.
+            Comandos permitidos: ls, pwd, whoami, date, uptime, df, free, ps,
+            git status, etc.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -117,8 +134,14 @@ export default function TerminalPage() {
                         {entry.timestamp.toLocaleTimeString()}
                       </span>
                     </div>
-                    <div className={entry.exitCode === 0 ? 'text-green-400' : 'text-red-400'}>
-                      <pre className="whitespace-pre-wrap break-words">{entry.output}</pre>
+                    <div
+                      className={
+                        entry.exitCode === 0 ? "text-green-400" : "text-red-400"
+                      }
+                    >
+                      <pre className="whitespace-pre-wrap break-words">
+                        {entry.output}
+                      </pre>
                     </div>
                     {entry.exitCode !== 0 && (
                       <div className="text-yellow-400 text-xs">
@@ -150,15 +173,15 @@ export default function TerminalPage() {
                 disabled={isExecuting}
               />
             </div>
-            <Button 
-              onClick={executeCommand} 
+            <Button
+              onClick={executeCommand}
               disabled={!command.trim() || isExecuting}
             >
               <Send className="h-4 w-4 mr-2" />
               Executar
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={clearHistory}
               disabled={history.length === 0}
             >
@@ -169,7 +192,14 @@ export default function TerminalPage() {
 
           {/* Command Suggestions */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {['ls -la', 'pwd', 'date', 'uptime', 'git status', 'git log --oneline'].map((cmd) => (
+            {[
+              "ls -la",
+              "pwd",
+              "date",
+              "uptime",
+              "git status",
+              "git log --oneline",
+            ].map((cmd) => (
               <Button
                 key={cmd}
                 variant="secondary"

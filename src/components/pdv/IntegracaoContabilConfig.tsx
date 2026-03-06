@@ -1,161 +1,169 @@
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/integrations/supabase/client'
-import { useToast } from '@/hooks/use-toast'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Loader2, Building2, CheckCircle2, XCircle, Send } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
+import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Building2, CheckCircle2, XCircle, Send } from "lucide-react";
 
 export default function IntegracaoContabilConfig() {
-  const { user, selectedClinic } = useAuth()
-  const { toast } = useToast()
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [configs, setConfigs] = useState<any[]>([])
-  const [envios, setEnvios] = useState<any[]>([])
-  const [activeTab, setActiveTab] = useState('config')
+  const { user, selectedClinic } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [configs, setConfigs] = useState<any[]>([]);
+  const [envios, setEnvios] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState("config");
 
   const [formData, setFormData] = useState({
-    software: 'TOTVS',
-    api_url: '',
-    api_key: '',
-    api_secret: '',
-    codigo_empresa: '',
+    software: "TOTVS",
+    api_url: "",
+    api_key: "",
+    api_secret: "",
+    codigo_empresa: "",
     envio_automatico: true,
     enviar_sped_fiscal: true,
     enviar_nfce_dados: true,
-    periodicidade_envio: 'DIARIO',
-    email_contador: '',
+    periodicidade_envio: "DIARIO",
+    email_contador: "",
     ativo: true,
-  })
+  });
 
   useEffect(() => {
-    loadData()
-  }, [selectedClinic])
+    loadData();
+  }, [selectedClinic]);
 
   const loadData = async () => {
-    if (!selectedClinic) return
+    if (!selectedClinic) return;
 
     try {
-      setLoading(true)
-      
-      const [configsResult, enviosResult] = await Promise.all([
-        supabase
-          .from('integracao_contabil_config')
-          .select('*')
-          .eq('clinic_id', selectedClinic)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('integracao_contabil_envios')
-          .select('*, integracao_contabil_config(software)')
-          .eq('clinic_id', selectedClinic)
-          .order('created_at', { ascending: false })
-          .limit(50)
-      ])
+      setLoading(true);
 
-      if (configsResult.error) throw configsResult.error
-      if (enviosResult.error) throw enviosResult.error
+      const [configsData, enviosData] = await Promise.all([
+        apiClient.get("/integracao-contabil-config", {
+          clinic_id: selectedClinic,
+        }),
+        apiClient.get("/integracao-contabil-envios", {
+          clinic_id: selectedClinic,
+        }),
+      ]);
 
-      setConfigs(configsResult.data || [])
-      setEnvios(enviosResult.data || [])
+      const configs = Array.isArray(configsData)
+        ? configsData
+        : [configsData].filter(Boolean);
+      const envios = Array.isArray(enviosData)
+        ? enviosData
+        : [enviosData].filter(Boolean);
+
+      setConfigs(
+        configs.sort(
+          (a: any, b: any) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        ),
+      );
+      setEnvios(
+        envios
+          .sort(
+            (a: any, b: any) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime(),
+          )
+          .slice(0, 50),
+      );
     } catch (error: any) {
-      console.error('Error loading data:', error)
+      console.error("Error loading data:", error);
       toast({
         title: "Erro ao carregar dados",
         description: error.message,
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedClinic) return
+    e.preventDefault();
+    if (!selectedClinic) return;
 
     try {
-      setSaving(true)
+      setSaving(true);
 
       const payload = {
         ...formData,
         clinic_id: selectedClinic,
-      }
+      };
 
-      const { error } = await supabase
-        .from('integracao_contabil_config')
-        .upsert(payload, {
-          onConflict: 'clinic_id,software',
-        })
-
-      if (error) throw error
+      await apiClient.post("/integracao-contabil-config/upsert", payload);
 
       toast({
         title: "Configuração salva",
         description: "Integração contábil configurada com sucesso",
-      })
+      });
 
-      loadData()
+      loadData();
       setFormData({
-        software: 'TOTVS',
-        api_url: '',
-        api_key: '',
-        api_secret: '',
-        codigo_empresa: '',
+        software: "TOTVS",
+        api_url: "",
+        api_key: "",
+        api_secret: "",
+        codigo_empresa: "",
         envio_automatico: true,
         enviar_sped_fiscal: true,
         enviar_nfce_dados: true,
-        periodicidade_envio: 'DIARIO',
-        email_contador: '',
+        periodicidade_envio: "DIARIO",
+        email_contador: "",
         ativo: true,
-      })
+      });
     } catch (error: any) {
-      console.error('Error saving config:', error)
+      console.error("Error saving config:", error);
       toast({
         title: "Erro ao salvar configuração",
         description: error.message,
         variant: "destructive",
-      })
+      });
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const handleEnviarManual = async (software: string) => {
     try {
-      const periodo = new Date().toISOString().slice(0, 7) // YYYY-MM
+      const periodo = new Date().toISOString().slice(0, 7); // YYYY-MM
 
-      const { data, error } = await supabase.functions.invoke('enviar-dados-contabilidade', {
-        body: {
-          clinicId: selectedClinic,
-          tipoDocumento: 'SPED_FISCAL',
-          periodoReferencia: periodo,
-          forcarEnvio: true,
-        },
-      })
-
-      if (error) throw error
+      await apiClient.post("/enviar-dados-contabilidade", {
+        clinicId: selectedClinic,
+        tipoDocumento: "SPED_FISCAL",
+        periodoReferencia: periodo,
+        forcarEnvio: true,
+      });
 
       toast({
         title: "Envio iniciado",
         description: `Enviando dados para ${software}...`,
-      })
+      });
 
-      loadData()
+      loadData();
     } catch (error: any) {
       toast({
         title: "Erro ao enviar",
         description: error.message,
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -164,7 +172,7 @@ export default function IntegracaoContabilConfig() {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -190,7 +198,9 @@ export default function IntegracaoContabilConfig() {
                   <Label htmlFor="software">Software Contábil *</Label>
                   <Select
                     value={formData.software}
-                    onValueChange={(value) => setFormData({ ...formData, software: value })}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, software: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -209,7 +219,9 @@ export default function IntegracaoContabilConfig() {
                   <Input
                     id="api_url"
                     value={formData.api_url}
-                    onChange={(e) => setFormData({ ...formData, api_url: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, api_url: e.target.value })
+                    }
                     placeholder="https://api.softwarecontabil.com"
                     required
                   />
@@ -221,7 +233,9 @@ export default function IntegracaoContabilConfig() {
                     id="api_key"
                     type="password"
                     value={formData.api_key}
-                    onChange={(e) => setFormData({ ...formData, api_key: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, api_key: e.target.value })
+                    }
                     placeholder="Chave de API fornecida pelo software"
                   />
                 </div>
@@ -232,7 +246,9 @@ export default function IntegracaoContabilConfig() {
                     id="api_secret"
                     type="password"
                     value={formData.api_secret}
-                    onChange={(e) => setFormData({ ...formData, api_secret: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, api_secret: e.target.value })
+                    }
                     placeholder="Secret fornecido pelo software"
                   />
                 </div>
@@ -242,7 +258,12 @@ export default function IntegracaoContabilConfig() {
                   <Input
                     id="codigo_empresa"
                     value={formData.codigo_empresa}
-                    onChange={(e) => setFormData({ ...formData, codigo_empresa: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        codigo_empresa: e.target.value,
+                      })
+                    }
                     placeholder="Código no sistema contábil"
                   />
                 </div>
@@ -253,7 +274,12 @@ export default function IntegracaoContabilConfig() {
                     id="email_contador"
                     type="email"
                     value={formData.email_contador}
-                    onChange={(e) => setFormData({ ...formData, email_contador: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        email_contador: e.target.value,
+                      })
+                    }
                     placeholder="contador@escritorio.com.br"
                   />
                 </div>
@@ -262,7 +288,9 @@ export default function IntegracaoContabilConfig() {
                   <Label htmlFor="periodicidade">Periodicidade de Envio</Label>
                   <Select
                     value={formData.periodicidade_envio}
-                    onValueChange={(value) => setFormData({ ...formData, periodicidade_envio: value })}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, periodicidade_envio: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -282,7 +310,9 @@ export default function IntegracaoContabilConfig() {
                   <Switch
                     id="envio_automatico"
                     checked={formData.envio_automatico}
-                    onCheckedChange={(checked) => setFormData({ ...formData, envio_automatico: checked })}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, envio_automatico: checked })
+                    }
                   />
                   <Label htmlFor="envio_automatico" className="cursor-pointer">
                     Envio automático conforme periodicidade
@@ -293,7 +323,9 @@ export default function IntegracaoContabilConfig() {
                   <Switch
                     id="enviar_sped"
                     checked={formData.enviar_sped_fiscal}
-                    onCheckedChange={(checked) => setFormData({ ...formData, enviar_sped_fiscal: checked })}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, enviar_sped_fiscal: checked })
+                    }
                   />
                   <Label htmlFor="enviar_sped" className="cursor-pointer">
                     Enviar SPED Fiscal
@@ -304,7 +336,9 @@ export default function IntegracaoContabilConfig() {
                   <Switch
                     id="enviar_nfce"
                     checked={formData.enviar_nfce_dados}
-                    onCheckedChange={(checked) => setFormData({ ...formData, enviar_nfce_dados: checked })}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, enviar_nfce_dados: checked })
+                    }
                   />
                   <Label htmlFor="enviar_nfce" className="cursor-pointer">
                     Enviar dados de NFCe
@@ -315,7 +349,9 @@ export default function IntegracaoContabilConfig() {
                   <Switch
                     id="ativo"
                     checked={formData.ativo}
-                    onCheckedChange={(checked) => setFormData({ ...formData, ativo: checked })}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, ativo: checked })
+                    }
                   />
                   <Label htmlFor="ativo" className="cursor-pointer">
                     Integração ativa
@@ -343,7 +379,9 @@ export default function IntegracaoContabilConfig() {
                       <div>
                         <div className="flex items-center gap-2">
                           <h4 className="font-semibold">{config.software}</h4>
-                          <Badge variant={config.ativo ? "success" : "secondary"}>
+                          <Badge
+                            variant={config.ativo ? "success" : "secondary"}
+                          >
                             {config.ativo ? (
                               <>
                                 <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -388,12 +426,18 @@ export default function IntegracaoContabilConfig() {
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{envio.integracao_contabil_config?.software}</span>
-                          <Badge variant={
-                            envio.status === 'SUCESSO' ? 'success' :
-                            envio.status === 'ERRO' ? 'destructive' :
-                            'secondary'
-                          }>
+                          <span className="font-medium">
+                            {envio.integracao_contabil_config?.software}
+                          </span>
+                          <Badge
+                            variant={
+                              envio.status === "SUCESSO"
+                                ? "success"
+                                : envio.status === "ERRO"
+                                  ? "destructive"
+                                  : "secondary"
+                            }
+                          >
                             {envio.status}
                           </Badge>
                         </div>
@@ -402,7 +446,8 @@ export default function IntegracaoContabilConfig() {
                         </p>
                         {envio.enviado_em && (
                           <p className="text-xs text-muted-foreground">
-                            Enviado em: {new Date(envio.enviado_em).toLocaleString('pt-BR')}
+                            Enviado em:{" "}
+                            {new Date(envio.enviado_em).toLocaleString("pt-BR")}
                           </p>
                         )}
                         {envio.erro_mensagem && (
@@ -420,5 +465,5 @@ export default function IntegracaoContabilConfig() {
         </Tabs>
       </CardContent>
     </Card>
-  )
+  );
 }

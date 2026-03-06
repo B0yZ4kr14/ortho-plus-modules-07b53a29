@@ -1,17 +1,46 @@
 import { useState } from "react";
-import { useEstoqueSupabase } from "../hooks/useEstoqueSupabase";
+import { useEstoque } from "../hooks/useEstoque";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Brain, AlertTriangle, TrendingUp, TrendingDown, Minus, Mail, CalendarDays, Target } from "lucide-react";
+import {
+  Loader2,
+  Brain,
+  AlertTriangle,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Mail,
+  CalendarDays,
+  Target,
+} from "lucide-react";
 import { toast } from "sonner";
-import { apiClient } from "@/lib/apiClient";
+import { apiClient } from "@/lib/api/apiClient";
 
 interface Previsao {
   produto: string;
@@ -40,7 +69,7 @@ interface EventoFuturo {
 }
 
 export function PrevisaoReposicao() {
-  const { produtos, movimentacoes } = useEstoqueSupabase();
+  const { produtos, movimentacoes } = useEstoque();
   const [previsoes, setPrevisoes] = useState<Previsao[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
@@ -51,7 +80,7 @@ export function PrevisaoReposicao() {
     dataInicio: "",
     dataFim: "",
     impactoEstimado: 0,
-    descricao: ""
+    descricao: "",
   });
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -59,20 +88,22 @@ export function PrevisaoReposicao() {
     setLoading(true);
     try {
       const produtosParaAnalise = produtos
-        .filter(p => p.quantidadeAtual <= p.quantidadeMinima * 1.5)
-        .map(produto => {
-          const movimentacoesProduto = movimentacoes.filter(m => m.produtoId === produto.id);
-          
+        .filter((p) => p.quantidadeAtual <= p.quantidadeMinima * 1.5)
+        .map((produto) => {
+          const movimentacoesProduto = movimentacoes.filter(
+            (m) => m.produtoId === produto.id,
+          );
+
           return {
             produtoId: produto.id,
             produtoNome: produto.nome,
             quantidadeAtual: produto.quantidadeAtual,
             quantidadeMinima: produto.quantidadeMinima,
-            movimentacoes: movimentacoesProduto.map(m => ({
+            movimentacoes: movimentacoesProduto.map((m) => ({
               data: m.createdAt,
               quantidade: m.quantidade,
-              tipo: m.tipo
-            }))
+              tipo: m.tipo,
+            })),
           };
         });
 
@@ -82,9 +113,9 @@ export function PrevisaoReposicao() {
         return;
       }
 
-      const data = await apiClient.post('/estoque/previsao/gerar', {
+      const data = await apiClient.post("/estoque/previsao/gerar", {
         produtos: produtosParaAnalise,
-        eventosFuturos: eventosFuturos.length > 0 ? eventosFuturos : undefined
+        eventosFuturos: eventosFuturos.length > 0 ? eventosFuturos : undefined,
       });
 
       setPrevisoes(data.previsoes || []);
@@ -106,10 +137,10 @@ export function PrevisaoReposicao() {
 
     setSendingEmail(true);
     try {
-      await apiClient.post('/estoque/previsao/alertas/email', {
-        previsoes, 
-        resumo, 
-        eventosFuturos: eventosFuturos.length > 0 ? eventosFuturos : undefined
+      await apiClient.post("/estoque/previsao/alertas/email", {
+        previsoes,
+        resumo,
+        eventosFuturos: eventosFuturos.length > 0 ? eventosFuturos : undefined,
       });
 
       toast.success("Alertas enviados por email para gestores!");
@@ -122,12 +153,22 @@ export function PrevisaoReposicao() {
   };
 
   const adicionarEvento = () => {
-    if (!novoEvento.dataInicio || !novoEvento.dataFim || !novoEvento.descricao) {
+    if (
+      !novoEvento.dataInicio ||
+      !novoEvento.dataFim ||
+      !novoEvento.descricao
+    ) {
       toast.error("Preencha todos os campos do evento");
       return;
     }
     setEventosFuturos([...eventosFuturos, novoEvento]);
-    setNovoEvento({ tipo: "PROMOCAO", dataInicio: "", dataFim: "", impactoEstimado: 0, descricao: "" });
+    setNovoEvento({
+      tipo: "PROMOCAO",
+      dataInicio: "",
+      dataFim: "",
+      impactoEstimado: 0,
+      descricao: "",
+    });
     setDialogOpen(false);
     toast.success("Evento futuro adicionado! Gere as previsões novamente.");
   };
@@ -138,14 +179,18 @@ export function PrevisaoReposicao() {
   };
 
   const getStatusIcon = (status: string) => {
-    if (status === "CRITICO") return <AlertTriangle className="w-5 h-5 text-destructive" />;
-    if (status === "ALERTA") return <AlertTriangle className="w-5 h-5 text-warning" />;
+    if (status === "CRITICO")
+      return <AlertTriangle className="w-5 h-5 text-destructive" />;
+    if (status === "ALERTA")
+      return <AlertTriangle className="w-5 h-5 text-warning" />;
     return <AlertTriangle className="w-5 h-5 text-muted-foreground" />;
   };
 
   const getTrendIcon = (tendencia: string) => {
-    if (tendencia === "CRESCENTE") return <TrendingUp className="w-5 h-5 text-destructive" />;
-    if (tendencia === "DECRESCENTE") return <TrendingDown className="w-5 h-5 text-success" />;
+    if (tendencia === "CRESCENTE")
+      return <TrendingUp className="w-5 h-5 text-destructive" />;
+    if (tendencia === "DECRESCENTE")
+      return <TrendingDown className="w-5 h-5 text-success" />;
     return <Minus className="w-5 h-5 text-muted-foreground" />;
   };
 
@@ -153,9 +198,12 @@ export function PrevisaoReposicao() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Previsão Inteligente de Reposição (IA)</h3>
+          <h3 className="text-lg font-semibold">
+            Previsão Inteligente de Reposição (IA)
+          </h3>
           <p className="text-sm text-muted-foreground">
-            Análise preditiva usando machine learning baseada em padrões históricos de consumo
+            Análise preditiva usando machine learning baseada em padrões
+            históricos de consumo
           </p>
         </div>
         <div className="flex gap-2">
@@ -177,8 +225,15 @@ export function PrevisaoReposicao() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>Tipo de Evento</Label>
-                    <Select value={novoEvento.tipo} onValueChange={(v: any) => setNovoEvento({...novoEvento, tipo: v})}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    <Select
+                      value={novoEvento.tipo}
+                      onValueChange={(v: any) =>
+                        setNovoEvento({ ...novoEvento, tipo: v })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="PROMOCAO">Promoção</SelectItem>
                         <SelectItem value="FERIAS">Férias/Recesso</SelectItem>
@@ -189,23 +244,82 @@ export function PrevisaoReposicao() {
                   </div>
                   <div>
                     <Label>Impacto (%)</Label>
-                    <Input type="number" placeholder="Ex: 30 ou -20" value={novoEvento.impactoEstimado || ""}
-                      onChange={(e) => setNovoEvento({...novoEvento, impactoEstimado: parseInt(e.target.value) || 0})} />
+                    <Input
+                      type="number"
+                      placeholder="Ex: 30 ou -20"
+                      value={novoEvento.impactoEstimado || ""}
+                      onChange={(e) =>
+                        setNovoEvento({
+                          ...novoEvento,
+                          impactoEstimado: parseInt(e.target.value) || 0,
+                        })
+                      }
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div><Label>Data Início</Label><Input type="date" value={novoEvento.dataInicio} onChange={(e) => setNovoEvento({...novoEvento, dataInicio: e.target.value})} /></div>
-                  <div><Label>Data Fim</Label><Input type="date" value={novoEvento.dataFim} onChange={(e) => setNovoEvento({...novoEvento, dataFim: e.target.value})} /></div>
+                  <div>
+                    <Label>Data Início</Label>
+                    <Input
+                      type="date"
+                      value={novoEvento.dataInicio}
+                      onChange={(e) =>
+                        setNovoEvento({
+                          ...novoEvento,
+                          dataInicio: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Data Fim</Label>
+                    <Input
+                      type="date"
+                      value={novoEvento.dataFim}
+                      onChange={(e) =>
+                        setNovoEvento({
+                          ...novoEvento,
+                          dataFim: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
                 </div>
-                <div><Label>Descrição</Label><Textarea placeholder="Descreva o evento..." value={novoEvento.descricao} onChange={(e) => setNovoEvento({...novoEvento, descricao: e.target.value})} /></div>
-                <Button onClick={adicionarEvento} className="w-full">Adicionar Evento</Button>
+                <div>
+                  <Label>Descrição</Label>
+                  <Textarea
+                    placeholder="Descreva o evento..."
+                    value={novoEvento.descricao}
+                    onChange={(e) =>
+                      setNovoEvento({
+                        ...novoEvento,
+                        descricao: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <Button onClick={adicionarEvento} className="w-full">
+                  Adicionar Evento
+                </Button>
                 {eventosFuturos.length > 0 && (
                   <div className="border-t pt-4">
                     <h4 className="font-semibold mb-2">Eventos Configurados</h4>
                     {eventosFuturos.map((e, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-muted rounded-lg mb-2">
-                        <div><Badge variant="outline">{e.tipo}</Badge> <span className="text-sm">{e.descricao}</span></div>
-                        <Button variant="ghost" size="sm" onClick={() => removerEvento(i)}>Remover</Button>
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-3 bg-muted rounded-lg mb-2"
+                      >
+                        <div>
+                          <Badge variant="outline">{e.tipo}</Badge>{" "}
+                          <span className="text-sm">{e.descricao}</span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removerEvento(i)}
+                        >
+                          Remover
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -214,12 +328,40 @@ export function PrevisaoReposicao() {
             </DialogContent>
           </Dialog>
           {previsoes && previsoes.length > 0 && (
-            <Button onClick={enviarAlertaEmail} disabled={sendingEmail} variant="outline" size="sm">
-              {sendingEmail ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Enviando...</> : <><Mail className="w-4 h-4 mr-2" />Enviar Alertas</>}
+            <Button
+              onClick={enviarAlertaEmail}
+              disabled={sendingEmail}
+              variant="outline"
+              size="sm"
+            >
+              {sendingEmail ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <Mail className="w-4 h-4 mr-2" />
+                  Enviar Alertas
+                </>
+              )}
             </Button>
           )}
-          <Button onClick={gerarPrevisoes} disabled={loading || produtos.length === 0}>
-            {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Analisando...</> : <><Brain className="w-4 h-4 mr-2" />Gerar Previsões IA</>}
+          <Button
+            onClick={gerarPrevisoes}
+            disabled={loading || produtos.length === 0}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Analisando...
+              </>
+            ) : (
+              <>
+                <Brain className="w-4 h-4 mr-2" />
+                Gerar Previsões IA
+              </>
+            )}
           </Button>
         </div>
       </div>
@@ -228,36 +370,94 @@ export function PrevisaoReposicao() {
         <Tabs defaultValue="previsoes" className="w-full">
           <TabsList>
             <TabsTrigger value="previsoes">Previsões IA</TabsTrigger>
-            <TabsTrigger value="comparativo">Comparativo IA vs Tradicional</TabsTrigger>
+            <TabsTrigger value="comparativo">
+              Comparativo IA vs Tradicional
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="previsoes" className="space-y-4 mt-4">
             {previsoes.map((p, i) => (
               <Card key={i}>
-                <CardHeader><CardTitle>{p.produto}</CardTitle><CardDescription>{p.justificativa}</CardDescription></CardHeader>
+                <CardHeader>
+                  <CardTitle>{p.produto}</CardTitle>
+                  <CardDescription>{p.justificativa}</CardDescription>
+                </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-4 gap-4">
-                    <div><p className="text-sm text-muted-foreground">Estoque Zero</p><p className="text-2xl font-bold">{p.diasAteEstoqueZero} dias</p></div>
-                    <div><p className="text-sm text-muted-foreground">Qtd Sugerida</p><p className="text-2xl font-bold">{p.quantidadeSugerida}</p></div>
-                    <div><p className="text-sm text-muted-foreground">Confiança</p><p className="text-2xl font-bold">{(p.confianca * 100).toFixed(0)}%</p></div>
-                    <div><p className="text-sm text-muted-foreground">Tendência</p><p className="flex items-center gap-1 mt-1">{getTrendIcon(p.tendencia)}</p></div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Estoque Zero
+                      </p>
+                      <p className="text-2xl font-bold">
+                        {p.diasAteEstoqueZero} dias
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Qtd Sugerida
+                      </p>
+                      <p className="text-2xl font-bold">
+                        {p.quantidadeSugerida}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Confiança</p>
+                      <p className="text-2xl font-bold">
+                        {(p.confianca * 100).toFixed(0)}%
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Tendência</p>
+                      <p className="flex items-center gap-1 mt-1">
+                        {getTrendIcon(p.tendencia)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="bg-muted p-3 rounded-lg"><p className="text-sm"><strong>Recomendação:</strong> {p.recomendacao}</p></div>
+                  <div className="bg-muted p-3 rounded-lg">
+                    <p className="text-sm">
+                      <strong>Recomendação:</strong> {p.recomendacao}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </TabsContent>
           <TabsContent value="comparativo" className="space-y-4 mt-4">
-            <Card><CardHeader><CardTitle>Comparativo IA vs Tradicional</CardTitle></CardHeader><CardContent>
-              {previsoes.map((p, i) => (
-                <div key={i} className="border rounded-lg p-4 mb-4">
-                  <h4 className="font-semibold mb-3">{p.produto}</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-primary/10 p-3 rounded"><Brain className="w-5 h-5 mb-2" /><p className="font-bold">IA: {p.diasAteEstoqueZero} dias | {p.quantidadeSugerida} un</p><p className="text-xs text-muted-foreground mt-2">Considera sazonalidade, tendências e eventos futuros</p></div>
-                    <div className="bg-muted p-3 rounded"><Target className="w-5 h-5 mb-2" /><p className="font-bold">Tradicional: {p.metodoTradicional?.diasAteEstoqueZero || "N/A"} dias | {p.metodoTradicional?.quantidadeSugerida || "N/A"} un</p><p className="text-xs text-muted-foreground mt-2">Apenas média simples dos últimos 30 dias</p></div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Comparativo IA vs Tradicional</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {previsoes.map((p, i) => (
+                  <div key={i} className="border rounded-lg p-4 mb-4">
+                    <h4 className="font-semibold mb-3">{p.produto}</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-primary/10 p-3 rounded">
+                        <Brain className="w-5 h-5 mb-2" />
+                        <p className="font-bold">
+                          IA: {p.diasAteEstoqueZero} dias |{" "}
+                          {p.quantidadeSugerida} un
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Considera sazonalidade, tendências e eventos futuros
+                        </p>
+                      </div>
+                      <div className="bg-muted p-3 rounded">
+                        <Target className="w-5 h-5 mb-2" />
+                        <p className="font-bold">
+                          Tradicional:{" "}
+                          {p.metodoTradicional?.diasAteEstoqueZero || "N/A"}{" "}
+                          dias |{" "}
+                          {p.metodoTradicional?.quantidadeSugerida || "N/A"} un
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Apenas média simples dos últimos 30 dias
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </CardContent></Card>
+                ))}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       )}

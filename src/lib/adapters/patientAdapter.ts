@@ -3,31 +3,43 @@
  * Converte entre formato API (snake_case) e Frontend (camelCase)
  */
 
-// API Format (from REST API - camelCase)
+// API Format (from REST API - camelCase, matching PatientProps in domain)
 interface PatientAPI {
   id: string;
-  nome: string;
-  cpf: string;
-  dataNascimento: string;
-  telefone: string;
-  celular?: string;
+  clinicId: string;
+  fullName: string;
+  cpf?: string;
+  rg?: string;
+  birthDate?: string;
+  gender?: string;
   email?: string;
-  status: string;
+  phone?: string;
+  mobile?: string;
+  addressStreet?: string;
+  addressNumber?: string;
+  addressComplement?: string;
+  addressNeighborhood?: string;
+  addressCity?: string;
+  addressState?: string;
+  addressZipcode?: string;
+  totalDebt?: number;
+  totalPaid?: number;
+  paymentStatus?: string;
+
+  // Status and other complex types we might receive as simplified objects
+  status: any; // Keep as any or define PatientStatus here if needed from backend
+  dadosComerciais?: any;
+  notes?: string;
+
+  isActive: boolean;
   createdAt: string;
-  updatedAt?: string;
-  endereco?: {
-    cep?: string;
-    logradouro?: string;
-    numero?: string;
-    complemento?: string;
-    bairro?: string;
-    cidade?: string;
-    estado?: string;
-  };
+  updatedAt: string;
+  createdBy?: string;
+  updatedBy?: string;
 }
 
 // Frontend Global Format (snake_case - used by components)
-import type { Patient as GlobalPatient } from '@/types/patient';
+import type { Patient as GlobalPatient } from "@/types/patient";
 
 export class PatientAdapter {
   /**
@@ -36,32 +48,32 @@ export class PatientAdapter {
   static toFrontend(apiPatient: PatientAPI): GlobalPatient {
     return {
       id: apiPatient.id,
-      clinic_id: '', // Will be set by context
+      clinic_id: apiPatient.clinicId || "",
       patient_code: `PAC-${apiPatient.id.slice(0, 8).toUpperCase()}`,
-      full_name: apiPatient.nome,
+      full_name: apiPatient.fullName,
       social_name: null,
       cpf: apiPatient.cpf || null,
-      rg: null,
-      birth_date: apiPatient.dataNascimento,
-      gender: null,
+      rg: apiPatient.rg || null,
+      birth_date: apiPatient.birthDate || null,
+      gender: apiPatient.gender || null,
       marital_status: null,
       nationality: null,
       occupation: null,
       education_level: null,
       email: apiPatient.email || null,
-      phone_primary: apiPatient.telefone || apiPatient.celular || '',
-      phone_secondary: apiPatient.celular || null,
+      phone_primary: apiPatient.phone || apiPatient.mobile || "",
+      phone_secondary: apiPatient.mobile || null,
       phone_emergency: null,
       emergency_contact_name: null,
       emergency_contact_relationship: null,
-      address_street: apiPatient.endereco?.logradouro || null,
-      address_number: apiPatient.endereco?.numero || null,
-      address_complement: apiPatient.endereco?.complemento || null,
-      address_neighborhood: apiPatient.endereco?.bairro || null,
-      address_city: apiPatient.endereco?.cidade || null,
-      address_state: apiPatient.endereco?.estado || null,
-      address_zipcode: apiPatient.endereco?.cep || null,
-      address_country: 'Brasil',
+      address_street: apiPatient.addressStreet || null,
+      address_number: apiPatient.addressNumber || null,
+      address_complement: apiPatient.addressComplement || null,
+      address_neighborhood: apiPatient.addressNeighborhood || null,
+      address_city: apiPatient.addressCity || null,
+      address_state: apiPatient.addressState || null,
+      address_zipcode: apiPatient.addressZipcode || null,
+      address_country: "Brasil",
       has_systemic_disease: null,
       systemic_diseases: null,
       has_cardiovascular_disease: null,
@@ -97,31 +109,31 @@ export class PatientAdapter {
       bmi: null,
       main_complaint: null,
       pain_level: null,
-      clinical_observations: null,
+      clinical_observations: apiPatient.notes || null,
       oral_hygiene_quality: null,
       gum_condition: null,
       risk_score_medical: null,
       risk_score_surgical: null,
       risk_score_anesthetic: null,
       risk_score_overall: 0,
-      risk_level: 'baixo',
-      total_debt: null,
-      total_paid: null,
-      payment_status: null,
+      risk_level: "baixo",
+      total_debt: apiPatient.totalDebt || 0,
+      total_paid: apiPatient.totalPaid || 0,
+      payment_status: apiPatient.paymentStatus || "pendente",
       preferred_payment_method: null,
       lgpd_consent: null,
       lgpd_consent_date: null,
       image_usage_consent: null,
       treatment_consent: null,
       data_sharing_consent: null,
-      status: apiPatient.status || 'ativo',
+      status: apiPatient.status?.code || apiPatient.status || "ativo",
       first_appointment_date: null,
       last_appointment_date: null,
       total_appointments: 0,
       created_at: apiPatient.createdAt,
       updated_at: apiPatient.updatedAt || apiPatient.createdAt,
-      created_by: null,
-      updated_by: null,
+      created_by: apiPatient.createdBy || null,
+      updated_by: apiPatient.updatedBy || null,
     };
   }
 
@@ -130,22 +142,24 @@ export class PatientAdapter {
    */
   static toAPI(frontendPatient: Partial<GlobalPatient>): Partial<PatientAPI> {
     return {
-      nome: frontendPatient.full_name,
+      fullName: frontendPatient.full_name,
       cpf: frontendPatient.cpf || undefined,
-      dataNascimento: frontendPatient.birth_date,
-      telefone: frontendPatient.phone_primary,
-      celular: frontendPatient.phone_secondary || undefined,
+      rg: frontendPatient.rg || undefined,
+      birthDate: frontendPatient.birth_date || undefined,
+      gender: frontendPatient.gender || undefined,
+      phone: frontendPatient.phone_primary,
+      mobile: frontendPatient.phone_secondary || undefined,
       email: frontendPatient.email || undefined,
-      status: frontendPatient.status || 'ativo',
-      endereco: {
-        cep: frontendPatient.address_zipcode || undefined,
-        logradouro: frontendPatient.address_street || undefined,
-        numero: frontendPatient.address_number || undefined,
-        complemento: frontendPatient.address_complement || undefined,
-        bairro: frontendPatient.address_neighborhood || undefined,
-        cidade: frontendPatient.address_city || undefined,
-        estado: frontendPatient.address_state || undefined,
-      },
+      status: frontendPatient.status || "ativo",
+      addressZipcode: frontendPatient.address_zipcode || undefined,
+      addressStreet: frontendPatient.address_street || undefined,
+      addressNumber: frontendPatient.address_number || undefined,
+      addressComplement: frontendPatient.address_complement || undefined,
+      addressNeighborhood: frontendPatient.address_neighborhood || undefined,
+      addressCity: frontendPatient.address_city || undefined,
+      addressState: frontendPatient.address_state || undefined,
+      notes: frontendPatient.clinical_observations || undefined,
+      clinicId: frontendPatient.clinic_id || undefined,
     };
   }
 
@@ -153,6 +167,6 @@ export class PatientAdapter {
    * Converte lista de patients
    */
   static toFrontendList(apiPatients: PatientAPI[]): GlobalPatient[] {
-    return apiPatients.map(patient => this.toFrontend(patient));
+    return apiPatients.map((patient) => this.toFrontend(patient));
   }
 }

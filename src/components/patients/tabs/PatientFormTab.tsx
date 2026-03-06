@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { PatientFormTabs } from '../PatientFormTabs';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import { PatientAdapter } from "@/lib/adapters/patientAdapter";
+import { PatientFormTabs } from "../PatientFormTabs";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface PatientFormTabProps {
   patientId: string;
@@ -9,17 +10,11 @@ interface PatientFormTabProps {
 
 export function PatientFormTab({ patientId }: PatientFormTabProps) {
   const { data: patient, isLoading } = useQuery({
-    queryKey: ['patient-form', patientId],
+    queryKey: ["patient-form", patientId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('patients')
-        .select('*')
-        .eq('id', patientId)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    }
+      const data = await apiClient.get<any>(`/pacientes/${patientId}`);
+      return PatientAdapter.toFrontend(data);
+    },
   });
 
   if (isLoading) {
@@ -39,19 +34,25 @@ export function PatientFormTab({ patientId }: PatientFormTabProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Dados Cadastrais</h3>
-      <p className="text-muted-foreground">Visualização dos dados cadastrais do paciente.</p>
+      <p className="text-muted-foreground">
+        Visualização dos dados cadastrais do paciente.
+      </p>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <span className="font-semibold">Nome Completo:</span> {patient.full_name}
+          <span className="font-semibold">Nome Completo:</span>{" "}
+          {patient.full_name}
         </div>
         <div>
-          <span className="font-semibold">CPF:</span> {patient.cpf || 'Não informado'}
+          <span className="font-semibold">CPF:</span>{" "}
+          {patient.cpf || "Não informado"}
         </div>
         <div>
-          <span className="font-semibold">Telefone:</span> {patient.phone_primary}
+          <span className="font-semibold">Telefone:</span>{" "}
+          {patient.phone_primary}
         </div>
         <div>
-          <span className="font-semibold">Email:</span> {patient.email || 'Não informado'}
+          <span className="font-semibold">Email:</span>{" "}
+          {patient.email || "Não informado"}
         </div>
       </div>
     </div>

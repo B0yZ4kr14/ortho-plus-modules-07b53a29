@@ -3,7 +3,7 @@
  * Seguindo padrão DDD estabelecido no golden pattern PACIENTES
  */
 
-import { EventBus } from '@/shared/events/EventBus';
+import { EventBus } from "@/shared/events/EventBus";
 
 export interface ProdutoProps {
   id: string;
@@ -32,26 +32,28 @@ export class Produto {
     this.props = props;
   }
 
-  static create(data: Omit<ProdutoProps, 'id' | 'createdAt' | 'updatedAt'>): Produto {
+  static create(
+    data: Omit<ProdutoProps, "id" | "createdAt" | "updatedAt">,
+  ): Produto {
     // Validações de domínio
     if (!data.nome || data.nome.trim().length < 3) {
-      throw new Error('Nome do produto deve ter pelo menos 3 caracteres');
+      throw new Error("Nome do produto deve ter pelo menos 3 caracteres");
     }
 
     if (data.quantidadeEstoque < 0) {
-      throw new Error('Quantidade em estoque não pode ser negativa');
+      throw new Error("Quantidade em estoque não pode ser negativa");
     }
 
     if (data.quantidadeMinima < 0) {
-      throw new Error('Quantidade mínima não pode ser negativa');
+      throw new Error("Quantidade mínima não pode ser negativa");
     }
 
     if (data.precoCusto && data.precoCusto < 0) {
-      throw new Error('Preço de custo não pode ser negativo');
+      throw new Error("Preço de custo não pode ser negativo");
     }
 
     if (data.precoVenda && data.precoVenda < 0) {
-      throw new Error('Preço de venda não pode ser negativo');
+      throw new Error("Preço de venda não pode ser negativo");
     }
 
     const now = new Date();
@@ -64,7 +66,9 @@ export class Produto {
 
     // Emitir evento de domínio
     EventBus.getInstance().publish({
-      eventType: 'Inventario.ProdutoCriado',
+      eventId: crypto.randomUUID(),
+      aggregateType: "Produto",
+      eventType: "Inventario.ProdutoCriado",
       aggregateId: produto.id,
       payload: {
         clinicId: produto.clinicId,
@@ -72,7 +76,9 @@ export class Produto {
         nome: produto.nome,
         codigo: produto.codigo,
       },
-      occurredAt: now,
+      metadata: {
+        timestamp: new Date().toISOString(),
+      },
     });
 
     return produto;
@@ -83,33 +89,70 @@ export class Produto {
   }
 
   // Getters
-  get id(): string { return this.props.id; }
-  get clinicId(): string { return this.props.clinicId; }
-  get codigo(): string { return this.props.codigo; }
-  get nome(): string { return this.props.nome; }
-  get descricao(): string | undefined { return this.props.descricao; }
-  get categoriaId(): string | undefined { return this.props.categoriaId; }
-  get fornecedorId(): string | undefined { return this.props.fornecedorId; }
-  get unidadeMedida(): string { return this.props.unidadeMedida; }
-  get quantidadeEstoque(): number { return this.props.quantidadeEstoque; }
-  get quantidadeMinima(): number { return this.props.quantidadeMinima; }
-  get precoCusto(): number | undefined { return this.props.precoCusto; }
-  get precoVenda(): number | undefined { return this.props.precoVenda; }
-  get margemLucro(): number | undefined { return this.props.margemLucro; }
-  get temNfe(): boolean { return this.props.temNfe; }
-  get ativo(): boolean { return this.props.ativo; }
-  get createdAt(): Date { return this.props.createdAt; }
-  get updatedAt(): Date { return this.props.updatedAt; }
+  get id(): string {
+    return this.props.id;
+  }
+  get clinicId(): string {
+    return this.props.clinicId;
+  }
+  get codigo(): string {
+    return this.props.codigo;
+  }
+  get nome(): string {
+    return this.props.nome;
+  }
+  get descricao(): string | undefined {
+    return this.props.descricao;
+  }
+  get categoriaId(): string | undefined {
+    return this.props.categoriaId;
+  }
+  get fornecedorId(): string | undefined {
+    return this.props.fornecedorId;
+  }
+  get unidadeMedida(): string {
+    return this.props.unidadeMedida;
+  }
+  get quantidadeEstoque(): number {
+    return this.props.quantidadeEstoque;
+  }
+  get quantidadeMinima(): number {
+    return this.props.quantidadeMinima;
+  }
+  get precoCusto(): number | undefined {
+    return this.props.precoCusto;
+  }
+  get precoVenda(): number | undefined {
+    return this.props.precoVenda;
+  }
+  get margemLucro(): number | undefined {
+    return this.props.margemLucro;
+  }
+  get temNfe(): boolean {
+    return this.props.temNfe;
+  }
+  get ativo(): boolean {
+    return this.props.ativo;
+  }
+  get createdAt(): Date {
+    return this.props.createdAt;
+  }
+  get updatedAt(): Date {
+    return this.props.updatedAt;
+  }
 
   // Métodos de domínio
-  ajustarEstoque(quantidade: number, tipo: 'ENTRADA' | 'SAIDA' | 'AJUSTE'): void {
+  ajustarEstoque(
+    quantidade: number,
+    tipo: "ENTRADA" | "SAIDA" | "AJUSTE",
+  ): void {
     const quantidadeAnterior = this.props.quantidadeEstoque;
 
-    if (tipo === 'ENTRADA' || tipo === 'AJUSTE') {
+    if (tipo === "ENTRADA" || tipo === "AJUSTE") {
       this.props.quantidadeEstoque += quantidade;
-    } else if (tipo === 'SAIDA') {
+    } else if (tipo === "SAIDA") {
       if (this.props.quantidadeEstoque < quantidade) {
-        throw new Error('Estoque insuficiente para realizar a saída');
+        throw new Error("Estoque insuficiente para realizar a saída");
       }
       this.props.quantidadeEstoque -= quantidade;
     }
@@ -118,7 +161,9 @@ export class Produto {
 
     // Emitir evento de estoque alterado
     EventBus.getInstance().publish({
-      eventType: 'Inventario.EstoqueAlterado',
+      eventId: crypto.randomUUID(),
+      aggregateType: "Produto",
+      eventType: "Inventario.EstoqueAlterado",
       aggregateId: this.id,
       payload: {
         produtoId: this.id,
@@ -127,26 +172,34 @@ export class Produto {
         quantidade,
         quantidadeAnterior,
         quantidadeAtual: this.props.quantidadeEstoque,
-        estoqueAbaixoMinimo: this.props.quantidadeEstoque < this.props.quantidadeMinima,
+        estoqueAbaixoMinimo:
+          this.props.quantidadeEstoque < this.props.quantidadeMinima,
       },
-      occurredAt: this.props.updatedAt,
+      metadata: {
+        timestamp: new Date().toISOString(),
+      },
     });
   }
 
   atualizarPrecos(precoCusto?: number, precoVenda?: number): void {
     if (precoCusto !== undefined) {
-      if (precoCusto < 0) throw new Error('Preço de custo não pode ser negativo');
+      if (precoCusto < 0)
+        throw new Error("Preço de custo não pode ser negativo");
       this.props.precoCusto = precoCusto;
     }
 
     if (precoVenda !== undefined) {
-      if (precoVenda < 0) throw new Error('Preço de venda não pode ser negativo');
+      if (precoVenda < 0)
+        throw new Error("Preço de venda não pode ser negativo");
       this.props.precoVenda = precoVenda;
     }
 
     // Calcular margem de lucro
     if (this.props.precoCusto && this.props.precoVenda) {
-      this.props.margemLucro = ((this.props.precoVenda - this.props.precoCusto) / this.props.precoCusto) * 100;
+      this.props.margemLucro =
+        ((this.props.precoVenda - this.props.precoCusto) /
+          this.props.precoCusto) *
+        100;
     }
 
     this.props.updatedAt = new Date();

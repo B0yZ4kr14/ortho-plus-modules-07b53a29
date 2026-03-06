@@ -1,136 +1,109 @@
-import { ContaReceber } from '@/domain/entities/ContaReceber';
-import { IContaReceberRepository } from '@/domain/repositories/IContaReceberRepository';
-import { supabase } from '@/integrations/supabase/client';
-import { ContaReceberMapper } from './mappers/ContaReceberMapper';
+import { ContaReceber } from "@/domain/entities/ContaReceber";
+import { IContaReceberRepository } from "@/domain/repositories/IContaReceberRepository";
+import { apiClient } from "@/lib/api/apiClient";
+import { ContaReceberMapper } from "./mappers/ContaReceberMapper";
 
-/**
- * Implementação do repositório de ContaReceber usando Supabase
- */
 export class SupabaseContaReceberRepository implements IContaReceberRepository {
   async findById(id: string): Promise<ContaReceber | null> {
-    const { data, error } = await supabase
-      .from('contas_receber')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error || !data) {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/contas_receber?id=eq.${id}`,
+      );
+      if (!data || data.length === 0) return null;
+      return ContaReceberMapper.toDomain(data[0]);
+    } catch {
       return null;
     }
-
-    return ContaReceberMapper.toDomain(data);
   }
 
   async findByClinicId(clinicId: string): Promise<ContaReceber[]> {
-    const { data, error } = await supabase
-      .from('contas_receber')
-      .select('*')
-      .eq('clinic_id', clinicId)
-      .order('data_vencimento', { ascending: true });
-
-    if (error || !data) {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/contas_receber?clinic_id=eq.${clinicId}&order=data_vencimento.asc`,
+      );
+      return (data || []).map((row) => ContaReceberMapper.toDomain(row));
+    } catch {
       return [];
     }
-
-    return data.map(row => ContaReceberMapper.toDomain(row));
   }
 
-  async findByPatientId(clinicId: string, patientId: string): Promise<ContaReceber[]> {
-    const { data, error } = await supabase
-      .from('contas_receber')
-      .select('*')
-      .eq('clinic_id', clinicId)
-      .eq('patient_id', patientId)
-      .order('data_vencimento', { ascending: true });
-
-    if (error || !data) {
+  async findByPatientId(
+    clinicId: string,
+    patientId: string,
+  ): Promise<ContaReceber[]> {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/contas_receber?clinic_id=eq.${clinicId}&patient_id=eq.${patientId}&order=data_vencimento.asc`,
+      );
+      return (data || []).map((row) => ContaReceberMapper.toDomain(row));
+    } catch {
       return [];
     }
-
-    return data.map(row => ContaReceberMapper.toDomain(row));
   }
 
   async findPendentes(clinicId: string): Promise<ContaReceber[]> {
-    const { data, error } = await supabase
-      .from('contas_receber')
-      .select('*')
-      .eq('clinic_id', clinicId)
-      .eq('status', 'PENDENTE')
-      .order('data_vencimento', { ascending: true });
-
-    if (error || !data) {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/contas_receber?clinic_id=eq.${clinicId}&status=eq.PENDENTE&order=data_vencimento.asc`,
+      );
+      return (data || []).map((row) => ContaReceberMapper.toDomain(row));
+    } catch {
       return [];
     }
-
-    return data.map(row => ContaReceberMapper.toDomain(row));
   }
 
   async findVencidas(clinicId: string): Promise<ContaReceber[]> {
-    const hoje = new Date().toISOString().split('T')[0];
-    
-    const { data, error } = await supabase
-      .from('contas_receber')
-      .select('*')
-      .eq('clinic_id', clinicId)
-      .eq('status', 'PENDENTE')
-      .lt('data_vencimento', hoje)
-      .order('data_vencimento', { ascending: true });
-
-    if (error || !data) {
+    const hoje = new Date().toISOString().split("T")[0];
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/contas_receber?clinic_id=eq.${clinicId}&status=eq.PENDENTE&data_vencimento=lt.${hoje}&order=data_vencimento.asc`,
+      );
+      return (data || []).map((row) => ContaReceberMapper.toDomain(row));
+    } catch {
       return [];
     }
-
-    return data.map(row => ContaReceberMapper.toDomain(row));
   }
 
-  async findByPeriodo(clinicId: string, startDate: Date, endDate: Date): Promise<ContaReceber[]> {
-    const { data, error } = await supabase
-      .from('contas_receber')
-      .select('*')
-      .eq('clinic_id', clinicId)
-      .gte('data_vencimento', startDate.toISOString())
-      .lte('data_vencimento', endDate.toISOString())
-      .order('data_vencimento', { ascending: true });
-
-    if (error || !data) {
+  async findByPeriodo(
+    clinicId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<ContaReceber[]> {
+    try {
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/contas_receber?clinic_id=eq.${clinicId}&data_vencimento=gte.${startDate.toISOString()}&data_vencimento=lte.${endDate.toISOString()}&order=data_vencimento.asc`,
+      );
+      return (data || []).map((row) => ContaReceberMapper.toDomain(row));
+    } catch {
       return [];
     }
-
-    return data.map(row => ContaReceberMapper.toDomain(row));
   }
 
   async save(conta: ContaReceber): Promise<void> {
     const insert = ContaReceberMapper.toSupabaseInsert(conta);
-
-    const { error } = await supabase
-      .from('contas_receber')
-      .insert(insert);
-
-    if (error) {
+    try {
+      await apiClient.post("/rest/v1/contas_receber", insert);
+    } catch (error: any) {
       throw new Error(`Erro ao salvar conta a receber: ${error.message}`);
     }
   }
 
   async update(conta: ContaReceber): Promise<void> {
     const insert = ContaReceberMapper.toSupabaseInsert(conta);
-
-    const { error } = await supabase
-      .from('contas_receber')
-      .update(insert)
-      .eq('id', conta.id);
-
-    if (error) {
+    try {
+      await apiClient.patch(
+        `/rest/v1/contas_receber?id=eq.${conta.id}`,
+        insert,
+      );
+    } catch (error: any) {
       throw new Error(`Erro ao atualizar conta a receber: ${error.message}`);
     }
   }
 
   async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('contas_receber')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
+    try {
+      await apiClient.delete(`/rest/v1/contas_receber?id=eq.${id}`);
+    } catch (error: any) {
       throw new Error(`Erro ao deletar conta a receber: ${error.message}`);
     }
   }

@@ -1,10 +1,23 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Sparkles, AlertTriangle, CheckCircle2, TrendingUp, Calendar } from 'lucide-react';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Loader2,
+  Sparkles,
+  AlertTriangle,
+  CheckCircle2,
+  TrendingUp,
+  Calendar,
+} from "lucide-react";
+import { toast } from "sonner";
+import { apiClient } from "@/lib/api/apiClient";
 import {
   Table,
   TableBody,
@@ -12,13 +25,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 
 interface TreatmentSuggestion {
   tooth_number: number;
   tooth_status?: string;
   procedure: string;
-  priority: 'alta' | 'media' | 'baixa';
+  priority: "alta" | "media" | "baixa";
   estimated_cost: number;
   estimated_duration?: string;
   clinical_notes?: string;
@@ -31,17 +44,23 @@ interface OdontogramaAIAnalysisProps {
 }
 
 const priorityConfig = {
-  alta: { label: 'Alta', color: 'destructive', icon: AlertTriangle },
-  media: { label: 'Média', color: 'default', icon: TrendingUp },
-  baixa: { label: 'Baixa', color: 'secondary', icon: CheckCircle2 },
+  alta: { label: "Alta", color: "destructive", icon: AlertTriangle },
+  media: { label: "Média", color: "default", icon: TrendingUp },
+  baixa: { label: "Baixa", color: "secondary", icon: CheckCircle2 },
 } as const;
 
-export const OdontogramaAIAnalysis = ({ prontuarioId, patientId, onTreatmentCreate }: OdontogramaAIAnalysisProps) => {
+export const OdontogramaAIAnalysis = ({
+  prontuarioId,
+  patientId,
+  onTreatmentCreate,
+}: OdontogramaAIAnalysisProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isScheduling, setIsScheduling] = useState(false);
   const [suggestions, setSuggestions] = useState<TreatmentSuggestion[]>([]);
-  const [patientName, setPatientName] = useState<string>('');
-  const [selectedSuggestions, setSelectedSuggestions] = useState<Set<number>>(new Set());
+  const [patientName, setPatientName] = useState<string>("");
+  const [selectedSuggestions, setSelectedSuggestions] = useState<Set<number>>(
+    new Set(),
+  );
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
@@ -49,22 +68,29 @@ export const OdontogramaAIAnalysis = ({ prontuarioId, patientId, onTreatmentCrea
     setSelectedSuggestions(new Set());
 
     try {
-      const { data, error } = await supabase.functions.invoke('analyze-odontogram', {
-        body: { prontuarioId }
-      });
-
-      if (error) throw error;
+      const data = await apiClient.post<any>(
+        "/rest/v1/functions/analyze-odontogram",
+        {
+          prontuarioId,
+        },
+      );
 
       if (data.suggestions && data.suggestions.length > 0) {
         setSuggestions(data.suggestions);
         setPatientName(data.patient_name);
-        toast.success(`Análise concluída! ${data.suggestions.length} sugestões de tratamento geradas.`);
+        toast.success(
+          `Análise concluída! ${data.suggestions.length} sugestões de tratamento geradas.`,
+        );
       } else {
-        toast.info(data.message || 'Nenhuma sugestão de tratamento necessária.');
+        toast.info(
+          data.message || "Nenhuma sugestão de tratamento necessária.",
+        );
       }
     } catch (error) {
-      console.error('Erro na análise:', error);
-      toast.error(error instanceof Error ? error.message : 'Erro ao analisar odontograma');
+      console.error("Erro na análise:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Erro ao analisar odontograma",
+      );
     } finally {
       setIsAnalyzing(false);
     }
@@ -81,26 +107,32 @@ export const OdontogramaAIAnalysis = ({ prontuarioId, patientId, onTreatmentCrea
   };
 
   const handleCreateTreatments = () => {
-    const selectedItems = suggestions.filter((_, index) => selectedSuggestions.has(index));
+    const selectedItems = suggestions.filter((_, index) =>
+      selectedSuggestions.has(index),
+    );
     if (selectedItems.length === 0) {
-      toast.error('Selecione pelo menos uma sugestão para criar tratamentos');
+      toast.error("Selecione pelo menos uma sugestão para criar tratamentos");
       return;
     }
     onTreatmentCreate?.(selectedItems);
-    toast.success(`${selectedItems.length} tratamento(s) criado(s) com sucesso!`);
+    toast.success(
+      `${selectedItems.length} tratamento(s) criado(s) com sucesso!`,
+    );
     setSuggestions([]);
     setSelectedSuggestions(new Set());
   };
 
   const handleScheduleAppointments = async () => {
-    const selectedItems = suggestions.filter((_, index) => selectedSuggestions.has(index));
+    const selectedItems = suggestions.filter((_, index) =>
+      selectedSuggestions.has(index),
+    );
     if (selectedItems.length === 0) {
-      toast.error('Selecione pelo menos uma sugestão para agendar consultas');
+      toast.error("Selecione pelo menos uma sugestão para agendar consultas");
       return;
     }
 
     if (!patientId) {
-      toast.error('ID do paciente não disponível');
+      toast.error("ID do paciente não disponível");
       return;
     }
 
@@ -111,22 +143,23 @@ export const OdontogramaAIAnalysis = ({ prontuarioId, patientId, onTreatmentCrea
       onTreatmentCreate?.(selectedItems);
 
       // Depois agendar as consultas automaticamente
-      const { data, error } = await supabase.functions.invoke('schedule-appointments', {
-        body: { 
+      const data = await apiClient.post<any>(
+        "/rest/v1/functions/schedule-appointments",
+        {
           treatments: selectedItems,
           patientId: patientId,
-          dentistId: 'mock-dentist-id' // Em produção, seria selecionado pelo usuário
-        }
-      });
+          dentistId: "mock-dentist-id", // Em produção, seria selecionado pelo usuário
+        },
+      );
 
-      if (error) throw error;
-
-      toast.success(data.message || 'Consultas agendadas automaticamente!');
+      toast.success(data.message || "Consultas agendadas automaticamente!");
       setSuggestions([]);
       setSelectedSuggestions(new Set());
     } catch (error) {
-      console.error('Erro ao agendar consultas:', error);
-      toast.error(error instanceof Error ? error.message : 'Erro ao agendar consultas');
+      console.error("Erro ao agendar consultas:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Erro ao agendar consultas",
+      );
     } finally {
       setIsScheduling(false);
     }
@@ -146,14 +179,11 @@ export const OdontogramaAIAnalysis = ({ prontuarioId, patientId, onTreatmentCrea
               Análise Inteligente com IA
             </CardTitle>
             <CardDescription>
-              Analise automaticamente dentes problemáticos e receba sugestões de tratamentos com orçamentos
+              Analise automaticamente dentes problemáticos e receba sugestões de
+              tratamentos com orçamentos
             </CardDescription>
           </div>
-          <Button
-            onClick={handleAnalyze}
-            disabled={isAnalyzing}
-            size="lg"
-          >
+          <Button onClick={handleAnalyze} disabled={isAnalyzing} size="lg">
             {isAnalyzing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -175,14 +205,18 @@ export const OdontogramaAIAnalysis = ({ prontuarioId, patientId, onTreatmentCrea
             <div>
               <p className="text-sm font-medium">Paciente: {patientName}</p>
               <p className="text-sm text-muted-foreground">
-                {suggestions.length} sugestão(ões) de tratamento • {selectedSuggestions.size} selecionada(s)
+                {suggestions.length} sugestão(ões) de tratamento •{" "}
+                {selectedSuggestions.size} selecionada(s)
               </p>
             </div>
             {selectedSuggestions.size > 0 && (
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Orçamento Total</p>
                 <p className="text-2xl font-bold text-primary">
-                  {totalCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  {totalCost.toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  })}
                 </p>
               </div>
             )}
@@ -205,7 +239,7 @@ export const OdontogramaAIAnalysis = ({ prontuarioId, patientId, onTreatmentCrea
                   const config = priorityConfig[suggestion.priority];
                   const Icon = config.icon;
                   return (
-                    <TableRow 
+                    <TableRow
                       key={index}
                       className="cursor-pointer hover:bg-muted/50"
                       onClick={() => toggleSuggestion(index)}
@@ -219,7 +253,9 @@ export const OdontogramaAIAnalysis = ({ prontuarioId, patientId, onTreatmentCrea
                         />
                       </TableCell>
                       <TableCell className="font-medium">
-                        <Badge variant="outline">#{suggestion.tooth_number}</Badge>
+                        <Badge variant="outline">
+                          #{suggestion.tooth_number}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         <div>
@@ -238,13 +274,13 @@ export const OdontogramaAIAnalysis = ({ prontuarioId, patientId, onTreatmentCrea
                         </Badge>
                       </TableCell>
                       <TableCell className="font-medium">
-                        {suggestion.estimated_cost.toLocaleString('pt-BR', { 
-                          style: 'currency', 
-                          currency: 'BRL' 
+                        {suggestion.estimated_cost.toLocaleString("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
                         })}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {suggestion.estimated_duration || 'A definir'}
+                        {suggestion.estimated_duration || "A definir"}
                       </TableCell>
                     </TableRow>
                   );

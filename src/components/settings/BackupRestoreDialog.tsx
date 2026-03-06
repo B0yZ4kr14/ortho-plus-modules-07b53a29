@@ -1,25 +1,31 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { 
-  AlertTriangle, 
-  Check, 
-  Database, 
-  Users, 
-  Calendar, 
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import { apiClient } from "@/lib/api/apiClient";
+import { toast } from "sonner";
+import {
+  AlertTriangle,
+  Check,
+  Database,
+  Users,
+  Calendar,
   FileText,
   Lock,
-  Loader2
-} from 'lucide-react';
+  Loader2,
+} from "lucide-react";
 
 interface BackupData {
   version: string;
@@ -47,21 +53,25 @@ interface BackupRestoreDialogProps {
   backupFile?: File;
 }
 
-export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestoreDialogProps) {
+export function BackupRestoreDialog({
+  open,
+  onClose,
+  backupFile,
+}: BackupRestoreDialogProps) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [backupData, setBackupData] = useState<BackupData | null>(null);
-  const [decryptionPassword, setDecryptionPassword] = useState('');
+  const [decryptionPassword, setDecryptionPassword] = useState("");
   const [requiresDecryption, setRequiresDecryption] = useState(false);
   const [progress, setProgress] = useState(0);
-  
+
   const [selectedItems, setSelectedItems] = useState({
     modules: true,
     patients: false,
     historicoClinico: false,
     prontuarios: false,
     appointments: false,
-    financeiro: false
+    financeiro: false,
   });
 
   const [restoreResults, setRestoreResults] = useState<any>(null);
@@ -71,22 +81,22 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
     try {
       const text = await file.text();
       const data = text;
-      
+
       // Check if encrypted (starts with base64)
       if (text.match(/^[A-Za-z0-9+/=]+$/)) {
         setRequiresDecryption(true);
         setStep(2); // Go to decryption step
         return;
       }
-      
+
       const parsed = JSON.parse(data);
       setBackupData(parsed);
       setStep(3); // Go to selection step
-      toast.success('Backup carregado com sucesso!');
+      toast.success("Backup carregado com sucesso!");
     } catch (error) {
-      console.error('Error loading backup:', error);
-      toast.error('Erro ao carregar backup', {
-        description: 'Arquivo inválido ou corrompido'
+      console.error("Error loading backup:", error);
+      toast.error("Erro ao carregar backup", {
+        description: "Arquivo inválido ou corrompido",
       });
     } finally {
       setLoading(false);
@@ -95,28 +105,24 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
 
   const handleDecrypt = async () => {
     if (!backupFile || !decryptionPassword) return;
-    
+
     setLoading(true);
     try {
       const text = await backupFile.text();
-      
+
       // Call restore-backup with decryption
-      const { data, error } = await supabase.functions.invoke('restore-backup', {
-        body: {
-          backupData: text,
-          decryptionPassword
-        }
+      const data = await apiClient.post("/functions/v1/restore-backup", {
+        backupData: text,
+        decryptionPassword,
       });
-      
-      if (error) throw error;
-      
+
       setBackupData(data);
       setStep(3);
-      toast.success('Backup descriptografado com sucesso!');
+      toast.success("Backup descriptografado com sucesso!");
     } catch (error) {
-      console.error('Error decrypting:', error);
-      toast.error('Erro ao descriptografar', {
-        description: 'Senha incorreta ou backup corrompido'
+      console.error("Error decrypting:", error);
+      toast.error("Erro ao descriptografar", {
+        description: "Senha incorreta ou backup corrompido",
       });
     } finally {
       setLoading(false);
@@ -125,50 +131,60 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
 
   const handleRestore = async () => {
     if (!backupData) return;
-    
+
     setLoading(true);
     setProgress(0);
-    
+
     try {
       setProgress(20);
-      
+
       // Filter data based on selection
       const dataToRestore = {
         version: backupData.version,
         data: {
-          ...(selectedItems.modules && backupData.data.modules && { modules: backupData.data.modules }),
-          ...(selectedItems.patients && backupData.data.patients && { patients: backupData.data.patients }),
-          ...(selectedItems.historicoClinico && backupData.data.historicoClinico && { historicoClinico: backupData.data.historicoClinico }),
-          ...(selectedItems.prontuarios && backupData.data.prontuarios && { prontuarios: backupData.data.prontuarios }),
-          ...(selectedItems.appointments && backupData.data.appointments && { appointments: backupData.data.appointments }),
-          ...(selectedItems.financeiro && backupData.data.financeiro && { financeiro: backupData.data.financeiro })
-        }
+          ...(selectedItems.modules &&
+            backupData.data.modules && { modules: backupData.data.modules }),
+          ...(selectedItems.patients &&
+            backupData.data.patients && { patients: backupData.data.patients }),
+          ...(selectedItems.historicoClinico &&
+            backupData.data.historicoClinico && {
+              historicoClinico: backupData.data.historicoClinico,
+            }),
+          ...(selectedItems.prontuarios &&
+            backupData.data.prontuarios && {
+              prontuarios: backupData.data.prontuarios,
+            }),
+          ...(selectedItems.appointments &&
+            backupData.data.appointments && {
+              appointments: backupData.data.appointments,
+            }),
+          ...(selectedItems.financeiro &&
+            backupData.data.financeiro && {
+              financeiro: backupData.data.financeiro,
+            }),
+        },
       };
-      
+
       setProgress(40);
-      
-      const { data, error } = await supabase.functions.invoke('restore-backup', {
-        body: {
-          backupData: JSON.stringify(dataToRestore)
-        }
+
+      const data = await apiClient.post("/functions/v1/restore-backup", {
+        backupData: JSON.stringify(dataToRestore),
       });
-      
+
       setProgress(80);
-      
-      if (error) throw error;
-      
+
       setProgress(100);
       setRestoreResults(data.results);
       setStep(4); // Go to results step
-      
-      toast.success('Restauração concluída!', {
-        description: `${Object.values(data.results).reduce((a: number, b: number) => a + b, 0)} registros restaurados`
+
+      toast.success("Restauração concluída!", {
+        description: `${Object.values(data.results).reduce((a: number, b: number) => a + b, 0)} registros restaurados`,
       });
-      
     } catch (error) {
-      console.error('Error restoring:', error);
-      toast.error('Erro ao restaurar backup', {
-        description: error instanceof Error ? error.message : 'Erro desconhecido'
+      console.error("Error restoring:", error);
+      toast.error("Erro ao restaurar backup", {
+        description:
+          error instanceof Error ? error.message : "Erro desconhecido",
       });
     } finally {
       setLoading(false);
@@ -193,7 +209,8 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
             <Alert>
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                <strong>Atenção:</strong> A restauração irá sobrescrever os dados atuais. Certifique-se de que deseja continuar.
+                <strong>Atenção:</strong> A restauração irá sobrescrever os
+                dados atuais. Certifique-se de que deseja continuar.
               </AlertDescription>
             </Alert>
 
@@ -235,8 +252,8 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
               />
             </div>
 
-            <Button 
-              onClick={handleDecrypt} 
+            <Button
+              onClick={handleDecrypt}
               disabled={!decryptionPassword || loading}
               className="w-full"
             >
@@ -246,7 +263,7 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
                   Descriptografando...
                 </>
               ) : (
-                'Descriptografar'
+                "Descriptografar"
               )}
             </Button>
           </div>
@@ -257,16 +274,27 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <Database className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold">Selecione os Dados para Restaurar</h3>
+              <h3 className="font-semibold">
+                Selecione os Dados para Restaurar
+              </h3>
             </div>
 
             <Card className="p-4 space-y-2 bg-muted/50">
-              <div><strong>Backup ID:</strong> {backupData.backupId}</div>
-              <div><strong>Exportado em:</strong> {new Date(backupData.exportedAt).toLocaleString('pt-BR')}</div>
-              <div><strong>Versão:</strong> {backupData.version}</div>
               <div>
-                <Badge variant={backupData.isIncremental ? "secondary" : "default"}>
-                  {backupData.isIncremental ? 'Incremental' : 'Completo'}
+                <strong>Backup ID:</strong> {backupData.backupId}
+              </div>
+              <div>
+                <strong>Exportado em:</strong>{" "}
+                {new Date(backupData.exportedAt).toLocaleString("pt-BR")}
+              </div>
+              <div>
+                <strong>Versão:</strong> {backupData.version}
+              </div>
+              <div>
+                <Badge
+                  variant={backupData.isIncremental ? "secondary" : "default"}
+                >
+                  {backupData.isIncremental ? "Incremental" : "Completo"}
                 </Badge>
               </div>
             </Card>
@@ -276,15 +304,20 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
                 <div className="flex items-start space-x-2">
                   <Checkbox
                     checked={selectedItems.modules}
-                    onCheckedChange={(checked) => 
-                      setSelectedItems({ ...selectedItems, modules: checked as boolean })
+                    onCheckedChange={(checked) =>
+                      setSelectedItems({
+                        ...selectedItems,
+                        modules: checked as boolean,
+                      })
                     }
                   />
                   <div className="flex-1">
                     <Label className="flex items-center gap-2">
                       <Database className="h-4 w-4" />
                       Configurações de Módulos
-                      <Badge variant="outline">{backupData.data.modules.length} itens</Badge>
+                      <Badge variant="outline">
+                        {backupData.data.modules.length} itens
+                      </Badge>
                     </Label>
                   </div>
                 </div>
@@ -294,15 +327,20 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
                 <div className="flex items-start space-x-2">
                   <Checkbox
                     checked={selectedItems.patients}
-                    onCheckedChange={(checked) => 
-                      setSelectedItems({ ...selectedItems, patients: checked as boolean })
+                    onCheckedChange={(checked) =>
+                      setSelectedItems({
+                        ...selectedItems,
+                        patients: checked as boolean,
+                      })
                     }
                   />
                   <div className="flex-1">
                     <Label className="flex items-center gap-2">
                       <Users className="h-4 w-4" />
                       Pacientes
-                      <Badge variant="outline">{backupData.data.patients.length} itens</Badge>
+                      <Badge variant="outline">
+                        {backupData.data.patients.length} itens
+                      </Badge>
                     </Label>
                   </div>
                 </div>
@@ -312,15 +350,20 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
                 <div className="flex items-start space-x-2">
                   <Checkbox
                     checked={selectedItems.historicoClinico}
-                    onCheckedChange={(checked) => 
-                      setSelectedItems({ ...selectedItems, historicoClinico: checked as boolean })
+                    onCheckedChange={(checked) =>
+                      setSelectedItems({
+                        ...selectedItems,
+                        historicoClinico: checked as boolean,
+                      })
                     }
                   />
                   <div className="flex-1">
                     <Label className="flex items-center gap-2">
                       <FileText className="h-4 w-4" />
                       Histórico Clínico
-                      <Badge variant="outline">{backupData.data.historicoClinico.length} itens</Badge>
+                      <Badge variant="outline">
+                        {backupData.data.historicoClinico.length} itens
+                      </Badge>
                     </Label>
                   </div>
                 </div>
@@ -330,15 +373,20 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
                 <div className="flex items-start space-x-2">
                   <Checkbox
                     checked={selectedItems.prontuarios}
-                    onCheckedChange={(checked) => 
-                      setSelectedItems({ ...selectedItems, prontuarios: checked as boolean })
+                    onCheckedChange={(checked) =>
+                      setSelectedItems({
+                        ...selectedItems,
+                        prontuarios: checked as boolean,
+                      })
                     }
                   />
                   <div className="flex-1">
                     <Label className="flex items-center gap-2">
                       <FileText className="h-4 w-4" />
                       Prontuários Completos
-                      <Badge variant="outline">{backupData.data.prontuarios.length} itens</Badge>
+                      <Badge variant="outline">
+                        {backupData.data.prontuarios.length} itens
+                      </Badge>
                     </Label>
                   </div>
                 </div>
@@ -348,15 +396,20 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
                 <div className="flex items-start space-x-2">
                   <Checkbox
                     checked={selectedItems.appointments}
-                    onCheckedChange={(checked) => 
-                      setSelectedItems({ ...selectedItems, appointments: checked as boolean })
+                    onCheckedChange={(checked) =>
+                      setSelectedItems({
+                        ...selectedItems,
+                        appointments: checked as boolean,
+                      })
                     }
                   />
                   <div className="flex-1">
                     <Label className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
                       Agendamentos
-                      <Badge variant="outline">{backupData.data.appointments.length} itens</Badge>
+                      <Badge variant="outline">
+                        {backupData.data.appointments.length} itens
+                      </Badge>
                     </Label>
                   </div>
                 </div>
@@ -366,16 +419,22 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
                 <div className="flex items-start space-x-2">
                   <Checkbox
                     checked={selectedItems.financeiro}
-                    onCheckedChange={(checked) => 
-                      setSelectedItems({ ...selectedItems, financeiro: checked as boolean })
+                    onCheckedChange={(checked) =>
+                      setSelectedItems({
+                        ...selectedItems,
+                        financeiro: checked as boolean,
+                      })
                     }
                   />
                   <div className="flex-1">
                     <Label className="flex items-center gap-2">
                       Dados Financeiros
                       <Badge variant="outline">
-                        {(backupData.data.financeiro.contasReceber?.length || 0) + 
-                         (backupData.data.financeiro.contasPagar?.length || 0)} itens
+                        {(backupData.data.financeiro.contasReceber?.length ||
+                          0) +
+                          (backupData.data.financeiro.contasPagar?.length ||
+                            0)}{" "}
+                        itens
                       </Badge>
                     </Label>
                   </div>
@@ -386,13 +445,14 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
             <Alert>
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                Esta ação é irreversível. Os dados selecionados serão restaurados e sobrescreverão os dados atuais.
+                Esta ação é irreversível. Os dados selecionados serão
+                restaurados e sobrescreverão os dados atuais.
               </AlertDescription>
             </Alert>
 
-            <Button 
-              onClick={handleRestore} 
-              disabled={loading || !Object.values(selectedItems).some(v => v)}
+            <Button
+              onClick={handleRestore}
+              disabled={loading || !Object.values(selectedItems).some((v) => v)}
               className="w-full"
             >
               {loading ? (
@@ -401,7 +461,7 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
                   Restaurando...
                 </>
               ) : (
-                'Confirmar Restauração'
+                "Confirmar Restauração"
               )}
             </Button>
           </div>
@@ -424,7 +484,9 @@ export function BackupRestoreDialog({ open, onClose, backupFile }: BackupRestore
                 <div>✓ {restoreResults.patients} pacientes</div>
               )}
               {restoreResults.historico > 0 && (
-                <div>✓ {restoreResults.historico} registros de histórico clínico</div>
+                <div>
+                  ✓ {restoreResults.historico} registros de histórico clínico
+                </div>
               )}
               {restoreResults.prontuarios > 0 && (
                 <div>✓ {restoreResults.prontuarios} prontuários</div>

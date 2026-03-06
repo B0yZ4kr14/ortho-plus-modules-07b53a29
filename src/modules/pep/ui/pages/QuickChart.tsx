@@ -1,21 +1,27 @@
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { 
-  FileHeart, 
-  Clock, 
-  Pill, 
-  Image, 
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api/apiClient";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import {
+  FileHeart,
+  Clock,
+  Pill,
+  Image,
   Activity,
   ArrowLeft,
   Printer,
-  Plus
-} from 'lucide-react';
+  Plus,
+} from "lucide-react";
 
 export default function QuickChart() {
   const { patientId } = useParams();
@@ -24,51 +30,47 @@ export default function QuickChart() {
 
   // Buscar dados do paciente
   const { data: patient } = useQuery({
-    queryKey: ['patient', patientId],
+    queryKey: ["patient", patientId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('prontuarios')
-        .select('*')
-        .eq('patient_id', patientId)
-        .single();
-      
-      if (error) throw error;
-      return data;
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/prontuarios?patient_id=eq.${patientId}&limit=1`,
+      );
+      if (!data || data.length === 0) throw new Error("Patient not found");
+      return data[0];
     },
     enabled: !!patientId,
   });
 
   // Buscar tratamentos ativos
   const { data: tratamentos = [] } = useQuery({
-    queryKey: ['tratamentos-ativos', patient?.id],
+    queryKey: ["tratamentos-ativos", patient?.id],
     queryFn: async () => {
       if (!patient?.id) return [];
-      
-      const { data, error } = await supabase
-        .from('pep_tratamentos')
-        .select(`
-          *,
-          procedimento:procedimentos(nome, codigo_tuss)
-        `)
-        .eq('prontuario_id', patient.id)
-        .eq('status', 'EM_ANDAMENTO');
-      
-      if (error) throw error;
-      return data;
+
+      const data = await apiClient.get<any[]>(
+        `/rest/v1/pep_tratamentos?prontuario_id=eq.${patient.id}&status=eq.EM_ANDAMENTO&select=*,procedimento:procedimentos(nome,codigo_tuss)`,
+      );
+      return data || [];
     },
     enabled: !!patient?.id,
   });
 
   return (
-    <div className={`h-screen flex flex-col ${chairsideMode ? 'text-lg' : ''}`}>
+    <div className={`h-screen flex flex-col ${chairsideMode ? "text-lg" : ""}`}>
       {/* Header */}
       <div className="bg-background border-b px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => window.history.back()}
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">{patient?.patient_name || 'Carregando...'}</h1>
+            <h1 className="text-2xl font-bold">
+              {patient?.patient_name || "Carregando..."}
+            </h1>
             <p className="text-sm text-muted-foreground">
               Quick Chart - Atendimento Rápido
             </p>
@@ -77,10 +79,10 @@ export default function QuickChart() {
 
         <div className="flex items-center gap-2">
           <Button
-            variant={chairsideMode ? 'default' : 'outline'}
+            variant={chairsideMode ? "default" : "outline"}
             onClick={() => setChairsideMode(!chairsideMode)}
           >
-            Modo Chairside {chairsideMode ? '✓' : ''}
+            Modo Chairside {chairsideMode ? "✓" : ""}
           </Button>
           <Button variant="outline" size="icon">
             <Printer className="h-5 w-5" />
@@ -95,7 +97,9 @@ export default function QuickChart() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg">Odontograma</CardTitle>
-              <CardDescription>Visualização do estado dos dentes</CardDescription>
+              <CardDescription>
+                Visualização do estado dos dentes
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-8 text-muted-foreground">
@@ -196,17 +200,18 @@ export default function QuickChart() {
                       <Card key={trat.id}>
                         <CardHeader>
                           <CardTitle className="text-base">
-                            {trat.procedimento?.nome || 'Procedimento'}
+                            {trat.procedimento?.nome || "Procedimento"}
                           </CardTitle>
                           <CardDescription>
-                            Código TUSS: {trat.procedimento?.codigo_tuss || 'N/A'}
+                            Código TUSS:{" "}
+                            {trat.procedimento?.codigo_tuss || "N/A"}
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
                           <div className="flex items-center justify-between">
                             <Badge>{trat.status}</Badge>
                             <span className="text-sm text-muted-foreground">
-                              Dente: {trat.dente || 'Múltiplos'}
+                              Dente: {trat.dente || "Múltiplos"}
                             </span>
                           </div>
                         </CardContent>

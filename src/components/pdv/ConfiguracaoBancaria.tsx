@@ -1,14 +1,20 @@
-import { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { toast } from 'sonner';
-import { Loader2, Plus, Trash2, RefreshCcw } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
+import { Loader2, Plus, Trash2, RefreshCcw } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api/apiClient";
 
 interface BancoConfig {
   id?: string;
@@ -31,12 +37,12 @@ export function ConfiguracaoBancaria() {
   const [editando, setEditando] = useState<BancoConfig | null>(null);
 
   const bancos = [
-    { codigo: '001', nome: 'Banco do Brasil' },
-    { codigo: '033', nome: 'Santander' },
-    { codigo: '104', nome: 'Caixa Econômica' },
-    { codigo: '237', nome: 'Bradesco' },
-    { codigo: '341', nome: 'Itaú' },
-    { codigo: '756', nome: 'Sicoob' },
+    { codigo: "001", nome: "Banco do Brasil" },
+    { codigo: "033", nome: "Santander" },
+    { codigo: "104", nome: "Caixa Econômica" },
+    { codigo: "237", nome: "Bradesco" },
+    { codigo: "341", nome: "Itaú" },
+    { codigo: "756", nome: "Sicoob" },
   ];
 
   const handleSave = async () => {
@@ -50,18 +56,11 @@ export function ConfiguracaoBancaria() {
       };
 
       if (editando.id) {
-        const { error } = await supabase
-          .from('banco_config')
-          .update(payload)
-          .eq('id', editando.id);
-        if (error) throw error;
-        toast.success('Configuração atualizada com sucesso');
+        await apiClient.patch(`/banco-config/${editando.id}`, payload);
+        toast.success("Configuração atualizada com sucesso");
       } else {
-        const { error } = await supabase
-          .from('banco_config')
-          .insert(payload);
-        if (error) throw error;
-        toast.success('Configuração criada com sucesso');
+        await apiClient.post("/banco-config", payload);
+        toast.success("Configuração criada com sucesso");
       }
 
       setEditando(null);
@@ -77,13 +76,10 @@ export function ConfiguracaoBancaria() {
     if (!selectedClinic) return;
 
     try {
-      const { data, error } = await supabase
-        .from('banco_config')
-        .select('*')
-        .eq('clinic_id', selectedClinic);
-
-      if (error) throw error;
-      setConfigs(data || []);
+      const data = await apiClient.get("/banco-config", {
+        clinic_id: selectedClinic,
+      });
+      setConfigs(Array.isArray(data) ? data : data ? [data] : []);
     } catch (error: any) {
       toast.error(`Erro ao carregar configurações: ${error.message}`);
     }
@@ -93,18 +89,18 @@ export function ConfiguracaoBancaria() {
     setLoading(true);
     try {
       const hoje = new Date();
-      const trintaDiasAtras = new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const trintaDiasAtras = new Date(
+        hoje.getTime() - 30 * 24 * 60 * 60 * 1000,
+      );
 
-      const { data, error } = await supabase.functions.invoke('sincronizar-extrato-bancario', {
-        body: {
-          bancoConfigId: configId,
-          dataInicio: trintaDiasAtras.toISOString().split('T')[0],
-          dataFim: hoje.toISOString().split('T')[0],
-        },
+      const data: any = await apiClient.post("/sincronizar-extrato-bancario", {
+        bancoConfigId: configId,
+        dataInicio: trintaDiasAtras.toISOString().split("T")[0],
+        dataFim: hoje.toISOString().split("T")[0],
       });
-
-      if (error) throw error;
-      toast.success(`${data.lancamentos_sincronizados} lançamentos sincronizados (${data.conciliados_automaticamente} conciliados)`);
+      toast.success(
+        `${data.lancamentos_sincronizados} lançamentos sincronizados (${data.conciliados_automaticamente} conciliados)`,
+      );
       loadConfigs();
     } catch (error: any) {
       toast.error(`Erro ao sincronizar: ${error.message}`);
@@ -114,16 +110,12 @@ export function ConfiguracaoBancaria() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Deseja realmente excluir esta configuração bancária?')) return;
+    if (!confirm("Deseja realmente excluir esta configuração bancária?"))
+      return;
 
     try {
-      const { error } = await supabase
-        .from('banco_config')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      toast.success('Configuração excluída com sucesso');
+      await apiClient.delete(`/banco-config/${id}`);
+      toast.success("Configuração excluída com sucesso");
       loadConfigs();
     } catch (error: any) {
       toast.error(`Erro ao excluir: ${error.message}`);
@@ -139,17 +131,21 @@ export function ConfiguracaoBancaria() {
             Configure integração com APIs bancárias para conciliação automática
           </p>
         </div>
-        <Button onClick={() => setEditando({
-          banco_nome: '',
-          banco_codigo: '',
-          agencia: '',
-          conta: '',
-          api_url: '',
-          api_key: '',
-          api_secret: '',
-          certificado_path: '',
-          ativo: true,
-        })}>
+        <Button
+          onClick={() =>
+            setEditando({
+              banco_nome: "",
+              banco_codigo: "",
+              agencia: "",
+              conta: "",
+              api_url: "",
+              api_key: "",
+              api_secret: "",
+              certificado_path: "",
+              ativo: true,
+            })
+          }
+        >
           <Plus className="h-4 w-4 mr-2" />
           Nova Configuração
         </Button>
@@ -158,7 +154,7 @@ export function ConfiguracaoBancaria() {
       {editando && (
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">
-            {editando.id ? 'Editar' : 'Nova'} Configuração
+            {editando.id ? "Editar" : "Nova"} Configuração
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -166,11 +162,11 @@ export function ConfiguracaoBancaria() {
               <Select
                 value={editando.banco_codigo}
                 onValueChange={(value) => {
-                  const banco = bancos.find(b => b.codigo === value);
+                  const banco = bancos.find((b) => b.codigo === value);
                   setEditando({
                     ...editando,
                     banco_codigo: value,
-                    banco_nome: banco?.nome || '',
+                    banco_nome: banco?.nome || "",
                   });
                 }}
               >
@@ -178,7 +174,7 @@ export function ConfiguracaoBancaria() {
                   <SelectValue placeholder="Selecione o banco" />
                 </SelectTrigger>
                 <SelectContent>
-                  {bancos.map(banco => (
+                  {bancos.map((banco) => (
                     <SelectItem key={banco.codigo} value={banco.codigo}>
                       {banco.codigo} - {banco.nome}
                     </SelectItem>
@@ -191,7 +187,9 @@ export function ConfiguracaoBancaria() {
               <Label>Agência</Label>
               <Input
                 value={editando.agencia}
-                onChange={(e) => setEditando({ ...editando, agencia: e.target.value })}
+                onChange={(e) =>
+                  setEditando({ ...editando, agencia: e.target.value })
+                }
                 placeholder="0001"
               />
             </div>
@@ -200,7 +198,9 @@ export function ConfiguracaoBancaria() {
               <Label>Conta</Label>
               <Input
                 value={editando.conta}
-                onChange={(e) => setEditando({ ...editando, conta: e.target.value })}
+                onChange={(e) =>
+                  setEditando({ ...editando, conta: e.target.value })
+                }
                 placeholder="12345-6"
               />
             </div>
@@ -209,7 +209,9 @@ export function ConfiguracaoBancaria() {
               <Label>URL da API</Label>
               <Input
                 value={editando.api_url}
-                onChange={(e) => setEditando({ ...editando, api_url: e.target.value })}
+                onChange={(e) =>
+                  setEditando({ ...editando, api_url: e.target.value })
+                }
                 placeholder="https://api.banco.com.br/extrato"
               />
             </div>
@@ -219,7 +221,9 @@ export function ConfiguracaoBancaria() {
               <Input
                 type="password"
                 value={editando.api_key}
-                onChange={(e) => setEditando({ ...editando, api_key: e.target.value })}
+                onChange={(e) =>
+                  setEditando({ ...editando, api_key: e.target.value })
+                }
               />
             </div>
 
@@ -228,7 +232,9 @@ export function ConfiguracaoBancaria() {
               <Input
                 type="password"
                 value={editando.api_secret}
-                onChange={(e) => setEditando({ ...editando, api_secret: e.target.value })}
+                onChange={(e) =>
+                  setEditando({ ...editando, api_secret: e.target.value })
+                }
               />
             </div>
 
@@ -236,7 +242,9 @@ export function ConfiguracaoBancaria() {
               <Label>Caminho do Certificado</Label>
               <Input
                 value={editando.certificado_path}
-                onChange={(e) => setEditando({ ...editando, certificado_path: e.target.value })}
+                onChange={(e) =>
+                  setEditando({ ...editando, certificado_path: e.target.value })
+                }
                 placeholder="/certs/banco_certificado.pfx"
               />
             </div>
@@ -244,7 +252,9 @@ export function ConfiguracaoBancaria() {
             <div className="col-span-2 flex items-center space-x-2">
               <Switch
                 checked={editando.ativo}
-                onCheckedChange={(checked) => setEditando({ ...editando, ativo: checked })}
+                onCheckedChange={(checked) =>
+                  setEditando({ ...editando, ativo: checked })
+                }
               />
               <Label>Ativo</Label>
             </div>
@@ -273,7 +283,10 @@ export function ConfiguracaoBancaria() {
                 </p>
                 {config.ultima_sincronizacao && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Última sincronização: {new Date(config.ultima_sincronizacao).toLocaleString('pt-BR')}
+                    Última sincronização:{" "}
+                    {new Date(config.ultima_sincronizacao).toLocaleString(
+                      "pt-BR",
+                    )}
                   </p>
                 )}
               </div>

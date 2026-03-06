@@ -1,33 +1,48 @@
-import { useState } from 'react';
-import { Plus, FileText, Send, CheckCircle } from 'lucide-react';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useOrcamentosSupabase } from '@/modules/orcamentos/hooks/useOrcamentosSupabase';
-import { formatCurrency } from '@/lib/utils/validation.utils';
-import { statusLabels, tipoPlanoLabels } from '@/modules/orcamentos/types/orcamento.types';
-import type { OrcamentoComplete } from '@/modules/orcamentos/types/orcamento.types';
-import { OrcamentoForm } from '@/components/financeiro/OrcamentoForm';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { Plus, FileText, Send, CheckCircle } from "lucide-react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useOrcamentos } from "@/modules/orcamentos/presentation/hooks/useOrcamentos";
+import { formatCurrency } from "@/lib/utils/validation.utils";
+import {
+  statusLabels,
+  tipoPlanoLabels,
+} from "@/modules/orcamentos/types/orcamento.types";
+import type { OrcamentoComplete } from "@/modules/orcamentos/types/orcamento.types";
+import { OrcamentoForm } from "@/components/financeiro/OrcamentoForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 export default function Orcamentos() {
-  const { orcamentos, loading, sendOrcamento, approveOrcamento, convertToTreatmentPlan } = useOrcamentosSupabase();
-  const [selectedOrcamento, setSelectedOrcamento] = useState<OrcamentoComplete | null>(null);
+  const {
+    orcamentos,
+    loading,
+    sendOrcamento,
+    approveOrcamento,
+    convertToTreatmentPlan,
+  } = useOrcamentos();
+  const [selectedOrcamento, setSelectedOrcamento] =
+    useState<OrcamentoComplete | null>(null);
   const [formOpen, setFormOpen] = useState(false);
 
   const getStatusVariant = (status: string) => {
     const variants: Record<string, any> = {
-      RASCUNHO: 'default',
-      ENVIADO: 'default',
-      VISUALIZADO: 'secondary',
-      APROVADO: 'success',
-      REJEITADO: 'destructive',
-      EXPIRADO: 'destructive',
-      CONVERTIDO: 'success',
+      RASCUNHO: "default",
+      ENVIADO: "default",
+      VISUALIZADO: "secondary",
+      APROVADO: "success",
+      REJEITADO: "destructive",
+      EXPIRADO: "destructive",
+      CONVERTIDO: "success",
     };
-    return variants[status] || 'default';
+    return variants[status] || "default";
   };
 
   if (loading) {
@@ -55,25 +70,35 @@ export default function Orcamentos() {
       {/* Cards de Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Total de Orçamentos</div>
+          <div className="text-sm text-muted-foreground">
+            Total de Orçamentos
+          </div>
           <div className="text-3xl font-bold mt-2">{orcamentos.length}</div>
         </Card>
         <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Aguardando Aprovação</div>
+          <div className="text-sm text-muted-foreground">
+            Aguardando Aprovação
+          </div>
           <div className="text-3xl font-bold mt-2 text-warning">
-            {orcamentos.filter(o => o.status === 'ENVIADO' || o.status === 'VISUALIZADO').length}
+            {
+              orcamentos.filter(
+                (o) => o.status === "ENVIADO" || o.status === "VISUALIZADO",
+              ).length
+            }
           </div>
         </Card>
         <Card className="p-6">
           <div className="text-sm text-muted-foreground">Aprovados</div>
           <div className="text-3xl font-bold mt-2 text-success">
-            {orcamentos.filter(o => o.status === 'APROVADO').length}
+            {orcamentos.filter((o) => o.status === "APROVADO").length}
           </div>
         </Card>
         <Card className="p-6">
           <div className="text-sm text-muted-foreground">Valor Total</div>
           <div className="text-3xl font-bold mt-2">
-            {formatCurrency(orcamentos.reduce((sum, o) => sum + o.valor_final, 0))}
+            {formatCurrency(
+              orcamentos.reduce((sum, o) => sum + o.valor_final, 0),
+            )}
           </div>
         </Card>
       </div>
@@ -85,7 +110,9 @@ export default function Orcamentos() {
             <div className="text-center py-12 text-muted-foreground">
               <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>Nenhum orçamento encontrado</p>
-              <p className="text-sm mt-2">Crie seu primeiro orçamento para começar</p>
+              <p className="text-sm mt-2">
+                Crie seu primeiro orçamento para começar
+              </p>
             </div>
           ) : (
             orcamentos.map((orcamento) => (
@@ -100,17 +127,26 @@ export default function Orcamentos() {
                     <Badge variant={getStatusVariant(orcamento.status)}>
                       {statusLabels[orcamento.status]}
                     </Badge>
-                    <Badge variant="outline">{tipoPlanoLabels[orcamento.tipo_plano]}</Badge>
+                    <Badge variant="outline">
+                      {tipoPlanoLabels[orcamento.tipo_plano]}
+                    </Badge>
                   </div>
                   <div className="text-sm text-muted-foreground space-y-1">
                     <p>Número: {orcamento.numero_orcamento}</p>
-                    <p>Paciente: {orcamento.patient_name || 'N/A'}</p>
-                    <p>Validade: {new Date(orcamento.data_validade).toLocaleDateString('pt-BR')}</p>
+                    <p>Paciente: {orcamento.patient_name || "N/A"}</p>
+                    <p>
+                      Validade:{" "}
+                      {new Date(orcamento.data_validade).toLocaleDateString(
+                        "pt-BR",
+                      )}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right space-y-2">
                   <div>
-                    <div className="text-2xl font-bold">{formatCurrency(orcamento.valor_final)}</div>
+                    <div className="text-2xl font-bold">
+                      {formatCurrency(orcamento.valor_final)}
+                    </div>
                     {orcamento.desconto_valor > 0 && (
                       <div className="text-sm text-muted-foreground line-through">
                         {formatCurrency(orcamento.valor_total)}
@@ -118,20 +154,21 @@ export default function Orcamentos() {
                     )}
                   </div>
                   <div className="flex gap-2">
-                    {orcamento.status === 'RASCUNHO' && (
+                    {orcamento.status === "RASCUNHO" && (
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={(e) => {
                           e.stopPropagation();
-                          sendOrcamento(orcamento.id!, '');
+                          sendOrcamento(orcamento.id!, "");
                         }}
                       >
                         <Send className="h-3 w-3 mr-1" />
                         Enviar
                       </Button>
                     )}
-                    {(orcamento.status === 'ENVIADO' || orcamento.status === 'VISUALIZADO') && (
+                    {(orcamento.status === "ENVIADO" ||
+                      orcamento.status === "VISUALIZADO") && (
                       <Button
                         size="sm"
                         variant="elevated"
@@ -144,7 +181,7 @@ export default function Orcamentos() {
                         Aprovar
                       </Button>
                     )}
-                    {orcamento.status === 'APROVADO' && (
+                    {orcamento.status === "APROVADO" && (
                       <Button
                         size="sm"
                         variant="elevated-secondary"
@@ -171,8 +208,8 @@ export default function Orcamentos() {
           </DialogHeader>
           <OrcamentoForm
             onSubmit={(data) => {
-              console.log('Orçamento criado:', data);
-              toast.success('Orçamento criado com sucesso!');
+              console.log("Orçamento criado:", data);
+              toast.success("Orçamento criado com sucesso!");
               setFormOpen(false);
             }}
             onCancel={() => setFormOpen(false)}

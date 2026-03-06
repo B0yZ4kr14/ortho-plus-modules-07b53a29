@@ -24,13 +24,13 @@ import {
   Cell,
 } from 'recharts';
 import { TrendingUp, TrendingDown, AlertTriangle, Calendar } from 'lucide-react';
-import { useInventarioSupabase } from '../hooks/useInventarioSupabase';
+import { useInventario } from '../hooks/useInventario';
 import { Inventario } from '../types/estoque.types';
 
 const COLORS = ['#ef4444', '#f97316', '#f59e0b', '#10b981'];
 
 export function InventarioHistoricoComparacao() {
-  const { inventarios, inventarioItems } = useInventarioSupabase();
+  const { inventarios, inventarioItems } = useInventario();
   const [periodoSelecionado, setPeriodoSelecionado] = useState<string>('6m');
   const [inventariosFiltrados, setInventariosFiltrados] = useState<Inventario[]>([]);
 

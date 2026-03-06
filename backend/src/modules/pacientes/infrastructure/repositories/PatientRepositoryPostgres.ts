@@ -1,20 +1,20 @@
 /**
  * PatientRepositoryPostgres - Implementação PostgreSQL
- * 
+ *
  * Implementa IPatientRepository usando PostgreSQL com schema isolado.
  */
 
+import { IDatabaseConnection } from "@/infrastructure/database/IDatabaseConnection";
+import { logger } from "@/infrastructure/logger";
+import { Patient, PatientProps } from "../../domain/entities/Patient";
 import {
   IPatientRepository,
-  PatientFilters,
-  PaginationOptions,
   PaginatedResult,
-} from '../../domain/repositories/IPatientRepository';
-import { Patient, PatientProps } from '../../domain/entities/Patient';
-import { PatientStatus } from '../../domain/value-objects/PatientStatus';
-import { DadosComerciaisVO } from '../../domain/value-objects/DadosComerciaisVO';
-import { IDatabaseConnection } from '@/infrastructure/database/IDatabaseConnection';
-import { logger } from '@/infrastructure/logger';
+  PaginationOptions,
+  PatientFilters,
+} from "../../domain/repositories/IPatientRepository";
+import { DadosComerciaisVO } from "../../domain/value-objects/DadosComerciaisVO";
+import { PatientStatus } from "../../domain/value-objects/PatientStatus";
 
 export class PatientRepositoryPostgres implements IPatientRepository {
   constructor(private db: IDatabaseConnection) {}
@@ -72,10 +72,10 @@ export class PatientRepositoryPostgres implements IPatientRepository {
         props.updatedAt,
         props.createdBy,
         props.updatedBy,
-      ]
+      ],
     );
 
-    logger.debug('Patient saved', { patientId: props.id });
+    logger.debug("Patient saved", { patientId: props.id });
   }
 
   async update(patient: Patient): Promise<void> {
@@ -126,16 +126,16 @@ export class PatientRepositoryPostgres implements IPatientRepository {
         props.isActive,
         props.updatedAt,
         props.updatedBy,
-      ]
+      ],
     );
 
-    logger.debug('Patient updated', { patientId: props.id });
+    logger.debug("Patient updated", { patientId: props.id });
   }
 
   async findById(id: string, clinicId: string): Promise<Patient | null> {
     const result = await this.db.query(
       `SELECT * FROM pacientes.patients WHERE id = $1 AND clinic_id = $2`,
-      [id, clinicId]
+      [id, clinicId],
     );
 
     if (result.rows.length === 0) return null;
@@ -146,7 +146,7 @@ export class PatientRepositoryPostgres implements IPatientRepository {
   async findByCPF(cpf: string, clinicId: string): Promise<Patient | null> {
     const result = await this.db.query(
       `SELECT * FROM pacientes.patients WHERE cpf = $1 AND clinic_id = $2`,
-      [cpf, clinicId]
+      [cpf, clinicId],
     );
 
     if (result.rows.length === 0) return null;
@@ -157,7 +157,7 @@ export class PatientRepositoryPostgres implements IPatientRepository {
   async findByEmail(email: string, clinicId: string): Promise<Patient | null> {
     const result = await this.db.query(
       `SELECT * FROM pacientes.patients WHERE email = $1 AND clinic_id = $2`,
-      [email, clinicId]
+      [email, clinicId],
     );
 
     if (result.rows.length === 0) return null;
@@ -167,10 +167,10 @@ export class PatientRepositoryPostgres implements IPatientRepository {
 
   async findMany(
     filters: PatientFilters,
-    pagination: PaginationOptions
+    pagination: PaginationOptions,
   ): Promise<PaginatedResult<Patient>> {
     // Build WHERE clause dynamically
-    const conditions: string[] = ['clinic_id = $1'];
+    const conditions: string[] = ["clinic_id = $1"];
     const params: any[] = [filters.clinicId];
     let paramIndex = 2;
 
@@ -200,31 +200,33 @@ export class PatientRepositoryPostgres implements IPatientRepository {
     }
 
     if (filters.searchTerm) {
-      conditions.push(`(full_name ILIKE $${paramIndex} OR cpf ILIKE $${paramIndex} OR email ILIKE $${paramIndex})`);
+      conditions.push(
+        `(full_name ILIKE $${paramIndex} OR cpf ILIKE $${paramIndex} OR email ILIKE $${paramIndex})`,
+      );
       params.push(`%${filters.searchTerm}%`);
       paramIndex++;
     }
 
-    const whereClause = conditions.join(' AND ');
+    const whereClause = conditions.join(" AND ");
 
     // Count total
     const countResult = await this.db.query(
       `SELECT COUNT(*) as total FROM pacientes.patients WHERE ${whereClause}`,
-      params
+      params,
     );
     const total = parseInt(countResult.rows[0].total);
 
     // Query with pagination
     const offset = (pagination.page - 1) * pagination.limit;
-    const sortBy = pagination.sortBy || 'created_at';
-    const sortOrder = pagination.sortOrder || 'desc';
+    const sortBy = pagination.sortBy || "created_at";
+    const sortOrder = pagination.sortOrder || "desc";
 
     const result = await this.db.query(
-      `SELECT * FROM pacientes.patients 
+      `SELECT * FROM pacientes.patients
        WHERE ${whereClause}
        ORDER BY ${sortBy} ${sortOrder}
        LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
-      [...params, pagination.limit, offset]
+      [...params, pagination.limit, offset],
     );
 
     const patients = result.rows.map((row) => this.toDomain(row));
@@ -244,7 +246,7 @@ export class PatientRepositoryPostgres implements IPatientRepository {
        FROM pacientes.patients
        WHERE clinic_id = $1 AND is_active = true
        GROUP BY status_code`,
-      [clinicId]
+      [clinicId],
     );
 
     const counts: Record<string, number> = {};
@@ -261,13 +263,20 @@ export class PatientRepositoryPostgres implements IPatientRepository {
     toStatus: string,
     reason: string,
     changedBy: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): Promise<void> {
     await this.db.query(
-      `INSERT INTO pacientes.patient_status_history 
+      `INSERT INTO pacientes.patient_status_history
        (patient_id, from_status, to_status, reason, changed_by, metadata)
        VALUES ($1, $2, $3, $4, $5, $6)`,
-      [patientId, fromStatus, toStatus, reason, changedBy, JSON.stringify(metadata || {})]
+      [
+        patientId,
+        fromStatus,
+        toStatus,
+        reason,
+        changedBy,
+        JSON.stringify(metadata || {}),
+      ],
     );
   }
 
@@ -276,7 +285,7 @@ export class PatientRepositoryPostgres implements IPatientRepository {
       `SELECT * FROM pacientes.patient_status_history
        WHERE patient_id = $1
        ORDER BY changed_at DESC`,
-      [patientId]
+      [patientId],
     );
 
     return result.rows;
@@ -285,7 +294,7 @@ export class PatientRepositoryPostgres implements IPatientRepository {
   async exists(id: string, clinicId: string): Promise<boolean> {
     const result = await this.db.query(
       `SELECT 1 FROM pacientes.patients WHERE id = $1 AND clinic_id = $2`,
-      [id, clinicId]
+      [id, clinicId],
     );
     return result.rows.length > 0;
   }
@@ -295,7 +304,7 @@ export class PatientRepositoryPostgres implements IPatientRepository {
     await this.db.query(
       `UPDATE pacientes.patients SET is_active = false, updated_at = NOW()
        WHERE id = $1 AND clinic_id = $2`,
-      [id, clinicId]
+      [id, clinicId],
     );
   }
 
@@ -349,6 +358,9 @@ export class PatientRepositoryPostgres implements IPatientRepository {
       status,
       dadosComerciais,
       notes: row.notes,
+      totalDebt: row.total_debt,
+      totalPaid: row.total_paid,
+      paymentStatus: row.payment_status,
       isActive: row.is_active,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),

@@ -17,7 +17,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle, FileDown } from 'lucide-react';
 import { Inventario, InventarioItem } from '../types/estoque.types';
-import { useInventarioSupabase } from '../hooks/useInventarioSupabase';
+import { useInventario } from '../hooks/useInventario';
 import { toast } from 'sonner';
 import { exportInventarioPDF } from './InventarioPDFExport';
 
@@ -32,7 +32,7 @@ export function InventarioDivergenciasDialog({
   onOpenChange,
   inventario,
 }: InventarioDivergenciasDialogProps) {
-  const { getInventarioItemsByInventarioId, gerarAjustesAutomaticos } = useInventarioSupabase();
+  const { getInventarioItemsByInventarioId, gerarAjustesAutomaticos } = useInventario();
   const [items, setItems] = useState<InventarioItem[]>([]);
   const [loading, setLoading] = useState(false);
 

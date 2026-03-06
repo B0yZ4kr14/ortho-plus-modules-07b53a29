@@ -2,14 +2,18 @@
  * FASE 3: CRM - Hook React para gerenciar Leads
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Lead, LeadSource, LeadStatus } from '@/modules/crm/domain/entities/Lead';
-import { SupabaseLeadRepository } from '@/modules/crm/infrastructure/repositories/SupabaseLeadRepository';
-import { UpdateLeadStatusUseCase } from '@/modules/crm/application/use-cases/UpdateLeadStatusUseCase';
-import { toast } from 'sonner';
+import { useAuth } from "@/contexts/AuthContext";
+import { UpdateLeadStatusUseCase } from "@/modules/crm/application/use-cases/UpdateLeadStatusUseCase";
+import {
+  Lead,
+  LeadSource,
+  LeadStatus,
+} from "@/modules/crm/domain/entities/Lead";
+import { LeadRepositoryApi } from "@/modules/crm/infrastructure/repositories/LeadRepositoryApi";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
-const leadRepository = new SupabaseLeadRepository();
+const leadRepository = new LeadRepositoryApi();
 const updateLeadStatusUseCase = new UpdateLeadStatusUseCase(leadRepository);
 
 export function useLeads() {
@@ -20,14 +24,15 @@ export function useLeads() {
 
   const loadLeads = useCallback(async () => {
     if (!clinicId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
       const fetchedLeads = await leadRepository.findByClinicId(clinicId);
       setLeads(fetchedLeads);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar leads';
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro ao carregar leads";
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -39,66 +44,81 @@ export function useLeads() {
     loadLeads();
   }, [loadLeads]);
 
-  const createLead = useCallback(async (input: {
-    nome: string;
-    email?: string;
-    telefone?: string;
-    origem: LeadSource;
-    valorEstimado?: number;
-    interesseDescricao?: string;
-  }) => {
-    if (!clinicId || !user) {
-      toast.error('Usuário não autenticado');
-      return;
-    }
+  const createLead = useCallback(
+    async (input: {
+      nome: string;
+      email?: string;
+      telefone?: string;
+      origem: LeadSource;
+      valorEstimado?: number;
+      interesseDescricao?: string;
+    }) => {
+      if (!clinicId || !user) {
+        toast.error("Usuário não autenticado");
+        return;
+      }
 
-    try {
-      // Criar diretamente usando entidade de domínio
-      const lead = new Lead({
-        id: crypto.randomUUID(),
-        clinicId,
-        nome: input.nome,
-        email: input.email,
-        telefone: input.telefone,
-        origem: input.origem,
-        status: 'NOVO' as LeadStatus,
-        interesseDescricao: input.interesseDescricao,
-        valorEstimado: input.valorEstimado,
-        responsavelId: user.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      try {
+        // Criar diretamente usando entidade de domínio
+        const lead = new Lead({
+          id: crypto.randomUUID(),
+          clinicId,
+          nome: input.nome,
+          email: input.email,
+          telefone: input.telefone,
+          origem: input.origem,
+          status: "NOVO" as LeadStatus,
+          interesseDescricao: input.interesseDescricao,
+          valorEstimado: input.valorEstimado,
+          responsavelId: user.id,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
 
-      const savedLead = await leadRepository.save(lead);
+        const savedLead = await leadRepository.save(lead);
 
-      toast.success('Lead criado com sucesso');
-      await loadLeads();
-      return savedLead;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao criar lead';
-      toast.error(errorMessage);
-      throw err;
-    }
-  }, [clinicId, user, loadLeads]);
+        toast.success("Lead criado com sucesso");
+        await loadLeads();
+        return savedLead;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Erro ao criar lead";
+        toast.error(errorMessage);
+        throw err;
+      }
+    },
+    [clinicId, user, loadLeads],
+  );
 
-  const updateLeadStatus = useCallback(async (
-    leadId: string,
-    newStatus: 'NOVO' | 'CONTATO_INICIAL' | 'QUALIFICADO' | 'PROPOSTA' | 'NEGOCIACAO' | 'GANHO' | 'PERDIDO'
-  ) => {
-    try {
-      await updateLeadStatusUseCase.execute({
-        leadId,
-        newStatus,
-      });
+  const updateLeadStatus = useCallback(
+    async (
+      leadId: string,
+      newStatus:
+        | "NOVO"
+        | "CONTATO_INICIAL"
+        | "QUALIFICADO"
+        | "PROPOSTA"
+        | "NEGOCIACAO"
+        | "GANHO"
+        | "PERDIDO",
+    ) => {
+      try {
+        await updateLeadStatusUseCase.execute({
+          leadId,
+          newStatus,
+        });
 
-      toast.success('Status atualizado com sucesso');
-      await loadLeads();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao atualizar status';
-      toast.error(errorMessage);
-      throw err;
-    }
-  }, [loadLeads]);
+        toast.success("Status atualizado com sucesso");
+        await loadLeads();
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Erro ao atualizar status";
+        toast.error(errorMessage);
+        throw err;
+      }
+    },
+    [loadLeads],
+  );
 
   return {
     leads,

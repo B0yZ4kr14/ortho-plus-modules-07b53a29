@@ -7,14 +7,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useFidelidadeSupabase } from '@/modules/fidelidade/hooks/useFidelidadeSupabase';
+import { useFidelidade } from '@/modules/fidelidade/hooks/useFidelidade';
 import { RecompensaForm } from '@/components/fidelidade/RecompensaForm';
 import { BadgeForm } from '@/components/fidelidade/BadgeForm';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
 
 export default function ProgramaFidelidade() {
-  const { pontos, recompensas, badges, indicacoes, loading } = useFidelidadeSupabase();
+  const { pontos, recompensas, badges, indicacoes, loading } = useFidelidade();
   const [recompensaFormOpen, setRecompensaFormOpen] = useState(false);
   const [badgeFormOpen, setBadgeFormOpen] = useState(false);
   const [editingRecompensa, setEditingRecompensa] = useState<any>(null);
