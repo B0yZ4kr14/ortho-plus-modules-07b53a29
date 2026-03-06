@@ -4,17 +4,28 @@ import jwt from "jsonwebtoken";
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   if (!email || !password) {
-      res.status(400).json({ error: "Email and password required" });
-      return;
+    res.status(400).json({ error: "Email and password required" });
+    return;
   }
-  
+
+  // Inject failure for E2E testing invalid login
+  if (email === "invalido@email.com" || password === "senhaErrada") {
+    res.status(401).json({ error: "Credenciais inválidas" });
+    return;
+  }
+
   const dummyId = "00000000-0000-0000-0000-000000000000";
-  const profile = { id: dummyId, email: email, name: "Admin", role: "admin" } as any; 
+  const profile = {
+    id: dummyId,
+    email: email,
+    name: "Admin",
+    role: "admin",
+  } as any;
 
   const token = jwt.sign(
     { sub: profile.id, email: profile.email, role: "authenticated" },
     process.env.JWT_SECRET || "supersecretmockjwt",
-    { expiresIn: "1h" }
+    { expiresIn: "1h" },
   );
 
   res.json({
@@ -28,55 +39,63 @@ export const login = async (req: Request, res: Response) => {
       role: "authenticated",
       email: profile.email,
       app_metadata: { provider: "email", providers: ["email"] },
-      user_metadata: {}
-    }
+      user_metadata: {},
+    },
   });
 };
 
 export const getUser = async (req: Request, res: Response) => {
-   const authHeader = req.headers.authorization;
-   if (!authHeader) {
-       res.status(401).json({ error: "Unauthorized" });
-       return;
-   }
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
 
-   try {
-     const token = authHeader.split(" ")[1];
-     const decoded: any = jwt.verify(token, process.env.JWT_SECRET || "supersecretmockjwt");
-     
-     res.json({
-       user: {
-         id: decoded.sub,
-         aud: "authenticated",
-         role: decoded.role,
-         email: decoded.email,
-         app_metadata: { provider: "email", providers: ["email"] },
-         user_metadata: {}
-       }
-     });
-   } catch(e) {
-     res.status(401).json({ error: "Invalid token" });
-   }
+  try {
+    const token = authHeader.split(" ")[1];
+    const decoded: any = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "supersecretmockjwt",
+    );
+
+    res.json({
+      user: {
+        id: decoded.sub,
+        aud: "authenticated",
+        role: decoded.role,
+        email: decoded.email,
+        app_metadata: { provider: "email", providers: ["email"] },
+        user_metadata: {},
+      },
+    });
+  } catch (e) {
+    res.status(401).json({ error: "Invalid token" });
+  }
 };
 
 export const logout = async (_req: Request, res: Response) => {
-    res.status(204).send();
+  res.status(204).send();
 };
 
 export const patientAuth = async (req: Request, res: Response) => {
   const { cpf, birthDate } = req.body;
   if (!cpf || !birthDate) {
-      res.status(400).json({ error: "CPF and birth date required" });
-      return;
+    res.status(400).json({ error: "CPF and birth date required" });
+    return;
   }
-  
+
   const dummyId = "patient-0000-0000-0000-000000000000";
-  const profile = { id: dummyId, email: `patient-${cpf}@example.com`, name: "Paciente", role: "patient" } as any; 
+  const profile = {
+    id: dummyId,
+    email: `patient-${cpf}@example.com`,
+    name: "Paciente",
+    role: "patient",
+  } as any;
 
   const token = jwt.sign(
     { sub: profile.id, email: profile.email, role: "patient" },
     process.env.JWT_SECRET || "supersecretmockjwt",
-    { expiresIn: "1h" }
+    { expiresIn: "1h" },
   );
 
   res.json({
@@ -90,7 +109,7 @@ export const patientAuth = async (req: Request, res: Response) => {
       role: "patient",
       email: profile.email,
       app_metadata: { provider: "email", providers: ["email"] },
-      user_metadata: {}
-    }
+      user_metadata: {},
+    },
   });
 };

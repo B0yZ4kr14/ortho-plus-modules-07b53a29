@@ -3,6 +3,11 @@ import dotenv from "dotenv";
 import express from "express";
 import helmet from "helmet";
 import authRoutes from "./routes/auth";
+import cryptoRoutes from "./routes/crypto";
+import estoqueRoutes from "./routes/estoque";
+import financeiroRoutes from "./routes/financeiro";
+import fiscalRoutes from "./routes/fiscal";
+import paymentRoutes from "./routes/payments";
 import restRoutes from "./routes/rest";
 
 // Modules API Routers
@@ -19,11 +24,12 @@ import notificationRouter from "./modules/notifications/api/router";
 import { pacientesRouter } from "./modules/pacientes/api/router";
 import { createTerminalRouter } from "./modules/terminal/api/router";
 import usuariosRouter from "./modules/usuarios/api/router";
+import { startAllWorkers } from "./workers/index";
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3005;
 
 app.use(cors());
 app.use(helmet());
@@ -31,6 +37,7 @@ app.use(express.json());
 
 // Auth implementation route
 app.use("/auth/v1", authRoutes);
+app.use("/api/auth", authRoutes);
 
 // Health check
 app.get("/health", (_req, res) => {
@@ -54,6 +61,14 @@ app.use("/api/agenda", agendaRouter);
 app.use("/api/usuarios", usuariosRouter);
 app.use("/api/terminal", createTerminalRouter());
 app.use("/api/github", createGitHubToolsRouter());
+app.use("/api/crypto", cryptoRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/fiscal", fiscalRoutes);
+app.use("/api/estoque", estoqueRoutes);
+app.use("/api/financeiro", financeiroRoutes);
+
+// Start background workers
+startAllWorkers();
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
