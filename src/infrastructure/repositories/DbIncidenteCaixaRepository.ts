@@ -4,16 +4,15 @@ import {
 } from "@/domain/entities/IncidenteCaixa";
 import { IIncidenteCaixaRepository } from "@/domain/repositories/IIncidenteCaixaRepository";
 import { apiClient } from "@/lib/api/apiClient";
+import type { Tables } from '@/types/database';
 import { IncidenteCaixaMapper } from "./mappers/IncidenteCaixaMapper";
 
-export class SupabaseIncidenteCaixaRepository implements IIncidenteCaixaRepository {
+export class DbIncidenteCaixaRepository implements IIncidenteCaixaRepository {
   async findById(id: string): Promise<IncidenteCaixa | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/caixa_incidentes?id=eq.${id}`,
-      );
-      if (!data || data.length === 0) return null;
-      return IncidenteCaixaMapper.toDomain(data[0]);
+      const data = await apiClient.get<Tables<"caixa_incidentes">>(`/financeiro/incidentes/${id}`);
+      if (!data) return null;
+      return IncidenteCaixaMapper.toDomain(data);
     } catch {
       return null;
     }
@@ -21,9 +20,9 @@ export class SupabaseIncidenteCaixaRepository implements IIncidenteCaixaReposito
 
   async findByClinicId(clinicId: string): Promise<IncidenteCaixa[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/caixa_incidentes?clinic_id=eq.${clinicId}&order=data_incidente.desc`,
-      );
+      const data = await apiClient.get<Tables<"caixa_incidentes">[]>("/financeiro/incidentes", {
+        params: { clinic_id: clinicId },
+      });
       return (data || []).map((row) => IncidenteCaixaMapper.toDomain(row));
     } catch {
       return [];
@@ -35,9 +34,9 @@ export class SupabaseIncidenteCaixaRepository implements IIncidenteCaixaReposito
     tipo: TipoIncidenteCaixa,
   ): Promise<IncidenteCaixa[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/caixa_incidentes?clinic_id=eq.${clinicId}&tipo_incidente=eq.${tipo}&order=data_incidente.desc`,
-      );
+      const data = await apiClient.get<Tables<"caixa_incidentes">[]>("/financeiro/incidentes", {
+        params: { clinic_id: clinicId, tipo_incidente: tipo },
+      });
       return (data || []).map((row) => IncidenteCaixaMapper.toDomain(row));
     } catch {
       return [];
@@ -50,9 +49,13 @@ export class SupabaseIncidenteCaixaRepository implements IIncidenteCaixaReposito
     endDate: Date,
   ): Promise<IncidenteCaixa[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/caixa_incidentes?clinic_id=eq.${clinicId}&data_incidente=gte.${startDate.toISOString()}&data_incidente=lte.${endDate.toISOString()}&order=data_incidente.desc`,
-      );
+      const data = await apiClient.get<Tables<"caixa_incidentes">[]>("/financeiro/incidentes", {
+        params: {
+          clinic_id: clinicId,
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
+        },
+      });
       return (data || []).map((row) => IncidenteCaixaMapper.toDomain(row));
     } catch {
       return [];
@@ -61,9 +64,9 @@ export class SupabaseIncidenteCaixaRepository implements IIncidenteCaixaReposito
 
   async findGraves(clinicId: string): Promise<IncidenteCaixa[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/caixa_incidentes?clinic_id=eq.${clinicId}&or=(tipo_incidente.eq.ROUBO,valor_perdido.gt.1000)&order=data_incidente.desc`,
-      );
+      const data = await apiClient.get<Tables<"caixa_incidentes">[]>("/financeiro/incidentes", {
+        params: { clinic_id: clinicId, graves: "true" },
+      });
       return (data || []).map((row) => IncidenteCaixaMapper.toDomain(row));
     } catch {
       return [];
@@ -71,21 +74,18 @@ export class SupabaseIncidenteCaixaRepository implements IIncidenteCaixaReposito
   }
 
   async save(incidente: IncidenteCaixa): Promise<void> {
-    const insert = IncidenteCaixaMapper.toSupabaseInsert(incidente);
+    const insert = IncidenteCaixaMapper.toDbInsert(incidente);
     try {
-      await apiClient.post("/rest/v1/caixa_incidentes", insert);
+      await apiClient.post("/financeiro/incidentes", insert);
     } catch (error: any) {
       throw new Error(`Erro ao salvar incidente de caixa: ${error.message}`);
     }
   }
 
   async update(incidente: IncidenteCaixa): Promise<void> {
-    const insert = IncidenteCaixaMapper.toSupabaseInsert(incidente);
+    const insert = IncidenteCaixaMapper.toDbInsert(incidente);
     try {
-      await apiClient.patch(
-        `/rest/v1/caixa_incidentes?id=eq.${incidente.id}`,
-        insert,
-      );
+      await apiClient.patch(`/financeiro/incidentes/${incidente.id}`, insert);
     } catch (error: any) {
       throw new Error(`Erro ao atualizar incidente de caixa: ${error.message}`);
     }
@@ -93,7 +93,7 @@ export class SupabaseIncidenteCaixaRepository implements IIncidenteCaixaReposito
 
   async delete(id: string): Promise<void> {
     try {
-      await apiClient.delete(`/rest/v1/caixa_incidentes?id=eq.${id}`);
+      await apiClient.delete(`/financeiro/incidentes/${id}`);
     } catch (error: any) {
       throw new Error(`Erro ao deletar incidente de caixa: ${error.message}`);
     }

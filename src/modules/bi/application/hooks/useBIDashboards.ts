@@ -11,9 +11,7 @@ export const useBIDashboards = () => {
     queryKey: ["bi-dashboards", clinicId],
     queryFn: async () => {
       if (!clinicId) return [];
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/bi_dashboards?clinic_id=eq.${clinicId}&order=created_at.desc`,
-      );
+      const data = await apiClient.get<any[]>("/bi/dashboards");
       return data || [];
     },
     enabled: !!clinicId,
@@ -23,9 +21,7 @@ export const useBIDashboards = () => {
     queryKey: ["bi-metrics", clinicId],
     queryFn: async () => {
       if (!clinicId) return [];
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/bi_metrics?clinic_id=eq.${clinicId}&order=created_at.desc`,
-      );
+      const data = await apiClient.get<any[]>("/bi/metricas");
       return data || [];
     },
     enabled: !!clinicId,
@@ -33,9 +29,8 @@ export const useBIDashboards = () => {
 
   const createDashboard = useMutation({
     mutationFn: async (dashboardData: any) => {
-      const data = await apiClient.post<any>("/rest/v1/bi_dashboards", {
+      const data = await apiClient.post<any>("/bi/dashboards", {
         ...dashboardData,
-        clinic_id: clinicId,
         created_by: user?.id,
       });
       return data;

@@ -4,14 +4,12 @@ import { apiClient } from "@/lib/api/apiClient";
 import { InfrastructureError } from "../errors/InfrastructureError";
 import { ProntuarioMapper } from "../mappers/ProntuarioMapper";
 
-export class SupabaseProntuarioRepository implements IProntuarioRepository {
+export class DbProntuarioRepository implements IProntuarioRepository {
   async findById(id: string): Promise<Prontuario | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/prontuarios?id=eq.${id}`,
-      );
-      if (!data || data.length === 0) return null;
-      return ProntuarioMapper.toDomain(data[0]);
+      const data = await apiClient.get<Tables<"patient_records">>(`/pep/prontuarios/${id}`);
+      if (!data) return null;
+      return ProntuarioMapper.toDomain(data);
     } catch (error) {
       throw new InfrastructureError("Erro ao buscar prontuário", error);
     }
@@ -22,8 +20,8 @@ export class SupabaseProntuarioRepository implements IProntuarioRepository {
     clinicId: string,
   ): Promise<Prontuario | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/prontuarios?patient_id=eq.${patientId}&clinic_id=eq.${clinicId}`,
+      const data = await apiClient.get<Tables<"patient_records">[]>(
+        `/pep/prontuarios/patient/${patientId}`,
       );
       if (!data || data.length === 0) return null;
       return ProntuarioMapper.toDomain(data[0]);
@@ -37,9 +35,7 @@ export class SupabaseProntuarioRepository implements IProntuarioRepository {
 
   async findByClinicId(clinicId: string): Promise<Prontuario[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/prontuarios?clinic_id=eq.${clinicId}&order=created_at.desc`,
-      );
+      const data = await apiClient.get<Tables<"patient_records">[]>("/pep/prontuarios");
       return (data || []).map(ProntuarioMapper.toDomain);
     } catch (error) {
       throw new InfrastructureError(
@@ -50,7 +46,6 @@ export class SupabaseProntuarioRepository implements IProntuarioRepository {
   }
 
   async findActiveByClinicId(clinicId: string): Promise<Prontuario[]> {
-    // Como não temos campo de status, retornamos todos
     return this.findByClinicId(clinicId);
   }
 
@@ -58,10 +53,10 @@ export class SupabaseProntuarioRepository implements IProntuarioRepository {
     numero: string,
     clinicId: string,
   ): Promise<Prontuario | null> {
-    // Como não temos campo numero, usamos o ID como fallback
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/prontuarios?clinic_id=eq.${clinicId}&id=ilike.*${numero}*`,
+      const data = await apiClient.get<Tables<"patient_records">[]>(
+        "/pep/prontuarios",
+        { params: { search: numero } },
       );
       if (!data || data.length === 0) return null;
       return ProntuarioMapper.toDomain(data[0]);
@@ -76,7 +71,7 @@ export class SupabaseProntuarioRepository implements IProntuarioRepository {
   async save(prontuario: Prontuario): Promise<void> {
     try {
       const data = ProntuarioMapper.toInsert(prontuario);
-      await apiClient.post("/rest/v1/prontuarios", data);
+      await apiClient.post("/pep/prontuarios", data);
     } catch (error) {
       throw new InfrastructureError("Erro ao salvar prontuário", error);
     }
@@ -85,10 +80,7 @@ export class SupabaseProntuarioRepository implements IProntuarioRepository {
   async update(prontuario: Prontuario): Promise<void> {
     try {
       const data = ProntuarioMapper.toPersistence(prontuario);
-      await apiClient.patch(
-        `/rest/v1/prontuarios?id=eq.${prontuario.id}`,
-        data,
-      );
+      await apiClient.patch(`/pep/prontuarios/${prontuario.id}`, data);
     } catch (error) {
       throw new InfrastructureError("Erro ao atualizar prontuário", error);
     }
@@ -96,7 +88,7 @@ export class SupabaseProntuarioRepository implements IProntuarioRepository {
 
   async delete(id: string): Promise<void> {
     try {
-      await apiClient.delete(`/rest/v1/prontuarios?id=eq.${id}`);
+      await apiClient.delete(`/pep/prontuarios/${id}`);
     } catch (error) {
       throw new InfrastructureError("Erro ao deletar prontuário", error);
     }

@@ -49,10 +49,7 @@ const getCachedRate = (coinType: string): number | null => {
 
     // Verificar se cache ainda é válido
     const isValid = Date.now() - cached.timestamp < CACHE_DURATION_MS;
-    if (!isValid) return null;
-
-    console.log(`[CryptoCache] Cache hit for ${coinType}: R$ ${cached.rate}`);
-    return cached.rate;
+    if (!isValid) return null;    return cached.rate;
   } catch (error) {
     console.error('[CryptoCache] Error reading cache:', error);
     return null;
@@ -72,9 +69,7 @@ const setCachedRate = (coinType: string, rate: number): void => {
       timestamp: Date.now(),
     };
 
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheStore));
-    console.log(`[CryptoCache] Cached ${coinType} rate: R$ ${rate}`);
-  } catch (error) {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheStore));  } catch (error) {
     console.error('[CryptoCache] Error writing cache:', error);
   }
 };
@@ -98,10 +93,7 @@ const fetchRateFromAPI = async (coinType: string): Promise<number> => {
 
     if (!rate) {
       throw new Error('Rate not found in API response');
-    }
-
-    console.log(`[CryptoCache] Fetched ${coinType} from API: R$ ${rate}`);
-    return rate;
+    }    return rate;
   } catch (error) {
     console.error(`[CryptoCache] Error fetching ${coinType} rate from API:`, error);
     throw error;
@@ -141,9 +133,7 @@ export const fetchExchangeRateWithCache = async (coinType: string): Promise<numb
  */
 export const clearCryptoCache = (): void => {
   try {
-    localStorage.removeItem(CACHE_KEY);
-    console.log('[CryptoCache] Cache cleared');
-  } catch (error) {
+    localStorage.removeItem(CACHE_KEY);  } catch (error) {
     console.error('[CryptoCache] Error clearing cache:', error);
   }
 };
@@ -152,7 +142,6 @@ export const clearCryptoCache = (): void => {
  * Pré-carrega cotações de múltiplas moedas em paralelo
  */
 export const preloadExchangeRates = async (coinTypes: string[]): Promise<void> => {
-  console.log('[CryptoCache] Preloading rates for:', coinTypes);
   await Promise.all(
     coinTypes.map((coinType) => fetchExchangeRateWithCache(coinType))
   );

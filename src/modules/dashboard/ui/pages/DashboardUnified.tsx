@@ -9,6 +9,10 @@ import { StatsCard } from '@/components/shared/StatsCard';
 import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  LineChart, Line, PieChart, Pie, Cell, Legend
+} from 'recharts';
 import { 
   LayoutDashboard, 
   Users, 
@@ -35,7 +39,9 @@ export default function DashboardUnified() {
     return <DashboardSkeleton />;
   }
 
-  const { stats, appointmentsData, revenueData } = data;
+  const { stats, appointmentsData, revenueData, treatmentsByStatus } = data;
+
+  const COLORS = ['hsl(173, 58%, 39%)', 'hsl(38, 100%, 50%)', 'hsl(217, 91%, 60%)', 'hsl(0, 72%, 51%)'];
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -98,6 +104,78 @@ export default function DashboardUnified() {
               variant="warning"
             />
           </div>
+
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Visão Geral de Consultas</CardTitle>
+                <CardDescription>Consultas agendadas vs realizadas por dia</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={appointmentsData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="agendadas" fill="hsl(173, 58%, 39%)" />
+                    <Bar dataKey="realizadas" fill="hsl(142, 71%, 45%)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Desempenho Financeiro</CardTitle>
+                <CardDescription>Receita vs Despesas mensal</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={revenueData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="receita" stroke="hsl(142, 71%, 45%)" strokeWidth={2} />
+                    <Line type="monotone" dataKey="despesas" stroke="hsl(0, 72%, 51%)" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Pie Chart - Treatments by Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Tratamentos por Status</CardTitle>
+              <CardDescription>Distribuição atual dos tratamentos</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={treatmentsByStatus}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    label
+                  >
+                    {treatmentsByStatus?.map((_entry: any, index: number) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* ABA 2: CLÍNICO */}

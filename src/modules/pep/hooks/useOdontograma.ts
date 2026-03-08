@@ -29,10 +29,9 @@ export const useOdontograma = (prontuarioId: string) => {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
 
-  // Carregar dados do prontuário específico do Supabase (via apiClient)
+  // Carregar dados do prontuário específico via Express API
   const loadData = useCallback(async () => {
     if (!prontuarioId) {
-      // Inicializar com todos os dentes hígidos se não houver prontuarioId
       const processedTeeth: Record<number, ToothData> = {};
       ALL_TEETH.forEach((num) => {
         processedTeeth[num] = createInitialToothData(num);
@@ -45,20 +44,23 @@ export const useOdontograma = (prontuarioId: string) => {
     setIsLoading(true);
     try {
       // Buscar dados do odontograma
-      const odontogramaData = await apiClient.get<any[]>(
-        `/rest/v1/pep_odontograma_data?prontuario_id=eq.${prontuarioId}&select=*,pep_tooth_surfaces(*)`,
+      const odontogramaData = await apiClient.get<any>(
+        `/pep/odontogramas/data`,
+        { params: { prontuario_id: prontuarioId } },
       );
 
       // Buscar histórico
       const historyData = await apiClient.get<any[]>(
-        `/rest/v1/pep_odontograma_history?prontuario_id=eq.${prontuarioId}&order=created_at.desc`,
+        `/pep/odontogramas/history`,
+        { params: { prontuario_id: prontuarioId } },
       );
 
       // Processar dados dos dentes
       const processedTeeth: Record<number, ToothData> = {};
+      const teeth = odontogramaData?.teeth || odontogramaData || [];
 
-      if (odontogramaData && odontogramaData.length > 0) {
-        odontogramaData.forEach((tooth: any) => {
+      if (Array.isArray(teeth) && teeth.length > 0) {
+        teeth.forEach((tooth: any) => {
           const surfaces: any = {
             mesial: "higido",
             distal: "higido",
@@ -67,8 +69,9 @@ export const useOdontograma = (prontuarioId: string) => {
             lingual: "higido",
           };
 
-          if (tooth.pep_tooth_surfaces) {
-            tooth.pep_tooth_surfaces.forEach((surface: any) => {
+          if (tooth.surfaces || tooth.pep_tooth_surfaces) {
+            const surfaceList = tooth.surfaces || tooth.pep_tooth_surfaces;
+            surfaceList.forEach((surface: any) => {
               surfaces[surface.surface] = surface.status;
             });
           }
@@ -82,7 +85,6 @@ export const useOdontograma = (prontuarioId: string) => {
           };
         });
       } else {
-        // Inicializar com todos os dentes hígidos se não houver dados
         ALL_TEETH.forEach((num) => {
           processedTeeth[num] = createInitialToothData(num);
         });
@@ -121,7 +123,7 @@ export const useOdontograma = (prontuarioId: string) => {
       try {
         if (!user) throw new Error("Usuário não autenticado");
 
-        await apiClient.post("/rest/v1/pep_odontograma_history", {
+        await apiClient.post("/pep/odontogramas/history", {
           prontuario_id: prontuarioId,
           snapshot_data: teethData as any,
           changed_teeth: changedTeeth,
@@ -145,33 +147,15 @@ export const useOdontograma = (prontuarioId: string) => {
       try {
         if (!user) throw new Error("Usuário não autenticado");
 
-        // Verificar se o dente já existe
-        const existingData = await apiClient.get<any[]>(
-          `/rest/v1/pep_odontograma_data?prontuario_id=eq.${prontuarioId}&tooth_number=eq.${toothNumber}&select=id`,
-        );
-
-        const existing =
-          existingData && existingData.length > 0 ? existingData[0] : null;
-
-        if (existing) {
-          // Atualizar
-          await apiClient.patch(
-            `/rest/v1/pep_odontograma_data?id=eq.${existing.id}`,
-            {
-              status,
-              updated_by: user.id,
-              updated_at: new Date().toISOString(),
-            },
-          );
-        } else {
-          // Inserir
-          await apiClient.post(`/rest/v1/pep_odontograma_data`, {
+        await apiClient.put(
+          `/pep/odontogramas/data/tooth`,
+          {
             prontuario_id: prontuarioId,
             tooth_number: toothNumber,
             status,
-            created_by: user.id,
-          });
-        }
+            updated_by: user.id,
+          },
+        );
 
         // Atualizar estado local
         setTeethData((prev) => ({
@@ -210,54 +194,16 @@ export const useOdontograma = (prontuarioId: string) => {
       try {
         if (!user) throw new Error("Usuário não autenticado");
 
-        // Buscar ou criar registro do dente
-        const existingToothData = await apiClient.get<any[]>(
-          `/rest/v1/pep_odontograma_data?prontuario_id=eq.${prontuarioId}&tooth_number=eq.${toothNumber}&select=id`,
-        );
-
-        let toothData =
-          existingToothData && existingToothData.length > 0
-            ? existingToothData[0]
-            : null;
-
-        if (!toothData) {
-          const insertedData = await apiClient.post<any[]>(
-            `/rest/v1/pep_odontograma_data`,
-            {
-              prontuario_id: prontuarioId,
-              tooth_number: toothNumber,
-              status: "higido",
-              created_by: user.id,
-            },
-            { headers: { Prefer: "return=representation" } },
-          );
-          toothData =
-            insertedData && insertedData.length > 0 ? insertedData[0] : null;
-        }
-
-        if (!toothData?.id) throw new Error("Falha ao obter ID do dente.");
-
-        // Atualizar ou inserir superfície
-        const existingSurfaceData = await apiClient.get<any[]>(
-          `/rest/v1/pep_tooth_surfaces?odontograma_data_id=eq.${toothData.id}&surface=eq.${surface}&select=id`,
-        );
-        const existingSurface =
-          existingSurfaceData && existingSurfaceData.length > 0
-            ? existingSurfaceData[0]
-            : null;
-
-        if (existingSurface) {
-          await apiClient.patch(
-            `/rest/v1/pep_tooth_surfaces?id=eq.${existingSurface.id}`,
-            { status },
-          );
-        } else {
-          await apiClient.post(`/rest/v1/pep_tooth_surfaces`, {
-            odontograma_data_id: toothData.id,
+        await apiClient.put(
+          `/pep/odontogramas/data/surface`,
+          {
+            prontuario_id: prontuarioId,
+            tooth_number: toothNumber,
             surface,
             status,
-          });
-        }
+            created_by: user.id,
+          },
+        );
 
         // Atualizar estado local
         setTeethData((prev) => ({
@@ -292,25 +238,13 @@ export const useOdontograma = (prontuarioId: string) => {
   const updateToothNotes = useCallback(
     async (toothNumber: number, notes: string) => {
       try {
-        const existingToothData = await apiClient.get<any[]>(
-          `/rest/v1/pep_odontograma_data?prontuario_id=eq.${prontuarioId}&tooth_number=eq.${toothNumber}&select=id`,
-        );
-
-        const toothData =
-          existingToothData && existingToothData.length > 0
-            ? existingToothData[0]
-            : null;
-
-        if (!toothData) {
-          toast.error(
-            "Dente não encontrado para adicionar nota. Altere o status dele primeiro.",
-          );
-          return;
-        }
-
-        await apiClient.patch(
-          `/rest/v1/pep_odontograma_data?id=eq.${toothData.id}`,
-          { notes },
+        await apiClient.put(
+          `/pep/odontogramas/data/tooth`,
+          {
+            prontuario_id: prontuarioId,
+            tooth_number: toothNumber,
+            notes,
+          },
         );
 
         setTeethData((prev) => ({
@@ -347,9 +281,9 @@ export const useOdontograma = (prontuarioId: string) => {
   // Resetar odontograma
   const resetOdontograma = useCallback(async () => {
     try {
-      // Deletar todos os dentes do prontuário
       await apiClient.delete(
-        `/rest/v1/pep_odontograma_data?prontuario_id=eq.${prontuarioId}`,
+        `/pep/odontogramas/data`,
+        { params: { prontuario_id: prontuarioId } },
       );
 
       const resetData: Record<number, ToothData> = {};

@@ -38,15 +38,16 @@ export default function RelatorioCaixa() {
         dataInicio.setDate(dataInicio.getDate() - 30);
       }
 
-      const params = new URLSearchParams();
-      params.append("select", "*, user:profiles!user_id(full_name)");
-      params.append("clinic_id", `eq.${clinicId}`);
-      params.append("status", `eq.FECHADO`);
-      params.append("fechado_em", `gte.${dataInicio.toISOString()}`);
-      params.append("order", "fechado_em.desc");
+      const params: Record<string, string> = { status: "FECHADO" };
+      if (filtro !== "hoje") {
+        params.start_date = dataInicio.toISOString();
+      } else {
+        params.start_date = dataInicio.toISOString();
+      }
 
       const data = await apiClient.get<any[]>(
-        `/rest/v1/caixa_movimentos?${params.toString()}`,
+        "/financeiro/movimentos",
+        { params },
       );
       setMovimentos(data || []);
     } catch (error) {

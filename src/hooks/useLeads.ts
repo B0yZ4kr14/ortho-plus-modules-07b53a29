@@ -23,7 +23,10 @@ export function useLeads() {
   const [error, setError] = useState<string | null>(null);
 
   const loadLeads = useCallback(async () => {
-    if (!clinicId) return;
+    if (!clinicId) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);

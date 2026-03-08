@@ -7,12 +7,9 @@ export class LeadRepositoryApi implements ILeadRepository {
   async save(lead: Lead): Promise<Lead> {
     const persistence = LeadMapper.toPersistence(lead);
 
-    // We omit 'created_by' as it should be handled by the backend / auth context natively if properly structured,
-    // or we can pass it if required, but ideally the API does this based on the JWT.
     const response = await apiClient.post<any>(
-      "/rest/v1/crm_leads",
+      "/crm/leads",
       persistence,
-      { headers: { Prefer: "return=representation" } },
     );
 
     const savedData = Array.isArray(response) ? response[0] : response;
@@ -23,12 +20,9 @@ export class LeadRepositoryApi implements ILeadRepository {
 
   async findById(id: string): Promise<Lead | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/crm_leads?id=eq.${id}&select=*`,
-      );
-
-      if (!data || data.length === 0) return null;
-      return LeadMapper.toDomain(data[0]);
+      const data = await apiClient.get<any>(`/crm/leads/${id}`);
+      if (!data) return null;
+      return LeadMapper.toDomain(data);
     } catch (error: any) {
       if (error.response?.status === 404 || error.response?.status === 406)
         return null;
@@ -38,10 +32,7 @@ export class LeadRepositoryApi implements ILeadRepository {
 
   async findByClinicId(clinicId: string): Promise<Lead[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/crm_leads?clinic_id=eq.${clinicId}&order=created_at.desc`,
-      );
-
+      const data = await apiClient.get<any[]>("/crm/leads");
       return data?.map(LeadMapper.toDomain) ?? [];
     } catch (error: any) {
       throw new Error(`Erro ao buscar leads: ${error.message}`);
@@ -51,9 +42,9 @@ export class LeadRepositoryApi implements ILeadRepository {
   async findByResponsavel(responsavelId: string): Promise<Lead[]> {
     try {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/crm_leads?assigned_to=eq.${responsavelId}&order=created_at.desc`,
+        "/crm/leads",
+        { params: { assigned_to: responsavelId } },
       );
-
       return data?.map(LeadMapper.toDomain) ?? [];
     } catch (error: any) {
       throw new Error(`Erro ao buscar leads do responsável: ${error.message}`);
@@ -63,9 +54,9 @@ export class LeadRepositoryApi implements ILeadRepository {
   async findByStatus(clinicId: string, status: string): Promise<Lead[]> {
     try {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/crm_leads?clinic_id=eq.${clinicId}&status=eq.${status}&order=created_at.desc`,
+        "/crm/leads",
+        { params: { status } },
       );
-
       return data?.map(LeadMapper.toDomain) ?? [];
     } catch (error: any) {
       throw new Error(`Erro ao buscar leads por status: ${error.message}`);
@@ -77,9 +68,8 @@ export class LeadRepositoryApi implements ILeadRepository {
 
     try {
       const response = await apiClient.patch<any>(
-        `/rest/v1/crm_leads?id=eq.${lead.id}`,
+        `/crm/leads/${lead.id}`,
         data,
-        { headers: { Prefer: "return=representation" } },
       );
 
       const updatedData = Array.isArray(response) ? response[0] : response;
@@ -94,7 +84,7 @@ export class LeadRepositoryApi implements ILeadRepository {
 
   async delete(id: string): Promise<void> {
     try {
-      await apiClient.delete(`/rest/v1/crm_leads?id=eq.${id}`);
+      await apiClient.delete(`/crm/leads/${id}`);
     } catch (error: any) {
       throw new Error(`Erro ao deletar lead: ${error.message}`);
     }

@@ -2,15 +2,14 @@ import { Agendamento } from "@/domain/entities/Agendamento";
 import { IAgendamentoRepository } from "@/domain/repositories/IAgendamentoRepository";
 import { apiClient } from "@/lib/api/apiClient";
 import { AgendamentoMapper } from "./mappers/AgendamentoMapper";
+import type { Tables } from '@/types/database';
 
-export class SupabaseAgendamentoRepository implements IAgendamentoRepository {
+export class DbAgendamentoRepository implements IAgendamentoRepository {
   async findById(id: string): Promise<Agendamento | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/appointments?id=eq.${id}`,
-      );
-      if (!data || data.length === 0) return null;
-      return AgendamentoMapper.toDomain(data[0]);
+      const data = await apiClient.get<Tables<"appointments">>(`/agenda/appointments/${id}`);
+      if (!data) return null;
+      return AgendamentoMapper.toDomain(data);
     } catch {
       return null;
     }
@@ -22,9 +21,13 @@ export class SupabaseAgendamentoRepository implements IAgendamentoRepository {
     endDate: Date,
   ): Promise<Agendamento[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/appointments?dentist_id=eq.${dentistId}&start_time=gte.${startDate.toISOString()}&end_time=lte.${endDate.toISOString()}&order=start_time.asc`,
-      );
+      const data = await apiClient.get<Tables<"appointments">[]>(`/agenda/appointments`, {
+        params: {
+          dentist_id: dentistId,
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
+        },
+      });
       return (data || []).map(AgendamentoMapper.toDomain);
     } catch {
       return [];
@@ -36,9 +39,9 @@ export class SupabaseAgendamentoRepository implements IAgendamentoRepository {
     clinicId: string,
   ): Promise<Agendamento[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/appointments?patient_id=eq.${patientId}&clinic_id=eq.${clinicId}&order=start_time.desc`,
-      );
+      const data = await apiClient.get<any[]>(`/agenda/appointments`, {
+        params: { patient_id: patientId, clinic_id: clinicId },
+      });
       return (data || []).map(AgendamentoMapper.toDomain);
     } catch {
       return [];
@@ -51,9 +54,13 @@ export class SupabaseAgendamentoRepository implements IAgendamentoRepository {
     endDate: Date,
   ): Promise<Agendamento[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/appointments?clinic_id=eq.${clinicId}&start_time=gte.${startDate.toISOString()}&end_time=lte.${endDate.toISOString()}&order=start_time.asc`,
-      );
+      const data = await apiClient.get<any[]>(`/agenda/appointments`, {
+        params: {
+          clinic_id: clinicId,
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
+        },
+      });
       return (data || []).map(AgendamentoMapper.toDomain);
     } catch {
       return [];
@@ -72,9 +79,9 @@ export class SupabaseAgendamentoRepository implements IAgendamentoRepository {
   ): Promise<Agendamento[]> {
     const dbStatus = status.toLowerCase();
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/appointments?clinic_id=eq.${clinicId}&status=eq.${dbStatus}&order=start_time.asc`,
-      );
+      const data = await apiClient.get<any[]>(`/agenda/appointments`, {
+        params: { clinic_id: clinicId, status: dbStatus },
+      });
       return (data || []).map(AgendamentoMapper.toDomain);
     } catch {
       return [];
@@ -83,9 +90,12 @@ export class SupabaseAgendamentoRepository implements IAgendamentoRepository {
 
   async findAtivos(clinicId: string): Promise<Agendamento[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/appointments?clinic_id=eq.${clinicId}&status=not.in.(cancelado,concluido,faltou)&order=start_time.asc`,
-      );
+      const data = await apiClient.get<any[]>(`/agenda/appointments`, {
+        params: {
+          clinic_id: clinicId,
+          status: "not.in.(cancelado,concluido,faltou)",
+        },
+      });
       return (data || []).map(AgendamentoMapper.toDomain);
     } catch {
       return [];
@@ -99,12 +109,18 @@ export class SupabaseAgendamentoRepository implements IAgendamentoRepository {
     excludeId?: string,
   ): Promise<boolean> {
     try {
-      let url = `/rest/v1/appointments?dentist_id=eq.${dentistId}&status=not.in.(cancelado,faltou)&or=(start_time.lte.${startTime.toISOString()},end_time.gte.${endTime.toISOString()})&select=id`;
-      if (excludeId) {
-        url += `&id=neq.${excludeId}`;
-      }
-      const data = await apiClient.get<any[]>(url);
-      return Array.isArray(data) && data.length > 0;
+      const params: Record<string, string> = {
+        dentist_id: dentistId,
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+      };
+      if (excludeId) params.exclude_id = excludeId;
+
+      const data = await apiClient.get<{ hasConflict: boolean }>(
+        `/agenda/appointments/conflict`,
+        { params },
+      );
+      return data?.hasConflict ?? false;
     } catch (error) {
       console.error("Erro ao verificar conflito:", error);
       return false;
@@ -114,7 +130,7 @@ export class SupabaseAgendamentoRepository implements IAgendamentoRepository {
   async save(agendamento: Agendamento): Promise<void> {
     const dbData = AgendamentoMapper.toDatabase(agendamento);
     try {
-      await apiClient.post("/rest/v1/appointments", dbData);
+      await apiClient.post("/agenda/appointments", dbData);
     } catch (error: any) {
       throw new Error(`Erro ao salvar agendamento: ${error.message}`);
     }
@@ -123,10 +139,7 @@ export class SupabaseAgendamentoRepository implements IAgendamentoRepository {
   async update(agendamento: Agendamento): Promise<void> {
     const dbData = AgendamentoMapper.toDatabase(agendamento);
     try {
-      await apiClient.patch(
-        `/rest/v1/appointments?id=eq.${agendamento.id}`,
-        dbData,
-      );
+      await apiClient.patch(`/agenda/appointments/${agendamento.id}`, dbData);
     } catch (error: any) {
       throw new Error(`Erro ao atualizar agendamento: ${error.message}`);
     }
@@ -134,7 +147,7 @@ export class SupabaseAgendamentoRepository implements IAgendamentoRepository {
 
   async delete(id: string): Promise<void> {
     try {
-      await apiClient.delete(`/rest/v1/appointments?id=eq.${id}`);
+      await apiClient.delete(`/agenda/appointments/${id}`);
     } catch (error: any) {
       throw new Error(`Erro ao deletar agendamento: ${error.message}`);
     }

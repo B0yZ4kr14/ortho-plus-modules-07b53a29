@@ -74,7 +74,6 @@ export function PrescricaoForm({ prontuarioId, onSuccess, onCancel }: Prescricao
       dataPrescricao: new Date().toISOString(),
     };
 
-    console.log('Prescrição criada:', prescricao);
     toast.success('Prescrição criada com sucesso!');
     onSuccess();
   };

@@ -1,15 +1,15 @@
 import { IncidenteCaixa, TipoIncidenteCaixa } from '@/domain/entities/IncidenteCaixa';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/types/database';
 
 type IncidenteCaixaRow = Database['public']['Tables']['caixa_incidentes']['Row'];
 type IncidenteCaixaInsert = Database['public']['Tables']['caixa_incidentes']['Insert'];
 
 /**
- * Mapper para converter entre IncidenteCaixa (domínio) e tabela Supabase
+ * Mapper para converter entre IncidenteCaixa (domínio) e tabela PostgreSQL
  */
 export class IncidenteCaixaMapper {
   /**
-   * Converte registro do Supabase para entidade de domínio
+   * Converte registro do banco para entidade de domínio
    */
   static toDomain(row: IncidenteCaixaRow): IncidenteCaixa {
     return IncidenteCaixa.restore({
@@ -30,9 +30,9 @@ export class IncidenteCaixaMapper {
   }
 
   /**
-   * Converte entidade de domínio para formato de insert/update do Supabase
+   * Converte entidade de domínio para formato de insert/update do banco
    */
-  static toSupabaseInsert(incidente: IncidenteCaixa): IncidenteCaixaInsert {
+  static toDbInsert(incidente: IncidenteCaixa): IncidenteCaixaInsert {
     return {
       id: incidente.id,
       clinic_id: incidente.clinicId,

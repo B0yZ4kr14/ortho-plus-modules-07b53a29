@@ -246,7 +246,6 @@ export class BlockchainMonitor {
   stopAll(): void {
     this.activeMonitors.forEach((intervalId, address) => {
       clearInterval(intervalId);
-      console.log(`[BlockchainMonitor] Stopped watching ${address}`);
     });
     this.activeMonitors.clear();
   }

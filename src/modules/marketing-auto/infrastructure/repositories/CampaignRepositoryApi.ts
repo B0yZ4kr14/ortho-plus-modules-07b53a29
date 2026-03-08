@@ -16,11 +16,9 @@ import { MessageTemplate } from "../../domain/valueObjects/MessageTemplate";
 export class CampaignRepositoryApi implements ICampaignRepository {
   async findById(id: string): Promise<Campaign | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/marketing_campaigns?id=eq.${id}&select=*`,
-      );
-      if (!data || data.length === 0) return null;
-      return this.toDomain(data[0]);
+      const data = await apiClient.get<any>(`/marketing/campanhas/${id}`);
+      if (!data) return null;
+      return this.toDomain(data);
     } catch (error: any) {
       if (error.response?.status === 404 || error.response?.status === 406)
         return null;
@@ -33,27 +31,20 @@ export class CampaignRepositoryApi implements ICampaignRepository {
     filters?: CampaignFilters,
   ): Promise<Campaign[]> {
     try {
-      let url = `/rest/v1/marketing_campaigns?clinic_id=eq.${clinicId}`;
+      const params: Record<string, any> = {};
 
-      if (filters?.type) {
-        url += `&type=eq.${filters.type}`;
-      }
-
-      if (filters?.status) {
-        url += `&status=eq.${filters.status}`;
-      }
-
-      if (filters?.createdBy) {
-        url += `&created_by=eq.${filters.createdBy}`;
-      }
-
+      if (filters?.type) params.type = filters.type;
+      if (filters?.status) params.status = filters.status;
+      if (filters?.createdBy) params.created_by = filters.createdBy;
       if (filters?.period) {
-        url += `&created_at=gte.${filters.period.startDate.toISOString()}&created_at=lte.${filters.period.endDate.toISOString()}`;
+        params.start_date = filters.period.startDate.toISOString();
+        params.end_date = filters.period.endDate.toISOString();
       }
 
-      url += "&order=created_at.desc";
-
-      const data = await apiClient.get<any[]>(url);
+      const data = await apiClient.get<any[]>(
+        "/marketing/campanhas",
+        { params },
+      );
       return data?.map((row) => this.toDomain(row)) ?? [];
     } catch (error: any) {
       throw new Error(`Erro ao buscar campanhas da clínica: ${error.message}`);
@@ -63,7 +54,7 @@ export class CampaignRepositoryApi implements ICampaignRepository {
   async save(campaign: Campaign): Promise<void> {
     const data = this.toDatabase(campaign);
     try {
-      await apiClient.post("/rest/v1/marketing_campaigns", data);
+      await apiClient.post("/marketing/campanhas", data);
     } catch (error: any) {
       throw new Error(`Erro ao salvar campanha: ${error.message}`);
     }
@@ -73,7 +64,7 @@ export class CampaignRepositoryApi implements ICampaignRepository {
     const data = this.toDatabase(campaign);
     try {
       await apiClient.patch(
-        `/rest/v1/marketing_campaigns?id=eq.${campaign.id}`,
+        `/marketing/campanhas/${campaign.id}`,
         data,
       );
     } catch (error: any) {
@@ -83,7 +74,7 @@ export class CampaignRepositoryApi implements ICampaignRepository {
 
   async delete(id: string): Promise<void> {
     try {
-      await apiClient.delete(`/rest/v1/marketing_campaigns?id=eq.${id}`);
+      await apiClient.delete(`/marketing/campanhas/${id}`);
     } catch (error: any) {
       throw new Error(`Erro ao deletar campanha: ${error.message}`);
     }
@@ -92,7 +83,8 @@ export class CampaignRepositoryApi implements ICampaignRepository {
   async getActiveCampaigns(clinicId: string): Promise<Campaign[]> {
     try {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/marketing_campaigns?clinic_id=eq.${clinicId}&status=eq.ATIVA&order=created_at.desc`,
+        "/marketing/campanhas",
+        { params: { status: "ATIVA" } },
       );
       return data?.map((row) => this.toDomain(row)) ?? [];
     } catch (error: any) {
@@ -103,7 +95,8 @@ export class CampaignRepositoryApi implements ICampaignRepository {
   async getScheduledCampaigns(clinicId: string): Promise<Campaign[]> {
     try {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/marketing_campaigns?clinic_id=eq.${clinicId}&status=eq.ATIVA&scheduled_date=not.is.null&scheduled_date=gte.${new Date().toISOString()}&order=scheduled_date.asc`,
+        "/marketing/campanhas",
+        { params: { status: "ATIVA", scheduled: true } },
       );
       return data?.map((row) => this.toDomain(row)) ?? [];
     } catch (error: any) {

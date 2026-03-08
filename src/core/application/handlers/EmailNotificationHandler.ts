@@ -11,7 +11,6 @@ export class EmailNotificationHandler
   
   async handle(event: AppointmentScheduledEvent | LeadConvertedEvent): Promise<void> {
     // TODO: Integrate with email service
-    console.log(`[EMAIL] Would send email for ${event.eventName}:`, event);
 
     if (event instanceof AppointmentScheduledEvent) {
       await this.sendAppointmentConfirmation(event);
@@ -21,12 +20,8 @@ export class EmailNotificationHandler
   }
 
   private async sendAppointmentConfirmation(event: AppointmentScheduledEvent): Promise<void> {
-    // Integration with email service would go here
-    console.log(`Sending appointment confirmation to ${event.data.patientEmail}`);
-  }
+    // Integration with email service would go here  }
 
   private async sendWelcomeEmail(event: LeadConvertedEvent): Promise<void> {
-    // Integration with email service would go here
-    console.log(`Sending welcome email for converted lead ${event.data.leadNome}`);
-  }
+    // Integration with email service would go here  }
 }

@@ -2,15 +2,16 @@ import { ContaReceber } from "@/domain/entities/ContaReceber";
 import { IContaReceberRepository } from "@/domain/repositories/IContaReceberRepository";
 import { apiClient } from "@/lib/api/apiClient";
 import { ContaReceberMapper } from "./mappers/ContaReceberMapper";
+import type { Tables } from '@/types/database';
 
-export class SupabaseContaReceberRepository implements IContaReceberRepository {
+export class DbContaReceberRepository implements IContaReceberRepository {
   async findById(id: string): Promise<ContaReceber | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/contas_receber?id=eq.${id}`,
+      const data = await apiClient.get<Tables<"financial_transactions">>(
+        `/financeiro/contas-receber/${id}`,
       );
-      if (!data || data.length === 0) return null;
-      return ContaReceberMapper.toDomain(data[0]);
+      if (!data) return null;
+      return ContaReceberMapper.toDomain(data);
     } catch {
       return null;
     }
@@ -18,8 +19,8 @@ export class SupabaseContaReceberRepository implements IContaReceberRepository {
 
   async findByClinicId(clinicId: string): Promise<ContaReceber[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/contas_receber?clinic_id=eq.${clinicId}&order=data_vencimento.asc`,
+      const data = await apiClient.get<Tables<"financial_transactions">[]>(
+        "/financeiro/contas-receber",
       );
       return (data || []).map((row) => ContaReceberMapper.toDomain(row));
     } catch {
@@ -32,8 +33,9 @@ export class SupabaseContaReceberRepository implements IContaReceberRepository {
     patientId: string,
   ): Promise<ContaReceber[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/contas_receber?clinic_id=eq.${clinicId}&patient_id=eq.${patientId}&order=data_vencimento.asc`,
+      const data = await apiClient.get<Tables<"financial_transactions">[]>(
+        "/financeiro/contas-receber",
+        { params: { patient_id: patientId } },
       );
       return (data || []).map((row) => ContaReceberMapper.toDomain(row));
     } catch {
@@ -43,8 +45,9 @@ export class SupabaseContaReceberRepository implements IContaReceberRepository {
 
   async findPendentes(clinicId: string): Promise<ContaReceber[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/contas_receber?clinic_id=eq.${clinicId}&status=eq.PENDENTE&order=data_vencimento.asc`,
+      const data = await apiClient.get<Tables<"financial_transactions">[]>(
+        "/financeiro/contas-receber",
+        { params: { status: "PENDENTE" } },
       );
       return (data || []).map((row) => ContaReceberMapper.toDomain(row));
     } catch {
@@ -55,8 +58,9 @@ export class SupabaseContaReceberRepository implements IContaReceberRepository {
   async findVencidas(clinicId: string): Promise<ContaReceber[]> {
     const hoje = new Date().toISOString().split("T")[0];
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/contas_receber?clinic_id=eq.${clinicId}&status=eq.PENDENTE&data_vencimento=lt.${hoje}&order=data_vencimento.asc`,
+      const data = await apiClient.get<Tables<"financial_transactions">[]>(
+        "/financeiro/contas-receber",
+        { params: { status: "PENDENTE", vencidas_antes: hoje } },
       );
       return (data || []).map((row) => ContaReceberMapper.toDomain(row));
     } catch {
@@ -70,8 +74,14 @@ export class SupabaseContaReceberRepository implements IContaReceberRepository {
     endDate: Date,
   ): Promise<ContaReceber[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/contas_receber?clinic_id=eq.${clinicId}&data_vencimento=gte.${startDate.toISOString()}&data_vencimento=lte.${endDate.toISOString()}&order=data_vencimento.asc`,
+      const data = await apiClient.get<Tables<"financial_transactions">[]>(
+        "/financeiro/contas-receber",
+        {
+          params: {
+            start_date: startDate.toISOString(),
+            end_date: endDate.toISOString(),
+          },
+        },
       );
       return (data || []).map((row) => ContaReceberMapper.toDomain(row));
     } catch {
@@ -80,19 +90,19 @@ export class SupabaseContaReceberRepository implements IContaReceberRepository {
   }
 
   async save(conta: ContaReceber): Promise<void> {
-    const insert = ContaReceberMapper.toSupabaseInsert(conta);
+    const insert = ContaReceberMapper.toDbInsert(conta);
     try {
-      await apiClient.post("/rest/v1/contas_receber", insert);
+      await apiClient.post("/financeiro/contas-receber", insert);
     } catch (error: any) {
       throw new Error(`Erro ao salvar conta a receber: ${error.message}`);
     }
   }
 
   async update(conta: ContaReceber): Promise<void> {
-    const insert = ContaReceberMapper.toSupabaseInsert(conta);
+    const insert = ContaReceberMapper.toDbInsert(conta);
     try {
       await apiClient.patch(
-        `/rest/v1/contas_receber?id=eq.${conta.id}`,
+        `/financeiro/contas-receber/${conta.id}`,
         insert,
       );
     } catch (error: any) {
@@ -102,7 +112,7 @@ export class SupabaseContaReceberRepository implements IContaReceberRepository {
 
   async delete(id: string): Promise<void> {
     try {
-      await apiClient.delete(`/rest/v1/contas_receber?id=eq.${id}`);
+      await apiClient.delete(`/financeiro/contas-receber/${id}`);
     } catch (error: any) {
       throw new Error(`Erro ao deletar conta a receber: ${error.message}`);
     }

@@ -3,8 +3,10 @@ import { DentistSchedule } from "../../domain/entities/DentistSchedule";
 import { IDentistScheduleRepository } from "../../domain/repositories/IDentistScheduleRepository";
 import { DentistScheduleMapper } from "../mappers/DentistScheduleMapper";
 
-export class DentistScheduleRepositoryApi implements IDentistScheduleRepository {
-  private readonly basePath = "/rest/v1/dentist_schedules";
+export class DentistScheduleRepositoryApi
+  implements IDentistScheduleRepository
+{
+  private readonly basePath = "/agenda/schedules";
 
   async save(schedule: DentistSchedule): Promise<DentistSchedule> {
     const data = DentistScheduleMapper.toPersistence(schedule);
@@ -24,9 +26,9 @@ export class DentistScheduleRepositoryApi implements IDentistScheduleRepository 
   }
 
   async findByDentist(dentistId: string): Promise<DentistSchedule[]> {
-    const data = await apiClient.get<any[]>(
-      `${this.basePath}?dentist_id=eq.${dentistId}&is_active=eq.true&order=day_of_week.asc`,
-    );
+    const data = await apiClient.get<any[]>(this.basePath, {
+      params: { dentist_id: dentistId, is_active: true },
+    });
     return data.map(DentistScheduleMapper.toDomain);
   }
 
@@ -35,9 +37,13 @@ export class DentistScheduleRepositoryApi implements IDentistScheduleRepository 
     dayOfWeek: number,
   ): Promise<DentistSchedule | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `${this.basePath}?dentist_id=eq.${dentistId}&day_of_week=eq.${dayOfWeek}&is_active=eq.true`,
-      );
+      const data = await apiClient.get<any[]>(this.basePath, {
+        params: {
+          dentist_id: dentistId,
+          day_of_week: dayOfWeek,
+          is_active: true,
+        },
+      });
       if (data.length > 0) return DentistScheduleMapper.toDomain(data[0]);
       return null;
     } catch (error: any) {
@@ -46,9 +52,9 @@ export class DentistScheduleRepositoryApi implements IDentistScheduleRepository 
   }
 
   async findByClinicId(clinicId: string): Promise<DentistSchedule[]> {
-    const data = await apiClient.get<any[]>(
-      `${this.basePath}?clinic_id=eq.${clinicId}&is_active=eq.true&order=dentist_id.asc,day_of_week.asc`,
-    );
+    const data = await apiClient.get<any[]>(this.basePath, {
+      params: { clinic_id: clinicId, is_active: true },
+    });
     return data.map(DentistScheduleMapper.toDomain);
   }
 

@@ -41,7 +41,7 @@ const RadiografiaPage = () => {
 
       // Chamar Edge Function
       const data = await apiClient.post<any>(
-        "/rest/v1/functions/analyze-radiografia",
+        "/ia/analyze-radiografia",
         {
           imageBase64,
           tipoRadiografia: tipo,
@@ -78,7 +78,7 @@ const RadiografiaPage = () => {
   const loadAnalises = async () => {
     try {
       const data = await apiClient.get<any[]>(
-        "/rest/v1/analises_radiograficas?order=created_at.desc&limit=20",
+        "/ia/analises-radiograficas?limit=20",
       );
 
       setAnalises(data || []);

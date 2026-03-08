@@ -91,7 +91,7 @@ Os testes cobrem:
 
 ## Mocks
 
-### Supabase Client
+### API Client
 Mockado para evitar chamadas reais ao backend durante testes.
 
 ### Toast Notifications

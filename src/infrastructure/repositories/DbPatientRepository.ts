@@ -3,15 +3,14 @@ import { IPatientRepository } from "@/domain/repositories/IPatientRepository";
 import { apiClient } from "@/lib/api/apiClient";
 import { InfrastructureError } from "../errors";
 import { PatientMapper } from "../mappers/PatientMapper";
+import type { Tables } from '@/types/database';
 
-export class SupabasePatientRepository implements IPatientRepository {
+export class DbPatientRepository implements IPatientRepository {
   async findById(id: string): Promise<Patient | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/prontuarios?patient_id=eq.${id}`,
-      );
-      if (!data || data.length === 0) return null;
-      return PatientMapper.toDomain(data[0]);
+      const data = await apiClient.get<Tables<"patients">>(`/pacientes/${id}`);
+      if (!data) return null;
+      return PatientMapper.toDomain(data);
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
       throw new InfrastructureError(
@@ -23,9 +22,9 @@ export class SupabasePatientRepository implements IPatientRepository {
 
   async findByClinicId(clinicId: string): Promise<Patient[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/prontuarios?clinic_id=eq.${clinicId}&order=created_at.desc`,
-      );
+      const data = await apiClient.get<Tables<"patients">[]>(`/pacientes`, {
+        params: { clinic_id: clinicId },
+      });
       return (data || []).map(PatientMapper.toDomain);
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
@@ -38,7 +37,6 @@ export class SupabasePatientRepository implements IPatientRepository {
 
   async findActiveByClinicId(clinicId: string): Promise<Patient[]> {
     try {
-      // Simplesmente retorna todos, pois não temos status na tabela prontuarios
       return this.findByClinicId(clinicId);
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
@@ -51,9 +49,9 @@ export class SupabasePatientRepository implements IPatientRepository {
 
   async findByCPF(cpf: string, clinicId: string): Promise<Patient | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/prontuarios?clinic_id=eq.${clinicId}&patient_name=ilike.*${cpf}*&limit=1`,
-      );
+      const data = await apiClient.get<Tables<"patients">[]>(`/pacientes`, {
+        params: { clinic_id: clinicId, cpf },
+      });
       if (!data || data.length === 0) return null;
       return PatientMapper.toDomain(data[0]);
     } catch {
@@ -64,7 +62,7 @@ export class SupabasePatientRepository implements IPatientRepository {
   async save(patient: Patient): Promise<void> {
     try {
       const data = PatientMapper.toPersistence(patient);
-      await apiClient.post("/rest/v1/prontuarios", data);
+      await apiClient.post("/pacientes", data);
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
       throw new InfrastructureError(
@@ -76,13 +74,10 @@ export class SupabasePatientRepository implements IPatientRepository {
 
   async update(patient: Patient): Promise<void> {
     try {
-      await apiClient.patch(
-        `/rest/v1/prontuarios?patient_id=eq.${patient.id}`,
-        {
-          patient_name: patient.fullName,
-          updated_at: new Date().toISOString(),
-        },
-      );
+      await apiClient.put(`/pacientes/${patient.id}`, {
+        patient_name: patient.fullName,
+        updated_at: new Date().toISOString(),
+      });
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
       throw new InfrastructureError(
@@ -94,8 +89,7 @@ export class SupabasePatientRepository implements IPatientRepository {
 
   async delete(id: string): Promise<void> {
     try {
-      // Soft delete removendo todos os prontuários do paciente
-      await apiClient.delete(`/rest/v1/prontuarios?patient_id=eq.${id}`);
+      await apiClient.patch(`/pacientes/${id}/status`, { status: "inactive" });
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
       throw new InfrastructureError(
@@ -110,7 +104,6 @@ export class SupabasePatientRepository implements IPatientRepository {
     riskLevel: string,
   ): Promise<Patient[]> {
     try {
-      // Retorna todos os pacientes (prontuários) - filtro por risco na camada de aplicação
       return this.findByClinicId(clinicId);
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;

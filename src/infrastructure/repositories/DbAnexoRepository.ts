@@ -4,14 +4,12 @@ import { apiClient } from "@/lib/api/apiClient";
 import { InfrastructureError } from "../errors/InfrastructureError";
 import { AnexoMapper } from "../mappers/AnexoMapper";
 
-export class SupabaseAnexoRepository implements IAnexoRepository {
+export class DbAnexoRepository implements IAnexoRepository {
   async findById(id: string): Promise<Anexo | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_anexos?id=eq.${id}`,
-      );
-      if (!data || data.length === 0) return null;
-      return AnexoMapper.toDomain(data[0]);
+      const data = await apiClient.get<Tables<"pep_evolucoes">>(`/pep/anexos/${id}`);
+      if (!data) return null;
+      return AnexoMapper.toDomain(data);
     } catch (error) {
       throw new InfrastructureError("Erro ao buscar anexo", error);
     }
@@ -20,7 +18,8 @@ export class SupabaseAnexoRepository implements IAnexoRepository {
   async findByProntuarioId(prontuarioId: string): Promise<Anexo[]> {
     try {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_anexos?prontuario_id=eq.${prontuarioId}&order=created_at.desc`,
+        "/pep/anexos",
+        { params: { prontuario_id: prontuarioId } },
       );
       return (data || []).map(AnexoMapper.toDomain);
     } catch (error) {
@@ -34,7 +33,8 @@ export class SupabaseAnexoRepository implements IAnexoRepository {
   async findByHistoricoId(historicoId: string): Promise<Anexo[]> {
     try {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_anexos?historico_id=eq.${historicoId}&order=created_at.desc`,
+        "/pep/anexos",
+        { params: { historico_id: historicoId } },
       );
       return (data || []).map(AnexoMapper.toDomain);
     } catch (error) {
@@ -48,7 +48,8 @@ export class SupabaseAnexoRepository implements IAnexoRepository {
   async findByTipo(prontuarioId: string, tipo: string): Promise<Anexo[]> {
     try {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_anexos?prontuario_id=eq.${prontuarioId}&tipo_arquivo=eq.${tipo}&order=created_at.desc`,
+        "/pep/anexos",
+        { params: { prontuario_id: prontuarioId, tipo_arquivo: tipo } },
       );
       return (data || []).map(AnexoMapper.toDomain);
     } catch (error) {
@@ -58,9 +59,7 @@ export class SupabaseAnexoRepository implements IAnexoRepository {
 
   async findByClinicId(clinicId: string): Promise<Anexo[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_anexos?select=*,prontuarios!inner(clinic_id)&prontuarios.clinic_id=eq.${clinicId}&order=created_at.desc`,
-      );
+      const data = await apiClient.get<any[]>("/pep/anexos");
       return (data || []).map(AnexoMapper.toDomain);
     } catch (error) {
       throw new InfrastructureError("Erro ao buscar anexos da clínica", error);
@@ -70,7 +69,7 @@ export class SupabaseAnexoRepository implements IAnexoRepository {
   async save(anexo: Anexo): Promise<void> {
     try {
       const data = AnexoMapper.toInsert(anexo);
-      await apiClient.post("/rest/v1/pep_anexos", data);
+      await apiClient.post("/pep/anexos", data);
     } catch (error) {
       throw new InfrastructureError("Erro ao salvar anexo", error);
     }
@@ -79,7 +78,7 @@ export class SupabaseAnexoRepository implements IAnexoRepository {
   async update(anexo: Anexo): Promise<void> {
     try {
       const data = AnexoMapper.toPersistence(anexo);
-      await apiClient.patch(`/rest/v1/pep_anexos?id=eq.${anexo.id}`, data);
+      await apiClient.patch(`/pep/anexos/${anexo.id}`, data);
     } catch (error) {
       throw new InfrastructureError("Erro ao atualizar anexo", error);
     }
@@ -87,8 +86,7 @@ export class SupabaseAnexoRepository implements IAnexoRepository {
 
   async delete(id: string, storagePath: string): Promise<void> {
     try {
-      // Usar a nova API de backend para deletar tanto do banco quanto do storage
-      await apiClient.delete(`/rest/v1/pep_anexos?id=eq.${id}`);
+      await apiClient.delete(`/pep/anexos/${id}`);
     } catch (error) {
       throw new InfrastructureError("Erro ao deletar anexo", error);
     }
@@ -100,7 +98,7 @@ export class SupabaseAnexoRepository implements IAnexoRepository {
       formData.append("file", file);
       formData.append("path", path);
 
-      const response = await apiClient.post<any>("/storage/upload", formData, {
+      const response = await apiClient.post<{ url: string }>("/storage/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

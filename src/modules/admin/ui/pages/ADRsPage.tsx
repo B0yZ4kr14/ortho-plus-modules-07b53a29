@@ -68,7 +68,7 @@ export default function ADRsPage() {
 
     try {
       const data = await apiClient.get<ADR[]>(
-        `/rest/v1/architecture_decision_records?clinic_id=eq.${clinicId}&order=adr_number.desc`,
+        "/admin/adrs",
       );
       setAdrs(data || []);
     } catch (error) {
@@ -91,7 +91,7 @@ export default function ADRsPage() {
       const nextNumber =
         adrs.length > 0 ? Math.max(...adrs.map((a) => a.adr_number)) + 1 : 1;
 
-      await apiClient.post("/rest/v1/architecture_decision_records", {
+      await apiClient.post("/admin/adrs", {
         clinic_id: clinicId,
         adr_number: nextNumber,
         ...formData,

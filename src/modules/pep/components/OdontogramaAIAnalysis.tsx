@@ -69,7 +69,7 @@ export const OdontogramaAIAnalysis = ({
 
     try {
       const data = await apiClient.post<any>(
-        "/rest/v1/functions/analyze-odontogram",
+        "/ia/analyze-odontogram",
         {
           prontuarioId,
         },
@@ -144,7 +144,7 @@ export const OdontogramaAIAnalysis = ({
 
       // Depois agendar as consultas automaticamente
       const data = await apiClient.post<any>(
-        "/rest/v1/functions/schedule-appointments",
+        "/ia/schedule-appointments",
         {
           treatments: selectedItems,
           patientId: patientId,

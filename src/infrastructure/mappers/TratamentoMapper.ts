@@ -1,10 +1,10 @@
 import { Tratamento, TratamentoProps } from '@/domain/entities/Tratamento';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 
 type TratamentoRow = Database['public']['Tables']['pep_tratamentos']['Row'];
 
 /**
- * Mapper para conversão entre Tratamento (domínio) e dados do Supabase
+ * Mapper para conversão entre Tratamento (domínio) e dados do banco
  */
 export class TratamentoMapper {
   static toDomain(raw: TratamentoRow): Tratamento {

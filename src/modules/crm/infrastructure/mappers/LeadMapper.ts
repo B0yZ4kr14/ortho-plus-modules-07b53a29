@@ -1,5 +1,5 @@
 import { Lead, LeadProps, LeadStatus, LeadSource } from '../../domain/entities/Lead';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 
 type LeadRow = Database['public']['Tables']['crm_leads']['Row'];
 type LeadInsert = Database['public']['Tables']['crm_leads']['Insert'];

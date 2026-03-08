@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function DashboardSkeleton() {
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div data-testid="loading" className="container mx-auto p-6 space-y-6">
       {/* Header Skeleton */}
       <div className="space-y-2">
         <Skeleton className="h-8 w-64" />

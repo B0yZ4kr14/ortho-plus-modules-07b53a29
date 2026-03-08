@@ -32,8 +32,7 @@ export function HistoricoClinicoForm({ prontuarioId, onSuccess, onCancel }: Hist
 
   const onSubmit = async (data: HistoricoFormData) => {
     try {
-      // Aqui você faria a chamada para salvar no Supabase
-      console.log('Salvando histórico:', { ...data, prontuarioId });
+      // Aqui você faria a chamada para salvar via API
       toast.success('Histórico clínico salvo com sucesso!');
       onSuccess();
     } catch (error) {

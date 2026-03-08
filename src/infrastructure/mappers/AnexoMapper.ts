@@ -1,10 +1,10 @@
 import { Anexo, AnexoProps } from '@/domain/entities/Anexo';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 
 type AnexoRow = Database['public']['Tables']['pep_anexos']['Row'];
 
 /**
- * Mapper para conversão entre Anexo (domínio) e dados do Supabase
+ * Mapper para conversão entre Anexo (domínio) e dados do banco
  */
 export class AnexoMapper {
   static toDomain(raw: AnexoRow): Anexo {

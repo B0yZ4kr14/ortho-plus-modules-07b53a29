@@ -11,10 +11,7 @@ export const useTISSGuides = () => {
     queryKey: ["tiss-guides", clinicId],
     queryFn: async () => {
       if (!clinicId) return [];
-
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/tiss_guides?clinic_id=eq.${clinicId}&order=data_atendimento.desc`,
-      );
+      const data = await apiClient.get<any[]>("/tiss/guias");
       return data;
     },
     enabled: !!clinicId,
@@ -24,10 +21,7 @@ export const useTISSGuides = () => {
     queryKey: ["tiss-batches", clinicId],
     queryFn: async () => {
       if (!clinicId) return [];
-
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/tiss_batches?clinic_id=eq.${clinicId}&order=created_at.desc`,
-      );
+      const data = await apiClient.get<any[]>("/tiss/lotes");
       return data;
     },
     enabled: !!clinicId,
@@ -35,19 +29,14 @@ export const useTISSGuides = () => {
 
   const createGuide = useMutation({
     mutationFn: async (guideData: any) => {
-      const response = await apiClient.post<any[]>(
-        "/rest/v1/tiss_guides",
-        [
-          {
-            ...guideData,
-            clinic_id: clinicId,
-            created_by: user?.id,
-          },
-        ],
-        { headers: { Prefer: "return=representation" } },
+      const response = await apiClient.post<any>(
+        "/tiss/guias",
+        {
+          ...guideData,
+          created_by: user?.id,
+        },
       );
-
-      return response[0];
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tiss-guides", clinicId] });
@@ -60,21 +49,15 @@ export const useTISSGuides = () => {
 
   const createBatch = useMutation({
     mutationFn: async (guideIds: string[]) => {
-      const response = await apiClient.post<any[]>(
-        "/rest/v1/tiss_batches",
-        [
-          {
-            clinic_id: clinicId,
-            guide_ids: guideIds,
-            status: "PENDENTE",
-            batch_number: `LOTE-${Date.now()}`,
-            insurance_company: "A_DEFINIR",
-          },
-        ],
-        { headers: { Prefer: "return=representation" } },
+      const response = await apiClient.post<any>(
+        "/tiss/lotes",
+        {
+          guide_ids: guideIds,
+          batch_number: `LOTE-${Date.now()}`,
+          insurance_company: "A_DEFINIR",
+        },
       );
-
-      return response[0];
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tiss-batches", clinicId] });

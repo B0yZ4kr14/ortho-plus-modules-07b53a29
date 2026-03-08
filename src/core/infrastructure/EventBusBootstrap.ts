@@ -31,5 +31,4 @@ export function bootstrapEventBus(): void {
   eventBus.subscribe('AppointmentScheduled', emailHandler);
   eventBus.subscribe('LeadConverted', emailHandler);
 
-  console.log('[EventBus] Bootstrapped successfully');
 }

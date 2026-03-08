@@ -22,7 +22,6 @@ export function useModules() {
           modulesCache &&
           Date.now() - modulesCache.timestamp < CACHE_DURATION
         ) {
-          console.log("✅ Using cached modules");
           setModules(modulesCache.data);
           setLoading(false);
           return;

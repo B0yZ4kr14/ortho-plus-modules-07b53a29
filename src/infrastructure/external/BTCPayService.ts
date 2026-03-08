@@ -139,7 +139,6 @@ export class BTCPayService {
    * Processa webhook do BTCPay
    */
   async processWebhook(payload: WebhookPayload): Promise<void> {
-    console.log('Processing BTCPay Webhook:', payload);
     
     // A lógica de processamento será implementada no ProcessWebhookUseCase
     // Aqui apenas validamos e parseamos o payload

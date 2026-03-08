@@ -351,7 +351,6 @@ export default function CryptoPaymentPDV({
             },
           ]}
           onGeneratePayment={async (data) => {
-            console.log("Payment generated:", data);
           }}
         />
       )}

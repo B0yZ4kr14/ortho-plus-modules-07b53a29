@@ -37,7 +37,6 @@ export function BackupWizard({ open, onOpenChange }: BackupWizardProps) {
 
   const handleConfirm = () => {
     // Implementar lógica de backup
-    console.log({ backupType, selectedData, compression, encryption });
     onOpenChange(false);
     setStep(1);
   };

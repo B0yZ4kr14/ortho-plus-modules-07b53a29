@@ -11,13 +11,13 @@ import { Money } from "../../domain/valueObjects/Money";
 import { Period } from "../../domain/valueObjects/Period";
 
 export class ApiTransactionRepository implements ITransactionRepository {
-  private readonly baseUrl = "/rest/v1/financial_transactions";
+  private readonly baseUrl = "/financeiro/transactions";
 
   async findById(id: string): Promise<Transaction | null> {
     try {
-      const data = await apiClient.get<any[]>(`${this.baseUrl}?id=eq.${id}`);
-      if (!data || data.length === 0) return null;
-      return this.toDomain(data[0]);
+      const data = await apiClient.get<any>(`${this.baseUrl}/${id}`);
+      if (!data) return null;
+      return this.toDomain(data);
     } catch {
       return null;
     }
@@ -28,35 +28,22 @@ export class ApiTransactionRepository implements ITransactionRepository {
     filters?: TransactionFilters,
   ): Promise<Transaction[]> {
     try {
-      const params = new URLSearchParams();
-      params.append("clinic_id", `eq.${clinicId}`);
-
-      if (filters?.type) params.append("type", `eq.${filters.type}`);
-      if (filters?.status) params.append("status", `eq.${filters.status}`);
-      if (filters?.categoryId)
-        params.append("category_id", `eq.${filters.categoryId}`);
+      const params: Record<string, string> = {};
+      if (filters?.type) params.type = filters.type;
+      if (filters?.status) params.status = filters.status;
+      if (filters?.categoryId) params.category_id = filters.categoryId;
 
       if (filters?.period) {
-        params.append(
-          "due_date",
-          `gte.${filters.period.startDate.toISOString()}`,
-        );
-        params.append(
-          "due_date",
-          `lte.${filters.period.endDate.toISOString()}`,
-        );
+        params.start_date = filters.period.startDate.toISOString();
+        params.end_date = filters.period.endDate.toISOString();
       }
 
       if (filters?.relatedEntityType)
-        params.append("related_entity_type", `eq.${filters.relatedEntityType}`);
+        params.related_entity_type = filters.relatedEntityType;
       if (filters?.relatedEntityId)
-        params.append("related_entity_id", `eq.${filters.relatedEntityId}`);
+        params.related_entity_id = filters.relatedEntityId;
 
-      params.append("order", "due_date.desc");
-
-      const data = await apiClient.get<any[]>(
-        `${this.baseUrl}?${params.toString()}`,
-      );
+      const data = await apiClient.get<any[]>(this.baseUrl, { params });
       return (data || []).map((row) => this.toDomain(row));
     } catch (e) {
       console.error(e);
@@ -71,11 +58,11 @@ export class ApiTransactionRepository implements ITransactionRepository {
 
   async update(transaction: Transaction): Promise<void> {
     const data = this.toDatabase(transaction);
-    await apiClient.patch(`${this.baseUrl}?id=eq.${transaction.id}`, data);
+    await apiClient.patch(`${this.baseUrl}/${transaction.id}`, data);
   }
 
   async delete(id: string): Promise<void> {
-    await apiClient.delete(`${this.baseUrl}?id=eq.${id}`);
+    await apiClient.delete(`${this.baseUrl}/${id}`);
   }
 
   async getTotalByPeriod(
@@ -84,17 +71,14 @@ export class ApiTransactionRepository implements ITransactionRepository {
     type: "RECEITA" | "DESPESA",
   ): Promise<number> {
     try {
-      const params = new URLSearchParams();
-      params.append("select", "amount");
-      params.append("clinic_id", `eq.${clinicId}`);
-      params.append("type", `eq.${type}`);
-      params.append("status", `eq.PAGO`);
-      params.append("paid_date", `gte.${period.startDate.toISOString()}`);
-      params.append("paid_date", `lte.${period.endDate.toISOString()}`);
-
-      const data = await apiClient.get<any[]>(
-        `${this.baseUrl}?${params.toString()}`,
-      );
+      const data = await apiClient.get<any[]>(this.baseUrl, {
+        params: {
+          type,
+          status: "PAGO",
+          start_date: period.startDate.toISOString(),
+          end_date: period.endDate.toISOString(),
+        },
+      });
       return (data || []).reduce((sum, row) => sum + Number(row.amount), 0);
     } catch {
       return 0;
@@ -103,14 +87,9 @@ export class ApiTransactionRepository implements ITransactionRepository {
 
   async getOverdueTransactions(clinicId: string): Promise<Transaction[]> {
     try {
-      const params = new URLSearchParams();
-      params.append("clinic_id", `eq.${clinicId}`);
-      params.append("status", `eq.PENDENTE`);
-      params.append("due_date", `lt.${new Date().toISOString()}`);
-
-      const data = await apiClient.get<any[]>(
-        `${this.baseUrl}?${params.toString()}`,
-      );
+      const data = await apiClient.get<any[]>(this.baseUrl, {
+        params: { status: "PENDENTE", end_date: new Date().toISOString() },
+      });
       return (data || []).map((row) => this.toDomain(row));
     } catch {
       return [];
@@ -119,13 +98,9 @@ export class ApiTransactionRepository implements ITransactionRepository {
 
   async getPendingTransactions(clinicId: string): Promise<Transaction[]> {
     try {
-      const params = new URLSearchParams();
-      params.append("clinic_id", `eq.${clinicId}`);
-      params.append("status", `eq.PENDENTE`);
-
-      const data = await apiClient.get<any[]>(
-        `${this.baseUrl}?${params.toString()}`,
-      );
+      const data = await apiClient.get<any[]>(this.baseUrl, {
+        params: { status: "PENDENTE" },
+      });
       return (data || []).map((row) => this.toDomain(row));
     } catch {
       return [];

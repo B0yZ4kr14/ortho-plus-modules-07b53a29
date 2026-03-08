@@ -2,10 +2,10 @@
  * API Client - Cliente HTTP para comunicação com backend Node.js
  */
 
-import axios, { AxiosInstance, AxiosError } from 'axios';
-import { toast } from 'sonner';
+import axios, { AxiosError, AxiosInstance } from "axios";
+import { toast } from "sonner";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 class ApiClient {
   private client: AxiosInstance;
@@ -15,7 +15,7 @@ class ApiClient {
       baseURL: API_BASE_URL,
       timeout: 30000,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -26,55 +26,60 @@ class ApiClient {
     // Request interceptor - adiciona token JWT
     this.client.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem("access_token");
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => Promise.reject(error),
     );
 
     // Response interceptor - tratamento global de erros
     this.client.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        return response;
+      },
       (error: AxiosError) => {
+        console.error(
+          `[API Error]: ${error.response?.status} on ${error.config?.method?.toUpperCase()} ${error.config?.baseURL || ""}${error.config?.url}`,
+        );
+        // console.error("Data:", error.response?.data);
         const errorMessage = this.handleError(error);
         toast.error(errorMessage);
         return Promise.reject(error);
-      }
+      },
     );
   }
 
   private handleError(error: AxiosError): string {
     if (error.response) {
       const status = error.response.status;
-      const data = error.response.data as any;
+      const data = error.response.data as { error?: string };
 
       switch (status) {
         case 400:
-          return data.error || 'Dados inválidos';
+          return data.error || "Dados inválidos";
         case 401:
-          localStorage.removeItem('auth_token');
-          window.location.href = '/login';
-          return 'Sessão expirada. Faça login novamente.';
+          localStorage.removeItem("access_token");
+          return "Sessão expirada. Faça login novamente.";
         case 403:
-          return 'Acesso negado';
+          return "Acesso negado";
         case 404:
-          return 'Recurso não encontrado';
+          return "Recurso não encontrado";
         case 412:
-          return data.error || 'Pré-condições não atendidas';
+          return data.error || "Pré-condições não atendidas";
         case 429:
-          return 'Muitas requisições. Aguarde alguns instantes.';
+          return "Muitas requisições. Aguarde alguns instantes.";
         case 500:
-          return 'Erro interno do servidor';
+          return "Erro interno do servidor";
         default:
-          return data.error || 'Erro desconhecido';
+          return data.error || "Erro desconhecido";
       }
     } else if (error.request) {
-      return 'Erro de conexão. Verifique sua internet.';
+      return "Erro de conexão. Verifique sua internet.";
     } else {
-      return error.message || 'Erro desconhecido';
+      return error.message || "Erro desconhecido";
     }
   }
 
@@ -105,11 +110,11 @@ class ApiClient {
   }
 
   setAuthToken(token: string) {
-    localStorage.setItem('auth_token', token);
+    localStorage.setItem("access_token", token);
   }
 
   clearAuthToken() {
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem("access_token");
   }
 }
 

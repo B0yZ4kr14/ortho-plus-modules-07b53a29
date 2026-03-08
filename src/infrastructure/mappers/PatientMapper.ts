@@ -2,12 +2,12 @@ import { Patient } from '@/domain/entities/Patient';
 import { Email } from '@/domain/value-objects/Email';
 import { CPF } from '@/domain/value-objects/CPF';
 import { Phone } from '@/domain/value-objects/Phone';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 
 type ProntuarioRow = Database['public']['Tables']['prontuarios']['Row'];
 
 /**
- * Mapper: Supabase Row ↔ Patient Entity
+ * Mapper: Database Row ↔ Patient Entity
  * Usa a tabela 'prontuarios' existente como fonte de dados de pacientes
  */
 export class PatientMapper {

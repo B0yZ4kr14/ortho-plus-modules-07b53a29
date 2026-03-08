@@ -1,5 +1,5 @@
 import { Atividade, AtividadeProps, AtividadeTipo, AtividadeStatus } from '../../domain/entities/Atividade';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 
 type AtividadeRow = Database['public']['Tables']['crm_activities']['Row'];
 type AtividadeInsert = Database['public']['Tables']['crm_activities']['Insert'];

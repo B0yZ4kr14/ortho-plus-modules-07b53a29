@@ -49,20 +49,21 @@ export default function AuditTrailViewer() {
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["audit-trail", actionFilter, sensitivityFilter],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      params.append("order", "timestamp.desc");
-      params.append("limit", "1000");
+      const queryParams: Record<string, string> = {
+        limit: "1000",
+      };
 
       if (actionFilter !== "all") {
-        params.append("action", `eq.${actionFilter}`);
+        queryParams.action = actionFilter;
       }
 
       if (sensitivityFilter !== "all") {
-        params.append("sensitivity_level", `eq.${sensitivityFilter}`);
+        queryParams.sensitivity_level = sensitivityFilter;
       }
 
       const data = await apiClient.get<AuditLog[]>(
-        `/rest/v1/audit_trail?${params.toString()}`,
+        "/admin/audit-trail",
+        { params: queryParams },
       );
       return data || [];
     },

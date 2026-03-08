@@ -1,15 +1,15 @@
 import { ContaReceber, StatusContaReceber } from '@/domain/entities/ContaReceber';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/types/database';
 
 type ContaReceberRow = Database['public']['Tables']['contas_receber']['Row'];
 type ContaReceberInsert = Database['public']['Tables']['contas_receber']['Insert'];
 
 /**
- * Mapper para converter entre ContaReceber (domínio) e tabela Supabase
+ * Mapper para converter entre ContaReceber (domínio) e tabela PostgreSQL
  */
 export class ContaReceberMapper {
   /**
-   * Converte registro do Supabase para entidade de domínio
+   * Converte registro do banco para entidade de domínio
    */
   static toDomain(row: ContaReceberRow): ContaReceber {
     return ContaReceber.restore({
@@ -34,9 +34,9 @@ export class ContaReceberMapper {
   }
 
   /**
-   * Converte entidade de domínio para formato de insert/update do Supabase
+   * Converte entidade de domínio para formato de insert/update do banco
    */
-  static toSupabaseInsert(conta: ContaReceber): ContaReceberInsert {
+  static toDbInsert(conta: ContaReceber): ContaReceberInsert {
     return {
       id: conta.id,
       clinic_id: conta.clinicId,

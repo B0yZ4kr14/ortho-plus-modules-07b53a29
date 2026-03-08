@@ -1,8 +1,39 @@
-import { Appointment, AppointmentProps, AppointmentStatus, AppointmentType } from '../../domain/entities/Appointment';
-import { Database } from '@/integrations/supabase/types';
+import {
+  Appointment,
+  AppointmentProps,
+  AppointmentStatus,
+  AppointmentType,
+} from "../../domain/entities/Appointment";
 
-type AppointmentRow = Database['public']['Tables']['appointments']['Row'];
-type AppointmentInsert = Database['public']['Tables']['appointments']['Insert'];
+// Local type definitions for database row types
+interface AppointmentRow {
+  id: string;
+  clinic_id: string;
+  patient_id: string;
+  dentist_id: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  title: string | null;
+  description: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  treatment_id: string | null;
+}
+
+interface AppointmentInsert {
+  clinic_id: string;
+  patient_id: string;
+  dentist_id: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  title: string;
+  description: string | null;
+  created_by: string;
+  treatment_id: string | null;
+}
 
 export class AppointmentMapper {
   static toDomain(row: AppointmentRow): Appointment {
@@ -12,14 +43,18 @@ export class AppointmentMapper {
       patientId: row.patient_id,
       dentistId: row.dentist_id,
       scheduledDatetime: new Date(row.start_time),
-      durationMinutes: Math.floor((new Date(row.end_time).getTime() - new Date(row.start_time).getTime()) / 60000),
+      durationMinutes: Math.floor(
+        (new Date(row.end_time).getTime() -
+          new Date(row.start_time).getTime()) /
+          60000,
+      ),
       status: row.status as AppointmentStatus,
-      appointmentType: (row.title || 'CONSULTA') as AppointmentType,
+      appointmentType: (row.title || "CONSULTA") as AppointmentType,
       notes: row.description || undefined,
-      confirmedAt: undefined, // Não existe no schema atual
-      completedAt: undefined, // Não existe no schema atual
-      cancelledAt: undefined, // Não existe no schema atual
-      cancellationReason: undefined, // Não existe no schema atual
+      confirmedAt: undefined,
+      completedAt: undefined,
+      cancelledAt: undefined,
+      cancellationReason: undefined,
       noShow: false,
       createdBy: row.created_by,
       createdAt: new Date(row.created_at),
@@ -30,8 +65,11 @@ export class AppointmentMapper {
   }
 
   static toPersistence(appointment: Appointment): AppointmentInsert {
-    const endTime = new Date(appointment.scheduledDatetime.getTime() + appointment.durationMinutes * 60000);
-    
+    const endTime = new Date(
+      appointment.scheduledDatetime.getTime() +
+        appointment.durationMinutes * 60000,
+    );
+
     return {
       clinic_id: appointment.clinicId,
       patient_id: appointment.patientId,
@@ -47,8 +85,11 @@ export class AppointmentMapper {
   }
 
   static toUpdate(appointment: Appointment): Partial<AppointmentRow> {
-    const endTime = new Date(appointment.scheduledDatetime.getTime() + appointment.durationMinutes * 60000);
-    
+    const endTime = new Date(
+      appointment.scheduledDatetime.getTime() +
+        appointment.durationMinutes * 60000,
+    );
+
     return {
       patient_id: appointment.patientId,
       dentist_id: appointment.dentistId,

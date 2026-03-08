@@ -80,25 +80,18 @@ export const UserManagementTab = () => {
 
       // Buscar perfis da clínica
       const profiles = await apiClient.get<any[]>(
-        `/rest/v1/profiles?clinic_id=eq.${clinicId}`,
+        "/configuracoes/usuarios",
       );
 
       // Buscar roles de cada usuário
-      const usersWithRoles = await Promise.all(
-        profiles.map(async (profile) => {
-          const roles = await apiClient.get<any[]>(
-            `/rest/v1/user_roles?select=role&user_id=eq.${profile.id}`,
-          );
-
-          return {
-            id: profile.id,
-            full_name: profile.full_name,
-            role: roles && roles.length > 0 ? roles[0].role : "MEMBER",
-            clinic_id: profile.clinic_id,
-            created_at: profile.created_at,
-          };
-        }),
-      );
+      // Backend retorna profiles com roles já incluídos
+      const usersWithRoles = (profiles || []).map((profile: any) => ({
+        id: profile.id,
+        full_name: profile.full_name,
+        role: profile.role || "MEMBER",
+        clinic_id: profile.clinic_id,
+        created_at: profile.created_at,
+      }));
 
       setUsers(usersWithRoles);
     } catch (error: any) {
@@ -112,7 +105,7 @@ export const UserManagementTab = () => {
   const loadModules = async () => {
     try {
       const data = await apiClient.get<any[]>(
-        "/rest/v1/module_catalog?order=category.asc",
+        "/configuracoes/modulos",
       );
 
       setModules(data || []);
@@ -140,7 +133,7 @@ export const UserManagementTab = () => {
     }
 
     try {
-      // Criar usuário via Supabase Auth equivalente na API
+      // Criar usuário via API
       const authData = await apiClient.post<any>("/auth/register", {
         email: newUserEmail,
         password: newUserPassword,
@@ -152,12 +145,12 @@ export const UserManagementTab = () => {
       }
 
       // Atualizar perfil com clinic_id
-      await apiClient.patch(`/rest/v1/profiles?id=eq.${authData.user.id}`, {
+      await apiClient.patch(`/configuracoes/usuarios/${authData.user.id}`, {
         clinic_id: clinicId,
       });
 
       // Adicionar role
-      await apiClient.post("/rest/v1/user_roles", {
+      await apiClient.post("/configuracoes/usuarios/roles", {
         user_id: authData.user.id,
         role: newUserRole,
       });
@@ -179,7 +172,7 @@ export const UserManagementTab = () => {
 
         if (permissionsToInsert.length > 0) {
           await apiClient.post(
-            "/rest/v1/user_module_permissions",
+            "/configuracoes/permissoes",
             permissionsToInsert,
           );
         }
@@ -200,7 +193,7 @@ export const UserManagementTab = () => {
     newRole: "ADMIN" | "MEMBER",
   ) => {
     try {
-      await apiClient.patch(`/rest/v1/user_roles?user_id=eq.${userId}`, {
+      await apiClient.patch(`/configuracoes/usuarios/${userId}/role`, {
         role: newRole,
       });
 
@@ -217,7 +210,7 @@ export const UserManagementTab = () => {
 
     try {
       // Remover roles
-      await apiClient.delete(`/rest/v1/user_roles?user_id=eq.${userId}`);
+      await apiClient.delete(`/configuracoes/usuarios/${userId}`);
 
       // Nota: A exclusão do perfil será automática devido ao trigger on delete cascade
       toast.success("Usuário removido com sucesso");

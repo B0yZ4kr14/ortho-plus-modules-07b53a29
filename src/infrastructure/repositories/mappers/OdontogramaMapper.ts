@@ -1,15 +1,15 @@
 import { Odontograma, OdontogramaProps } from '@/domain/entities/Odontograma';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 
 type OdontogramaRow = Database['public']['Tables']['odontogramas']['Row'];
 type OdontogramaInsert = Database['public']['Tables']['odontogramas']['Insert'];
 
 /**
- * Mapper: Odontograma Entity <-> Supabase odontogramas table
+ * Mapper: Odontograma Entity <-> PostgreSQL odontogramas table
  */
 export class OdontogramaMapper {
   /**
-   * Converte row do Supabase para Entidade de Domínio
+   * Converte row do banco para Entidade de Domínio
    */
   static toDomain(row: OdontogramaRow): Odontograma {
     const props: OdontogramaProps = {
@@ -26,9 +26,9 @@ export class OdontogramaMapper {
   }
 
   /**
-   * Converte Entidade de Domínio para Insert do Supabase
+   * Converte Entidade de Domínio para Insert do banco
    */
-  static toSupabaseInsert(entity: Odontograma, clinicId: string): OdontogramaInsert {
+  static toDbInsert(entity: Odontograma, clinicId: string): OdontogramaInsert {
     return {
       id: entity.id,
       prontuario_id: entity.prontuarioId,

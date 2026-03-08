@@ -1,10 +1,10 @@
 import { Evolucao, EvolucaoProps } from '@/domain/entities/Evolucao';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 
 type EvolucaoRow = Database['public']['Tables']['pep_evolucoes']['Row'];
 
 /**
- * Mapper para conversão entre Evolucao (domínio) e dados do Supabase
+ * Mapper para conversão entre Evolucao (domínio) e dados do banco
  */
 export class EvolucaoMapper {
   static toDomain(raw: EvolucaoRow): Evolucao {

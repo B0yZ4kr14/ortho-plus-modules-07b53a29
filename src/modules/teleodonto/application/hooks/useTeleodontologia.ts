@@ -22,60 +22,22 @@ export const useTeleodontologia = (clinicId: string) => {
     try {
       setLoading(true);
 
-      // Buscar teleconsultas
-      const teleconsultasData = await apiClient.get<any[]>(
-        `/rest/v1/teleconsultas?clinic_id=eq.${clinicId}&order=data_agendada.desc`,
+      // Buscar teleconsultas com detalhes (backend faz os joins)
+      const teleconsultasData = await apiClient.get<TeleconsultaComplete[]>(
+        "/teleodonto/teleconsultas",
+        { params: { include_details: true } },
       );
 
-      // Buscar informações de pacientes e dentistas separadamente
-      if (teleconsultasData && teleconsultasData.length > 0) {
-        const patientIds = [
-          ...new Set(
-            teleconsultasData.map((t) => t.patient_id).filter(Boolean),
-          ),
-        ];
-        const dentistIds = [
-          ...new Set(
-            teleconsultasData.map((t) => t.dentist_id).filter(Boolean),
-          ),
-        ];
-
-        let patientsData: any[] = [];
-        if (patientIds.length > 0) {
-          patientsData = await apiClient.get<any[]>(
-            `/rest/v1/prontuarios?patient_id=in.(${patientIds.join(",")})&select=patient_id,patient_name`,
-          );
-        }
-
-        let dentistsData: any[] = [];
-        if (dentistIds.length > 0) {
-          dentistsData = await apiClient.get<any[]>(
-            `/rest/v1/profiles?id=in.(${dentistIds.join(",")})&select=id,full_name`,
-          );
-        }
-
-        // Mapear dados para as teleconsultas
-        const teleconsultasWithDetails = teleconsultasData.map((t) => ({
-          ...t,
-          patient_name: patientsData?.find((p) => p.patient_id === t.patient_id)
-            ?.patient_name,
-          dentist_name: dentistsData?.find((d) => d.id === t.dentist_id)
-            ?.full_name,
-        }));
-
-        setTeleconsultas(teleconsultasWithDetails);
-      } else {
-        setTeleconsultas([]);
-      }
+      setTeleconsultas(teleconsultasData || []);
 
       // Load prescricoes
-      const prescricoesData = await apiClient.get<any[]>(
-        "/rest/v1/prescricoes_remotas?order=created_at.desc",
+      const prescricoesData = await apiClient.get<PrescricaoRemota[]>(
+        "/teleodonto/prescricoes",
       );
 
-      // Load triagens (nome correto da tabela é singular)
-      const triagensData = await apiClient.get<any[]>(
-        "/rest/v1/triagem_teleconsulta?order=created_at.desc",
+      // Load triagens
+      const triagensData = await apiClient.get<Triagem[]>(
+        "/teleodonto/triagens",
       );
 
       setPrescricoes(prescricoesData || []);
@@ -96,7 +58,7 @@ export const useTeleodontologia = (clinicId: string) => {
     if (clinicId) {
       loadData();
 
-      // Implement polling to replace supabase realtime subscriptions
+      // Implement polling for realtime updates
       const interval = setInterval(() => {
         loadData();
       }, 10000);
@@ -109,10 +71,10 @@ export const useTeleodontologia = (clinicId: string) => {
 
   const createTeleconsulta = async (teleconsulta: any) => {
     try {
-      const response = await apiClient.post<any>("/rest/v1/teleconsultas", {
-        ...teleconsulta,
-        clinic_id: clinicId,
-      });
+      const response = await apiClient.post<any>(
+        "/teleodonto/teleconsultas",
+        teleconsulta,
+      );
 
       const data = Array.isArray(response) ? response[0] : response;
 
@@ -139,7 +101,7 @@ export const useTeleodontologia = (clinicId: string) => {
   const updateTeleconsulta = async (id: string, updates: any) => {
     try {
       const response = await apiClient.patch<any>(
-        `/rest/v1/teleconsultas?id=eq.${id}&clinic_id=eq.${clinicId}`,
+        `/teleodonto/teleconsultas/${id}`,
         updates,
       );
 
@@ -167,9 +129,7 @@ export const useTeleodontologia = (clinicId: string) => {
 
   const deleteTeleconsulta = async (id: string) => {
     try {
-      await apiClient.delete(
-        `/rest/v1/teleconsultas?id=eq.${id}&clinic_id=eq.${clinicId}`,
-      );
+      await apiClient.delete(`/teleodonto/teleconsultas/${id}`);
 
       toast({
         title: "Sucesso",
@@ -193,7 +153,7 @@ export const useTeleodontologia = (clinicId: string) => {
   const createPrescricao = async (prescricao: any) => {
     try {
       const response = await apiClient.post<any>(
-        "/rest/v1/prescricoes_remotas",
+        "/teleodonto/prescricoes",
         prescricao,
       );
 
@@ -221,7 +181,7 @@ export const useTeleodontologia = (clinicId: string) => {
   const createTriagem = async (triagem: any) => {
     try {
       const response = await apiClient.post<any>(
-        "/rest/v1/triagem_teleconsulta",
+        "/teleodonto/triagens",
         triagem,
       );
 

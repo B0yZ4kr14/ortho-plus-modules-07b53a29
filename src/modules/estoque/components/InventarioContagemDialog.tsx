@@ -62,11 +62,9 @@ export function InventarioContagemDialog({
   ];
 
   const handleQuantityChange = (itemId: string, quantity: number) => {
-    console.log('Atualizar quantidade:', itemId, quantity);
   };
 
   const handleSave = () => {
-    console.log('Salvar contagens');
     onOpenChange(false);
   };
 

@@ -17,7 +17,7 @@ export default function PacientesListPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // Use unified hook (switches between Supabase and REST API)
+  // Use unified hook (REST API)
   const { patients, loading: isLoading } = usePatients();
 
   const filteredPatients = patients?.filter(patient => {

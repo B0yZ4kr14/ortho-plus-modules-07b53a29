@@ -42,7 +42,6 @@ export function ReceitaForm({ prontuarioId, onSuccess, onCancel }: ReceitaFormPr
       dataValidade: new Date(Date.now() + parseInt(data.validade) * 24 * 60 * 60 * 1000).toISOString(),
     };
 
-    console.log('Receita criada:', receita);
     toast.success('Receita criada com sucesso!');
     onSuccess();
   };

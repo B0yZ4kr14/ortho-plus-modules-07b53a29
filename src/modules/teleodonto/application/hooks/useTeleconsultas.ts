@@ -11,11 +11,7 @@ export const useTeleconsultas = () => {
     queryKey: ["teleconsultas", clinicId],
     queryFn: async () => {
       if (!clinicId) return [];
-
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/teleconsultas?clinic_id=eq.${clinicId}&order=data_agendada.desc`,
-      );
-
+      const data = await apiClient.get<any[]>("/teleodonto/teleconsultas");
       return data;
     },
     enabled: !!clinicId,
@@ -23,11 +19,7 @@ export const useTeleconsultas = () => {
 
   const createTeleconsulta = useMutation({
     mutationFn: async (teleconsulta: any) => {
-      const response = await apiClient.post<any>("/rest/v1/teleconsultas", {
-        ...teleconsulta,
-        clinic_id: clinicId,
-      });
-
+      const response = await apiClient.post<any>("/teleodonto/teleconsultas", teleconsulta);
       return Array.isArray(response) ? response[0] : response;
     },
     onSuccess: () => {
@@ -41,7 +33,7 @@ export const useTeleconsultas = () => {
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      await apiClient.patch(`/rest/v1/teleconsultas?id=eq.${id}`, { status });
+      await apiClient.patch(`/teleodonto/teleconsultas/${id}`, { status });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teleconsultas", clinicId] });

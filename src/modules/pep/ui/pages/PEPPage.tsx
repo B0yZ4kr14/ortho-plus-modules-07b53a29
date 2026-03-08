@@ -423,7 +423,7 @@ export default function PEPPage() {
         </TabsContent>
       </Tabs>
 
-      {prontuarioId && <AssinaturaDigital onSave={(signature) => console.log('Assinatura salva:', signature)} />}
+      {prontuarioId && <AssinaturaDigital onSave={(signature) => {}} />}
     </div>
   );
 }

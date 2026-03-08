@@ -45,32 +45,23 @@ export function ModulePermissionsManager() {
     try {
       setLoading(true);
 
-      // Buscar usuários MEMBER
+      // Buscar usuários com roles
       const profilesData = await apiClient.get<any[]>(
-        "/rest/v1/profiles?select=id,full_name&order=full_name.asc",
+        "/configuracoes/usuarios",
       );
 
-      // Buscar roles dos usuários
-      const rolesData = await apiClient.get<any[]>(
-        "/rest/v1/user_roles?select=user_id,role",
-      );
+      // Backend já retorna roles junto com profiles
+      const rolesData = profilesData;
 
       // Combinar dados
       const usersWithRoles =
         profilesData
-          ?.map((profile) => {
-            const role =
-              rolesData?.find((r: any) => r.user_id === profile.id)?.role ||
-              "MEMBER";
-            return {
-              id: profile.id,
-              full_name: profile.full_name || "Sem nome",
-              email: `${profile.full_name}@ortho.com`
-                .toLowerCase()
-                .replace(/\s+/g, "."),
-              role: role as "ADMIN" | "MEMBER",
-            };
-          })
+          ?.map((profile: any) => ({
+            id: profile.id,
+            full_name: profile.full_name || "Sem nome",
+            email: profile.email || `${(profile.full_name || "").toLowerCase().replace(/\s+/g, ".")}@ortho.com`,
+            role: (profile.role || "MEMBER") as "ADMIN" | "MEMBER",
+          }))
           .filter((user) => user.role === "MEMBER") || [];
 
       setUsers(usersWithRoles);
@@ -85,7 +76,7 @@ export function ModulePermissionsManager() {
 
       // Buscar permissões existentes
       const permissionsData = await apiClient.get<any[]>(
-        "/rest/v1/user_module_permissions?select=user_id,module_catalog_id,can_view",
+        "/configuracoes/permissoes",
       );
 
       setPermissions(permissionsData || []);
@@ -117,14 +108,14 @@ export function ModulePermissionsManager() {
       const user = authUser?.user;
 
       const profileDataArray = await apiClient.get<any[]>(
-        `/rest/v1/profiles?select=clinic_id&id=eq.${user?.id}`,
+        `/configuracoes/usuarios/${user?.id}`,
       );
       const profileData = profileDataArray?.[0];
 
       if (currentPermission) {
         // Remover permissão
         await apiClient.delete(
-          `/rest/v1/user_module_permissions?user_id=eq.${userId}&module_catalog_id=eq.${moduleId}`,
+          `/configuracoes/permissoes/${userId}/${moduleId}`,
         );
 
         setPermissions(
@@ -134,7 +125,7 @@ export function ModulePermissionsManager() {
         );
 
         // Registrar auditoria
-        await apiClient.post("/rest/v1/permission_audit_logs", {
+        await apiClient.post("/configuracoes/permissoes/audit", {
           clinic_id: profileData?.clinic_id,
           user_id: user?.id,
           target_user_id: userId,
@@ -143,7 +134,7 @@ export function ModulePermissionsManager() {
         });
       } else {
         // Adicionar permissão
-        await apiClient.post("/rest/v1/user_module_permissions", {
+        await apiClient.post("/configuracoes/permissoes", {
           user_id: userId,
           module_catalog_id: moduleId,
           can_view: true,
@@ -157,7 +148,7 @@ export function ModulePermissionsManager() {
         ]);
 
         // Registrar auditoria
-        await apiClient.post("/rest/v1/permission_audit_logs", {
+        await apiClient.post("/configuracoes/permissoes/audit", {
           clinic_id: profileData?.clinic_id,
           user_id: user?.id,
           target_user_id: userId,
@@ -179,7 +170,7 @@ export function ModulePermissionsManager() {
 
       // Remover todas as permissões existentes do usuário
       await apiClient.delete(
-        `/rest/v1/user_module_permissions?user_id=eq.${userId}`,
+        `/configuracoes/permissoes/${userId}`,
       );
 
       // Adicionar permissões para todos os módulos ativos
@@ -191,7 +182,7 @@ export function ModulePermissionsManager() {
         can_delete: false,
       }));
 
-      await apiClient.post("/rest/v1/user_module_permissions", newPermissions);
+      await apiClient.post("/configuracoes/permissoes/batch", newPermissions);
 
       await fetchData();
       toast.success("Todas as permissões concedidas com sucesso!");
@@ -208,7 +199,7 @@ export function ModulePermissionsManager() {
       setSaving(true);
 
       await apiClient.delete(
-        `/rest/v1/user_module_permissions?user_id=eq.${userId}`,
+        `/configuracoes/permissoes/${userId}`,
       );
 
       await fetchData();

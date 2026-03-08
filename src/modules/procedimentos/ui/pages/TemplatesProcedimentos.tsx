@@ -66,11 +66,14 @@ export default function TemplatesProcedimentosPage() {
   const { data: templates = [], isLoading } = useQuery({
     queryKey: ["procedimento-templates", categoryFilter],
     queryFn: async () => {
-      let url = "/rest/v1/procedimento_templates?order=nome.asc";
+      const params: Record<string, string> = {};
       if (categoryFilter !== "all") {
-        url = `/rest/v1/procedimento_templates?categoria=eq.${categoryFilter}&order=nome.asc`;
+        params.categoria = categoryFilter;
       }
-      const data = await apiClient.get<ProcedimentoTemplate[]>(url);
+      const data = await apiClient.get<ProcedimentoTemplate[]>(
+        "/procedimentos/templates",
+        { params },
+      );
       return data;
     },
   });
@@ -78,9 +81,7 @@ export default function TemplatesProcedimentosPage() {
   // Delete template
   const deleteMutation = useMutation({
     mutationFn: async (templateId: string) => {
-      await apiClient.delete(
-        `/rest/v1/procedimento_templates?id=eq.${templateId}`,
-      );
+      await apiClient.delete(`/procedimentos/templates/${templateId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["procedimento-templates"] });
@@ -272,19 +273,17 @@ function TemplateForm({ onClose }: { onClose: () => void }) {
     mutationFn: async (data: typeof formData) => {
       if (!user?.id) throw new Error("Usuário não autenticado");
 
-      await apiClient.post("/rest/v1/procedimento_templates", [
-        {
-          nome: data.nome,
-          descricao: data.descricao,
-          categoria: data.categoria,
-          steps: [] as any,
-          tempo_estimado_minutos: data.tempo_estimado_minutos,
-          valor_sugerido: data.valor_sugerido,
-          is_public: data.is_public,
-          tags: [],
-          created_by: user.id,
-        },
-      ]);
+      await apiClient.post("/procedimentos/templates", {
+        nome: data.nome,
+        descricao: data.descricao,
+        categoria: data.categoria,
+        steps: [] as any,
+        tempo_estimado_minutos: data.tempo_estimado_minutos,
+        valor_sugerido: data.valor_sugerido,
+        is_public: data.is_public,
+        tags: [],
+        created_by: user.id,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["procedimento-templates"] });

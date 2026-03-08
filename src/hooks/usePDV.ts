@@ -70,11 +70,11 @@ export const usePDV = (clinicId: string | undefined) => {
     if (!clinicId) return;
 
     try {
-      const data = await apiClient.get<CaixaMovimento[]>(
-        `/rest/v1/caixa_movimentos?clinic_id=eq.${clinicId}&status=eq.ABERTO&order=created_at.desc&limit=1`
+      const data = await apiClient.get<CaixaMovimento | null>(
+        '/pdv/caixa/aberto'
       );
 
-      setCaixaAberto(data?.[0] || null);
+      setCaixaAberto(data || null);
     } catch (error: any) {
       console.error('Error loading caixa:', error);
     }
@@ -85,7 +85,7 @@ export const usePDV = (clinicId: string | undefined) => {
 
     try {
       const data = await apiClient.get<PDVVenda[]>(
-        `/rest/v1/pdv_vendas?clinic_id=eq.${clinicId}&caixa_movimento_id=eq.${caixaAberto.id}&order=created_at.desc`
+        `/pdv/caixa/${caixaAberto.id}/vendas`
       );
 
       setVendas(data || []);
@@ -131,23 +131,17 @@ export const usePDV = (clinicId: string | undefined) => {
     if (!user) throw new Error('User not authenticated');
 
     try {
-      const data = await apiClient.post<CaixaMovimento[]>(
-        '/rest/v1/caixa_movimentos',
+      const data = await apiClient.post<CaixaMovimento>(
+        '/pdv/caixa/abrir',
         {
-          clinic_id: clinicId,
-          user_id: user.id,
-          tipo: 'ABERTURA',
           valor_inicial: valorInicial,
           observacoes,
-          status: 'ABERTO',
         },
-        { headers: { Prefer: 'return=representation' } }
       );
 
-      const novoCaixa = data?.[0];
-      setCaixaAberto(novoCaixa || null);
+      setCaixaAberto(data || null);
       sonnerToast.success('Caixa aberto com sucesso!');
-      return novoCaixa;
+      return data;
     } catch (error: any) {
       console.error('Error opening caixa:', error);
       toast({
@@ -163,25 +157,12 @@ export const usePDV = (clinicId: string | undefined) => {
     if (!caixaAberto) throw new Error('No caixa open');
 
     try {
-      const pagamentos = await apiClient.get<any[]>(
-        `/rest/v1/pdv_pagamentos?select=valor_liquido&caixa_movimento_id=eq.${caixaAberto.id}`
-      );
-
-      const valorEsperado = caixaAberto.valor_inicial + 
-        (pagamentos?.reduce((sum, p) => sum + p.valor_liquido, 0) || 0);
-
-      const diferenca = valorFinal - valorEsperado;
-
-      await apiClient.patch(
-        `/rest/v1/caixa_movimentos?id=eq.${caixaAberto.id}`,
+      await apiClient.post(
+        `/pdv/caixa/${caixaAberto.id}/fechar`,
         {
           valor_final: valorFinal,
-          valor_esperado: valorEsperado,
-          diferenca,
           observacoes,
-          fechado_em: new Date().toISOString(),
-          status: 'FECHADO',
-        }
+        },
       );
 
       setCaixaAberto(null);
@@ -202,51 +183,19 @@ export const usePDV = (clinicId: string | undefined) => {
     if (!user) throw new Error('User not authenticated');
 
     try {
-      const allVendas = await apiClient.get<{id: string}[]>(
-        `/rest/v1/pdv_vendas?select=id&clinic_id=eq.${clinicId}`
-      );
-      const count = allVendas?.length || 0;
-      const numeroVenda = `PDV-${String(count + 1).padStart(6, '0')}`;
-
-      const vendaData = await apiClient.post<any[]>(
-        '/rest/v1/pdv_vendas',
+      const novaVenda = await apiClient.post<PDVVenda>(
+        `/pdv/caixa/${caixaAberto.id}/vendas`,
         {
-          clinic_id: clinicId,
-          caixa_movimento_id: caixaAberto.id,
-          vendedor_id: user.id,
-          numero_venda: numeroVenda,
           ...venda,
+          itens,
+          pagamentos,
         },
-        { headers: { Prefer: 'return=representation' } }
       );
 
-      const novaVenda = vendaData?.[0];
       if (!novaVenda) throw new Error('Failed to create venda');
 
-      if (itens.length > 0) {
-        await apiClient.post(
-          '/rest/v1/pdv_venda_itens',
-          itens.map(item => ({
-            venda_id: novaVenda.id,
-            ...item,
-          }))
-        );
-      }
-
-      if (pagamentos.length > 0) {
-        await apiClient.post(
-          '/rest/v1/pdv_pagamentos',
-          pagamentos.map(pag => ({
-            clinic_id: clinicId,
-            venda_id: novaVenda.id,
-            caixa_movimento_id: caixaAberto.id,
-            ...pag,
-          }))
-        );
-      }
-
       await loadVendas();
-      sonnerToast.success(`Venda ${numeroVenda} realizada com sucesso!`);
+      sonnerToast.success(`Venda ${novaVenda.numero_venda} realizada com sucesso!`);
       return novaVenda;
     } catch (error: any) {
       console.error('Error creating venda:', error);
@@ -263,14 +212,9 @@ export const usePDV = (clinicId: string | undefined) => {
     if (!user) throw new Error('User not authenticated');
 
     try {
-      await apiClient.patch(
-        `/rest/v1/pdv_vendas?id=eq.${vendaId}`,
-        {
-          status: 'CANCELADO',
-          cancelado_em: new Date().toISOString(),
-          cancelado_por: user.id,
-          motivo_cancelamento: motivo,
-        }
+      await apiClient.post(
+        `/pdv/vendas/${vendaId}/cancelar`,
+        { motivo_cancelamento: motivo },
       );
 
       await loadVendas();

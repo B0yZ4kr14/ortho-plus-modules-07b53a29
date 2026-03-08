@@ -23,7 +23,8 @@ export function BackupExecutiveTab() {
     queryKey: ["backup-executive-stats", clinicId],
     queryFn: async () => {
       const backups = await apiClient.get<any[]>(
-        `/rest/v1/backup_history?clinic_id=eq.${clinicId}&order=created_at.desc&limit=100`,
+        "/configuracoes/backups/historico",
+        { params: { limit: 100 } },
       );
 
       const now = new Date();

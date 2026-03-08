@@ -33,7 +33,6 @@ export function RestoreWizard({ open, onOpenChange }: RestoreWizardProps) {
 
   const handleConfirm = () => {
     // Implementar lógica de restauração
-    console.log({ selectedBackup });
     onOpenChange(false);
     setStep(1);
   };

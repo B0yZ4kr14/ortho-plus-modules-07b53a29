@@ -13,7 +13,8 @@ export function BackupReplicationTab() {
     queryKey: ["backup-replications", clinicId],
     queryFn: async () => {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/backup_replications?or=(source_clinic_id.eq.${clinicId},target_clinic_id.eq.${clinicId})&order=created_at.desc&limit=50`,
+        "/configuracoes/backups/replicacoes",
+        { params: { limit: 50 } },
       );
       return data;
     },

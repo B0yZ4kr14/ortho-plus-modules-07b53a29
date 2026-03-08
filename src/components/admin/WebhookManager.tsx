@@ -55,7 +55,8 @@ export function WebhookManager() {
       const clinicIdValue =
         typeof selectedClinic === "string" ? selectedClinic : selectedClinic.id;
       const data = await apiClient.get<GitHubEvent[]>(
-        `/github_events?clinic_id=eq.${clinicIdValue}&order=created_at.desc&limit=20`,
+        "/admin/github-events",
+        { params: { limit: 20 } },
       );
       setEvents(data || []);
     } catch (error) {
@@ -184,9 +185,9 @@ export function WebhookManager() {
           <div className="space-y-2">
             <h4 className="font-medium">URL do Webhook</h4>
             <code className="block bg-muted p-3 rounded text-sm">
-              {import.meta.env.VITE_API_URL ||
-                import.meta.env.VITE_SUPABASE_URL}
-              /functions/v1/github-webhook
+              {import.meta.env.VITE_API_BASE_URL ||
+                'http://localhost:3000/api'}
+              /webhooks/github
             </code>
             <p className="text-xs text-muted-foreground">
               Adicione esta URL nas configurações de Webhooks do repositório

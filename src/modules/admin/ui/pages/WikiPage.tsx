@@ -74,7 +74,7 @@ export default function WikiPage() {
     setLoading(true);
     try {
       const data = await apiClient.get<WikiPage[]>(
-        `/rest/v1/wiki_pages?clinic_id=eq.${clinicId}&order=updated_at.desc`,
+        "/admin/wiki",
       );
       setPages(data || []);
     } catch (error) {
@@ -103,7 +103,7 @@ export default function WikiPage() {
 
       if (editingPage) {
         // Update
-        await apiClient.patch(`/rest/v1/wiki_pages?id=eq.${editingPage.id}`, {
+        await apiClient.patch(`/admin/wiki/${editingPage.id}`, {
           title: formData.title,
           content: formData.content,
           category: formData.category,
@@ -113,7 +113,7 @@ export default function WikiPage() {
         toast.success("Página atualizada");
       } else {
         // Create
-        await apiClient.post("/rest/v1/wiki_pages", {
+        await apiClient.post("/admin/wiki", {
           clinic_id: clinicId,
           title: formData.title,
           slug,
@@ -145,7 +145,7 @@ export default function WikiPage() {
     if (!confirm("Tem certeza que deseja deletar esta página?")) return;
 
     try {
-      await apiClient.delete(`/rest/v1/wiki_pages?id=eq.${id}`);
+      await apiClient.delete(`/admin/wiki/${id}`);
 
       toast.success("Página deletada");
       fetchPages();

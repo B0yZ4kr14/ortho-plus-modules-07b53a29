@@ -1,5 +1,5 @@
 import { Agendamento, AgendamentoProps } from '@/domain/entities/Agendamento';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 
 type AppointmentRow = Database['public']['Tables']['appointments']['Row'];
 type AppointmentInsert = Database['public']['Tables']['appointments']['Insert'];

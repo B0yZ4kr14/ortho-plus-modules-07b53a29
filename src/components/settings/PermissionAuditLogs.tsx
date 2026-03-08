@@ -57,7 +57,7 @@ export function PermissionAuditLogs() {
   const fetchUsers = async () => {
     try {
       const data = await apiClient.get<any[]>(
-        "/rest/v1/profiles?select=id,full_name&order=full_name.asc",
+        "/configuracoes/usuarios",
       );
       setUsers(data || []);
     } catch (error) {
@@ -74,14 +74,16 @@ export function PermissionAuditLogs() {
       if (!user) return;
 
       const profileDataArray = await apiClient.get<any[]>(
-        `/rest/v1/profiles?select=clinic_id&id=eq.${user.id}`,
+        `/configuracoes/usuarios/${user.id}`,
       );
       const profileData = profileDataArray?.[0];
 
       if (!profileData) return;
 
+      // Backend faz joins com users e modules
       const data = await apiClient.get<any[]>(
-        `/rest/v1/permission_audit_logs?select=id,created_at,action,template_name,details,module_catalog_id,user:user_id(profiles(full_name)),target_user:target_user_id(profiles(full_name))&clinic_id=eq.${profileData.clinic_id}&order=created_at.desc&limit=100`,
+        "/configuracoes/permissoes/audit",
+        { params: { limit: 100 } },
       );
 
       // Buscar informações dos módulos
@@ -91,7 +93,8 @@ export function PermissionAuditLogs() {
 
       if (moduleIds.length > 0) {
         const modulesData = await apiClient.get<any[]>(
-          `/rest/v1/module_catalog?select=id,name&id=in.(${moduleIds.join(",")})`,
+          "/configuracoes/modulos",
+          { params: { ids: moduleIds.join(",") } },
         );
 
         if (modulesData) {

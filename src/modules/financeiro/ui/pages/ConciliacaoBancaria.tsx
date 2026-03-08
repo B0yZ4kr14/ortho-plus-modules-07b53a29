@@ -50,18 +50,17 @@ export default function ConciliacaoBancaria() {
 
   const loadExtratos = async () => {
     try {
-      const params = new URLSearchParams();
-      params.append("clinic_id", `eq.${selectedClinic!}`);
-      params.append("order", "data_movimento.desc");
+      const params: Record<string, string> = {};
 
       if (filtro === "CONCILIADO") {
-        params.append("conciliado", "eq.true");
+        params.conciliado = "true";
       } else if (filtro === "PENDENTE") {
-        params.append("conciliado", "eq.false");
+        params.conciliado = "false";
       }
 
       const data = await apiClient.get<BancoExtrato[]>(
-        `/rest/v1/banco_extratos?${params.toString()}`,
+        "/financeiro/extratos",
+        { params },
       );
       setExtratos(data || []);
     } catch (error: any) {
@@ -73,7 +72,7 @@ export default function ConciliacaoBancaria() {
 
   const handleConciliar = async (extratoId: string, contaReceberId: string) => {
     try {
-      await apiClient.patch(`/rest/v1/banco_extratos?id=eq.${extratoId}`, {
+      await apiClient.patch(`/financeiro/extratos/${extratoId}`, {
         conciliado: true,
         conta_receber_id: contaReceberId,
         observacoes: "Conciliado manualmente",
@@ -87,7 +86,7 @@ export default function ConciliacaoBancaria() {
 
   const handleDesconciliar = async (extratoId: string) => {
     try {
-      await apiClient.patch(`/rest/v1/banco_extratos?id=eq.${extratoId}`, {
+      await apiClient.patch(`/financeiro/extratos/${extratoId}`, {
         conciliado: false,
         conta_receber_id: null,
         observacoes: null,

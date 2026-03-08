@@ -11,10 +11,7 @@ export const useLGPDRequests = () => {
     queryKey: ["lgpd-requests", clinicId],
     queryFn: async () => {
       if (!clinicId) return [];
-
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/lgpd_data_requests?clinic_id=eq.${clinicId}&order=created_at.desc`,
-      );
+      const data = await apiClient.get<any[]>("/lgpd/solicitacoes");
       return data;
     },
     enabled: !!clinicId,
@@ -24,10 +21,7 @@ export const useLGPDRequests = () => {
     queryKey: ["lgpd-consents", clinicId],
     queryFn: async () => {
       if (!clinicId) return [];
-
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/lgpd_consents?clinic_id=eq.${clinicId}&order=created_at.desc`,
-      );
+      const data = await apiClient.get<any[]>("/lgpd/consentimentos");
       return data;
     },
     enabled: !!clinicId,
@@ -35,22 +29,14 @@ export const useLGPDRequests = () => {
 
   const createRequest = useMutation({
     mutationFn: async (requestData: any) => {
-      const response = await apiClient.post<any[]>(
-        "/rest/v1/lgpd_data_requests",
-        [
-          {
-            ...requestData,
-            clinic_id: clinicId,
-            requested_by: user?.id,
-          },
-        ],
+      const response = await apiClient.post<any>(
+        "/lgpd/solicitacoes",
         {
-          headers: {
-            Prefer: "return=representation",
-          },
+          ...requestData,
+          requested_by: user?.id,
         },
       );
-      return response[0];
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lgpd-requests", clinicId] });
@@ -63,9 +49,7 @@ export const useLGPDRequests = () => {
 
   const updateRequestStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      await apiClient.patch(`/rest/v1/lgpd_data_requests?id=eq.${id}`, {
-        status,
-      });
+      await apiClient.patch(`/lgpd/solicitacoes/${id}`, { status });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lgpd-requests", clinicId] });

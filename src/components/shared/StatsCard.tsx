@@ -43,7 +43,7 @@ export const StatsCard = memo(function StatsCard({
   };
 
   return (
-    <Card className={cn('transition-all hover:shadow-md', variantStyles[variant], className)}>
+    <Card data-testid="stats-card" className={cn('transition-all hover:shadow-md', variantStyles[variant], className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon className={cn('h-4 w-4', iconColors[variant])} />

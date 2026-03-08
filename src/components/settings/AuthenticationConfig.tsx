@@ -53,7 +53,7 @@ export function AuthenticationConfig() {
     setLoading(true);
     try {
       const dataArray = await apiClient.get<any[]>(
-        `/rest/v1/admin_configurations?select=config_data&clinic_id=eq.${typeof selectedClinic === "string" ? selectedClinic : selectedClinic.id}&config_type=eq.auth`,
+        "/admin/configuracoes/auth",
       );
 
       const data = dataArray?.[0];
@@ -74,20 +74,9 @@ export function AuthenticationConfig() {
     setSaving(true);
     try {
       await apiClient.post(
-        "/rest/v1/admin_configurations",
+        "/admin/configuracoes/auth",
         {
-          clinic_id:
-            typeof selectedClinic === "string"
-              ? selectedClinic
-              : selectedClinic.id,
-          config_type: "auth",
           config_data: config as any,
-          is_active: true,
-        },
-        {
-          headers: {
-            Prefer: "resolution=merge-duplicates",
-          },
         },
       );
 

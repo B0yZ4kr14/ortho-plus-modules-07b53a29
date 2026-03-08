@@ -1,6 +1,6 @@
 /**
  * DASHBOARD HOOK - Desacoplado da API REST
- * Substitui queries diretas ao Supabase por chamadas à REST API
+ * Chamadas à REST API para dados do dashboard
  */
 
 import { apiClient } from "@/lib/api/apiClient";
@@ -40,7 +40,7 @@ export function useDashboard() {
 
       // Chamar endpoint do backend via apiClient
       const responseData = await apiClient.get<DashboardData>(
-        "/api/dashboard-overview",
+        "/analytics/dashboard-overview",
       );
 
       const response = responseData as DashboardData;

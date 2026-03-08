@@ -14,8 +14,6 @@ import { toast } from "sonner";
 
 export class CryptoPaymentConfirmedHandler {
   async handle(event: CryptoPaymentConfirmedEvent): Promise<void> {
-    console.log("[CryptoPaymentConfirmedHandler] Processing event:", event);
-
     try {
       // 1. Atualizar transação crypto no DB
       await this.updateCryptoTransaction(event);
@@ -42,7 +40,6 @@ export class CryptoPaymentConfirmedHandler {
       // 7. Log de auditoria
       await this.logAudit(event);
 
-      console.log(
         "[CryptoPaymentConfirmedHandler] Event processed successfully",
       );
     } catch (error) {
@@ -73,7 +70,6 @@ export class CryptoPaymentConfirmedHandler {
     event: CryptoPaymentConfirmedEvent,
   ): Promise<void> {
     // Mock: Em produção, atualizar crypto_transactions via Edge Function
-    console.log(
       "[CryptoPaymentConfirmedHandler] Updating transaction:",
       event.payload.transactionId,
     );
@@ -106,7 +102,6 @@ export class CryptoPaymentConfirmedHandler {
   private async registerFinancialTransaction(
     event: CryptoPaymentConfirmedEvent,
   ): Promise<void> {
-    console.log(
       "[CryptoPaymentConfirmedHandler] Registered financial transaction:",
       event.payload,
     );
@@ -115,7 +110,6 @@ export class CryptoPaymentConfirmedHandler {
   private async processSplitPayment(
     event: CryptoPaymentConfirmedEvent,
   ): Promise<void> {
-    console.log(
       "[CryptoPaymentConfirmedHandler] Processing split payment:",
       event.payload,
     );
@@ -124,7 +118,6 @@ export class CryptoPaymentConfirmedHandler {
   private async registerPDVPayment(
     event: CryptoPaymentConfirmedEvent,
   ): Promise<void> {
-    console.log(
       "[CryptoPaymentConfirmedHandler] Registered PDV payment:",
       event.payload,
     );

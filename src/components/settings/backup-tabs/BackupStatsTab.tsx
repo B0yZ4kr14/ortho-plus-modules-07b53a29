@@ -21,7 +21,7 @@ export function BackupStatsTab() {
   const fetchStats = async () => {
     try {
       const backups = await apiClient.get<any[]>(
-        `/rest/v1/backup_history?clinic_id=eq.${clinicId}&order=created_at.desc`,
+        "/configuracoes/backups/historico",
       );
 
       if (backups) {

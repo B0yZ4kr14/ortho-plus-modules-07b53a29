@@ -3,15 +3,20 @@ import { IModuleRepository } from "@/domain/repositories/IModuleRepository";
 import { apiClient } from "@/lib/api/apiClient";
 import { InfrastructureError } from "../errors";
 import { ModuleMapper } from "../mappers/ModuleMapper";
+import type { Tables } from '@/types/database';
 
-export class SupabaseModuleRepository implements IModuleRepository {
+type ModuleCatalogRow = Tables<"module_catalog">;
+interface ModuleDependencyRow { dep_module?: { module_key: string; name: string } }
+interface ModuleDependentRow { module_catalog?: { module_key: string; name: string } }
+
+export class DbModuleRepository implements IModuleRepository {
   async findById(id: number): Promise<Module | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/module_catalog?id=eq.${id}`,
+      const data = await apiClient.get<Tables<"module_catalog">>(
+        `/configuracoes/modulos/${id}`,
       );
-      if (!data || data.length === 0) return null;
-      return ModuleMapper.toDomain(data[0]);
+      if (!data) return null;
+      return ModuleMapper.toDomain(data);
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
       throw new InfrastructureError("Erro inesperado ao buscar módulo", error);
@@ -20,11 +25,11 @@ export class SupabaseModuleRepository implements IModuleRepository {
 
   async findByKey(moduleKey: string): Promise<Module | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/module_catalog?module_key=eq.${moduleKey}`,
+      const data = await apiClient.get<Tables<"module_catalog">>(
+        `/configuracoes/modulos/key/${moduleKey}`,
       );
-      if (!data || data.length === 0) return null;
-      return ModuleMapper.toDomain(data[0]);
+      if (!data) return null;
+      return ModuleMapper.toDomain(data);
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
       throw new InfrastructureError(
@@ -36,11 +41,11 @@ export class SupabaseModuleRepository implements IModuleRepository {
 
   async findByClinicId(clinicId: string): Promise<Module[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/clinic_modules?select=*,module_catalog(*)&clinic_id=eq.${clinicId}`,
+      const data = await apiClient.get<Tables<"module_catalog">[]>(
+        "/configuracoes/modulos",
       );
       return (data || []).map((row) =>
-        ModuleMapper.toDomain(row.module_catalog as any, row),
+        ModuleMapper.toDomain(row),
       );
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
@@ -53,11 +58,12 @@ export class SupabaseModuleRepository implements IModuleRepository {
 
   async findActiveByClinicId(clinicId: string): Promise<Module[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/clinic_modules?select=*,module_catalog(*)&clinic_id=eq.${clinicId}&is_active=eq.true`,
+      const data = await apiClient.get<Tables<"module_catalog">[]>(
+        "/configuracoes/modulos",
+        { params: { active: true } },
       );
-      return ((data as any[]) || []).map((row) =>
-        ModuleMapper.toDomain(row.module_catalog, row),
+      return (data || []).map((row: ModuleCatalogRow) =>
+        ModuleMapper.toDomain(row),
       );
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
@@ -70,8 +76,9 @@ export class SupabaseModuleRepository implements IModuleRepository {
 
   async findByCategory(category: string): Promise<Module[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/module_catalog?category=eq.${category}`,
+      const data = await apiClient.get<Tables<"module_catalog">[]>(
+        "/configuracoes/modulos",
+        { params: { category } },
       );
       return (data || []).map((catalog) => ModuleMapper.toDomain(catalog));
     } catch (error) {
@@ -85,9 +92,9 @@ export class SupabaseModuleRepository implements IModuleRepository {
 
   async activate(moduleId: number, clinicId: string): Promise<void> {
     try {
-      await apiClient.patch(
-        `/rest/v1/clinic_modules?module_catalog_id=eq.${moduleId}&clinic_id=eq.${clinicId}`,
-        { is_active: true },
+      await apiClient.post(
+        `/configuracoes/modulos/${moduleId}/toggle`,
+        { is_active: true, clinic_id: clinicId },
       );
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
@@ -97,9 +104,9 @@ export class SupabaseModuleRepository implements IModuleRepository {
 
   async deactivate(moduleId: number, clinicId: string): Promise<void> {
     try {
-      await apiClient.patch(
-        `/rest/v1/clinic_modules?module_catalog_id=eq.${moduleId}&clinic_id=eq.${clinicId}`,
-        { is_active: false },
+      await apiClient.post(
+        `/configuracoes/modulos/${moduleId}/toggle`,
+        { is_active: false, clinic_id: clinicId },
       );
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
@@ -118,15 +125,18 @@ export class SupabaseModuleRepository implements IModuleRepository {
     }>
   > {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/module_dependencies?select=module_id,depends_on_module_id,module_catalog!module_dependencies_module_id_fkey(module_key),dep_module:module_catalog!module_dependencies_depends_on_module_id_fkey(module_key,name)&module_catalog.module_key=eq.${moduleKey}`,
+      const data = await apiClient.get<Tables<"module_catalog">[]>(
+        `/configuracoes/modulos/key/${moduleKey}/dependencies`,
       );
 
-      return (data || []).map((d) => ({
-        module_key: moduleKey,
-        depends_on_module_key: (d as any).dep_module?.module_key || "",
-        depends_on_module_name: (d as any).dep_module?.name || "",
-      }));
+      return (data || []).map((d) => {
+        const dep = (d as unknown as ModuleDependencyRow).dep_module;
+        return {
+          module_key: moduleKey,
+          depends_on_module_key: dep?.module_key || "",
+          depends_on_module_name: dep?.name || "",
+        };
+      });
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
       throw new InfrastructureError("Erro ao buscar dependências", error);
@@ -138,14 +148,18 @@ export class SupabaseModuleRepository implements IModuleRepository {
     clinicId: string,
   ): Promise<Array<{ module_key: string; name: string }>> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/module_dependencies?select=module_catalog!module_dependencies_module_id_fkey(module_key,name),clinic_modules!inner(is_active)&dep_module.module_key=eq.${moduleKey}&clinic_modules.clinic_id=eq.${clinicId}&clinic_modules.is_active=eq.true`,
+      const data = await apiClient.get<Tables<"module_catalog">[]>(
+        `/configuracoes/modulos/key/${moduleKey}/dependents`,
+        { params: { clinic_id: clinicId } },
       );
 
-      return (data || []).map((d) => ({
-        module_key: (d as any).module_catalog?.module_key || "",
-        name: (d as any).module_catalog?.name || "",
-      }));
+      return (data || []).map((d) => {
+        const cat = (d as unknown as ModuleDependentRow).module_catalog;
+        return {
+          module_key: cat?.module_key || "",
+          name: cat?.name || "",
+        };
+      });
     } catch (error) {
       if (error instanceof InfrastructureError) throw error;
       throw new InfrastructureError("Erro ao buscar dependentes ativos", error);

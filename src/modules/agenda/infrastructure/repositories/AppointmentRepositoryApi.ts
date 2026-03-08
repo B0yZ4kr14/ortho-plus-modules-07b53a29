@@ -1,28 +1,18 @@
-import { Database } from "@/integrations/supabase/types";
 import { apiClient } from "@/lib/api/apiClient";
 import { Appointment } from "../../domain/entities/Appointment";
 import { IAppointmentRepository } from "../../domain/repositories/IAppointmentRepository";
 import { AppointmentMapper } from "../mappers/AppointmentMapper";
 
-type AppointmentRow = Database["public"]["Tables"]["appointments"]["Row"];
-
 export class AppointmentRepositoryApi implements IAppointmentRepository {
   async save(appointment: Appointment): Promise<Appointment> {
     const data = AppointmentMapper.toPersistence(appointment);
-
-    const result = await apiClient.post<AppointmentRow>(
-      "/rest/v1/appointments",
-      data,
-    );
-
+    const result = await apiClient.post<any>("/agenda/appointments", data);
     return AppointmentMapper.toDomain(result);
   }
 
   async findById(id: string): Promise<Appointment | null> {
     try {
-      const data = await apiClient.get<AppointmentRow>(
-        `/rest/v1/appointments/${id}`,
-      );
+      const data = await apiClient.get<any>(`/agenda/appointments/${id}`);
       return data ? AppointmentMapper.toDomain(data) : null;
     } catch (error: any) {
       if (error?.response?.status === 404 || error?.response?.status === 400)
@@ -32,23 +22,23 @@ export class AppointmentRepositoryApi implements IAppointmentRepository {
   }
 
   async findByClinicId(clinicId: string): Promise<Appointment[]> {
-    const data = await apiClient.get<AppointmentRow[]>(
-      `/rest/v1/appointments?clinic_id=eq.${clinicId}&order=start_time.asc`,
-    );
+    const data = await apiClient.get<any[]>(`/agenda/appointments`, {
+      params: { clinic_id: clinicId },
+    });
     return data.map(AppointmentMapper.toDomain);
   }
 
   async findByPatient(patientId: string): Promise<Appointment[]> {
-    const data = await apiClient.get<AppointmentRow[]>(
-      `/rest/v1/appointments?patient_id=eq.${patientId}&order=start_time.desc`,
-    );
+    const data = await apiClient.get<any[]>(`/agenda/appointments`, {
+      params: { patient_id: patientId },
+    });
     return data.map(AppointmentMapper.toDomain);
   }
 
   async findByDentist(dentistId: string): Promise<Appointment[]> {
-    const data = await apiClient.get<AppointmentRow[]>(
-      `/rest/v1/appointments?dentist_id=eq.${dentistId}&order=start_time.asc`,
-    );
+    const data = await apiClient.get<any[]>(`/agenda/appointments`, {
+      params: { dentist_id: dentistId },
+    });
     return data.map(AppointmentMapper.toDomain);
   }
 
@@ -57,9 +47,13 @@ export class AppointmentRepositoryApi implements IAppointmentRepository {
     startDate: Date,
     endDate: Date,
   ): Promise<Appointment[]> {
-    const data = await apiClient.get<AppointmentRow[]>(
-      `/rest/v1/appointments?clinic_id=eq.${clinicId}&start_time=gte.${startDate.toISOString()}&start_time=lte.${endDate.toISOString()}&order=start_time.asc`,
-    );
+    const data = await apiClient.get<any[]>(`/agenda/appointments`, {
+      params: {
+        clinic_id: clinicId,
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
+      },
+    });
     return data.map(AppointmentMapper.toDomain);
   }
 
@@ -68,9 +62,13 @@ export class AppointmentRepositoryApi implements IAppointmentRepository {
     startDate: Date,
     endDate: Date,
   ): Promise<Appointment[]> {
-    const data = await apiClient.get<AppointmentRow[]>(
-      `/rest/v1/appointments?dentist_id=eq.${dentistId}&start_time=gte.${startDate.toISOString()}&end_time=lte.${endDate.toISOString()}&order=start_time.asc`,
-    );
+    const data = await apiClient.get<any[]>(`/agenda/appointments`, {
+      params: {
+        dentist_id: dentistId,
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
+      },
+    });
     return data.map(AppointmentMapper.toDomain);
   }
 
@@ -80,27 +78,46 @@ export class AppointmentRepositoryApi implements IAppointmentRepository {
     endDatetime: Date,
     excludeId?: string,
   ): Promise<Appointment[]> {
-    let url = `/rest/v1/appointments?dentist_id=eq.${dentistId}&status=neq.CANCELADO&status=neq.FALTOU&start_time=lt.${endDatetime.toISOString()}&end_time=gt.${startDatetime.toISOString()}`;
+    const params: any = {
+      dentist_id: dentistId,
+      start_time: startDatetime.toISOString(),
+      end_time: endDatetime.toISOString(),
+    };
+    if (excludeId) params.exclude_id = excludeId;
 
-    if (excludeId) {
-      url += `&id=neq.${excludeId}`;
+    // Use the conflict endpoint which returns { hasConflict, count }
+    // For backward compat, we return empty array if no conflicts
+    const result = await apiClient.get<{ hasConflict: boolean }>(
+      `/agenda/appointments/conflict`,
+      { params },
+    );
+
+    // If there are conflicts, fetch the conflicting appointments
+    if (result?.hasConflict) {
+      const data = await apiClient.get<any[]>(`/agenda/appointments`, {
+        params: {
+          dentist_id: dentistId,
+          start_date: startDatetime.toISOString(),
+          end_date: endDatetime.toISOString(),
+        },
+      });
+      return data
+        .filter((a) => a.id !== excludeId)
+        .map(AppointmentMapper.toDomain);
     }
-
-    const data = await apiClient.get<AppointmentRow[]>(url);
-    return data.map(AppointmentMapper.toDomain);
+    return [];
   }
 
   async update(appointment: Appointment): Promise<Appointment> {
     const data = AppointmentMapper.toUpdate(appointment);
-
-    const result = await apiClient.patch<AppointmentRow>(
-      `/rest/v1/appointments/${appointment.id}`,
+    const result = await apiClient.patch<any>(
+      `/agenda/appointments/${appointment.id}`,
       data,
     );
     return AppointmentMapper.toDomain(result);
   }
 
   async delete(id: string): Promise<void> {
-    await apiClient.delete(`/rest/v1/appointments/${id}`);
+    await apiClient.delete(`/agenda/appointments/${id}`);
   }
 }

@@ -18,7 +18,8 @@ export function BackupTimelineTab() {
     queryKey: ["backup-timeline", clinicId],
     queryFn: async () => {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/backup_history?clinic_id=eq.${clinicId}&status=eq.success&order=created_at.desc&limit=50`,
+        "/configuracoes/backups/historico",
+        { params: { status: "success", limit: 50 } },
       );
       return data;
     },
@@ -61,7 +62,7 @@ export function BackupTimelineTab() {
     <div className="space-y-6">
       <ScrollArea className="h-[600px]">
         <div className="space-y-6">
-          {Object.entries(groupedBackups || {}).map(([date, dateBackups]) => (
+          {Object.entries(groupedBackups || {}).map(([date, dateBackups]: [string, any[]]) => (
             <div key={date}>
               <div className="flex items-center gap-2 mb-3">
                 <Clock className="h-4 w-4 text-muted-foreground" />

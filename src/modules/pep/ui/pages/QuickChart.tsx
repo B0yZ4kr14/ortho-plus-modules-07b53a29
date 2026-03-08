@@ -33,7 +33,7 @@ export default function QuickChart() {
     queryKey: ["patient", patientId],
     queryFn: async () => {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/prontuarios?patient_id=eq.${patientId}&limit=1`,
+        `/pep/prontuarios?patient_id=${patientId}&limit=1`,
       );
       if (!data || data.length === 0) throw new Error("Patient not found");
       return data[0];
@@ -48,7 +48,7 @@ export default function QuickChart() {
       if (!patient?.id) return [];
 
       const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_tratamentos?prontuario_id=eq.${patient.id}&status=eq.EM_ANDAMENTO&select=*,procedimento:procedimentos(nome,codigo_tuss)`,
+        `/pep/tratamentos?prontuario_id=${patient.id}&status=EM_ANDAMENTO`,
       );
       return data || [];
     },

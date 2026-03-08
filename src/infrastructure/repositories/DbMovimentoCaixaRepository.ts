@@ -2,15 +2,14 @@ import { MovimentoCaixa } from "@/domain/entities/MovimentoCaixa";
 import { IMovimentoCaixaRepository } from "@/domain/repositories/IMovimentoCaixaRepository";
 import { apiClient } from "@/lib/api/apiClient";
 import { MovimentoCaixaMapper } from "./mappers/MovimentoCaixaMapper";
+import type { Tables } from '@/types/database';
 
-export class SupabaseMovimentoCaixaRepository implements IMovimentoCaixaRepository {
+export class DbMovimentoCaixaRepository implements IMovimentoCaixaRepository {
   async findById(id: string): Promise<MovimentoCaixa | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/caixa_movimentos?id=eq.${id}`,
-      );
-      if (!data || data.length === 0) return null;
-      return MovimentoCaixaMapper.toDomain(data[0]);
+      const data = await apiClient.get<Tables<"caixa_movimentos">>(`/financeiro/movimentos/${id}`);
+      if (!data) return null;
+      return MovimentoCaixaMapper.toDomain(data);
     } catch {
       return null;
     }
@@ -18,9 +17,9 @@ export class SupabaseMovimentoCaixaRepository implements IMovimentoCaixaReposito
 
   async findByClinicId(clinicId: string): Promise<MovimentoCaixa[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/caixa_movimentos?clinic_id=eq.${clinicId}&order=created_at.desc`,
-      );
+      const data = await apiClient.get<Tables<"caixa_movimentos">[]>("/financeiro/movimentos", {
+        params: { clinic_id: clinicId },
+      });
       return (data || []).map((row) => MovimentoCaixaMapper.toDomain(row));
     } catch {
       return [];
@@ -29,9 +28,9 @@ export class SupabaseMovimentoCaixaRepository implements IMovimentoCaixaReposito
 
   async findAbertos(clinicId: string): Promise<MovimentoCaixa[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/caixa_movimentos?clinic_id=eq.${clinicId}&status=eq.ABERTO&order=created_at.desc`,
-      );
+      const data = await apiClient.get<Tables<"caixa_movimentos">[]>("/financeiro/movimentos", {
+        params: { clinic_id: clinicId, status: "ABERTO" },
+      });
       return (data || []).map((row) => MovimentoCaixaMapper.toDomain(row));
     } catch {
       return [];
@@ -40,9 +39,9 @@ export class SupabaseMovimentoCaixaRepository implements IMovimentoCaixaReposito
 
   async findUltimoAberto(clinicId: string): Promise<MovimentoCaixa | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/caixa_movimentos?clinic_id=eq.${clinicId}&status=eq.ABERTO&order=created_at.desc&limit=1`,
-      );
+      const data = await apiClient.get<Tables<"caixa_movimentos">[]>("/financeiro/movimentos", {
+        params: { clinic_id: clinicId, status: "ABERTO" },
+      });
       if (!data || data.length === 0) return null;
       return MovimentoCaixaMapper.toDomain(data[0]);
     } catch {
@@ -56,9 +55,13 @@ export class SupabaseMovimentoCaixaRepository implements IMovimentoCaixaReposito
     endDate: Date,
   ): Promise<MovimentoCaixa[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/caixa_movimentos?clinic_id=eq.${clinicId}&created_at=gte.${startDate.toISOString()}&created_at=lte.${endDate.toISOString()}&order=created_at.desc`,
-      );
+      const data = await apiClient.get<Tables<"caixa_movimentos">[]>("/financeiro/movimentos", {
+        params: {
+          clinic_id: clinicId,
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
+        },
+      });
       return (data || []).map((row) => MovimentoCaixaMapper.toDomain(row));
     } catch {
       return [];
@@ -67,9 +70,9 @@ export class SupabaseMovimentoCaixaRepository implements IMovimentoCaixaReposito
 
   async findSangrias(clinicId: string): Promise<MovimentoCaixa[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/caixa_movimentos?clinic_id=eq.${clinicId}&tipo=eq.SANGRIA&order=created_at.desc`,
-      );
+      const data = await apiClient.get<Tables<"caixa_movimentos">[]>("/financeiro/movimentos", {
+        params: { clinic_id: clinicId, tipo: "SANGRIA" },
+      });
       return (data || []).map((row) => MovimentoCaixaMapper.toDomain(row));
     } catch {
       return [];
@@ -77,21 +80,18 @@ export class SupabaseMovimentoCaixaRepository implements IMovimentoCaixaReposito
   }
 
   async save(movimento: MovimentoCaixa): Promise<void> {
-    const insert = MovimentoCaixaMapper.toSupabaseInsert(movimento);
+    const insert = MovimentoCaixaMapper.toDbInsert(movimento);
     try {
-      await apiClient.post("/rest/v1/caixa_movimentos", insert);
+      await apiClient.post("/financeiro/movimentos", insert);
     } catch (error: any) {
       throw new Error(`Erro ao salvar movimento de caixa: ${error.message}`);
     }
   }
 
   async update(movimento: MovimentoCaixa): Promise<void> {
-    const insert = MovimentoCaixaMapper.toSupabaseInsert(movimento);
+    const insert = MovimentoCaixaMapper.toDbInsert(movimento);
     try {
-      await apiClient.patch(
-        `/rest/v1/caixa_movimentos?id=eq.${movimento.id}`,
-        insert,
-      );
+      await apiClient.patch(`/financeiro/movimentos/${movimento.id}`, insert);
     } catch (error: any) {
       throw new Error(`Erro ao atualizar movimento de caixa: ${error.message}`);
     }
@@ -99,7 +99,7 @@ export class SupabaseMovimentoCaixaRepository implements IMovimentoCaixaReposito
 
   async delete(id: string): Promise<void> {
     try {
-      await apiClient.delete(`/rest/v1/caixa_movimentos?id=eq.${id}`);
+      await apiClient.delete(`/financeiro/movimentos/${id}`);
     } catch (error: any) {
       throw new Error(`Erro ao deletar movimento de caixa: ${error.message}`);
     }

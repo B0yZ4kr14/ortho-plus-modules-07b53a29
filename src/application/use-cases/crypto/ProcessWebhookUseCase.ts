@@ -51,7 +51,7 @@ export class ProcessWebhookUseCase {
         break;
 
       default:
-        console.log(`Evento ignorado: ${dto.eventType}`);
+        logger.info(`Evento ignorado: ${dto.eventType}`);
         return;
     }
 

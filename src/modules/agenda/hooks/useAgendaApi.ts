@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import apiClient from "@/lib/api/apiClient";
+import { apiClient } from "@/lib/api/apiClient";
 import { endOfDay, isWithinInterval, parseISO, startOfDay } from "date-fns";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -27,10 +27,10 @@ export function useAgendaApi() {
         typeof selectedClinic === "string" ? selectedClinic : selectedClinic.id;
 
       const data = await apiClient.get<any[]>("/api/agenda/appointments", {
-        clinic_id: clinicId,
+        params: { clinic_id: clinicId },
       });
 
-      // Transform Supabase data to Appointment format
+      // Transform database row to Appointment format
       const transformedAppointments: Appointment[] = (data || []).map(
         (apt: any) => {
           const startDate = new Date(apt.start_time);
@@ -79,10 +79,10 @@ export function useAgendaApi() {
       const clinicId =
         typeof selectedClinic === "string" ? selectedClinic : selectedClinic.id;
 
-      const data = await apiClient.get<any[]>("/rest/v1/profiles", {
-        clinic_id: `eq.${clinicId}`,
-        app_role: "eq.MEMBER",
-        select: "id, full_name",
+      const data = await apiClient.get<any[]>("/pacientes/dentists", {
+        params: {
+          clinic_id: clinicId,
+        },
       });
 
       const transformedDentistas: Dentista[] = (data || []).map(
@@ -151,7 +151,7 @@ export function useAgendaApi() {
         Realizada: "concluido",
       };
 
-      const data = await apiClient.post("/rest/v1/appointments", {
+      const data = await apiClient.post("/agenda/appointments", {
         clinic_id: clinicId,
         patient_id: appointment.pacienteId,
         dentist_id: appointment.dentistaId,
@@ -180,8 +180,6 @@ export function useAgendaApi() {
     if (!selectedClinic) return;
 
     try {
-      const clinicId =
-        typeof selectedClinic === "string" ? selectedClinic : selectedClinic.id;
       const updateData: any = {};
 
       if (updates.data && updates.horaInicio) {
@@ -216,10 +214,7 @@ export function useAgendaApi() {
         updateData.dentist_id = updates.dentistaId;
       }
 
-      await apiClient.patch(
-        `/rest/v1/appointments?id=eq.${id}&clinic_id=eq.${clinicId}`,
-        updateData,
-      );
+      await apiClient.patch(`/agenda/appointments/${id}`, updateData);
 
       toast.success("Consulta atualizada com sucesso!");
       await loadAppointments();
@@ -234,12 +229,7 @@ export function useAgendaApi() {
     if (!selectedClinic) return;
 
     try {
-      const clinicId =
-        typeof selectedClinic === "string" ? selectedClinic : selectedClinic.id;
-
-      await apiClient.delete(
-        `/rest/v1/appointments?id=eq.${id}&clinic_id=eq.${clinicId}`,
-      );
+      await apiClient.delete(`/agenda/appointments/${id}`);
 
       toast.success("Consulta removida com sucesso!");
       await loadAppointments();

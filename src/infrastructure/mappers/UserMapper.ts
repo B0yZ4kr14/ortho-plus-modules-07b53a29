@@ -1,11 +1,11 @@
 import { User, AppRole } from '@/domain/entities/User';
 import { Email } from '@/domain/value-objects/Email';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 
 type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 
 /**
- * Mapper: Supabase Row ↔ User Entity
+ * Mapper: Database Row ↔ User Entity
  */
 export class UserMapper {
   static toDomain(row: ProfileRow, email: string): User {

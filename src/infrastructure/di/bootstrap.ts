@@ -9,13 +9,13 @@ import { container } from "./Container";
 import { SERVICE_KEYS } from "./ServiceKeys";
 
 // Repositories
-import { SupabaseAnexoRepository } from "../repositories/SupabaseAnexoRepository";
-import { SupabaseEvolucaoRepository } from "../repositories/SupabaseEvolucaoRepository";
-import { SupabaseModuleRepository } from "../repositories/SupabaseModuleRepository";
-import { SupabasePatientRepository } from "../repositories/SupabasePatientRepository";
-import { SupabaseProntuarioRepository } from "../repositories/SupabaseProntuarioRepository";
-import { SupabaseTratamentoRepository } from "../repositories/SupabaseTratamentoRepository";
-import { SupabaseUserRepository } from "../repositories/SupabaseUserRepository";
+import { DbAnexoRepository } from "../repositories/DbAnexoRepository";
+import { DbEvolucaoRepository } from "../repositories/DbEvolucaoRepository";
+import { DbModuleRepository } from "../repositories/DbModuleRepository";
+import { DbPatientRepository } from "../repositories/DbPatientRepository";
+import { DbProntuarioRepository } from "../repositories/DbProntuarioRepository";
+import { DbTratamentoRepository } from "../repositories/DbTratamentoRepository";
+import { DbUserRepository } from "../repositories/DbUserRepository";
 
 // Use Cases - Patient
 import { CreatePatientUseCase } from "@/application/use-cases/patient/CreatePatientUseCase";
@@ -45,8 +45,8 @@ import { CreateAgendamentoUseCase } from "@/application/use-cases/agenda/CreateA
 import { GetAgendamentosByDateRangeUseCase } from "@/application/use-cases/agenda/GetAgendamentosByDateRangeUseCase";
 import { SendConfirmacaoWhatsAppUseCase } from "@/application/use-cases/agenda/SendConfirmacaoWhatsAppUseCase";
 import { UpdateAgendamentoUseCase } from "@/application/use-cases/agenda/UpdateAgendamentoUseCase";
-import { SupabaseAgendamentoRepository } from "@/infrastructure/repositories/SupabaseAgendamentoRepository";
-import { SupabaseConfirmacaoRepository } from "@/infrastructure/repositories/SupabaseConfirmacaoRepository";
+import { DbAgendamentoRepository } from "@/infrastructure/repositories/DbAgendamentoRepository";
+import { DbConfirmacaoRepository } from "@/infrastructure/repositories/DbConfirmacaoRepository";
 
 // Orcamentos Module
 import { AddItemOrcamentoUseCase } from "@/application/use-cases/orcamentos/AddItemOrcamentoUseCase";
@@ -62,7 +62,7 @@ import { GetOdontogramaUseCase } from "@/application/use-cases/odontograma/GetOd
 import { UpdateToothNotesUseCase } from "@/application/use-cases/odontograma/UpdateToothNotesUseCase";
 import { UpdateToothStatusUseCase } from "@/application/use-cases/odontograma/UpdateToothStatusUseCase";
 import { UpdateToothSurfaceUseCase } from "@/application/use-cases/odontograma/UpdateToothSurfaceUseCase";
-import { SupabaseOdontogramaRepository } from "@/infrastructure/repositories/SupabaseOdontogramaRepository";
+import { DbOdontogramaRepository } from "@/infrastructure/repositories/DbOdontogramaRepository";
 
 // Estoque Module (usando repositórios do módulo)
 import { AjustarEstoqueUseCase } from "@/application/use-cases/estoque/AjustarEstoqueUseCase";
@@ -73,8 +73,8 @@ import { ListProdutosByClinicUseCase } from "@/application/use-cases/estoque/Lis
 import { RegistrarEntradaUseCase } from "@/application/use-cases/estoque/RegistrarEntradaUseCase";
 import { RegistrarSaidaUseCase } from "@/application/use-cases/estoque/RegistrarSaidaUseCase";
 import { UpdateProdutoUseCase } from "@/application/use-cases/estoque/UpdateProdutoUseCase";
-import { SupabaseMovimentacaoEstoqueRepository } from "@/modules/estoque/infrastructure/repositories/SupabaseMovimentacaoEstoqueRepository";
-import { SupabaseProdutoRepository } from "@/modules/estoque/infrastructure/repositories/SupabaseProdutoRepository";
+import { ApiMovimentacaoEstoqueRepository } from "@/modules/estoque/infrastructure/repositories/ApiMovimentacaoEstoqueRepository";
+import { ApiProdutoRepository } from "@/modules/estoque/infrastructure/repositories/ApiProdutoRepository";
 
 // Financeiro Module
 import { AbrirCaixaUseCase } from "@/application/use-cases/financeiro/AbrirCaixaUseCase";
@@ -88,10 +88,10 @@ import { PagarContaUseCase } from "@/application/use-cases/financeiro/PagarConta
 import { ReceberContaUseCase } from "@/application/use-cases/financeiro/ReceberContaUseCase";
 import { RegistrarIncidenteCaixaUseCase } from "@/application/use-cases/financeiro/RegistrarIncidenteCaixaUseCase";
 import { RegistrarSangriaUseCase } from "@/application/use-cases/financeiro/RegistrarSangriaUseCase";
-import { SupabaseContaPagarRepository } from "@/infrastructure/repositories/SupabaseContaPagarRepository";
-import { SupabaseContaReceberRepository } from "@/infrastructure/repositories/SupabaseContaReceberRepository";
-import { SupabaseIncidenteCaixaRepository } from "@/infrastructure/repositories/SupabaseIncidenteCaixaRepository";
-import { SupabaseMovimentoCaixaRepository } from "@/infrastructure/repositories/SupabaseMovimentoCaixaRepository";
+import { DbContaPagarRepository } from "@/infrastructure/repositories/DbContaPagarRepository";
+import { DbContaReceberRepository } from "@/infrastructure/repositories/DbContaReceberRepository";
+import { DbIncidenteCaixaRepository } from "@/infrastructure/repositories/DbIncidenteCaixaRepository";
+import { DbMovimentoCaixaRepository } from "@/infrastructure/repositories/DbMovimentoCaixaRepository";
 
 // CRM Module
 import { ConcluirAtividadeUseCase } from "@/modules/crm/application/use-cases/ConcluirAtividadeUseCase";
@@ -108,19 +108,19 @@ export function bootstrapContainer(): void {
   // Registrar Repositories (Singletons)
   container.register(
     SERVICE_KEYS.PATIENT_REPOSITORY,
-    () => new SupabasePatientRepository(),
+    () => new DbPatientRepository(),
     true,
   );
 
   container.register(
     SERVICE_KEYS.MODULE_REPOSITORY,
-    () => new SupabaseModuleRepository(),
+    () => new DbModuleRepository(),
     true,
   );
 
   container.register(
     SERVICE_KEYS.USER_REPOSITORY,
-    () => new SupabaseUserRepository(),
+    () => new DbUserRepository(),
     true,
   );
 
@@ -207,25 +207,25 @@ export function bootstrapContainer(): void {
   // Registrar Repositories - Prontuario (PEP)
   container.register(
     SERVICE_KEYS.PRONTUARIO_REPOSITORY,
-    () => new SupabaseProntuarioRepository(),
+    () => new DbProntuarioRepository(),
     true,
   );
 
   container.register(
     SERVICE_KEYS.TRATAMENTO_REPOSITORY,
-    () => new SupabaseTratamentoRepository(),
+    () => new DbTratamentoRepository(),
     true,
   );
 
   container.register(
     SERVICE_KEYS.EVOLUCAO_REPOSITORY,
-    () => new SupabaseEvolucaoRepository(),
+    () => new DbEvolucaoRepository(),
     true,
   );
 
   container.register(
     SERVICE_KEYS.ANEXO_REPOSITORY,
-    () => new SupabaseAnexoRepository(),
+    () => new DbAnexoRepository(),
     true,
   );
 
@@ -276,13 +276,13 @@ export function bootstrapContainer(): void {
   // Registrar Repositories - Agenda
   container.register(
     SERVICE_KEYS.AGENDAMENTO_REPOSITORY,
-    () => new SupabaseAgendamentoRepository(),
+    () => new DbAgendamentoRepository(),
     true,
   );
 
   container.register(
     SERVICE_KEYS.CONFIRMACAO_REPOSITORY,
-    () => new SupabaseConfirmacaoRepository(),
+    () => new DbConfirmacaoRepository(),
     true,
   );
 
@@ -396,7 +396,7 @@ export function bootstrapContainer(): void {
   // Registrar Repositories - Odontograma
   container.register(
     SERVICE_KEYS.ODONTOGRAMA_REPOSITORY,
-    () => new SupabaseOdontogramaRepository(),
+    () => new DbOdontogramaRepository(),
     true,
   );
 
@@ -440,13 +440,13 @@ export function bootstrapContainer(): void {
   // Registrar Repositories - Estoque
   container.register(
     SERVICE_KEYS.PRODUTO_REPOSITORY,
-    () => new SupabaseProdutoRepository(),
+    () => new ApiProdutoRepository(),
     true,
   );
 
   container.register(
     SERVICE_KEYS.MOVIMENTACAO_ESTOQUE_REPOSITORY,
-    () => new SupabaseMovimentacaoEstoqueRepository(),
+    () => new ApiMovimentacaoEstoqueRepository(),
     true,
   );
 
@@ -530,25 +530,25 @@ export function bootstrapContainer(): void {
   // Repositories
   container.register(
     SERVICE_KEYS.CONTA_PAGAR_REPOSITORY,
-    () => new SupabaseContaPagarRepository(),
+    () => new DbContaPagarRepository(),
     true,
   );
 
   container.register(
     SERVICE_KEYS.CONTA_RECEBER_REPOSITORY,
-    () => new SupabaseContaReceberRepository(),
+    () => new DbContaReceberRepository(),
     true,
   );
 
   container.register(
     SERVICE_KEYS.MOVIMENTO_CAIXA_REPOSITORY,
-    () => new SupabaseMovimentoCaixaRepository(),
+    () => new DbMovimentoCaixaRepository(),
     true,
   );
 
   container.register(
     SERVICE_KEYS.INCIDENTE_CAIXA_REPOSITORY,
-    () => new SupabaseIncidenteCaixaRepository(),
+    () => new DbIncidenteCaixaRepository(),
     true,
   );
 

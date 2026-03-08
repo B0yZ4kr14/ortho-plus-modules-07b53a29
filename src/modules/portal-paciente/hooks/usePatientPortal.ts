@@ -23,7 +23,7 @@ export function usePatientPortal(patientId?: string) {
     try {
       setLoading(true);
       const data = await apiClient.get<PatientNotification[]>(
-        `/rest/v1/patient_notifications?patient_id=eq.${patientId}&order=created_at.desc&limit=50`,
+        `/portal-paciente/${patientId}/notificacoes`,
       );
 
       setNotifications(data);
@@ -45,7 +45,8 @@ export function usePatientPortal(patientId?: string) {
 
     try {
       const data = await apiClient.get<PatientMessage[]>(
-        `/rest/v1/patient_messages?patient_id=eq.${patientId}&clinic_id=eq.${clinicId}&order=created_at.asc`,
+        `/portal-paciente/${patientId}/mensagens`,
+        { params: { clinic_id: clinicId } },
       );
 
       setMessages(data);
@@ -60,11 +61,11 @@ export function usePatientPortal(patientId?: string) {
     if (!patientId) return;
 
     try {
-      const response = await apiClient.get<PatientPreferences[]>(
-        `/rest/v1/patient_preferences?patient_id=eq.${patientId}&limit=1`,
+      const response = await apiClient.get<PatientPreferences>(
+        `/portal-paciente/${patientId}/preferencias`,
       );
 
-      setPreferences(response[0] || null);
+      setPreferences(response || null);
     } catch (error) {
       console.error("Erro ao carregar preferências:", error);
     }
@@ -74,11 +75,8 @@ export function usePatientPortal(patientId?: string) {
   const markAsRead = async (notificationId: string) => {
     try {
       await apiClient.patch(
-        `/rest/v1/patient_notifications?id=eq.${notificationId}`,
-        {
-          lida: true,
-          lida_em: new Date().toISOString(),
-        },
+        `/portal-paciente/${patientId}/notificacoes/${notificationId}/lida`,
+        {},
       );
 
       await loadNotifications();
@@ -93,11 +91,8 @@ export function usePatientPortal(patientId?: string) {
 
     try {
       await apiClient.patch(
-        `/rest/v1/patient_notifications?patient_id=eq.${patientId}&lida=eq.false`,
-        {
-          lida: true,
-          lida_em: new Date().toISOString(),
-        },
+        `/portal-paciente/${patientId}/notificacoes/marcar-todas-lidas`,
+        {},
       );
 
       await loadNotifications();
@@ -118,15 +113,15 @@ export function usePatientPortal(patientId?: string) {
     if (!patientId) return;
 
     try {
-      await apiClient.post("/rest/v1/patient_messages", [
+      await apiClient.post(
+        `/portal-paciente/${patientId}/mensagens`,
         {
           clinic_id: clinicId,
-          patient_id: patientId,
           remetente_tipo: remetenteTipo,
           remetente_id: remetenteId,
           mensagem,
         },
-      ]);
+      );
 
       await loadMessages(clinicId);
       return true;
@@ -142,15 +137,9 @@ export function usePatientPortal(patientId?: string) {
     if (!patientId) return;
 
     try {
-      await apiClient.post(
-        "/rest/v1/patient_preferences",
-        [
-          {
-            patient_id: patientId,
-            ...updates,
-          },
-        ],
-        { headers: { Prefer: "resolution=merge-duplicates" } },
+      await apiClient.put(
+        `/portal-paciente/${patientId}/preferencias`,
+        updates,
       );
 
       await loadPreferences();
@@ -168,9 +157,10 @@ export function usePatientPortal(patientId?: string) {
     notification: Partial<PatientNotification>,
   ) => {
     try {
-      await apiClient.post("/rest/v1/patient_notifications", [
-        notification as any,
-      ]);
+      await apiClient.post(
+        `/portal-paciente/${patientId}/notificacoes`,
+        notification,
+      );
 
       await loadNotifications();
       return true;

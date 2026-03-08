@@ -1,10 +1,10 @@
 import { Prontuario, ProntuarioProps } from '@/domain/entities/Prontuario';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 
 type ProntuarioRow = Database['public']['Tables']['prontuarios']['Row'];
 
 /**
- * Mapper para conversão entre Prontuario (domínio) e dados do Supabase
+ * Mapper para conversão entre Prontuario (domínio) e dados do banco
  */
 export class ProntuarioMapper {
   static toDomain(raw: ProntuarioRow): Prontuario {

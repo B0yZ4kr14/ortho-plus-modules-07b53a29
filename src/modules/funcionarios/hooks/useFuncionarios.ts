@@ -105,9 +105,7 @@ export function useFuncionarios() {
 
     try {
       setLoading(true);
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/funcionarios?clinic_id=eq.${clinicId}&order=nome.asc`,
-      );
+      const data = await apiClient.get<any[]>("/funcionarios");
 
       const mapped = (data || []).map(mapRowToFuncionario);
       setFuncionarios(mapped);
@@ -131,17 +129,14 @@ export function useFuncionarios() {
 
     try {
       const rowData = mapFuncionarioToRow(funcionario, clinicId);
-      const response = await apiClient.post<any[]>(
-        "/rest/v1/funcionarios",
-        [rowData],
-        {
-          headers: {
-            Prefer: "return=representation",
-          },
-        },
+      const response = await apiClient.post<any>(
+        "/funcionarios",
+        rowData,
       );
 
-      const newFuncionario = mapRowToFuncionario(response[0]);
+      const newFuncionario = mapRowToFuncionario(
+        Array.isArray(response) ? response[0] : response,
+      );
       setFuncionarios((prev) => [...prev, newFuncionario]);
       toast.success("Funcionário cadastrado com sucesso!");
     } catch (error: any) {
@@ -162,17 +157,14 @@ export function useFuncionarios() {
 
     try {
       const rowData = mapFuncionarioToRow(funcionario, clinicId);
-      const response = await apiClient.patch<any[]>(
-        `/rest/v1/funcionarios?id=eq.${id}&clinic_id=eq.${clinicId}`,
+      const response = await apiClient.patch<any>(
+        `/funcionarios/${id}`,
         rowData,
-        {
-          headers: {
-            Prefer: "return=representation",
-          },
-        },
       );
 
-      const updatedFuncionario = mapRowToFuncionario(response[0]);
+      const updatedFuncionario = mapRowToFuncionario(
+        Array.isArray(response) ? response[0] : response,
+      );
       setFuncionarios((prev) =>
         prev.map((f) => (f.id === id ? updatedFuncionario : f)),
       );
@@ -190,9 +182,7 @@ export function useFuncionarios() {
     }
 
     try {
-      await apiClient.delete(
-        `/rest/v1/funcionarios?id=eq.${id}&clinic_id=eq.${clinicId}`,
-      );
+      await apiClient.delete(`/funcionarios/${id}`);
 
       setFuncionarios((prev) => prev.filter((f) => f.id !== id));
       toast.success("Funcionário removido com sucesso!");

@@ -1,16 +1,17 @@
-import { CategoriaContaPagar, ContaPagar } from "@/domain/entities/ContaPagar";
+import { ContaPagar, CategoriaContaPagar } from "@/domain/entities/ContaPagar";
 import { IContaPagarRepository } from "@/domain/repositories/IContaPagarRepository";
 import { apiClient } from "@/lib/api/apiClient";
 import { ContaPagarMapper } from "./mappers/ContaPagarMapper";
+import type { Tables } from '@/types/database';
 
-export class SupabaseContaPagarRepository implements IContaPagarRepository {
+export class DbContaPagarRepository implements IContaPagarRepository {
   async findById(id: string): Promise<ContaPagar | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/contas_pagar?id=eq.${id}`,
+      const data = await apiClient.get<Tables<"financial_transactions">>(
+        `/financeiro/contas-pagar/${id}`,
       );
-      if (!data || data.length === 0) return null;
-      return ContaPagarMapper.toDomain(data[0]);
+      if (!data) return null;
+      return ContaPagarMapper.toDomain(data);
     } catch {
       return null;
     }
@@ -18,8 +19,8 @@ export class SupabaseContaPagarRepository implements IContaPagarRepository {
 
   async findByClinicId(clinicId: string): Promise<ContaPagar[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/contas_pagar?clinic_id=eq.${clinicId}&order=data_vencimento.asc`,
+      const data = await apiClient.get<Tables<"financial_transactions">[]>(
+        "/financeiro/contas-pagar",
       );
       return (data || []).map((row) => ContaPagarMapper.toDomain(row));
     } catch {
@@ -29,8 +30,9 @@ export class SupabaseContaPagarRepository implements IContaPagarRepository {
 
   async findPendentes(clinicId: string): Promise<ContaPagar[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/contas_pagar?clinic_id=eq.${clinicId}&status=eq.PENDENTE&order=data_vencimento.asc`,
+      const data = await apiClient.get<Tables<"financial_transactions">[]>(
+        "/financeiro/contas-pagar",
+        { params: { status: "PENDENTE" } },
       );
       return (data || []).map((row) => ContaPagarMapper.toDomain(row));
     } catch {
@@ -41,8 +43,9 @@ export class SupabaseContaPagarRepository implements IContaPagarRepository {
   async findVencidas(clinicId: string): Promise<ContaPagar[]> {
     const hoje = new Date().toISOString().split("T")[0];
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/contas_pagar?clinic_id=eq.${clinicId}&status=eq.PENDENTE&data_vencimento=lt.${hoje}&order=data_vencimento.asc`,
+      const data = await apiClient.get<Tables<"financial_transactions">[]>(
+        "/financeiro/contas-pagar",
+        { params: { status: "PENDENTE", vencidas_antes: hoje } },
       );
       return (data || []).map((row) => ContaPagarMapper.toDomain(row));
     } catch {
@@ -55,8 +58,9 @@ export class SupabaseContaPagarRepository implements IContaPagarRepository {
     fornecedor: string,
   ): Promise<ContaPagar[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/contas_pagar?clinic_id=eq.${clinicId}&fornecedor=ilike.*${fornecedor}*&order=data_vencimento.asc`,
+      const data = await apiClient.get<Tables<"financial_transactions">[]>(
+        "/financeiro/contas-pagar",
+        { params: { fornecedor } },
       );
       return (data || []).map((row) => ContaPagarMapper.toDomain(row));
     } catch {
@@ -69,8 +73,9 @@ export class SupabaseContaPagarRepository implements IContaPagarRepository {
     categoria: CategoriaContaPagar,
   ): Promise<ContaPagar[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/contas_pagar?clinic_id=eq.${clinicId}&categoria=eq.${categoria}&order=data_vencimento.asc`,
+      const data = await apiClient.get<Tables<"financial_transactions">[]>(
+        "/financeiro/contas-pagar",
+        { params: { categoria } },
       );
       return (data || []).map((row) => ContaPagarMapper.toDomain(row));
     } catch {
@@ -84,8 +89,14 @@ export class SupabaseContaPagarRepository implements IContaPagarRepository {
     endDate: Date,
   ): Promise<ContaPagar[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/contas_pagar?clinic_id=eq.${clinicId}&data_vencimento=gte.${startDate.toISOString()}&data_vencimento=lte.${endDate.toISOString()}&order=data_vencimento.asc`,
+      const data = await apiClient.get<Tables<"financial_transactions">[]>(
+        "/financeiro/contas-pagar",
+        {
+          params: {
+            start_date: startDate.toISOString(),
+            end_date: endDate.toISOString(),
+          },
+        },
       );
       return (data || []).map((row) => ContaPagarMapper.toDomain(row));
     } catch {
@@ -94,18 +105,18 @@ export class SupabaseContaPagarRepository implements IContaPagarRepository {
   }
 
   async save(conta: ContaPagar): Promise<void> {
-    const insert = ContaPagarMapper.toSupabaseInsert(conta);
+    const insert = ContaPagarMapper.toDbInsert(conta);
     try {
-      await apiClient.post("/rest/v1/contas_pagar", insert);
+      await apiClient.post("/financeiro/contas-pagar", insert);
     } catch (error: any) {
       throw new Error(`Erro ao salvar conta a pagar: ${error.message}`);
     }
   }
 
   async update(conta: ContaPagar): Promise<void> {
-    const insert = ContaPagarMapper.toSupabaseInsert(conta);
+    const insert = ContaPagarMapper.toDbInsert(conta);
     try {
-      await apiClient.patch(`/rest/v1/contas_pagar?id=eq.${conta.id}`, insert);
+      await apiClient.patch(`/financeiro/contas-pagar/${conta.id}`, insert);
     } catch (error: any) {
       throw new Error(`Erro ao atualizar conta a pagar: ${error.message}`);
     }
@@ -113,7 +124,7 @@ export class SupabaseContaPagarRepository implements IContaPagarRepository {
 
   async delete(id: string): Promise<void> {
     try {
-      await apiClient.delete(`/rest/v1/contas_pagar?id=eq.${id}`);
+      await apiClient.delete(`/financeiro/contas-pagar/${id}`);
     } catch (error: any) {
       throw new Error(`Erro ao deletar conta a pagar: ${error.message}`);
     }

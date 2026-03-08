@@ -10,13 +10,13 @@ import {
 } from "../../domain/repositories/ICategoryRepository";
 
 export class ApiCategoryRepository implements ICategoryRepository {
-  private readonly baseUrl = "/rest/v1/financial_categories";
+  private readonly baseUrl = "/financeiro/categories";
 
   async findById(id: string): Promise<Category | null> {
     try {
-      const data = await apiClient.get<any[]>(`${this.baseUrl}?id=eq.${id}`);
-      if (!data || data.length === 0) return null;
-      return this.toDomain(data[0]);
+      const data = await apiClient.get<any>(`${this.baseUrl}/${id}`);
+      if (!data) return null;
+      return this.toDomain(data);
     } catch {
       return null;
     }
@@ -27,22 +27,11 @@ export class ApiCategoryRepository implements ICategoryRepository {
     filters?: CategoryFilters,
   ): Promise<Category[]> {
     try {
-      const params = new URLSearchParams();
-      params.append("clinic_id", `eq.${clinicId}`);
+      const params: Record<string, string> = {};
+      if (filters?.type) params.type = filters.type;
+      if (filters?.isActive !== undefined) params.is_active = String(filters.isActive);
 
-      if (filters?.type) {
-        params.append("type", `eq.${filters.type}`);
-      }
-
-      if (filters?.isActive !== undefined) {
-        params.append("is_active", `eq.${filters.isActive}`);
-      }
-
-      params.append("order", "name.asc");
-
-      const data = await apiClient.get<any[]>(
-        `${this.baseUrl}?${params.toString()}`,
-      );
+      const data = await apiClient.get<any[]>(this.baseUrl, { params });
       return (data || []).map((row) => this.toDomain(row));
     } catch {
       return [];
@@ -56,11 +45,11 @@ export class ApiCategoryRepository implements ICategoryRepository {
 
   async update(category: Category): Promise<void> {
     const data = this.toDatabase(category);
-    await apiClient.patch(`${this.baseUrl}?id=eq.${category.id}`, data);
+    await apiClient.patch(`${this.baseUrl}/${category.id}`, data);
   }
 
   async delete(id: string): Promise<void> {
-    await apiClient.delete(`${this.baseUrl}?id=eq.${id}`);
+    await apiClient.delete(`${this.baseUrl}/${id}`);
   }
 
   async findByName(
@@ -69,15 +58,9 @@ export class ApiCategoryRepository implements ICategoryRepository {
     type: CategoryType,
   ): Promise<Category | null> {
     try {
-      const params = new URLSearchParams();
-      params.append("clinic_id", `eq.${clinicId}`);
-      params.append("name", `eq.${name}`);
-      params.append("type", `eq.${type}`);
-      params.append("limit", "1");
-
-      const data = await apiClient.get<any[]>(
-        `${this.baseUrl}?${params.toString()}`,
-      );
+      const data = await apiClient.get<any[]>(this.baseUrl, {
+        params: { name, type },
+      });
       if (!data || data.length === 0) return null;
       return this.toDomain(data[0]);
     } catch {

@@ -9,9 +9,8 @@ export class AtividadeRepositoryApi implements IAtividadeRepository {
 
     try {
       const response = await apiClient.post<any>(
-        "/rest/v1/crm_activities",
+        "/crm/atividades",
         data,
-        { headers: { Prefer: "return=representation" } },
       );
 
       const savedData = Array.isArray(response) ? response[0] : response;
@@ -26,12 +25,9 @@ export class AtividadeRepositoryApi implements IAtividadeRepository {
 
   async findById(id: string): Promise<Atividade | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/crm_activities?id=eq.${id}&select=*`,
-      );
-
-      if (!data || data.length === 0) return null;
-      return AtividadeMapper.toDomain(data[0]);
+      const data = await apiClient.get<any>(`/crm/atividades/${id}`);
+      if (!data) return null;
+      return AtividadeMapper.toDomain(data);
     } catch (error: any) {
       if (error.response?.status === 404 || error.response?.status === 406)
         return null;
@@ -42,9 +38,9 @@ export class AtividadeRepositoryApi implements IAtividadeRepository {
   async findByLeadId(leadId: string): Promise<Atividade[]> {
     try {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/crm_activities?lead_id=eq.${leadId}&order=created_at.desc`,
+        "/crm/atividades",
+        { params: { lead_id: leadId } },
       );
-
       return data?.map(AtividadeMapper.toDomain) ?? [];
     } catch (error: any) {
       throw new Error(`Erro ao buscar atividades do lead: ${error.message}`);
@@ -54,9 +50,9 @@ export class AtividadeRepositoryApi implements IAtividadeRepository {
   async findByResponsavel(responsavelId: string): Promise<Atividade[]> {
     try {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/crm_activities?assigned_to=eq.${responsavelId}&order=scheduled_date.asc`,
+        "/crm/atividades",
+        { params: { assigned_to: responsavelId } },
       );
-
       return data?.map(AtividadeMapper.toDomain) ?? [];
     } catch (error: any) {
       throw new Error(
@@ -77,9 +73,15 @@ export class AtividadeRepositoryApi implements IAtividadeRepository {
 
     try {
       const activities = await apiClient.get<any[]>(
-        `/rest/v1/crm_activities?clinic_id=eq.${clinicId}&status=eq.AGENDADA&scheduled_date=gte.${startOfDay.toISOString()}&scheduled_date=lte.${endOfDay.toISOString()}&order=scheduled_date.asc`,
+        "/crm/atividades",
+        {
+          params: {
+            status: "AGENDADA",
+            start_date: startOfDay.toISOString(),
+            end_date: endOfDay.toISOString(),
+          },
+        },
       );
-
       return activities?.map(AtividadeMapper.toDomain) ?? [];
     } catch (error: any) {
       throw new Error(`Erro ao buscar atividades agendadas: ${error.message}`);
@@ -91,9 +93,8 @@ export class AtividadeRepositoryApi implements IAtividadeRepository {
 
     try {
       const response = await apiClient.patch<any>(
-        `/rest/v1/crm_activities?id=eq.${atividade.id}`,
+        `/crm/atividades/${atividade.id}`,
         data,
-        { headers: { Prefer: "return=representation" } },
       );
 
       const updatedData = Array.isArray(response) ? response[0] : response;
@@ -108,7 +109,7 @@ export class AtividadeRepositoryApi implements IAtividadeRepository {
 
   async delete(id: string): Promise<void> {
     try {
-      await apiClient.delete(`/rest/v1/crm_activities?id=eq.${id}`);
+      await apiClient.delete(`/crm/atividades/${id}`);
     } catch (error: any) {
       throw new Error(`Erro ao deletar atividade: ${error.message}`);
     }

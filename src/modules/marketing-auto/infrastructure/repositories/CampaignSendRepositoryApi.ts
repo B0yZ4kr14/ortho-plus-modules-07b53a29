@@ -12,11 +12,9 @@ import {
 export class CampaignSendRepositoryApi implements ICampaignSendRepository {
   async findById(id: string): Promise<CampaignSend | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/campaign_sends?id=eq.${id}&select=*`,
-      );
-      if (!data || data.length === 0) return null;
-      return this.toDomain(data[0]);
+      const data = await apiClient.get<any>(`/marketing/envios/${id}`);
+      if (!data) return null;
+      return this.toDomain(data);
     } catch (error: any) {
       if (error.response?.status === 404 || error.response?.status === 406)
         return null;
@@ -29,27 +27,20 @@ export class CampaignSendRepositoryApi implements ICampaignSendRepository {
     filters?: CampaignSendFilters,
   ): Promise<CampaignSend[]> {
     try {
-      let url = `/rest/v1/campaign_sends?campaign_id=eq.${campaignId}`;
+      const params: Record<string, any> = {
+        campaign_id: campaignId,
+      };
 
-      if (filters?.patientId) {
-        url += `&patient_id=eq.${filters.patientId}`;
-      }
-
-      if (filters?.status) {
-        url += `&status=eq.${filters.status}`;
-      }
-
+      if (filters?.patientId) params.patient_id = filters.patientId;
+      if (filters?.status) params.status = filters.status;
       if (filters?.hasError !== undefined) {
-        if (filters.hasError) {
-          url += `&status=eq.ERRO`;
-        } else {
-          url += `&status=neq.ERRO`;
-        }
+        params.has_error = filters.hasError;
       }
 
-      url += "&order=scheduled_for.asc";
-
-      const data = await apiClient.get<any[]>(url);
+      const data = await apiClient.get<any[]>(
+        "/marketing/envios",
+        { params },
+      );
       return data?.map((row) => this.toDomain(row)) ?? [];
     } catch (error: any) {
       throw new Error(`Erro ao buscar envios da campanha: ${error.message}`);
@@ -59,7 +50,8 @@ export class CampaignSendRepositoryApi implements ICampaignSendRepository {
   async findByPatient(patientId: string): Promise<CampaignSend[]> {
     try {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/campaign_sends?patient_id=eq.${patientId}&order=created_at.desc`,
+        "/marketing/envios",
+        { params: { patient_id: patientId } },
       );
       return data?.map((row) => this.toDomain(row)) ?? [];
     } catch (error: any) {
@@ -72,7 +64,7 @@ export class CampaignSendRepositoryApi implements ICampaignSendRepository {
   async save(send: CampaignSend): Promise<void> {
     const data = this.toDatabase(send);
     try {
-      await apiClient.post("/rest/v1/campaign_sends", data);
+      await apiClient.post("/marketing/envios", data);
     } catch (error: any) {
       throw new Error(`Erro ao salvar envio: ${error.message}`);
     }
@@ -81,7 +73,7 @@ export class CampaignSendRepositoryApi implements ICampaignSendRepository {
   async update(send: CampaignSend): Promise<void> {
     const data = this.toDatabase(send);
     try {
-      await apiClient.patch(`/rest/v1/campaign_sends?id=eq.${send.id}`, data);
+      await apiClient.patch(`/marketing/envios/${send.id}`, data);
     } catch (error: any) {
       throw new Error(`Erro ao atualizar envio: ${error.message}`);
     }
@@ -89,7 +81,7 @@ export class CampaignSendRepositoryApi implements ICampaignSendRepository {
 
   async delete(id: string): Promise<void> {
     try {
-      await apiClient.delete(`/rest/v1/campaign_sends?id=eq.${id}`);
+      await apiClient.delete(`/marketing/envios/${id}`);
     } catch (error: any) {
       throw new Error(`Erro ao deletar envio: ${error.message}`);
     }
@@ -98,7 +90,14 @@ export class CampaignSendRepositoryApi implements ICampaignSendRepository {
   async getScheduledSends(campaignId: string): Promise<CampaignSend[]> {
     try {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/campaign_sends?campaign_id=eq.${campaignId}&status=eq.AGENDADO&scheduled_for=lte.${new Date().toISOString()}&order=scheduled_for.asc`,
+        "/marketing/envios",
+        {
+          params: {
+            campaign_id: campaignId,
+            status: "AGENDADO",
+            due: true,
+          },
+        },
       );
       return data?.map((row) => this.toDomain(row)) ?? [];
     } catch (error: any) {
@@ -109,7 +108,13 @@ export class CampaignSendRepositoryApi implements ICampaignSendRepository {
   async getErrorSends(campaignId: string): Promise<CampaignSend[]> {
     try {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/campaign_sends?campaign_id=eq.${campaignId}&status=eq.ERRO&order=created_at.desc`,
+        "/marketing/envios",
+        {
+          params: {
+            campaign_id: campaignId,
+            status: "ERRO",
+          },
+        },
       );
       return data?.map((row) => this.toDomain(row)) ?? [];
     } catch (error: any) {

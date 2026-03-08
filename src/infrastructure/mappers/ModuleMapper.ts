@@ -1,12 +1,12 @@
 import { Module } from '@/domain/entities/Module';
 import { ModuleKey } from '@/domain/value-objects/ModuleKey';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 
 type ModuleCatalogRow = Database['public']['Tables']['module_catalog']['Row'];
 type ClinicModuleRow = Database['public']['Tables']['clinic_modules']['Row'];
 
 /**
- * Mapper: Supabase Row ↔ Module Entity
+ * Mapper: Database Row ↔ Module Entity
  */
 export class ModuleMapper {
   static toDomain(

@@ -1,15 +1,15 @@
 import { MovimentoCaixa, TipoMovimentoCaixa, StatusMovimentoCaixa } from '@/domain/entities/MovimentoCaixa';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/types/database';
 
 type MovimentoCaixaRow = Database['public']['Tables']['caixa_movimentos']['Row'];
 type MovimentoCaixaInsert = Database['public']['Tables']['caixa_movimentos']['Insert'];
 
 /**
- * Mapper para converter entre MovimentoCaixa (domínio) e tabela Supabase
+ * Mapper para converter entre MovimentoCaixa (domínio) e tabela PostgreSQL
  */
 export class MovimentoCaixaMapper {
   /**
-   * Converte registro do Supabase para entidade de domínio
+   * Converte registro do banco para entidade de domínio
    */
   static toDomain(row: MovimentoCaixaRow): MovimentoCaixa {
     return MovimentoCaixa.restore({
@@ -37,9 +37,9 @@ export class MovimentoCaixaMapper {
   }
 
   /**
-   * Converte entidade de domínio para formato de insert/update do Supabase
+   * Converte entidade de domínio para formato de insert/update do banco
    */
-  static toSupabaseInsert(movimento: MovimentoCaixa): MovimentoCaixaInsert {
+  static toDbInsert(movimento: MovimentoCaixa): MovimentoCaixaInsert {
     return {
       id: movimento.id,
       clinic_id: movimento.clinicId,

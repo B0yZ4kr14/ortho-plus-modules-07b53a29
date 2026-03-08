@@ -59,27 +59,23 @@ export function PermissionTemplates() {
 
       // Buscar templates
       const templatesData = await apiClient.get<any[]>(
-        "/rest/v1/permission_templates?order=name.asc",
+        "/configuracoes/permissoes/templates",
       );
       setTemplates(templatesData || []);
 
       // Buscar usuários MEMBER
       const profilesData = await apiClient.get<any[]>(
-        "/rest/v1/profiles?select=id,full_name&order=full_name.asc",
+        "/configuracoes/usuarios",
       );
 
       // Buscar roles
-      const rolesData = await apiClient.get<any[]>(
-        "/rest/v1/user_roles?select=user_id,role",
-      );
+      // Backend retorna roles nos profiles
+      const rolesData = profilesData;
 
       // Filtrar apenas MEMBERs
       const memberUsers =
-        profilesData?.filter((profile) => {
-          const role = rolesData?.find(
-            (r: any) => r.user_id === profile.id,
-          )?.role;
-          return role === "MEMBER";
+        profilesData?.filter((profile: any) => {
+          return (profile.role || "MEMBER") === "MEMBER";
         }) || [];
 
       setUsers(memberUsers);
@@ -105,12 +101,13 @@ export function PermissionTemplates() {
 
       // Buscar IDs dos módulos
       const modulesData = await apiClient.get<any[]>(
-        `/rest/v1/module_catalog?select=id,module_key&module_key=in.(${template.module_keys.join(",")})`,
+        "/configuracoes/modulos",
+        { params: { module_keys: template.module_keys.join(",") } },
       );
 
       // Remover permissões existentes
       await apiClient.delete(
-        `/rest/v1/user_module_permissions?user_id=eq.${selectedUser}`,
+        `/configuracoes/permissoes/${selectedUser}`,
       );
 
       // Adicionar novas permissões
@@ -123,18 +120,18 @@ export function PermissionTemplates() {
           can_delete: false,
         })) || [];
 
-      await apiClient.post("/rest/v1/user_module_permissions", permissions);
+      await apiClient.post("/configuracoes/permissoes/batch", permissions);
 
       // Registrar auditoria
       const authUser = await apiClient.get<any>("/auth/me");
       const user = authUser?.user;
 
       const profileDataArray = await apiClient.get<any[]>(
-        `/rest/v1/profiles?select=clinic_id&id=eq.${user?.id}`,
+        `/configuracoes/usuarios/${user?.id}`,
       );
       const profileData = profileDataArray?.[0];
 
-      await apiClient.post("/rest/v1/permission_audit_logs", {
+      await apiClient.post("/configuracoes/permissoes/audit", {
         clinic_id: profileData?.clinic_id,
         user_id: user?.id,
         target_user_id: selectedUser,

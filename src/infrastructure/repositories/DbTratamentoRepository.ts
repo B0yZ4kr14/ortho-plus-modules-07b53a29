@@ -4,14 +4,12 @@ import { apiClient } from "@/lib/api/apiClient";
 import { InfrastructureError } from "../errors/InfrastructureError";
 import { TratamentoMapper } from "../mappers/TratamentoMapper";
 
-export class SupabaseTratamentoRepository implements ITratamentoRepository {
+export class DbTratamentoRepository implements ITratamentoRepository {
   async findById(id: string): Promise<Tratamento | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_tratamentos?id=eq.${id}`,
-      );
-      if (!data || data.length === 0) return null;
-      return TratamentoMapper.toDomain(data[0]);
+      const data = await apiClient.get<Tables<"patient_treatments">>(`/pep/tratamentos/${id}`);
+      if (!data) return null;
+      return TratamentoMapper.toDomain(data);
     } catch (error) {
       throw new InfrastructureError("Erro ao buscar tratamento", error);
     }
@@ -19,9 +17,9 @@ export class SupabaseTratamentoRepository implements ITratamentoRepository {
 
   async findByProntuarioId(prontuarioId: string): Promise<Tratamento[]> {
     try {
-      // JOIN para evitar N+1 queries
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_tratamentos?select=*,prontuarios!inner(id,clinic_id,patient_id)&prontuario_id=eq.${prontuarioId}&order=data_inicio.desc`,
+      const data = await apiClient.get<Tables<"patient_treatments">[]>(
+        `/pep/tratamentos`,
+        { params: { prontuario_id: prontuarioId } },
       );
       return (data || []).map(TratamentoMapper.toDomain);
     } catch (error) {
@@ -37,8 +35,9 @@ export class SupabaseTratamentoRepository implements ITratamentoRepository {
     status: "PLANEJADO" | "EM_ANDAMENTO" | "CONCLUIDO" | "CANCELADO",
   ): Promise<Tratamento[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_tratamentos?prontuario_id=eq.${prontuarioId}&status=eq.${status}&order=data_inicio.desc`,
+      const data = await apiClient.get<Tables<"patient_treatments">[]>(
+        `/pep/tratamentos`,
+        { params: { prontuario_id: prontuarioId, status } },
       );
       return (data || []).map(TratamentoMapper.toDomain);
     } catch (error) {
@@ -51,8 +50,9 @@ export class SupabaseTratamentoRepository implements ITratamentoRepository {
 
   async findAtivos(prontuarioId: string): Promise<Tratamento[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_tratamentos?prontuario_id=eq.${prontuarioId}&status=in.(PLANEJADO,EM_ANDAMENTO)&order=data_inicio.desc`,
+      const data = await apiClient.get<Tables<"patient_treatments">[]>(
+        `/pep/tratamentos`,
+        { params: { prontuario_id: prontuarioId, ativos: true } },
       );
       return (data || []).map(TratamentoMapper.toDomain);
     } catch (error) {
@@ -62,10 +62,7 @@ export class SupabaseTratamentoRepository implements ITratamentoRepository {
 
   async findByClinicId(clinicId: string): Promise<Tratamento[]> {
     try {
-      // Precisamos fazer join com prontuarios para filtrar por clinic_id
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_tratamentos?select=*,prontuarios!inner(clinic_id)&prontuarios.clinic_id=eq.${clinicId}&order=data_inicio.desc`,
-      );
+      const data = await apiClient.get<Tables<"patient_treatments">[]>("/pep/tratamentos");
       return (data || []).map(TratamentoMapper.toDomain);
     } catch (error) {
       throw new InfrastructureError(
@@ -78,7 +75,7 @@ export class SupabaseTratamentoRepository implements ITratamentoRepository {
   async save(tratamento: Tratamento): Promise<void> {
     try {
       const data = TratamentoMapper.toInsert(tratamento);
-      await apiClient.post("/rest/v1/pep_tratamentos", data);
+      await apiClient.post("/pep/tratamentos", data);
     } catch (error) {
       throw new InfrastructureError("Erro ao salvar tratamento", error);
     }
@@ -87,10 +84,7 @@ export class SupabaseTratamentoRepository implements ITratamentoRepository {
   async update(tratamento: Tratamento): Promise<void> {
     try {
       const data = TratamentoMapper.toPersistence(tratamento);
-      await apiClient.patch(
-        `/rest/v1/pep_tratamentos?id=eq.${tratamento.id}`,
-        data,
-      );
+      await apiClient.patch(`/pep/tratamentos/${tratamento.id}`, data);
     } catch (error) {
       throw new InfrastructureError("Erro ao atualizar tratamento", error);
     }
@@ -98,7 +92,7 @@ export class SupabaseTratamentoRepository implements ITratamentoRepository {
 
   async delete(id: string): Promise<void> {
     try {
-      await apiClient.delete(`/rest/v1/pep_tratamentos?id=eq.${id}`);
+      await apiClient.delete(`/pep/tratamentos/${id}`);
     } catch (error) {
       throw new InfrastructureError("Erro ao deletar tratamento", error);
     }

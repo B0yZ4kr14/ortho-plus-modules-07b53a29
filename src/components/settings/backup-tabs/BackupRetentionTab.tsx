@@ -20,7 +20,7 @@ export function BackupRetentionTab() {
     queryKey: ["backup-retention-config", clinicId],
     queryFn: async () => {
       const data = await apiClient.get<any[]>(
-        `/rest/v1/clinics?select=backup_retention_days,auto_cleanup_enabled&id=eq.${clinicId}`,
+        "/configuracoes/backups/retencao",
       );
 
       const clinic = data?.[0] || {};
@@ -35,7 +35,7 @@ export function BackupRetentionTab() {
 
   const updateConfigMutation = useMutation({
     mutationFn: async () => {
-      await apiClient.patch(`/rest/v1/clinics?id=eq.${clinicId}`, {
+      await apiClient.patch("/configuracoes/backups/retencao", {
         backup_retention_days: retentionDays,
         auto_cleanup_enabled: autoCleanup,
       });
@@ -52,7 +52,7 @@ export function BackupRetentionTab() {
   const cleanupMutation = useMutation({
     mutationFn: async () => {
       const data = await apiClient.post<any[]>(
-        "/rest/v1/rpc/cleanup_old_backups",
+        "/configuracoes/backups/limpeza",
         {
           p_clinic_id: clinicId,
         },

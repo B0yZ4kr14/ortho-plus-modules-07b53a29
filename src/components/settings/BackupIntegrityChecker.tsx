@@ -35,7 +35,8 @@ export function BackupIntegrityChecker({
   const loadBackups = async () => {
     try {
       const data = await apiClient.get<any[]>(
-        "/rest/v1/backup_history?status=eq.success&order=created_at.desc&limit=20",
+        "/configuracoes/backups/historico",
+        { params: { status: "success", limit: 20 } },
       );
       if (data) setBackups(data);
     } catch (e) {

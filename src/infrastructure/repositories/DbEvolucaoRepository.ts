@@ -3,15 +3,14 @@ import { IEvolucaoRepository } from "@/domain/repositories/IEvolucaoRepository";
 import { apiClient } from "@/lib/api/apiClient";
 import { InfrastructureError } from "../errors/InfrastructureError";
 import { EvolucaoMapper } from "../mappers/EvolucaoMapper";
+import type { Tables } from '@/types/database';
 
-export class SupabaseEvolucaoRepository implements IEvolucaoRepository {
+export class DbEvolucaoRepository implements IEvolucaoRepository {
   async findById(id: string): Promise<Evolucao | null> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_evolucoes?id=eq.${id}`,
-      );
-      if (!data || data.length === 0) return null;
-      return EvolucaoMapper.toDomain(data[0]);
+      const data = await apiClient.get<Tables<"pep_evolucoes">>(`/pep/evolucoes/${id}`);
+      if (!data) return null;
+      return EvolucaoMapper.toDomain(data);
     } catch (error) {
       throw new InfrastructureError("Erro ao buscar evolução", error);
     }
@@ -19,8 +18,9 @@ export class SupabaseEvolucaoRepository implements IEvolucaoRepository {
 
   async findByTratamentoId(tratamentoId: string): Promise<Evolucao[]> {
     try {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_evolucoes?tratamento_id=eq.${tratamentoId}&order=data_evolucao.desc`,
+      const data = await apiClient.get<Tables<"pep_evolucoes">[]>(
+        "/pep/evolucoes",
+        { params: { tratamento_id: tratamentoId } },
       );
       return (data || []).map(EvolucaoMapper.toDomain);
     } catch (error) {
@@ -33,9 +33,9 @@ export class SupabaseEvolucaoRepository implements IEvolucaoRepository {
 
   async findByProntuarioId(prontuarioId: string): Promise<Evolucao[]> {
     try {
-      // Fazer join com pep_tratamentos para filtrar por prontuario_id
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_evolucoes?select=*,pep_tratamentos!inner(prontuario_id)&pep_tratamentos.prontuario_id=eq.${prontuarioId}&order=data_evolucao.desc`,
+      const data = await apiClient.get<Tables<"pep_evolucoes">[]>(
+        "/pep/evolucoes",
+        { params: { prontuario_id: prontuarioId } },
       );
       return (data || []).map(EvolucaoMapper.toDomain);
     } catch (error) {
@@ -48,10 +48,7 @@ export class SupabaseEvolucaoRepository implements IEvolucaoRepository {
 
   async findByClinicId(clinicId: string): Promise<Evolucao[]> {
     try {
-      // Fazer join duplo: evolucoes -> tratamentos -> prontuarios
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_evolucoes?select=*,pep_tratamentos!inner(prontuario_id,prontuarios!inner(clinic_id))&pep_tratamentos.prontuarios.clinic_id=eq.${clinicId}&order=data_evolucao.desc`,
-      );
+      const data = await apiClient.get<Tables<"pep_evolucoes">[]>("/pep/evolucoes");
       return (data || []).map(EvolucaoMapper.toDomain);
     } catch (error) {
       throw new InfrastructureError(
@@ -67,10 +64,15 @@ export class SupabaseEvolucaoRepository implements IEvolucaoRepository {
     endDate: Date,
   ): Promise<Evolucao[]> {
     try {
-      const gte = startDate.toISOString().split("T")[0];
-      const lte = endDate.toISOString().split("T")[0];
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/pep_evolucoes?select=*,pep_tratamentos!inner(prontuario_id)&pep_tratamentos.prontuario_id=eq.${prontuarioId}&data_evolucao=gte.${gte}&data_evolucao=lte.${lte}&order=data_evolucao.desc`,
+      const data = await apiClient.get<Tables<"pep_evolucoes">[]>(
+        "/pep/evolucoes",
+        {
+          params: {
+            prontuario_id: prontuarioId,
+            start_date: startDate.toISOString(),
+            end_date: endDate.toISOString(),
+          },
+        },
       );
       return (data || []).map(EvolucaoMapper.toDomain);
     } catch (error) {
@@ -82,15 +84,13 @@ export class SupabaseEvolucaoRepository implements IEvolucaoRepository {
   }
 
   async findPendingSignature(prontuarioId: string): Promise<Evolucao[]> {
-    // Como a tabela atual considera criação = assinatura, retornamos array vazio
-    // Em uma implementação real, filtraremos por assinado_em IS NULL
     return [];
   }
 
   async save(evolucao: Evolucao): Promise<void> {
     try {
       const data = EvolucaoMapper.toInsert(evolucao);
-      await apiClient.post("/rest/v1/pep_evolucoes", data);
+      await apiClient.post("/pep/evolucoes", data);
     } catch (error) {
       throw new InfrastructureError("Erro ao salvar evolução", error);
     }
@@ -99,10 +99,7 @@ export class SupabaseEvolucaoRepository implements IEvolucaoRepository {
   async update(evolucao: Evolucao): Promise<void> {
     try {
       const data = EvolucaoMapper.toPersistence(evolucao);
-      await apiClient.patch(
-        `/rest/v1/pep_evolucoes?id=eq.${evolucao.id}`,
-        data,
-      );
+      await apiClient.patch(`/pep/evolucoes/${evolucao.id}`, data);
     } catch (error) {
       throw new InfrastructureError("Erro ao atualizar evolução", error);
     }
@@ -110,7 +107,7 @@ export class SupabaseEvolucaoRepository implements IEvolucaoRepository {
 
   async delete(id: string): Promise<void> {
     try {
-      await apiClient.delete(`/rest/v1/pep_evolucoes?id=eq.${id}`);
+      await apiClient.delete(`/pep/evolucoes/${id}`);
     } catch (error) {
       throw new InfrastructureError("Erro ao deletar evolução", error);
     }

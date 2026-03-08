@@ -103,7 +103,7 @@ export default function CobrancaPage() {
                   </Button>
                 </div>
 
-                {/* TODO: Implementar lista dinâmica com dados reais do Supabase */}
+                {/* TODO: Implementar lista dinâmica com dados reais da API */}
                 <div className="border rounded-lg divide-y">
                   {[1, 2, 3].map((item) => (
                     <div key={item} className="p-4 flex items-center justify-between hover:bg-muted/50">

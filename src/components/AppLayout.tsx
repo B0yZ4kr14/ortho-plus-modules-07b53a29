@@ -25,9 +25,9 @@ export const AppLayout = memo(function AppLayout({ children }: AppLayoutProps) {
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         {!isMobile && !isFocusMode && (
-          <div data-tour="sidebar" className="transition-all duration-300">
+          <nav data-tour="sidebar" className="transition-all duration-300">
             <AppSidebar />
-          </div>
+          </nav>
         )}
 
         {isMobile && (
@@ -40,9 +40,9 @@ export const AppLayout = memo(function AppLayout({ children }: AppLayoutProps) {
 
         <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${isFocusMode ? 'ml-0' : ''}`}>
           {(!isFocusMode || isMobile) && (
-            <div className="transition-all duration-300">
+            <header className="transition-all duration-300">
               <DashboardHeader onMenuClick={() => setMobileMenuOpen(true)} />
-            </div>
+            </header>
           )}
           
           <main className={contentClassName}>

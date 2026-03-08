@@ -43,7 +43,7 @@ export function GitHubIntegrationConfig() {
     setLoading(true);
     try {
       const dataArray = await apiClient.get<any[]>(
-        `/rest/v1/admin_configurations?select=config_data&clinic_id=eq.${typeof selectedClinic === "string" ? selectedClinic : selectedClinic.id}&config_type=eq.github`,
+        "/admin/configuracoes/github",
       );
 
       const data = dataArray?.[0];
@@ -64,20 +64,9 @@ export function GitHubIntegrationConfig() {
     setSaving(true);
     try {
       await apiClient.post(
-        "/rest/v1/admin_configurations",
+        "/admin/configuracoes/github",
         {
-          clinic_id:
-            typeof selectedClinic === "string"
-              ? selectedClinic
-              : selectedClinic.id,
-          config_type: "github",
           config_data: config as any,
-          is_active: true,
-        },
-        {
-          headers: {
-            Prefer: "resolution=merge-duplicates",
-          },
         },
       );
 

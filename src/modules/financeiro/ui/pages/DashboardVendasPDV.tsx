@@ -56,14 +56,9 @@ export default function DashboardVendasPDV() {
       const dataInicio = new Date();
       dataInicio.setDate(dataInicio.getDate() - diasAtras);
 
-      const params = new URLSearchParams();
-      params.append("select", "*, pdv_venda_itens(*), pdv_pagamentos(*)");
-      params.append("clinic_id", `eq.${clinicId}`);
-      params.append("created_at", `gte.${dataInicio.toISOString()}`);
-      params.append("order", "created_at.desc");
-
       const data = await apiClient.get<any[]>(
-        `/rest/v1/pdv_vendas?${params.toString()}`,
+        "/financeiro/vendas-pdv",
+        { params: { start_date: dataInicio.toISOString() } },
       );
       return data || [];
     },

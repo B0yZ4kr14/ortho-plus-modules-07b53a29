@@ -1,24 +1,38 @@
-import { useState } from 'react';
-import { Calendar, Clock, Plus, Settings } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AgendaProvider } from '../../presentation/contexts/AgendaContext';
-import { useAppointments } from '../../presentation/hooks/useAppointments';
-import { useDentistSchedules } from '../../presentation/hooks/useDentistSchedules';
-import { useBlockedTimes } from '../../presentation/hooks/useBlockedTimes';
-import { useAuth } from '@/contexts/AuthContext';
-import { WeekCalendar } from '../components/WeekCalendar';
-import { AppointmentForm } from '../components/AppointmentForm';
-import { AppointmentCard } from '../components/AppointmentCard';
-import { DentistScheduleForm } from '../components/DentistScheduleForm';
-import { BlockedTimeForm } from '../components/BlockedTimeForm';
+import { useState } from "react";
+import { Calendar, Clock, Plus, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AgendaProvider,
+  useAgenda,
+} from "../../presentation/contexts/AgendaContext";
+import { useAppointments } from "../../presentation/hooks/useAppointments";
+import { useDentistSchedules } from "../../presentation/hooks/useDentistSchedules";
+import { useBlockedTimes } from "../../presentation/hooks/useBlockedTimes";
+import { useAuth } from "@/contexts/AuthContext";
+import { WeekCalendar } from "../components/WeekCalendar";
+import { AppointmentForm } from "../components/AppointmentForm";
+import { AppointmentCard } from "../components/AppointmentCard";
+import { AppointmentDetailsDialog } from "../components/AppointmentDetailsDialog";
+import { DentistScheduleForm } from "../components/DentistScheduleForm";
+import { BlockedTimeForm } from "../components/BlockedTimeForm";
+import { Appointment } from "../../domain/entities/Appointment";
 
 function AgendaContent() {
   const { clinicId } = useAuth();
+  const { weekStart } = useAgenda();
   const [isAppointmentDialogOpen, setIsAppointmentDialogOpen] = useState(false);
   const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
   const [isBlockDialogOpen, setIsBlockDialogOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const {
     appointments,
@@ -26,11 +40,13 @@ function AgendaContent() {
     createAppointment,
     confirmAppointment,
     cancelAppointment,
+    updateAppointment,
     isCreating,
+    isUpdating,
   } = useAppointments({
     clinicId: clinicId || undefined,
-    startDate: new Date(),
-    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    startDate: weekStart,
+    endDate: new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000),
   });
 
   const {
@@ -41,10 +57,7 @@ function AgendaContent() {
     clinicId: clinicId || undefined,
   });
 
-  const {
-    createBlockedTime,
-    isCreating: isCreatingBlock,
-  } = useBlockedTimes({
+  const { createBlockedTime, isCreating: isCreatingBlock } = useBlockedTimes({
     clinicId: clinicId || undefined,
   });
 
@@ -52,13 +65,13 @@ function AgendaContent() {
     createAppointment(
       {
         ...data,
-        clinicId: clinicId || '',
+        clinicId: clinicId || "",
       },
       {
         onSuccess: () => {
           setIsAppointmentDialogOpen(false);
         },
-      }
+      },
     );
   };
 
@@ -66,13 +79,13 @@ function AgendaContent() {
     createSchedule(
       {
         ...data,
-        clinicId: clinicId || '',
+        clinicId: clinicId || "",
       },
       {
         onSuccess: () => {
           setIsScheduleDialogOpen(false);
         },
-      }
+      },
     );
   };
 
@@ -80,13 +93,13 @@ function AgendaContent() {
     createBlockedTime(
       {
         ...data,
-        clinicId: clinicId || '',
+        clinicId: clinicId || "",
       },
       {
         onSuccess: () => {
           setIsBlockDialogOpen(false);
         },
-      }
+      },
     );
   };
 
@@ -100,7 +113,10 @@ function AgendaContent() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Dialog open={isScheduleDialogOpen} onOpenChange={setIsScheduleDialogOpen}>
+          <Dialog
+            open={isScheduleDialogOpen}
+            onOpenChange={setIsScheduleDialogOpen}
+          >
             <DialogTrigger asChild>
               <Button variant="outline">
                 <Settings className="mr-2 h-4 w-4" />
@@ -136,7 +152,10 @@ function AgendaContent() {
             </DialogContent>
           </Dialog>
 
-          <Dialog open={isAppointmentDialogOpen} onOpenChange={setIsAppointmentDialogOpen}>
+          <Dialog
+            open={isAppointmentDialogOpen}
+            onOpenChange={setIsAppointmentDialogOpen}
+          >
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -168,7 +187,10 @@ function AgendaContent() {
         <TabsContent value="calendar" className="mt-6">
           <WeekCalendar
             appointments={appointments}
-            onAppointmentClick={(apt) => console.log('Clicked:', apt)}
+            onAppointmentClick={(apt) => {
+              setSelectedAppointment(apt);
+              setIsDetailsOpen(true);
+            }}
           />
         </TabsContent>
 
@@ -182,13 +204,28 @@ function AgendaContent() {
                   key={appointment.id}
                   appointment={appointment}
                   onConfirm={() => confirmAppointment(appointment.id)}
-                  onCancel={() => cancelAppointment({ appointmentId: appointment.id })}
+                  onCancel={() =>
+                    cancelAppointment({ appointmentId: appointment.id })
+                  }
                 />
               ))}
             </div>
           )}
         </TabsContent>
       </Tabs>
+
+      <AppointmentDetailsDialog
+        appointment={selectedAppointment}
+        open={isDetailsOpen}
+        onOpenChange={(open) => {
+          setIsDetailsOpen(open);
+          if (!open) setSelectedAppointment(null);
+        }}
+        onUpdate={updateAppointment}
+        onConfirm={confirmAppointment}
+        onCancel={cancelAppointment}
+        isUpdating={isUpdating}
+      />
     </div>
   );
 }

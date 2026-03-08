@@ -239,7 +239,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error("Token não recebido.");
       }
     } catch (error: any) {
-      toast.error("Erro ao fazer login", { description: error.message });
+      const errorMessage = error.response?.data?.error || error.message;
+      toast.error("Erro ao fazer login", { description: errorMessage });
       return { error };
     }
   };

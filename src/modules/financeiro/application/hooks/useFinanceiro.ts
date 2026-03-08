@@ -24,11 +24,8 @@ export function useFinanceiro() {
     if (!user || !selectedClinic) return;
 
     try {
-      const params = new URLSearchParams();
-      params.append("clinic_id", `eq.${selectedClinic}`);
-      params.append("order", "data_vencimento.asc");
       const data = await apiClient.get<ContaReceber[]>(
-        `/rest/v1/contas_receber?${params.toString()}`,
+        "/financeiro/contas-receber",
       );
       setContasReceber(data || []);
     } catch (error) {
@@ -49,16 +46,13 @@ export function useFinanceiro() {
         created_by: user.id,
       };
 
-      const data = await apiClient.post<ContaReceber[]>(
-        "/rest/v1/contas_receber",
+      const data = await apiClient.post<ContaReceber>(
+        "/financeiro/contas-receber",
         payload,
-        {
-          headers: { Prefer: "return=representation" },
-        },
       );
       await loadContasReceber();
       toast.success("Conta a receber adicionada com sucesso!");
-      return data && data.length > 0 ? data[0] : null;
+      return data || null;
     } catch (error) {
       console.error("Erro ao adicionar conta a receber:", error);
       toast.error("Erro ao adicionar conta a receber");
@@ -71,7 +65,7 @@ export function useFinanceiro() {
     updates: Partial<ContaReceber>,
   ) => {
     try {
-      await apiClient.patch(`/rest/v1/contas_receber?id=eq.${id}`, updates);
+      await apiClient.patch(`/financeiro/contas-receber/${id}`, updates);
       await loadContasReceber();
       toast.success("Conta a receber atualizada com sucesso!");
     } catch (error) {
@@ -83,7 +77,7 @@ export function useFinanceiro() {
 
   const deleteContaReceber = async (id: string) => {
     try {
-      await apiClient.delete(`/rest/v1/contas_receber?id=eq.${id}`);
+      await apiClient.delete(`/financeiro/contas-receber/${id}`);
       await loadContasReceber();
       toast.success("Conta a receber excluída com sucesso!");
     } catch (error) {
@@ -99,11 +93,8 @@ export function useFinanceiro() {
     if (!user || !selectedClinic) return;
 
     try {
-      const params = new URLSearchParams();
-      params.append("clinic_id", `eq.${selectedClinic}`);
-      params.append("order", "data_vencimento.asc");
       const data = await apiClient.get<ContaPagar[]>(
-        `/rest/v1/contas_pagar?${params.toString()}`,
+        "/financeiro/contas-pagar",
       );
       setContasPagar(data || []);
     } catch (error) {
@@ -124,16 +115,13 @@ export function useFinanceiro() {
         created_by: user.id,
       };
 
-      const data = await apiClient.post<ContaPagar[]>(
-        "/rest/v1/contas_pagar",
+      const data = await apiClient.post<ContaPagar>(
+        "/financeiro/contas-pagar",
         payload,
-        {
-          headers: { Prefer: "return=representation" },
-        },
       );
       await loadContasPagar();
       toast.success("Conta a pagar adicionada com sucesso!");
-      return data && data.length > 0 ? data[0] : null;
+      return data || null;
     } catch (error) {
       console.error("Erro ao adicionar conta a pagar:", error);
       toast.error("Erro ao adicionar conta a pagar");
@@ -143,7 +131,7 @@ export function useFinanceiro() {
 
   const updateContaPagar = async (id: string, updates: Partial<ContaPagar>) => {
     try {
-      await apiClient.patch(`/rest/v1/contas_pagar?id=eq.${id}`, updates);
+      await apiClient.patch(`/financeiro/contas-pagar/${id}`, updates);
       await loadContasPagar();
       toast.success("Conta a pagar atualizada com sucesso!");
     } catch (error) {
@@ -155,7 +143,7 @@ export function useFinanceiro() {
 
   const deleteContaPagar = async (id: string) => {
     try {
-      await apiClient.delete(`/rest/v1/contas_pagar?id=eq.${id}`);
+      await apiClient.delete(`/financeiro/contas-pagar/${id}`);
       await loadContasPagar();
       toast.success("Conta a pagar excluída com sucesso!");
     } catch (error) {
@@ -171,11 +159,8 @@ export function useFinanceiro() {
     if (!user || !selectedClinic) return;
 
     try {
-      const params = new URLSearchParams();
-      params.append("clinic_id", `eq.${selectedClinic}`);
-      params.append("order", "data_emissao.desc");
       const data = await apiClient.get<NotaFiscal[]>(
-        `/rest/v1/notas_fiscais?${params.toString()}`,
+        "/financeiro/notas-fiscais",
       );
       setNotasFiscais(data || []);
     } catch (error) {
@@ -196,16 +181,13 @@ export function useFinanceiro() {
         created_by: user.id,
       };
 
-      const data = await apiClient.post<NotaFiscal[]>(
-        "/rest/v1/notas_fiscais",
+      const data = await apiClient.post<NotaFiscal>(
+        "/financeiro/notas-fiscais",
         payload,
-        {
-          headers: { Prefer: "return=representation" },
-        },
       );
       await loadNotasFiscais();
       toast.success("Nota fiscal emitida com sucesso!");
-      return data && data.length > 0 ? data[0] : null;
+      return data || null;
     } catch (error) {
       console.error("Erro ao emitir nota fiscal:", error);
       toast.error("Erro ao emitir nota fiscal");
@@ -215,7 +197,7 @@ export function useFinanceiro() {
 
   const updateNotaFiscal = async (id: string, updates: Partial<NotaFiscal>) => {
     try {
-      await apiClient.patch(`/rest/v1/notas_fiscais?id=eq.${id}`, updates);
+      await apiClient.patch(`/financeiro/notas-fiscais/${id}`, updates);
       await loadNotasFiscais();
       toast.success("Nota fiscal atualizada com sucesso!");
     } catch (error) {
@@ -227,7 +209,7 @@ export function useFinanceiro() {
 
   const deleteNotaFiscal = async (id: string) => {
     try {
-      await apiClient.delete(`/rest/v1/notas_fiscais?id=eq.${id}`);
+      await apiClient.delete(`/financeiro/notas-fiscais/${id}`);
       await loadNotasFiscais();
       toast.success("Nota fiscal excluída com sucesso!");
     } catch (error) {

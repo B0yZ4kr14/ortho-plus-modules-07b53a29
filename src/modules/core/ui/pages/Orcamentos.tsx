@@ -208,7 +208,6 @@ export default function Orcamentos() {
           </DialogHeader>
           <OrcamentoForm
             onSubmit={(data) => {
-              console.log("Orçamento criado:", data);
               toast.success("Orçamento criado com sucesso!");
               setFormOpen(false);
             }}

@@ -1,5 +1,5 @@
 import { Confirmacao, ConfirmacaoProps } from '@/domain/entities/Confirmacao';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/database';
 
 type ConfirmationRow = Database['public']['Tables']['appointment_confirmations']['Row'];
 type ConfirmationInsert = Database['public']['Tables']['appointment_confirmations']['Insert'];

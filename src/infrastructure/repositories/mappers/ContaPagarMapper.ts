@@ -1,15 +1,15 @@
 import { ContaPagar, CategoriaContaPagar, StatusContaPagar } from '@/domain/entities/ContaPagar';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/types/database';
 
 type ContaPagarRow = Database['public']['Tables']['contas_pagar']['Row'];
 type ContaPagarInsert = Database['public']['Tables']['contas_pagar']['Insert'];
 
 /**
- * Mapper para converter entre ContaPagar (domínio) e tabela Supabase
+ * Mapper para converter entre ContaPagar (domínio) e tabela PostgreSQL
  */
 export class ContaPagarMapper {
   /**
-   * Converte registro do Supabase para entidade de domínio
+   * Converte registro do banco para entidade de domínio
    */
   static toDomain(row: ContaPagarRow): ContaPagar {
     return ContaPagar.restore({
@@ -38,9 +38,9 @@ export class ContaPagarMapper {
   }
 
   /**
-   * Converte entidade de domínio para formato de insert/update do Supabase
+   * Converte entidade de domínio para formato de insert/update do banco
    */
-  static toSupabaseInsert(conta: ContaPagar): ContaPagarInsert {
+  static toDbInsert(conta: ContaPagar): ContaPagarInsert {
     return {
       id: conta.id,
       clinic_id: conta.clinicId,

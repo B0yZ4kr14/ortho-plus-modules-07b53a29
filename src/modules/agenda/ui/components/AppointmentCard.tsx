@@ -1,10 +1,10 @@
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { Clock, User, FileText, Calendar } from 'lucide-react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Appointment } from '../../domain/entities/Appointment';
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Clock, User, FileText, Calendar } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Appointment } from "../../domain/entities/Appointment";
 
 interface AppointmentCardProps {
   appointment: Appointment;
@@ -15,19 +15,19 @@ interface AppointmentCardProps {
 }
 
 const statusColors = {
-  AGENDADO: 'bg-blue-500/10 text-blue-700 border-blue-200',
-  CONFIRMADO: 'bg-green-500/10 text-green-700 border-green-200',
-  REALIZADO: 'bg-gray-500/10 text-gray-700 border-gray-200',
-  CANCELADO: 'bg-red-500/10 text-red-700 border-red-200',
-  FALTOU: 'bg-orange-500/10 text-orange-700 border-orange-200',
+  AGENDADO: "bg-blue-500/10 text-blue-700 border-blue-200",
+  CONFIRMADO: "bg-green-500/10 text-green-700 border-green-200",
+  REALIZADO: "bg-gray-500/10 text-gray-700 border-gray-200",
+  CANCELADO: "bg-red-500/10 text-red-700 border-red-200",
+  FALTOU: "bg-orange-500/10 text-orange-700 border-orange-200",
 };
 
 const statusLabels = {
-  AGENDADO: 'Agendado',
-  CONFIRMADO: 'Confirmado',
-  REALIZADO: 'Realizado',
-  CANCELADO: 'Cancelado',
-  FALTOU: 'Faltou',
+  AGENDADO: "Agendado",
+  CONFIRMADO: "Confirmado",
+  REALIZADO: "Realizado",
+  CANCELADO: "Cancelado",
+  FALTOU: "Faltou",
 };
 
 export function AppointmentCard({
@@ -38,20 +38,26 @@ export function AppointmentCard({
   isLoading,
 }: AppointmentCardProps) {
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card
+      className="hover:shadow-md transition-shadow"
+      data-testid="appointment-item"
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">
-                {format(appointment.scheduledDatetime, "dd 'de' MMMM", { locale: ptBR })}
+                {format(appointment.scheduledDatetime, "dd 'de' MMMM", {
+                  locale: ptBR,
+                })}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">
-                {format(appointment.scheduledDatetime, 'HH:mm')} - {format(appointment.endDatetime, 'HH:mm')}
+                {format(appointment.scheduledDatetime, "HH:mm")} -{" "}
+                {format(appointment.endDatetime, "HH:mm")}
               </span>
             </div>
           </div>
@@ -65,7 +71,7 @@ export function AppointmentCard({
           <User className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm">Paciente ID: {appointment.patientId}</span>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm">{appointment.appointmentType}</span>
@@ -77,11 +83,7 @@ export function AppointmentCard({
 
         <div className="flex gap-2 pt-2">
           {appointment.canBeConfirmed && onConfirm && (
-            <Button
-              size="sm"
-              onClick={onConfirm}
-              disabled={isLoading}
-            >
+            <Button size="sm" onClick={onConfirm} disabled={isLoading}>
               Confirmar
             </Button>
           )}

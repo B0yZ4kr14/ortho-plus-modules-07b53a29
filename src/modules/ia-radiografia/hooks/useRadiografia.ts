@@ -15,37 +15,12 @@ export const useRadiografia = () => {
       if (!user || !clinicId) return;
       setLoading(true);
 
-      const analisesData = await apiClient.get<any[]>(
-        `/rest/v1/analises_radiograficas?clinic_id=eq.${clinicId}&order=created_at.desc`,
+      // Backend faz os joins com pacientes
+      const analisesData = await apiClient.get<AnaliseComplete[]>(
+        "/ia-radiografia/analises",
       );
 
-      // Buscar dados dos pacientes separadamente
-      const patientIds = [
-        ...new Set(analisesData?.map((a) => a.patient_id).filter(Boolean)),
-      ];
-
-      let patientsMap: Record<string, any> = {};
-      if (patientIds.length > 0) {
-        const patientsData = await apiClient.get<any[]>(
-          `/rest/v1/patients?id=in.(${patientIds.join(",")})&select=id,nome_completo`,
-        );
-
-        patientsMap = (patientsData || []).reduce((acc: any, patient: any) => {
-          acc[patient.id] = patient;
-          return acc;
-        }, {});
-      }
-
-      const analisesFormatadas =
-        analisesData?.map((analise: any) => ({
-          ...analise,
-          patient_name:
-            patientsMap[analise.patient_id]?.nome_completo ||
-            "Paciente não identificado",
-          problemas: analise.resultado_ia?.problemas_detectados || [],
-        })) || [];
-
-      setAnalises(analisesFormatadas);
+      setAnalises(analisesData || []);
     } catch (error) {
       console.error("Erro ao carregar análises:", error);
       toast({
@@ -69,16 +44,14 @@ export const useRadiografia = () => {
       if (!user) throw new Error("Usuário não autenticado");
       if (!clinicId) throw new Error("Clínica não encontrada");
 
-      // Upload do arquivo
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${clinicId}/${patientId}/${Date.now()}.${fileExt}`;
-      const filePath = `radiografias/${fileName}`;
-
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("patient_id", patientId);
+      if (prontuarioId) formData.append("prontuario_id", prontuarioId);
+      formData.append("tipo_radiografia", tipoRadiografia);
 
-      await apiClient.post(
-        `/rest/v1/storage/pep-anexos/upload?path=${encodeURIComponent(filePath)}`,
+      const analise = await apiClient.post<any>(
+        "/ia-radiografia/upload-e-analisar",
         formData,
         {
           headers: {
@@ -87,53 +60,10 @@ export const useRadiografia = () => {
         },
       );
 
-      const baseUrl =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
-      const publicUrl = `${baseUrl}/rest/v1/storage/pep-anexos/public?path=${encodeURIComponent(filePath)}`;
-
-      // Criar registro de análise
-      const analiseResponse = await apiClient.post<any>(
-        "/rest/v1/analises_radiograficas",
-        {
-          clinic_id: clinicId,
-          patient_id: patientId,
-          prontuario_id: prontuarioId,
-          tipo_radiografia: tipoRadiografia,
-          imagem_url: publicUrl,
-          imagem_storage_path: filePath,
-          status_analise: "PENDENTE",
-        },
-      );
-
-      const analise = Array.isArray(analiseResponse)
-        ? analiseResponse[0]
-        : analiseResponse;
-
       toast({
         title: "Radiografia enviada",
-        description: "Iniciando análise com IA...",
+        description: "Análise com IA sendo processada...",
       });
-
-      // Chamar Edge Function para análise
-      try {
-        await apiClient.post("/rest/v1/functions/analisar-radiografia", {
-          analise_id: analise.id,
-          imagem_url: publicUrl,
-        });
-
-        toast({
-          title: "Análise iniciada",
-          description:
-            "A IA está analisando a radiografia. Isso pode levar alguns segundos.",
-        });
-      } catch (functionError) {
-        console.error("Erro ao iniciar análise:", functionError);
-        toast({
-          title: "Erro na análise",
-          description: "A análise não pôde ser iniciada. Tente novamente.",
-          variant: "destructive",
-        });
-      }
 
       await loadData();
       return analise;
@@ -152,9 +82,8 @@ export const useRadiografia = () => {
   const marcarComoRevisado = async (analiseId: string, observacoes: string) => {
     try {
       await apiClient.patch(
-        `/rest/v1/analises_radiograficas?id=eq.${analiseId}`,
+        `/ia-radiografia/analises/${analiseId}/revisar`,
         {
-          revisado_por_dentista: true,
           observacoes_dentista: observacoes,
         },
       );

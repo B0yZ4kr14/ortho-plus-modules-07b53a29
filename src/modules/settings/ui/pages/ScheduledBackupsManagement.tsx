@@ -31,11 +31,7 @@ export default function ScheduledBackupsManagement() {
   const { data: scheduledBackups, isLoading } = useQuery({
     queryKey: ["scheduled-backups"],
     queryFn: async () => {
-      const data = await apiClient.get<any[]>("/rest/v1/scheduled_backups", {
-        params: {
-          select: "*",
-          order: "created_at.desc",
-        },
+      const data = await apiClient.get<any[]>("/configuracoes/backups/agendados", {
       });
 
       return data;
@@ -44,7 +40,7 @@ export default function ScheduledBackupsManagement() {
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, enabled }: { id: string; enabled: boolean }) => {
-      await apiClient.patch(`/rest/v1/scheduled_backups?id=eq.${id}`, {
+      await apiClient.patch(`/configuracoes/backups/agendados/${id}`, {
         enabled,
       });
     },
@@ -59,7 +55,7 @@ export default function ScheduledBackupsManagement() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      await apiClient.delete(`/rest/v1/scheduled_backups?id=eq.${id}`);
+      await apiClient.delete(`/configuracoes/backups/agendados/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["scheduled-backups"] });

@@ -66,10 +66,8 @@ export class SendConfirmacaoWhatsAppUseCase {
 
       // Aqui seria feita a integração real com WhatsApp API
       // Por enquanto, apenas simulamos o envio
-      console.log('Mensagem WhatsApp enviada:', {
-        to: input.phoneNumber,
-        message: messageContent,
-      });
+      // TODO: Integrate WhatsApp API (Twilio/Meta) to send message
+      // to: input.phoneNumber, message: messageContent
 
     } catch (error) {
       // Se houver erro no envio, marcar como erro
@@ -86,7 +84,7 @@ export class SendConfirmacaoWhatsAppUseCase {
     }
   }
 
-  private generateDefaultMessage(agendamento: any): string {
+  private generateDefaultMessage(agendamento: { title?: string; startTime?: Date }): string {
     const dataFormatada = new Intl.DateTimeFormat('pt-BR', {
       dateStyle: 'short',
       timeStyle: 'short',

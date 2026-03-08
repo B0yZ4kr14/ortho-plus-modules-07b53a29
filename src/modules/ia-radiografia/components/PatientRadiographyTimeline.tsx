@@ -66,14 +66,15 @@ export const PatientRadiographyTimeline = () => {
 
         // Carregar pacientes
         const patientsData = await apiClient.get<any[]>(
-          `/rest/v1/patients?clinic_id=eq.${selectedClinic.id}&select=id,nome&order=nome.asc`,
+          "/pacientes",
+          { params: { fields: "id,nome" } },
         );
 
         setPatients(patientsData || []);
 
         // Carregar todas as análises
         const analisesData = await apiClient.get<any[]>(
-          `/rest/v1/analises_radiograficas?clinic_id=eq.${selectedClinic.id}&order=created_at.asc`,
+          "/ia/analises-radiograficas",
         );
 
         setAnalises(analisesData || []);

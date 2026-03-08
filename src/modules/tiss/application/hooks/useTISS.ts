@@ -41,9 +41,7 @@ export function useTISS() {
   const { data: guides = [], isLoading: loadingGuides } = useQuery({
     queryKey: ["tiss-guides", clinicId],
     queryFn: async () => {
-      const data = await apiClient.get<TISSGuide[]>(
-        `/rest/v1/tiss_guides?clinic_id=eq.${clinicId}&order=created_at.desc&limit=100`,
-      );
+      const data = await apiClient.get<TISSGuide[]>("/tiss/guias");
       return data;
     },
     enabled: !!clinicId,
@@ -52,9 +50,7 @@ export function useTISS() {
   const { data: batches = [], isLoading: loadingBatches } = useQuery({
     queryKey: ["tiss-batches", clinicId],
     queryFn: async () => {
-      const data = await apiClient.get<TISSBatch[]>(
-        `/rest/v1/tiss_batches?clinic_id=eq.${clinicId}&order=created_at.desc&limit=50`,
-      );
+      const data = await apiClient.get<TISSBatch[]>("/tiss/lotes");
       return data;
     },
     enabled: !!clinicId,
@@ -73,25 +69,21 @@ export function useTISS() {
     ) => {
       const guideNumber = `${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}${String(Math.floor(Math.random() * 10000)).padStart(4, "0")}`;
 
-      const response = await apiClient.post<any[]>(
-        "/rest/v1/tiss_guides",
-        [
-          {
-            clinic_id: clinicId!,
-            guide_number: guideNumber,
-            patient_id: guideData.patient_id,
-            insurance_company: guideData.insurance_company,
-            procedure_code: guideData.procedure_code,
-            procedure_name: guideData.procedure_name,
-            amount: guideData.amount,
-            service_date: guideData.service_date,
-            status: "pendente",
-          },
-        ],
-        { headers: { Prefer: "return=representation" } },
+      const response = await apiClient.post<any>(
+        "/tiss/guias",
+        {
+          guide_number: guideNumber,
+          patient_id: guideData.patient_id,
+          insurance_company: guideData.insurance_company,
+          procedure_code: guideData.procedure_code,
+          procedure_name: guideData.procedure_name,
+          amount: guideData.amount,
+          service_date: guideData.service_date,
+          status: "pendente",
+        },
       );
 
-      return response[0];
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tiss-guides"] });
@@ -110,46 +102,15 @@ export function useTISS() {
       insurance_company: string;
       guide_ids: string[];
     }) => {
-      // Generate batch number
-      const batchNumber = `${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}${String(Math.floor(Math.random() * 1000)).padStart(3, "0")}`;
-
-      // Get guides to calculate totals
-      const batchGuides = await apiClient.get<TISSGuide[]>(
-        `/rest/v1/tiss_guides?id=in.(${guide_ids.join(",")})`,
-      );
-
-      const totalAmount = batchGuides.reduce(
-        (sum, guide) => sum + guide.amount,
-        0,
-      );
-
-      const response = await apiClient.post<any[]>(
-        "/rest/v1/tiss_batches",
-        [
-          {
-            clinic_id: clinicId,
-            batch_number: batchNumber,
-            insurance_company,
-            total_guides: guide_ids.length,
-            total_amount: totalAmount,
-          },
-        ],
-        { headers: { Prefer: "return=representation" } },
-      );
-
-      const data = response[0];
-
-      // Update guides with batch_id
-      await apiClient.patch(
-        `/rest/v1/tiss_guides?id=in.(${guide_ids.join(",")})`,
+      const response = await apiClient.post<any>(
+        "/tiss/lotes",
         {
-          batch_id: data.id,
-          status: "enviada",
-          submission_date: new Date().toISOString(),
+          insurance_company,
+          guide_ids,
         },
       );
 
-      return data;
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tiss-batches"] });

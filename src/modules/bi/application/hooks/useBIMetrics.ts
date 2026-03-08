@@ -35,9 +35,7 @@ export function useBIMetrics() {
   const { data: metrics = [], isLoading: loadingMetrics } = useQuery({
     queryKey: ["bi-metrics", clinicId],
     queryFn: async () => {
-      const data = await apiClient.get<BIMetric[]>(
-        `/rest/v1/bi_metrics?clinic_id=eq.${clinicId}&order=created_at.desc`,
-      );
+      const data = await apiClient.get<BIMetric[]>("/bi/metricas");
       return data || [];
     },
     enabled: !!clinicId,
@@ -46,9 +44,7 @@ export function useBIMetrics() {
   const { data: dashboards = [], isLoading: loadingDashboards } = useQuery({
     queryKey: ["bi-dashboards", clinicId],
     queryFn: async () => {
-      const data = await apiClient.get<any[]>(
-        `/rest/v1/bi_dashboards?clinic_id=eq.${clinicId}&order=created_at.desc`,
-      );
+      const data = await apiClient.get<any[]>("/bi/dashboards");
       return data || [];
     },
     enabled: !!clinicId,
@@ -58,10 +54,7 @@ export function useBIMetrics() {
     queryKey: ["bi-widgets", clinicId],
     queryFn: async () => {
       if (dashboards.length === 0) return [];
-
-      const data = await apiClient.get<BIWidget[]>(
-        `/rest/v1/bi_widgets?clinic_id=eq.${clinicId}&order=position_y.asc`,
-      );
+      const data = await apiClient.get<BIWidget[]>("/bi/widgets");
       return data || [];
     },
     enabled: !!clinicId && dashboards.length > 0,
