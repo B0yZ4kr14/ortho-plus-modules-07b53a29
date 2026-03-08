@@ -27,7 +27,7 @@ export function createPepRouter(): Router {
   router.get('/odontogramas/history', async (req: Request, res: Response) => {
     try {
       const { patient_id } = req.query;
-      const data = await (prisma as any).odontograma_history.findMany({
+      const data = await (prisma as any).pep_odontograma_history.findMany({
         where: patient_id ? { patient_id: String(patient_id) } : {},
         orderBy: { created_at: 'desc' },
       });
@@ -39,7 +39,7 @@ export function createPepRouter(): Router {
 
   router.post('/odontogramas/history', async (req: Request, res: Response) => {
     try {
-      const data = await (prisma as any).odontograma_history.create({ data: req.body });
+      const data = await (prisma as any).pep_odontograma_history.create({ data: req.body });
       return res.status(201).json(data);
     } catch (error: any) {
       return res.status(500).json({ error: error.message });

@@ -7,7 +7,7 @@ export class AdminToolsController {
   // --- ADRs ---
   async listADRs(_req: Request, res: Response) {
     try {
-      const data = await (prisma as any).adrs.findMany({
+      const data = await (prisma as any).architecture_decision_records.findMany({
         orderBy: { created_at: "desc" },
       });
       res.json(data);
@@ -18,7 +18,7 @@ export class AdminToolsController {
 
   async createADR(req: Request, res: Response) {
     try {
-      const data = await (prisma as any).adrs.create({ data: req.body });
+      const data = await (prisma as any).architecture_decision_records.create({ data: req.body });
       res.status(201).json(data);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -28,7 +28,7 @@ export class AdminToolsController {
   // --- Wiki ---
   async listWiki(_req: Request, res: Response) {
     try {
-      const data = await (prisma as any).wiki_entries.findMany({
+      const data = await (prisma as any).wiki_pages.findMany({
         orderBy: { updated_at: "desc" },
       });
       res.json(data);
@@ -39,7 +39,7 @@ export class AdminToolsController {
 
   async createWikiEntry(req: Request, res: Response) {
     try {
-      const data = await (prisma as any).wiki_entries.create({
+      const data = await (prisma as any).wiki_pages.create({
         data: req.body,
       });
       res.status(201).json(data);
@@ -51,7 +51,7 @@ export class AdminToolsController {
   async updateWikiEntry(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const data = await (prisma as any).wiki_entries.update({
+      const data = await (prisma as any).wiki_pages.update({
         where: { id },
         data: req.body,
       });

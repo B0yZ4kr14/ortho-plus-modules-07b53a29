@@ -68,7 +68,7 @@ export class OrcamentosController {
   async listItems(req: Request, res: Response) {
     try {
       const { orcamento_id } = req.params;
-      const data = await (prisma as any).orcamento_items.findMany({
+      const data = await (prisma as any).orcamento_itens.findMany({
         where: { orcamento_id },
         orderBy: { created_at: "asc" },
       });
@@ -81,7 +81,7 @@ export class OrcamentosController {
   async addItem(req: Request, res: Response) {
     try {
       const { orcamento_id } = req.params;
-      const data = await (prisma as any).orcamento_items.create({
+      const data = await (prisma as any).orcamento_itens.create({
         data: { ...req.body, orcamento_id },
       });
       return res.status(201).json(data);

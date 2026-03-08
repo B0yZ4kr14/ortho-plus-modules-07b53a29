@@ -9,7 +9,7 @@ export class SplitPagamentoController {
     try {
       const { clinic_id } = req.query;
       const where = clinic_id ? { clinic_id: String(clinic_id) } : {};
-      const data = await (prisma as any).split_pagamento_config.findMany({
+      const data = await (prisma as any).split_payment_config.findMany({
         where,
       });
       return res.json(data);
@@ -21,17 +21,17 @@ export class SplitPagamentoController {
   async upsertConfig(req: Request, res: Response) {
     try {
       const { clinic_id, ...rest } = req.body;
-      const existing = await (prisma as any).split_pagamento_config.findFirst({
+      const existing = await (prisma as any).split_payment_config.findFirst({
         where: { clinic_id },
       });
       let data;
       if (existing) {
-        data = await (prisma as any).split_pagamento_config.update({
+        data = await (prisma as any).split_payment_config.update({
           where: { id: existing.id },
           data: rest,
         });
       } else {
-        data = await (prisma as any).split_pagamento_config.create({
+        data = await (prisma as any).split_payment_config.create({
           data: { clinic_id, ...rest },
         });
       }
@@ -77,7 +77,7 @@ export class SplitPagamentoController {
       const where: any = {};
       if (clinic_id) where.clinic_id = String(clinic_id);
       if (status) where.status = String(status);
-      const data = await (prisma as any).split_transacoes.findMany({
+      const data = await (prisma as any).split_transactions.findMany({
         where,
         orderBy: { created_at: "desc" },
       });

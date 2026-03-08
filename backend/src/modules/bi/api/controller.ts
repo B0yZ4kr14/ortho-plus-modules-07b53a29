@@ -64,7 +64,7 @@ export class BIController {
       if (clinic_id) where.clinic_id = String(clinic_id);
       if (periodo) where.periodo = String(periodo);
       if (tipo) where.tipo = String(tipo);
-      const data = await (prisma as any).bi_metricas.findMany({
+      const data = await (prisma as any).bi_metrics.findMany({
         where,
         orderBy: { data_referencia: "desc" },
       });

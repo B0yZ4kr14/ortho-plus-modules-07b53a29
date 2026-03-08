@@ -11,7 +11,7 @@ export class MarketingController {
       const where: any = {};
       if (clinic_id) where.clinic_id = String(clinic_id);
       if (status) where.status = String(status);
-      const data = await (prisma as any).marketing_campanhas.findMany({
+      const data = await (prisma as any).marketing_campaigns.findMany({
         where,
         orderBy: { created_at: "desc" },
       });
@@ -24,7 +24,7 @@ export class MarketingController {
   async getCampanhaById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const data = await (prisma as any).marketing_campanhas.findUnique({
+      const data = await (prisma as any).marketing_campaigns.findUnique({
         where: { id },
       });
       if (!data) return res.status(404).json({ error: "Campanha not found" });
@@ -36,7 +36,7 @@ export class MarketingController {
 
   async createCampanha(req: Request, res: Response) {
     try {
-      const data = await (prisma as any).marketing_campanhas.create({
+      const data = await (prisma as any).marketing_campaigns.create({
         data: req.body,
       });
       return res.status(201).json(data);
@@ -48,7 +48,7 @@ export class MarketingController {
   async updateCampanha(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const data = await (prisma as any).marketing_campanhas.update({
+      const data = await (prisma as any).marketing_campaigns.update({
         where: { id },
         data: req.body,
       });
@@ -65,7 +65,7 @@ export class MarketingController {
       const where: any = {};
       if (campanha_id) where.campanha_id = String(campanha_id);
       if (status) where.status = String(status);
-      const data = await (prisma as any).marketing_envios.findMany({
+      const data = await (prisma as any).campanha_envios.findMany({
         where,
         orderBy: { enviado_em: "desc" },
       });
@@ -77,7 +77,7 @@ export class MarketingController {
 
   async createEnvio(req: Request, res: Response) {
     try {
-      const data = await (prisma as any).marketing_envios.create({
+      const data = await (prisma as any).campanha_envios.create({
         data: req.body,
       });
       return res.status(201).json(data);
@@ -93,7 +93,7 @@ export class MarketingController {
       const where: any = {};
       if (clinic_id) where.clinic_id = String(clinic_id);
       if (tipo) where.tipo = String(tipo);
-      const data = await (prisma as any).marketing_recalls.findMany({
+      const data = await (prisma as any).recalls.findMany({
         where,
         orderBy: { data_recall: "desc" },
       });
@@ -105,7 +105,7 @@ export class MarketingController {
 
   async createRecall(req: Request, res: Response) {
     try {
-      const data = await (prisma as any).marketing_recalls.create({
+      const data = await (prisma as any).recalls.create({
         data: req.body,
       });
       return res.status(201).json(data);

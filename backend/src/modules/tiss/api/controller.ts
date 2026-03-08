@@ -12,7 +12,7 @@ export class TISSController {
       if (clinic_id) where.clinic_id = String(clinic_id);
       if (tipo) where.tipo = String(tipo);
       if (status) where.status = String(status);
-      const data = await (prisma as any).tiss_guias.findMany({
+      const data = await (prisma as any).tiss_guides.findMany({
         where,
         orderBy: { created_at: "desc" },
       });
@@ -25,7 +25,7 @@ export class TISSController {
   async getGuiaById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const data = await (prisma as any).tiss_guias.findUnique({
+      const data = await (prisma as any).tiss_guides.findUnique({
         where: { id },
       });
       if (!data) return res.status(404).json({ error: "Guia not found" });
@@ -37,7 +37,7 @@ export class TISSController {
 
   async createGuia(req: Request, res: Response) {
     try {
-      const data = await (prisma as any).tiss_guias.create({ data: req.body });
+      const data = await (prisma as any).tiss_guides.create({ data: req.body });
       return res.status(201).json(data);
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -47,7 +47,7 @@ export class TISSController {
   async updateGuia(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const data = await (prisma as any).tiss_guias.update({
+      const data = await (prisma as any).tiss_guides.update({
         where: { id },
         data: req.body,
       });
@@ -64,7 +64,7 @@ export class TISSController {
       const where: any = {};
       if (clinic_id) where.clinic_id = String(clinic_id);
       if (status) where.status = String(status);
-      const data = await (prisma as any).tiss_lotes.findMany({
+      const data = await (prisma as any).tiss_batches.findMany({
         where,
         orderBy: { created_at: "desc" },
       });
@@ -76,7 +76,7 @@ export class TISSController {
 
   async createLote(req: Request, res: Response) {
     try {
-      const data = await (prisma as any).tiss_lotes.create({ data: req.body });
+      const data = await (prisma as any).tiss_batches.create({ data: req.body });
       return res.status(201).json(data);
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -86,7 +86,7 @@ export class TISSController {
   async updateLote(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const data = await (prisma as any).tiss_lotes.update({
+      const data = await (prisma as any).tiss_batches.update({
         where: { id },
         data: req.body,
       });

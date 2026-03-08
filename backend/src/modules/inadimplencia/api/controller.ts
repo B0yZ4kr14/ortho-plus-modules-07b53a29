@@ -54,7 +54,7 @@ export class InadimplenciaController {
       const where: any = {};
       if (clinic_id) where.clinic_id = String(clinic_id);
       if (status) where.status = String(status);
-      const data = await (prisma as any).inadimplencia_campanhas.findMany({
+      const data = await (prisma as any).campanhas_inadimplencia.findMany({
         where,
         orderBy: { created_at: "desc" },
       });
@@ -66,7 +66,7 @@ export class InadimplenciaController {
 
   async createCampanhaCobranca(req: Request, res: Response) {
     try {
-      const data = await (prisma as any).inadimplencia_campanhas.create({
+      const data = await (prisma as any).campanhas_inadimplencia.create({
         data: req.body,
       });
       return res.status(201).json(data);
@@ -78,7 +78,7 @@ export class InadimplenciaController {
   async updateCampanhaCobranca(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const data = await (prisma as any).inadimplencia_campanhas.update({
+      const data = await (prisma as any).campanhas_inadimplencia.update({
         where: { id },
         data: req.body,
       });

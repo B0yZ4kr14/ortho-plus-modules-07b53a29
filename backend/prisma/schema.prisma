@@ -2472,3 +2472,181 @@ model wiki_pages {
   updated_by   String?
   version      Int
 }
+
+// ─── Models added by Batch 8-10 migration ───────────────────────────────────
+
+model banco_extratos {
+  amount         Int
+  balance_after  Int?
+  category       String?
+  clinic_id      String
+  created_at     DateTime @default(now())
+  date           String
+  description    String
+  id             String   @id @default(uuid())
+  reference      String?
+  source         String?
+  type           String
+}
+
+model cash_registers {
+  clinic_id   String
+  closed_at   String?
+  closing_obs String?
+  created_at  DateTime @default(now())
+  id          String   @id @default(uuid())
+  opened_at   String
+  opened_by   String
+  saldo_final Int?
+  status      String
+  updated_at  DateTime @updatedAt
+  valor_abertura Int
+}
+
+model crypto_offline_wallets {
+  address     String
+  clinic_id   String
+  created_at  DateTime @default(now())
+  currency    String
+  id          String   @id @default(uuid())
+  label       String?
+  network     String
+  updated_at  DateTime @updatedAt
+}
+
+model crypto_transactions {
+  amount       Int
+  clinic_id    String
+  coin         String
+  created_at   DateTime @default(now())
+  exchange_id  String?
+  fee          Int?
+  id           String   @id @default(uuid())
+  price_brl    Int?
+  status       String
+  tx_hash      String?
+  type         String
+  wallet_id    String?
+}
+
+model crypto_wallets {
+  address    String?
+  balance    Int?
+  clinic_id  String
+  coin       String
+  created_at DateTime @default(now())
+  exchange   String?
+  id         String   @id @default(uuid())
+  label      String?
+  type       String
+  updated_at DateTime @updatedAt
+}
+
+model fidelidade_badges {
+  clinic_id   String
+  condition   Json?
+  created_at  DateTime @default(now())
+  description String?
+  icon        String?
+  id          String   @id @default(uuid())
+  name        String
+  tier        String?
+  updated_at  DateTime @updatedAt
+}
+
+model fidelidade_indicacoes {
+  bonus_awarded    Boolean?
+  clinic_id        String
+  created_at       DateTime @default(now())
+  id               String   @id @default(uuid())
+  indicated_name   String
+  indicated_phone  String?
+  patient_id       String
+  reward_points    Int?
+  status           String
+  updated_at       DateTime @updatedAt
+}
+
+model fidelidade_pontos {
+  amount      Int
+  clinic_id   String
+  created_at  DateTime @default(now())
+  description String?
+  id          String   @id @default(uuid())
+  patient_id  String
+  source      String
+  type        String
+}
+
+model fidelidade_recompensas {
+  clinic_id   String
+  created_at  DateTime @default(now())
+  description String?
+  id          String   @id @default(uuid())
+  is_active   Boolean
+  name        String
+  points_cost Int
+  updated_at  DateTime @updatedAt
+}
+
+model pdv_dashboard {
+  clinic_id       String
+  created_at      DateTime @default(now())
+  data_referencia String
+  id              String   @id @default(uuid())
+  metricas        Json?
+  periodo         String?
+  total_vendas    Int?
+  updated_at      DateTime @updatedAt
+}
+
+model pdv_metas_gamificacao {
+  clinic_id      String
+  created_at     DateTime @default(now())
+  descricao      String?
+  id             String   @id @default(uuid())
+  meta_tipo      String
+  meta_valor     Int
+  periodo        String?
+  progresso      Int?
+  recompensa     String?
+  updated_at     DateTime @updatedAt
+  vendedor_id    String?
+}
+
+model split_comissoes {
+  amount          Int
+  clinic_id       String
+  config_id       String?
+  created_at      DateTime @default(now())
+  id              String   @id @default(uuid())
+  paid_at         String?
+  percentage      Int?
+  professional_id String
+  status          String
+  transaction_id  String?
+}
+
+model vendedor_metas {
+  clinic_id    String
+  created_at   DateTime @default(now())
+  id           String   @id @default(uuid())
+  meta_tipo    String
+  meta_valor   Int
+  periodo      String
+  progresso    Int?
+  updated_at   DateTime @updatedAt
+  vendedor_id  String
+}
+
+model vendedor_ranking {
+  clinic_id      String
+  id             String   @id @default(uuid())
+  periodo        String
+  pontuacao      Int
+  posicao        Int
+  total_vendas   Int?
+  updated_at     DateTime @updatedAt
+  vendedor_id    String
+  vendedor_nome  String?
+}
