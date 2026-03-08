@@ -6,6 +6,7 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./tests/e2e",
+  globalSetup: "./tests/e2e/global-setup.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
@@ -52,10 +53,19 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
-    command: "npm run build && npm run preview",
-    url: "http://localhost:8080",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+  webServer: [
+    {
+      command: "npm run dev",
+      cwd: "./backend",
+      url: "http://localhost:3005/health",
+      reuseExistingServer: !process.env.CI,
+      timeout: 60000,
+    },
+    {
+      command: "npm run dev",
+      url: "http://localhost:8080",
+      reuseExistingServer: !process.env.CI,
+      timeout: 60000,
+    },
+  ],
 });
