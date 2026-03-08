@@ -40,10 +40,7 @@ export const enviarCobranca = async (req: Request, res: Response) => {
         .json({ error: "Billing record or Patient not found" });
     }
 
-    console.log(
-      `Sending cobranca ${contaReceberId} to ${cobranca.patients.nome} via ${method}`,
-    );
-    // Here we would integrate with Twilio/WhatsApp or SendGrid
+    // TODO: integrate with Twilio/WhatsApp or SendGrid
 
     // Update status if needed or record log
     await (prisma as any).comunicacao_logs.create({
@@ -78,7 +75,6 @@ export const processarPagamento = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Required fields missing" });
     }
 
-    console.log(`Processing ${paymentMethod} payment for ${amount}`);
 
     // Mock API call to payment gateway (Stripe, Pagar.me, etc)
     const transactionId = `txn_${Date.now()}`;
@@ -131,11 +127,7 @@ export const processarPagamento = async (req: Request, res: Response) => {
  */
 export const processarPagamentoTef = async (req: Request, res: Response) => {
   try {
-    const { terminalId, amount, installments } = req.body;
-
-    console.log(
-      `Init TEF Transaction on terminal ${terminalId} for ${amount} at ${installments}x`,
-    );
+    const { terminalId: _terminalId, amount: _amount, installments: _installments } = req.body;
 
     return res.status(200).json({
       success: true,
@@ -163,12 +155,7 @@ export const processarSplitPagamento = async (req: Request, res: Response) => {
         .json({ error: "transactionId and splits mapping are required" });
     }
 
-    console.log(
-      `Processing split for transaction ${transactionId} across ${splits.length} receivers`,
-    );
-
-    // Usually calls payment gateway split API natively, here we mock standard logic
-    // We would record the split items in our db for financial reporting
+    // TODO: call payment gateway split API; record split items in db for financial reporting
 
     return res.status(200).json({
       success: true,

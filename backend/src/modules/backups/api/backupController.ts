@@ -16,7 +16,7 @@ export const backupController = {
       const { action, clinicId, backupId, targetRegion, retentionDays } =
         req.body;
 
-      console.log(`Backup Manager - Action: ${action}, Clinic: ${clinicId}`);
+      
 
       let result;
 

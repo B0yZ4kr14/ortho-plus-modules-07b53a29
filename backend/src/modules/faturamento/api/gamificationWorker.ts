@@ -6,15 +6,15 @@ const prisma = new PrismaClient();
 export class GamificationWorkerController {
   async processGoalsAndRankings(_req: Request, res: Response): Promise<void> {
     try {
-      console.log("[Gamificacao] Iniciando processamento de metas e rankings");
+      
 
       // Buscar todas as clínicas ativas
-      const clinics = await (prisma as any).clinics.findMany({
+      const clinics = await prisma.clinics.findMany({
         select: { id: true },
       });
 
       for (const clinic of clinics) {
-        console.log(`[Gamificacao] Processando clinica: ${clinic.id}`);
+        
 
         // Buscar metas ativas
         const metas = await (prisma as any).vendedor_metas.findMany({

@@ -50,13 +50,9 @@ export const convertCryptoToBrl = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Transaction already converted" });
     }
 
-    console.log(
-      `Converting transaction ${transactionId} - ${transaction.amount_crypto} ${transaction.coin_type} to BRL`,
-    );
 
     // In production, call exchange API here
     if (transaction.exchange && transaction.exchange.is_active) {
-      console.log(`Would convert via ${transaction.exchange.exchange_name}`);
     }
 
     const convertedAt = new Date().toISOString();
@@ -138,7 +134,7 @@ export const createCryptoInvoice = async (req: Request, res: Response) => {
     }
 
     // Gerar carteira e invoice mock
-    console.log(`Generating crypto invoice for amount ${amount} ${currency}`);
+    // TODO: implement on-chain address generation or crypto provider API call
 
     // Logica real de criacao de invoice viria aqui (geracao de endereco on-chain ou via API de provider de crypto)
 
@@ -237,14 +233,9 @@ export const validateXpub = async (req: Request, res: Response) => {
 /**
  * Replacement for crypto-webhook
  */
-export const handleCryptoWebhook = async (req: Request, res: Response) => {
+export const handleCryptoWebhook = async (_req: Request, res: Response) => {
   try {
-    const payload = req.body;
 
-    console.log("📥 Webhook recebido:", {
-      invoiceId: payload?.invoiceId,
-      status: payload?.status,
-    });
 
     return res
       .status(200)
@@ -260,9 +251,8 @@ export const handleCryptoWebhook = async (req: Request, res: Response) => {
  */
 export const manageOfflineWallet = async (req: Request, res: Response) => {
   try {
-    const { action, walletId } = req.body;
+    const { action, walletId: _walletId } = req.body;
 
-    console.log(`Managing offline wallet ${walletId}, action: ${action}`);
 
     return res.status(200).json({
       success: true,
@@ -280,7 +270,6 @@ export const manageOfflineWallet = async (req: Request, res: Response) => {
 export const runCryptoJobs = async (req: Request, res: Response) => {
   try {
     const { jobName } = req.body;
-    console.log(`Running crypto job: ${jobName}`);
     return res
       .status(200)
       .json({ success: true, job: jobName, executed: true });

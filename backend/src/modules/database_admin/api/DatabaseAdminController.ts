@@ -153,7 +153,7 @@ export class DatabaseAdminController {
         targetSchema: z.string().optional(),
       });
 
-      const { operation, targetSchema } = schema.parse(req.body);
+      const { operation, targetSchema: _targetSchema } = schema.parse(req.body);
       const clinicId = req.user?.clinicId;
 
       if (!clinicId || req.user?.role !== "ADMIN") {
@@ -161,9 +161,6 @@ export class DatabaseAdminController {
         return;
       }
 
-      console.log(
-        `Running maintenance: ${operation} on ${targetSchema || "all schemas"}`,
-      );
 
       // Mock - em produção, executar comandos reais de manutenção
       res.json({

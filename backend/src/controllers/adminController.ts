@@ -12,7 +12,7 @@ export const createRootUser = async (req: Request, res: Response) => {
     const { email, name } = req.body;
     // In a real scenario, this would create an Auth user or setup initial tenant structure.
     // Simulating creation for the endpoint migration.
-    // It's assumed Supabase Auth or direct DB password hashing is handled here depending on new auth flow.
+    // Password hashing handled by Auth service
     const user = await (prisma as any).users.create({
       data: {
         email,
@@ -29,7 +29,7 @@ export const createRootUser = async (req: Request, res: Response) => {
     `,
         email,
       )
-      .catch((e) => console.log("Mocking auth.users metadata update", e));
+      .catch(() => { /* mock auth.users update - no-op */ });
 
     return res
       .status(200)

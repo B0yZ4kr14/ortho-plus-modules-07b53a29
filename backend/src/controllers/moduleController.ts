@@ -5,9 +5,9 @@ const prisma = new PrismaClient();
 
 export const applyModuleTemplate = async (req: Request, res: Response) => {
   try {
-    const { clinicId, templateId } = req.body;
+    const { clinicId: _clinicId, templateId: _templateId } = req.body;
     // Mocking template application. Real logic involves duplicating permissions, flows, and fields associated with a template.
-    console.log(`Applying template ${templateId} to clinic ${clinicId}`);
+    
 
     return res.status(200).json({ message: "Template applied successfully" });
   } catch (error) {
@@ -79,7 +79,7 @@ export const toggleModuleState = async (req: Request, res: Response) => {
         moduleId,
         user.tenantId || "DEFAULT",
       )
-      .catch((e) => console.log("Mock update toggle module", e));
+      .catch(() => { /* mock toggle - no-op */ });
 
     return res
       .status(200)
@@ -106,7 +106,7 @@ export const importClinicData = async (req: Request, res: Response) => {
     const { data } = req.body;
     if (!data) return res.status(400).json({ error: "No data provided" });
 
-    console.log("Importing clinic data. Payload length:", data.length);
+    
     return res
       .status(200)
       .json({ message: "Data imported successfully", processed: data.length });

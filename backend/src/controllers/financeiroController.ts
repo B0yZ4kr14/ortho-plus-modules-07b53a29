@@ -7,10 +7,7 @@ export const sincronizarExtratoBancario = async (
   res: Response,
 ) => {
   try {
-    const { bancoConfigId, dataInicio, dataFim } = req.body;
-    console.log(
-      `Sincronizando extrato bancário - Config: ${bancoConfigId}, range: ${dataInicio} to ${dataFim}`,
-    );
+    const { bancoConfigId, dataInicio: _dataInicio, dataFim: _dataFim } = req.body;
 
     // Simulate legacy DB calls
     return res.status(200).json({
@@ -27,8 +24,7 @@ export const sincronizarExtratoBancario = async (
 
 export const sugerirSangriaIa = async (req: Request, res: Response) => {
   try {
-    const { clinicId, valorAtualCaixa } = req.body;
-    console.log(`Sugerindo sangria inteligente para clínica ${clinicId}`);
+    const { clinicId: _clinicId, valorAtualCaixa } = req.body;
 
     return res.status(200).json({
       success: true,
@@ -46,12 +42,7 @@ export const sugerirSangriaIa = async (req: Request, res: Response) => {
 
 export const manageFinanceiroJobs = async (req: Request, res: Response) => {
   try {
-    const { jobName } = req.body;
-    console.log(`Executing financeiro job ${jobName}`);
-
-    if (jobName === "sincronizar-extratos-all") {
-      console.log("Syncing all bank extracts naturally");
-    }
+    const { jobName: _jobName } = req.body;
 
     return res.status(200).json({ success: true, executed: true });
   } catch (error: any) {

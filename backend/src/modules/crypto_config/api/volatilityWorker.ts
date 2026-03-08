@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 export class VolatilityWorkerController {
   async processVolatilityAlerts(_req: Request, res: Response): Promise<void> {
     try {
-      console.log("Checking volatility alerts...");
+      
 
       // Fetch active volatility alerts
       const alerts = await (prisma as any).crypto_price_alerts.findMany({

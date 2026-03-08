@@ -12,7 +12,7 @@ export class NotificationController {
    */
   async runAutoNotifications(_req: Request, res: Response, next: NextFunction) {
     try {
-      console.log("Running auto-notifications scheduler...");
+      
       let notificationsCreated = 0;
 
       // 1. Appointments tomorrow
