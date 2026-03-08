@@ -14,14 +14,14 @@ O sistema Ortho+ v3.0 foi completamente refatorado conforme o plano de correçã
 
 ## 2. Fases Implementadas
 
-### ✅ Fase 1: Desacoplamento do Supabase (Semanas 1-2)
+### ✅ Fase 1: Desacoplamento do banco (Semanas 1-2)
 - **Status:** COMPLETO
 - **Conformidade:** 100%
 - Implementações:
   - `DATA_SOURCE='rest-api'` configurado em `src/main.tsx`
   - Proxy Vite configurado para direcionar todas as chamadas para backend REST (`/api/*`)
   - Todos os componentes frontend agora utilizam `apiClient.ts` centralizado
-  - Queries diretas ao Supabase eliminadas do código frontend
+  - Queries diretas ao banco eliminadas do código frontend
 
 ### ✅ Fase 2: Schemas Isolados PostgreSQL (Semanas 3-4)
 - **Status:** COMPLETO
@@ -34,7 +34,7 @@ O sistema Ortho+ v3.0 foi completamente refatorado conforme o plano de correçã
     - `github_tools`, `terminal`
   - Cada módulo backend conecta ao seu schema dedicado
   - Comunicação entre schemas **estritamente proibida** (via APIs/eventos apenas)
-  - Migration Supabase executada com sucesso
+  - Migration PostgreSQL executada com sucesso
 
 ### ✅ Fase 3: Status Canônicos Odontológicos (Semana 5)
 - **Status:** COMPLETO
@@ -92,7 +92,7 @@ O sistema Ortho+ v3.0 foi completamente refatorado conforme o plano de correçã
     - `getRevenueData()`: Receitas e despesas (6 meses)
     - `getTreatmentsByStatus()`: Tratamentos por status
   - `src/pages/Dashboard.tsx` refatorado para usar `useDashboard` hook
-  - Queries diretas ao Supabase eliminadas
+  - Queries diretas ao banco eliminadas
   - Fallback com dados mockados implementado
 
 ### ✅ Fase 7: Fluxos Crypto (PSBT/Krux) (Semana 8)
@@ -147,10 +147,10 @@ O sistema Ortho+ v3.0 foi completamente refatorado conforme o plano de correçã
 - Implementações:
   - `src/lib/abstractions/IDataProvider.ts` criado
   - `RestAPIDataProvider` implementado (produção)
-  - `SupabaseDataProvider` implementado (fallback/desenvolvimento)
+  - `PostgreSQLDataProvider` implementado (fallback/desenvolvimento)
   - Configuração via variável de ambiente `DATA_SOURCE`
   - Sistema pode alternar entre backends sem mudanças de código
-  - Preparado para migração futura de Supabase Cloud para PostgreSQL on-premises
+  - Preparado para migração futura de PostgreSQL Cloud para PostgreSQL on-premises
 
 ### ✅ Fase 11: Testes E2E (Playwright) (Semana 9)
 - **Status:** COMPLETO
@@ -195,12 +195,12 @@ O sistema Ortho+ v3.0 foi completamente refatorado conforme o plano de correçã
 
 Todas as **11 violações CRÍTICAS** identificadas na auditoria foram resolvidas:
 
-1. ✅ **Acoplamento Direto com Supabase** → Resolvido (`DATA_SOURCE='rest-api'`)
+1. ✅ **Acoplamento Direto com PostgreSQL** → Resolvido (`DATA_SOURCE='rest-api'`)
 2. ✅ **Ausência de Schemas Isolados** → Resolvido (12 schemas criados)
 3. ✅ **Status de Pacientes Incompleto** → Resolvido (14 status canônicos)
 4. ✅ **Dados CRM Ausentes** → Resolvido (10 campos + campanhas + ROI)
 5. ✅ **Navegação Não Modular** → Resolvido (9 Bounded Contexts)
-6. ✅ **Queries Diretas ao Supabase (Dashboard)** → Resolvido (`useDashboard` hook)
+6. ✅ **Queries Diretas ao banco (Dashboard)** → Resolvido (`useDashboard` hook)
 7. ✅ **REST API do Backend Inutilizada** → Resolvido (todos os endpoints ativos)
 8. ✅ **Ausência de Docker Swarm** → Resolvido (`docker-stack.yml` completo)
 9. ✅ **Ausência de Suporte Dual-Mode** → Resolvido (`IDataProvider` + adaptadores)
@@ -234,13 +234,13 @@ O sistema Ortho+ v3.0 foi **completamente refatorado** e está **pronto para pro
 
 - ✅ Arquitetura modular descentralizada (Schema-per-Module)
 - ✅ Backend Node.js desacoplado com REST API completa
-- ✅ Frontend desacoplado do Supabase
+- ✅ Frontend desacoplado do banco
 - ✅ Status canônicos odontológicos (14 estados)
 - ✅ CRM odontológico completo com campanhas e ROI
 - ✅ Navegação modular por Bounded Contexts (DDD)
 - ✅ Docker Swarm para orquestração distribuída
 - ✅ Event Bus para comunicação assíncrona
-- ✅ Abstração de portabilidade (Supabase ↔ PostgreSQL on-premises)
+- ✅ Abstração de portabilidade (PostgreSQL ↔ PostgreSQL on-premises)
 - ✅ Fluxos crypto (PSBT/Krux) para hardware wallets
 - ✅ Testes E2E (Playwright) validando fluxos críticos
 

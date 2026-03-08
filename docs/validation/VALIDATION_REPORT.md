@@ -12,7 +12,7 @@ Cada módulo foi validado nos seguintes aspectos:
 1. ✅ **Navegação** - Rota funcional e link na sidebar
 2. ✅ **Formulários** - Validação Zod e persistência
 3. ✅ **Listagens** - CRUD completo e filtros
-4. ✅ **Integrações** - Hooks Supabase e Edge Functions
+4. ✅ **Integrações** - Hooks PostgreSQL e Edge Functions
 5. ✅ **Permissões** - RLS policies e controle de acesso
 
 ---
@@ -95,7 +95,7 @@ Cada módulo foi validado nos seguintes aspectos:
   - Evolução timeline
   - Anexos (upload)
   - Exportação PDF
-- **Hooks:** `useOdontogramaStore.ts`, `useOdontogramaSupabase.ts`
+- **Hooks:** `useOdontogramaStore.ts`, `useOdontograma.ts`
 - **Edge Function:** `analyze-odontogram`
 - **Testes E2E:** `pep.spec.ts` (aprovado)
 - **Observação:** Módulo mais complexo - 100% funcional
@@ -115,7 +115,7 @@ Cada módulo foi validado nos seguintes aspectos:
   - Alertas automáticos (Resend)
   - Previsão de reposição (IA)
   - Scanner de código de barras
-- **Hook:** `useEstoqueSupabase.ts`
+- **Hook:** `useEstoquePostgreSQL.ts`
 - **Edge Functions:** `gerar-pedidos-automaticos`, `send-stock-alerts`, `prever-reposicao`
 
 ### ✅ 9. Orçamentos
@@ -127,7 +127,7 @@ Cada módulo foi validado nos seguintes aspectos:
   - Aprovação digital
   - Conversão para plano de tratamento
   - Integração financeira
-- **Hook:** `useOrcamentosSupabase.ts`
+- **Hook:** `useOrcamentosPostgreSQL.ts`
 - **Componente:** `OrcamentoForm.tsx`
 
 ### ✅ 10. Contratos
@@ -139,7 +139,7 @@ Cada módulo foi validado nos seguintes aspectos:
   - Assinatura digital
   - Armazenamento seguro
   - Renovação automática
-- **Hook:** `useContratosSupabase.ts`
+- **Hook:** `useContratosPostgreSQL.ts`
 - **Componente:** `ContratoForm.tsx`
 
 ---
@@ -155,7 +155,7 @@ Cada módulo foi validado nos seguintes aspectos:
   - DRE (Demonstração de Resultado)
   - Gráficos comparativos (Recharts)
   - KPIs financeiros
-- **Hook:** `useFinanceiroSupabase.ts`
+- **Hook:** `useFinanceiro.ts`
 
 ### ✅ 12. Contas a Receber
 - **Rota:** `/financeiro/contas-receber`
@@ -197,7 +197,7 @@ Cada módulo foi validado nos seguintes aspectos:
   - Repasse via PIX
   - Integração Mercado Pago
   - NFe automática de repasses
-- **Hook:** `useSplitSupabase.ts`
+- **Hook:** `useSplit.ts`
 - **Edge Functions:** `processar-split-pagamento`, `processar-pagamento`
 - **Componente:** `SplitConfigForm.tsx`
 
@@ -212,7 +212,7 @@ Cada módulo foi validado nos seguintes aspectos:
   - Conversão automática BRL
   - Webhooks de confirmação
   - Taxa de processamento configurável
-- **Hook:** `useCryptoSupabase.ts`
+- **Hook:** `useCryptoPostgreSQL.ts`
 - **Edge Functions:** `sync-crypto-wallet`, `convert-crypto-to-brl`, `webhook-crypto-transaction`
 - **Componentes:** `ExchangeConfigForm.tsx`, `WalletForm.tsx`, `BitcoinQRCodeDialog.tsx`
 
@@ -261,7 +261,7 @@ Cada módulo foi validado nos seguintes aspectos:
   - Gamificação visual (confetti)
   - Progress bars animadas
   - Compartilhamento social
-- **Hook:** `useFidelidadeSupabase.ts`
+- **Hook:** `useFidelidadePostgreSQL.ts`
 - **Edge Function:** `processar-fidelidade-pontos`
 - **Componentes:** `BadgeForm.tsx`, `RecompensaForm.tsx`
 
@@ -311,7 +311,7 @@ Cada módulo foi validado nos seguintes aspectos:
   - Gravação de consultas
   - Histórico de gravações (`/teleodontologia/historico`)
   - Notificações automáticas (email/WhatsApp)
-- **Hook:** `useTeleodontologiaSupabase.ts`
+- **Hook:** `useTeleodontologia.ts`
 - **Edge Functions:** `generate-video-token`, `agora-recording`, `schedule-appointments`
 - **Componentes:** `VideoRoom.tsx`, `TeleconsultaForm.tsx`, `PrescricaoRemotaForm.tsx`, `TriagemForm.tsx`
 
@@ -324,7 +324,7 @@ Cada módulo foi validado nos seguintes aspectos:
   - Detecção de cáries, problemas periodontais, implantes, fraturas
   - Atualização automática do odontograma
   - Sugestões de tratamento com evidência científica
-- **Hook:** `useRadiografiaSupabase.ts`
+- **Hook:** `useRadiografiaPostgreSQL.ts`
 - **Edge Function:** `analisar-radiografia`
 
 ### ✅ 26. Portal do Paciente
@@ -338,7 +338,7 @@ Cada módulo foi validado nos seguintes aspectos:
   - Orçamentos
   - Pagamentos
   - Agendamento autônomo
-- **Hook:** `usePatientPortalSupabase.ts`
+- **Hook:** `usePatientPortalPostgreSQL.ts`
 
 ---
 
@@ -430,7 +430,7 @@ Cada módulo foi validado nos seguintes aspectos:
 
 ## 📊 Banco de Dados
 
-### ✅ Schemas Supabase
+### ✅ Schemas PostgreSQL
 - **Total de Tabelas:** 50+ tabelas
 - **RLS Policies:** 100% implementadas (todas as tabelas protegidas)
 - **Triggers:** Auditoria automática (`updated_at`)
@@ -476,7 +476,7 @@ Cada módulo foi validado nos seguintes aspectos:
 ## 🔐 Segurança
 
 ### ✅ Autenticação
-- **Supabase Auth:** Implementado
+- **Express Auth:** Implementado
 - **Custom Claims:** clinic_id, app_role
 - **RLS Policies:** 100% coverage
 - **Status:** ✅ Seguro
@@ -542,7 +542,7 @@ Cada módulo foi validado nos seguintes aspectos:
 ### Critérios de Production-Ready
 - [x] Todos os 26 módulos validados e funcionais
 - [x] CRUD completo em todos os módulos
-- [x] Integrações Supabase 100% funcionais
+- [x] Integrações API 100% funcionais
 - [x] Edge Functions testadas e operacionais
 - [x] RLS Policies implementadas (segurança)
 - [x] Testes E2E aprovados (46 testes)

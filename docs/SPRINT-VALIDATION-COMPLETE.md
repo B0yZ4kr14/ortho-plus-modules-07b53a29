@@ -70,7 +70,7 @@ Atualizações realizadas em `src/App.tsx`:
 
 | Categoria | Conformidade | Status |
 |-----------|-------------|--------|
-| **Desacoplamento Supabase** | 100% | ✅ |
+| **Desacoplamento banco** | 100% | ✅ |
 | **AuthContext REST API** | 100% | ✅ |
 | **Módulos Admin Navegação** | 100% | ✅ |
 | **Rotas Admin Completas** | 100% | ✅ |
@@ -166,7 +166,7 @@ test('Admin can configure crypto exchanges', async ({ page }) => {
 
 ## ✅ Checklist de Produção
 
-- [x] 142 arquivos desacoplados do Supabase
+- [x] 142 arquivos desacoplados do banco
 - [x] AuthContextAPI criado e funcional
 - [x] 5 módulos administrativos na navegação
 - [x] Rotas administrativas completas e protegidas
@@ -184,7 +184,7 @@ test('Admin can configure crypto exchanges', async ({ page }) => {
 O **Sprint Corretivo de 5 dias** foi **CONCLUÍDO COM ÊXITO TOTAL**, incluindo validações complementares e criação de páginas administrativas faltantes.
 
 ### Principais Conquistas:
-✅ **100% de desacoplamento** do Supabase em componentes críticos  
+✅ **100% de desacoplamento** do banco em componentes críticos  
 ✅ **Arquitetura modular DDD** 100% implementada  
 ✅ **Navegação descentralizada** por Bounded Contexts  
 ✅ **Docker Swarm** ativo para deploy distribuído  

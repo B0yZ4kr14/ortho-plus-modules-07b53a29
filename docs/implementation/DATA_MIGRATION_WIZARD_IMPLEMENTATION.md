@@ -10,7 +10,7 @@ Criar sistema completo de migração de dados permitindo importar/exportar confi
 ## ✅ 1. Edge Functions Backend
 
 ### 1.1. Export Clinic Data
-**Arquivo:** `supabase/functions/export-clinic-data/index.ts`
+**Arquivo:** `backend/functions/export-clinic-data/index.ts`
 
 **Funcionalidades:**
 - ✅ Exportação seletiva de dados:
@@ -48,7 +48,7 @@ Criar sistema completo de migração de dados permitindo importar/exportar confi
 ```
 
 ### 1.2. Import Clinic Data
-**Arquivo:** `supabase/functions/import-clinic-data/index.ts`
+**Arquivo:** `backend/functions/import-clinic-data/index.ts`
 
 **Funcionalidades:**
 - ✅ Importação com tratamento de conflitos:
@@ -161,10 +161,10 @@ Criar sistema completo de migração de dados permitindo importar/exportar confi
 
 ---
 
-## ✅ 4. Configuração Supabase
+## ✅ 4. Configuração banco
 
 ### 4.1. Config.toml
-**Arquivo:** `supabase/config.toml`
+**Arquivo:** `apiClient/config.toml`
 
 **Edge Functions Adicionadas:**
 ```toml
@@ -280,8 +280,8 @@ verify_jwt = true
 
 | Componente | Status | Tecnologia |
 |------------|--------|------------|
-| Export Edge Function | ✅ Implementado | Deno + Supabase |
-| Import Edge Function | ✅ Implementado | Deno + Supabase |
+| Export Edge Function | ✅ Implementado | Deno + PostgreSQL |
+| Import Edge Function | ✅ Implementado | Deno + PostgreSQL |
 | DataMigrationWizard | ✅ Implementado | React + TypeScript |
 | UI Integration | ✅ Integrado | Configurações Page |
 | Auditoria | ✅ Completa | audit_logs table |

@@ -202,10 +202,10 @@ sudo npm install
 Criar arquivo `.env`:
 
 ```env
-# Supabase
-VITE_SUPABASE_URL=sua_url_supabase
-VITE_SUPABASE_PUBLISHABLE_KEY=sua_chave_anon
-VITE_SUPABASE_PROJECT_ID=seu_project_id
+# PostgreSQL
+VITE_API_BASE_URL=sua_url_api
+VITE_API_KEY=sua_chave_anon
+VITE_PROJECT_ID=seu_project_id
 
 # Database Local
 DATABASE_URL=postgresql://orthoplus:sua_senha@localhost:5432/orthoplus
@@ -373,8 +373,8 @@ sudo systemctl reload nginx
 
 ## 📚 Próximos Passos
 
-1. Configure o Supabase (veja [Supabase Setup](./docs/SUPABASE.md))
-2. Configure secrets do Supabase para integrações
+1. Configure o banco (veja [PostgreSQL Setup](./docs/README.md))
+2. Configure secrets do banco para integrações
 3. Importe dados iniciais (módulos, categorias)
 4. Configure domínio e SSL
 5. Configure monitoramento no Grafana

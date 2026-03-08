@@ -242,11 +242,11 @@ WHERE is_active = true;
 
 ```typescript
 // ❌ BAD: N+1 queries
-const patients = await supabase.from('pacientes').select('*');
+const patients = await apiClient.from('pacientes').select('*');
 
 for (const patient of patients) {
   // 1 query por paciente!
-  const appointments = await supabase
+  const appointments = await apiClient
     .from('appointments')
     .select('*')
     .eq('patient_id', patient.id);
@@ -255,7 +255,7 @@ for (const patient of patients) {
 }
 
 // ✅ GOOD: Usar joins
-const patients = await supabase
+const patients = await apiClient
   .from('pacientes')
   .select(`
     *,
@@ -270,7 +270,7 @@ const patients = await supabase
 
 ```typescript
 // ❌ BAD: Carregar tudo
-const { data } = await supabase
+const { data } = await apiClient
   .from('pacientes')
   .select('*');
 // Retorna 10.000+ pacientes
@@ -278,7 +278,7 @@ const { data } = await supabase
 // ✅ GOOD: Paginação
 const PAGE_SIZE = 20;
 
-const { data, count } = await supabase
+const { data, count } = await apiClient
   .from('pacientes')
   .select('*', { count: 'exact' })
   .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
@@ -297,7 +297,7 @@ function usePatients(clinicId: string) {
   return useQuery({
     queryKey: ['patients', clinicId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await apiClient
         .from('pacientes')
         .select('*')
         .eq('clinic_id', clinicId);

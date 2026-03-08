@@ -142,7 +142,7 @@ INTELIGÊNCIA & RELATÓRIOS
 - ✅ Ações Rápidas mantidas (8 cards)
 
 **Validação:**
-- ✅ KPIs exibem dados reais do Supabase
+- ✅ KPIs exibem dados reais do banco
 - ✅ Alertas destacados visualmente (border-l-warning)
 - ✅ Navegação para dashboards de categoria funcional
 

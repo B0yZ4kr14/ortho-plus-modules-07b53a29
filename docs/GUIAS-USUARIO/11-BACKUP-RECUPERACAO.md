@@ -109,7 +109,7 @@ Quinta: INCREMENTAL (120 MB) → apenas mudanças desde quarta
 **Múltiplos destinos para redundância:**
 
 ```
-Destino 1: ☑️ Supabase Storage (padrão)
+Destino 1: ☑️ MinIO Storage (padrão)
   - Automático, sem configuração adicional
   - Armazenamento na nuvem (Brasil)
   - Custo: Incluído no plano
@@ -240,7 +240,7 @@ Tempo total: 7min 50s
 Checksum SHA-256: abc123def456...
 
 Enviado para:
-✅ Supabase Storage
+✅ MinIO Storage
 ✅ AWS S3 (sa-east-1)
 ✅ Google Drive
 
@@ -518,7 +518,7 @@ TAXA DE SUCESSO (últimos 30 dias)
 
 ARMAZENAMENTO
 
-Supabase Storage:  2.3 GB / 10 GB (23%)
+MinIO Storage:  2.3 GB / 10 GB (23%)
 AWS S3:            8.9 GB / ∞
 Google Drive:      4.2 GB / 15 GB (28%)
 

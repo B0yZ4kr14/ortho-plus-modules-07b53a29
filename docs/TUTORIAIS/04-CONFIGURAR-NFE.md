@@ -123,7 +123,7 @@ Emissor: AC CERTISIGN RFB G5
 
 6. Clique em **"Salvar Certificado"**
 
-⚠️ **Segurança:** Certificado é armazenado **criptografado** (AES-256) no Supabase.
+⚠️ **Segurança:** Certificado é armazenado **criptografado** (AES-256) no banco.
 
 ---
 

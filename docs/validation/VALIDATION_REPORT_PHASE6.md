@@ -105,15 +105,15 @@
 
 ---
 
-## 4. Integração com Supabase
+## 4. Integração com PostgreSQL
 
 ### 4.1. Hooks Validados
 
 | Hook | Status | Funcionalidades |
 |------|--------|-----------------|
-| `usePatientsSupabase.ts` | ✅ | CRUD completo + real-time subscriptions |
-| `useAgendaSupabase.ts` | ✅ | CRUD completo + dentistas + real-time |
-| `useFinanceiroSupabase.ts` | ✅ | Transações financeiras + real-time |
+| `usePatients.ts` | ✅ | CRUD completo + real-time subscriptions |
+| `useAgenda.ts` | ✅ | CRUD completo + dentistas + real-time |
+| `useFinanceiro.ts` | ✅ | Transações financeiras + real-time |
 
 ---
 

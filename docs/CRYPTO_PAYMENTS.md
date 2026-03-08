@@ -192,7 +192,7 @@ Dashboard exibe:
 ### sync-crypto-wallet
 Sincroniza saldo e cotação da carteira:
 ```bash
-curl -X POST https://[project].supabase.co/functions/v1/sync-crypto-wallet \
+curl -X POST https://[project].api/sync-crypto-wallet \
   -H "Authorization: Bearer [token]" \
   -d '{"walletId": "uuid"}'
 ```
@@ -200,7 +200,7 @@ curl -X POST https://[project].supabase.co/functions/v1/sync-crypto-wallet \
 ### convert-crypto-to-brl
 Converte transação para BRL:
 ```bash
-curl -X POST https://[project].supabase.co/functions/v1/convert-crypto-to-brl \
+curl -X POST https://[project].api/convert-crypto-to-brl \
   -H "Authorization: Bearer [token]" \
   -d '{"transactionId": "uuid"}'
 ```
@@ -208,7 +208,7 @@ curl -X POST https://[project].supabase.co/functions/v1/convert-crypto-to-brl \
 ### webhook-crypto-transaction
 Recebe notificações de exchanges:
 ```bash
-curl -X POST https://[project].supabase.co/functions/v1/webhook-crypto-transaction \
+curl -X POST https://[project].api/webhook-crypto-transaction \
   -d '{
     "wallet_address": "bc1q...",
     "transaction_hash": "abc123...",

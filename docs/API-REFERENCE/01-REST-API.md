@@ -1,19 +1,19 @@
 # 📖 REST API Reference - Ortho+
 
-> Documentação completa dos endpoints REST gerados automaticamente pelo PostgREST
+> Documentação completa dos endpoints REST gerados automaticamente pelo Express
 
 ---
 
 ## 🎯 Base URL
 
 ```
-https://yxpoqjyfgotkytwtifau.supabase.co/rest/v1
+https://yxpoqjyfgotkytwtifau.backend.orthoplus.local/rest/v1
 ```
 
 **Headers obrigatórios**:
 ```http
 Authorization: Bearer <access_token>
-apikey: <supabase_anon_key>
+apikey: <PostgreSQL_anon_key>
 Content-Type: application/json
 ```
 
@@ -627,8 +627,8 @@ X-RateLimit-Reset: 1705320000
 
 ## 📚 Recursos
 
-- [PostgREST Docs](https://postgrest.org/en/stable/)
-- [Supabase REST API](https://supabase.com/docs/guides/api)
+- [Express Docs](https://postgrest.org/en/stable/)
+- [PostgreSQL REST API](https://apiClient.com/docs/guides/api)
 - [PostgreSQL Operators](https://www.postgresql.org/docs/current/functions.html)
 
 ---

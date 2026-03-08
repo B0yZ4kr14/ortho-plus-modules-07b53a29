@@ -26,7 +26,7 @@ Frontend:
 └── qrcode library
 
 Backend:
-├── Supabase (PostgreSQL + RLS)
+├── PostgreSQL (PostgreSQL + RLS)
 ├── Edge Functions (Deno)
 └── Real-time subscriptions
 
@@ -59,7 +59,7 @@ External APIs:
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                  Infrastructure Layer                        │
-│   (Adapters: ExchangeFactory, BlockchainMonitor, Supabase)  │
+│   (Adapters: ExchangeFactory, BlockchainMonitor, PostgreSQL)  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -75,7 +75,7 @@ sequenceDiagram
     participant Frontend as Frontend
     participant UseCase as GeneratePaymentAddressUseCase
     participant Adapter as ExchangeAdapter (Binance/Coinbase)
-    participant DB as Supabase DB
+    participant DB as PostgreSQL
     participant Monitor as BlockchainMonitor
 
     User->>Frontend: Seleciona "Pagar com Crypto"
@@ -111,7 +111,7 @@ sequenceDiagram
     participant Frontend as Frontend
     participant UseCase as GeneratePaymentAddressUseCase
     participant EdgeFn as derive-address (Edge Function)
-    participant DB as Supabase DB
+    participant DB as PostgreSQL
     participant Monitor as BlockchainMonitor
     participant Blockchain as Blockstream API
 
@@ -149,7 +149,7 @@ sequenceDiagram
     participant UseCase as CreateCryptoInvoiceUseCase
     participant Adapter as BTCPayAdapter
     participant BTCPay as BTCPay Server
-    participant DB as Supabase DB
+    participant DB as PostgreSQL
     participant Webhook as process-crypto-webhook (Edge Function)
 
     User->>Frontend: Seleciona "Pagar com Crypto"
@@ -418,7 +418,7 @@ CREATE TABLE public.crypto_transactions (
 -- Criptografar API Keys (usar pgcrypto)
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- Encryption key deve ser armazenada em variável de ambiente (SUPABASE_ENCRYPTION_KEY)
+-- Encryption key deve ser armazenada em variável de ambiente (ENCRYPTION_KEY)
 -- Nunca hardcode a key no código!
 
 -- Função para criptografar
@@ -446,7 +446,7 @@ const apiKey = decrypt(encryptedKey);
 // ✅ CORRETO
 // Apenas Edge Functions descriptografam
 // Frontend apenas envia ID da config
-const response = await supabase.functions.invoke('generate-payment-address', {
+const response = await apiClient.post('generate-payment-address', {
   body: { exchangeConfigId: 'uuid' } // Não envia API key!
 });
 ```
@@ -473,7 +473,7 @@ Deno.serve(async (req) => {
   const signature = req.headers.get('BTCPay-Sig') || req.headers.get('X-Signature');
   
   // Buscar webhook_secret do DB
-  const { data: config } = await supabase
+  const { data: config } = await apiClient
     .from('crypto_exchange_config')
     .select('webhook_secret')
     .eq('id', configId)
@@ -536,7 +536,7 @@ async function rateLimitCheck(req: Request): Promise<boolean> {
   const endpoint = new URL(req.url).pathname;
   
   // Verificar rate limit no DB (tabela rate_limit_log)
-  const { data, error } = await supabase
+  const { data, error } = await apiClient
     .from('rate_limit_log')
     .select('request_count')
     .eq('ip_address', ip)
@@ -551,7 +551,7 @@ async function rateLimitCheck(req: Request): Promise<boolean> {
   }
   
   // Incrementar contador
-  await supabase.rpc('increment_rate_limit', { 
+  await apiClient.rpc('increment_rate_limit', { 
     ip_address: ip, 
     endpoint 
   });
@@ -857,12 +857,12 @@ test('PDV should accept crypto payment', async ({ page }) => {
 
 ```bash
 # Deploy todas as Edge Functions
-supabase functions deploy
+npm run deploy
 
 # Deploy função específica
-supabase functions deploy generate-payment-address
-supabase functions deploy process-crypto-webhook
-supabase functions deploy derive-address
+npm run deploy generate-payment-address
+npm run deploy process-crypto-webhook
+npm run deploy derive-address
 ```
 
 ---
@@ -871,7 +871,7 @@ supabase functions deploy derive-address
 
 ```bash
 # Executar migrations
-supabase db push
+npx prisma db push
 
 # Ou via ferramenta do Lovable (automático)
 ```
@@ -882,11 +882,11 @@ supabase db push
 
 ```bash
 # .env.local (desenvolvimento)
-VITE_SUPABASE_URL=https://yxpoqjyfgotkytwtifau.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGc...
+VITE_API_BASE_URL=https://yxpoqjyfgotkytwtifau.backend.orthoplus.local
+VITE_API_ANON_KEY=eyJhbGc...
 
-# Edge Functions (Supabase Dashboard → Settings → Secrets)
-SUPABASE_ENCRYPTION_KEY=your-32-char-encryption-key
+# Edge Functions (Admin Dashboard → Settings → Secrets)
+ENCRYPTION_KEY=your-32-char-encryption-key
 BLOCKSTREAM_API_URL=https://blockstream.info/api
 ```
 

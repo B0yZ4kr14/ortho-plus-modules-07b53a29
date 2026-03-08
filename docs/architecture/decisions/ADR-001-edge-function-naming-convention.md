@@ -36,7 +36,7 @@ Esta duplicação causava:
 ### Actions Taken
 - ✅ Deletadas versões camelCase: `getMyModules`, `toggleModuleState`, `requestNewModule`
 - ✅ Atualizado `src/hooks/useModules.ts` para usar kebab-case
-- ✅ Verificado todos os `supabase.functions.invoke()` no codebase
+- ✅ Verificado todos os `apiClient.post()` no codebase
 
 ---
 
@@ -70,9 +70,9 @@ Este ADR implementa a seguinte diretriz do plano de refatoração:
 # .husky/pre-commit
 #!/bin/sh
 # Check for camelCase in function names
-if find supabase/functions -maxdepth 1 -type d | grep -E '[A-Z]'; then
+if find apiClient/functions -maxdepth 1 -type d | grep -E '[A-Z]'; then
   echo "❌ Error: Edge Function names must use kebab-case"
-  echo "Found: $(find supabase/functions -maxdepth 1 -type d | grep -E '[A-Z]')"
+  echo "Found: $(find apiClient/functions -maxdepth 1 -type d | grep -E '[A-Z]')"
   exit 1
 fi
 ```
@@ -99,7 +99,7 @@ fi
 - [RFC 3986 - URI Generic Syntax](https://www.rfc-editor.org/rfc/rfc3986)
 - [Google API Design Guide - Resource Names](https://cloud.google.com/apis/design/resource_names)
 - [AWS Lambda - Naming Conventions](https://docs.aws.amazon.com/lambda/latest/dg/API_CreateFunction.html)
-- Supabase Edge Functions Docs
+- PostgreSQL Edge Functions Docs
 
 ---
 

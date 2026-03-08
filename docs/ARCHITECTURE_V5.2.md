@@ -13,11 +13,11 @@ O Ortho+ é um SaaS B2B multitenant modular para clínicas odontológicas, imple
 
 ### 2. Multi-Tenancy
 - Isolamento completo de dados por `clinic_id`
-- Row Level Security (RLS) em todas as tabelas Supabase
+- Row Level Security (RLS) em todas as tabelas PostgreSQL
 - Usuários ADMIN podem gerenciar múltiplas clínicas
 
 ### 3. Backend Agnóstico
-- Abstração completa: **Supabase Cloud** ↔ **PostgreSQL Local**
+- Abstração completa: **PostgreSQL Cloud** ↔ **PostgreSQL Local**
 - Switching dinâmico sem reload
 - Interface unificada via `IBackendService`
 
@@ -44,9 +44,9 @@ orthoplus-v5.2/
 │   │   └── .../
 │   │
 │   ├── infrastructure/             # Infraestrutura compartilhada
-│   │   ├── backend/                # Abstração Supabase/PostgreSQL
+│   │   ├── backend/                # Abstração banco/PostgreSQL
 │   │   │   ├── IBackendService.ts
-│   │   │   ├── SupabaseBackendService.ts
+│   │   │   ├── PostgreSQLBackendService.ts
 │   │   │   └── PostgreSQLBackendService.ts
 │   │   ├── di/                     # Dependency Injection
 │   │   └── external/               # APIs externas (Blockchain, etc)
@@ -113,7 +113,7 @@ orthoplus-v5.2/
          ┌────────┴────────┐
          ▼                 ▼
 ┌──────────────────┐  ┌────────────────────┐
-│   Supabase       │  │   PostgreSQL       │
+│   PostgreSQL       │  │   PostgreSQL       │
 │   (Cloud)        │  │   (Ubuntu Server)  │
 └──────────────────┘  └────────────────────┘
 ```
@@ -154,7 +154,7 @@ User → Page Component → Hook (usePatients) → BackendProvider
 
 ### 2. BackendProvider Decide Rota
 ```
-BackendProvider → IBackendService → SupabaseBackend | PostgreSQLBackend
+BackendProvider → IBackendService → PostgreSQLBackend | PostgreSQLBackend
 ```
 
 ### 3. Dados Retornam
@@ -193,7 +193,7 @@ Backend → Event Bus → Subscribed Modules → Side Effects
 - **React Router** (routing)
 
 ### Backend
-- **Supabase** (BaaS: Auth, DB, Storage, Edge Functions)
+- **PostgreSQL** (BaaS: Auth, DB, Storage, Edge Functions)
 - **Node.js** (API Gateway opcional)
 - **PostgreSQL** (database local)
 
@@ -205,7 +205,7 @@ Backend → Event Bus → Subscribed Modules → Side Effects
 ## Segurança
 
 ### Autenticação
-- JWT tokens via Supabase Auth
+- JWT tokens via Express Auth
 - Custom claims para `clinic_id` e `app_role`
 - Refresh tokens com rotação
 
@@ -240,7 +240,7 @@ Backend → Event Bus → Subscribed Modules → Side Effects
 - Futuro: Schema-per-tenant para grandes clínicas
 
 ### Load Balancing
-- Supabase: Gerenciado automaticamente
+- PostgreSQL: Gerenciado automaticamente
 - PostgreSQL: Docker Swarm com múltiplas réplicas
 
 ### Caching
@@ -253,7 +253,7 @@ Backend → Event Bus → Subscribed Modules → Side Effects
 ### V5.3 (Q2 2025)
 - [ ] CQRS completo (Command/Query separation)
 - [ ] Event Sourcing para auditoria
-- [ ] Backend híbrido (auth Supabase, data PostgreSQL)
+- [ ] Backend híbrido (auth PostgreSQL, data PostgreSQL)
 
 ### V5.4 (Q3 2025)
 - [ ] Micro-frontends (Module Federation)
@@ -269,5 +269,5 @@ Backend → Event Bus → Subscribed Modules → Side Effects
 
 - [DDD: Domain-Driven Design - Eric Evans](https://domainlanguage.com/ddd/)
 - [Clean Architecture - Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
-- [Supabase Docs](https://supabase.com/docs)
+- [PostgreSQL Docs](https://apiClient.com/docs)
 - [React Performance Optimization](https://react.dev/learn/render-and-commit)

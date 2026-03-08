@@ -113,7 +113,7 @@ WHERE p.prosecdef = true AND p.proconfig IS NULL;
 
 **Ação Necessária (Usuário)**:
 ```markdown
-1. Acesse: Supabase Dashboard > Authentication > Settings
+1. Acesse: Admin Dashboard > Authentication > Settings
 2. Navegue: Password Requirements
 3. Habilite: "Enable Leaked Password Protection"
 4. Salve as configurações
@@ -126,13 +126,13 @@ SET leaked_password_protection_enabled = true
 WHERE id = 'auth-config';
 ```
 
-**⚠️ Nota**: Esta correção requer acesso ao Dashboard do Supabase ou service_role key.
+**⚠️ Nota**: Esta correção requer acesso ao Dashboard do banco ou service_role key.
 
 ---
 
 #### ✅ A3: Criptografia de API Keys
 **Status**: Implementado Parcialmente  
-**Motivo**: Requer configuração de chave no Supabase Vault
+**Motivo**: Requer configuração de chave no banco Vault
 
 **Próximas Etapas**:
 1. Adicionar chave de criptografia ao Vault: `config_encryption_key`
@@ -147,7 +147,7 @@ WHERE id = 'auth-config';
 **Status**: Implementado  
 **Data**: 2025-11-17  
 **Arquivos**:
-- `supabase/functions/_shared/rateLimiter.ts`
+- `backend/functions/_shared/rateLimiter.ts`
 - Migration: `20251117143XXX_security_l1_rate_limiting.sql`
 
 **Recursos**:
@@ -164,8 +164,8 @@ WHERE id = 'auth-config';
 import { checkRateLimit, rateLimitHeaders } from '../_shared/rateLimiter.ts';
 
 const result = await checkRateLimit(
-  Deno.env.get('SUPABASE_URL')!,
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  Deno.env.get('API_BASE_URL')!,
+  Deno.env.get('DB_SERVICE_KEY')!,
   userId,
   req.headers.get('x-forwarded-for') || '0.0.0.0',
   { endpoint: 'my-function', maxRequests: 20, windowMs: 60000 }
@@ -218,12 +218,12 @@ secureLogger.log('User data:', { name: 'John', password: '123456' });
 
 #### ⏳ M1: Mover Extensões para Schema `extensions`
 **Status**: Não Implementado  
-**Motivo**: Extensões core do Supabase não devem ser movidas
+**Motivo**: Extensões core do banco não devem ser movidas
 
 **Análise**:
-- Algumas extensões são gerenciadas pelo Supabase e não podem ser movidas
+- Algumas extensões são gerenciadas pelo banco e não podem ser movidas
 - Extensões no `public` schema são aceitáveis para extensões core
-- **Decisão**: Aceitar warning do linter para extensões gerenciadas pelo Supabase
+- **Decisão**: Aceitar warning do linter para extensões gerenciadas pelo banco
 
 ---
 
@@ -238,7 +238,7 @@ grep -r "localStorage.setItem" src/
 grep -r "localStorage.getItem" src/
 
 # Verificar se algum dado sensível está sendo armazenado
-# Remover hooks antigos baseados em localStorage (já migrados para Supabase)
+# Remover hooks antigos baseados em localStorage (já migrados para o banco)
 ```
 
 **Nota**: Hooks antigos (`usePatientsStore`, `useFinanceiroStore`) já foram removidos.
@@ -251,7 +251,7 @@ grep -r "localStorage.getItem" src/
 
 **Ação Necessária**:
 1. Remover campo `client_secret` de `AuthenticationConfig.tsx`
-2. Armazenar no Supabase Secrets (via Lovable Cloud)
+2. Armazenar no banco Secrets (via OrthoPlus Cloud)
 3. Usar em Edge Function para OAuth
 
 ---

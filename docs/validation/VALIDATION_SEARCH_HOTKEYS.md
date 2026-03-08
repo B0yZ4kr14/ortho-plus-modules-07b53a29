@@ -11,7 +11,7 @@
 
 #### Características Implementadas:
 - ✅ Busca em tempo real com debounce de 300ms
-- ✅ Integração com Supabase (Lovable Cloud)
+- ✅ Integração com PostgreSQL (OrthoPlus Cloud)
 - ✅ Busca em múltiplas entidades:
   - Pacientes (via tabela `prontuarios`)
   - Agendamentos (via tabela `appointments`)
@@ -31,23 +31,23 @@
 - `CommandItem`
 - `CommandEmpty`
 
-#### Query Supabase:
+#### Query PostgreSQL:
 ```typescript
 // Pacientes
-const { data: prontuarios } = await supabase
+const { data: prontuarios } = await apiClient
   .from('prontuarios')
   .select('id, patient_id')
   .limit(5);
 
 // Agendamentos
-const { data: appointments } = await supabase
+const { data: appointments } = await apiClient
   .from('appointments')
   .select('id, title, start_time, status')
   .ilike('title', searchTerm)
   .limit(5);
 
 // Tratamentos
-const { data: tratamentos } = await supabase
+const { data: tratamentos } = await apiClient
   .from('pep_tratamentos')
   .select('id, descricao, status')
   .ilike('descricao', searchTerm)
@@ -228,7 +228,7 @@ Header (h-16 + h-8 para breadcrumbs)
 ## ✅ Checklist de Implementação
 
 - [x] Sistema de busca global funcional
-- [x] Integração com Supabase queries
+- [x] Integração com PostgreSQL queries
 - [x] Barra de busca centralizada e aumentada
 - [x] Layout header sem sobreposições
 - [x] Sistema de hotkeys completo

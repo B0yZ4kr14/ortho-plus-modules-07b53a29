@@ -73,13 +73,13 @@
 
 **DataSourceProvider**:
 ```typescript
-<DataSourceProvider source="supabase"> {/* ou "rest-api" */}
+<DataSourceProvider source="apiClient"> {/* ou "rest-api" */}
   <App />
 </DataSourceProvider>
 ```
 
 **Benefícios**:
-- ✅ Troca instantânea entre Supabase e REST API
+- ✅ Troca instantânea entre PostgreSQL e REST API
 - ✅ Rollback em 1 linha de código  
 - ✅ Zero downtime durante migração
 - ✅ Testes A/B fáceis
@@ -226,7 +226,7 @@
 │  ┌──────────────────────────────────────────────┐  │
 │  │         DataSourceProvider                    │  │
 │  │  ┌────────────┐       ┌──────────────┐      │  │
-│  │  │  Supabase  │  OR   │   REST API   │      │  │
+│  │  │  PostgreSQL  │  OR   │   REST API   │      │  │
 │  │  │   (atual)  │       │   (futuro)   │      │  │
 │  │  └────────────┘       └──────────────┘      │  │
 │  └──────────────────────────────────────────────┘  │
@@ -456,7 +456,7 @@ curl http://localhost:3000/metrics
 ## 🎉 Estado Atual do Sistema
 
 ### Produção (Atual)
-- ✅ **100% funcional** com Supabase
+- ✅ **100% funcional** com PostgreSQL
 - ✅ **Todos os módulos** operando
 - ✅ **Nenhum bug** crítico
 - ✅ **Performance** adequada
@@ -477,7 +477,7 @@ curl http://localhost:3000/metrics
 ## 💎 Recomendações Finais
 
 ### Para Produção Imediata
-**Sistema atual está production-ready com Supabase**:
+**Sistema atual está production-ready com PostgreSQL**:
 - ✅ Pode fazer deploy agora
 - ✅ Todos os módulos funcionando
 - ✅ Documentação completa
@@ -576,4 +576,4 @@ TOTAL:               ~80 horas
 **Data de Conclusão**: 2025-11-17  
 **Fase**: Infraestrutura Completa  
 **Próximo Marco**: Harmonização de Tipos + Migração de Componentes  
-**Status**: ✅ PRONTO PARA PRODUÇÃO (com Supabase) / ⏳ PREPARADO PARA REST API (após harmonização)
+**Status**: ✅ PRONTO PARA PRODUÇÃO (com PostgreSQL) / ⏳ PREPARADO PARA REST API (após harmonização)

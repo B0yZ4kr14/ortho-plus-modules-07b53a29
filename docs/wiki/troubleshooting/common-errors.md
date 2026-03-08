@@ -9,13 +9,13 @@
 **Solução**:
 ```typescript
 // Forçar logout e novo login
-await supabase.auth.signOut();
+await auth.signOut();
 window.location.href = '/login';
 ```
 
 **Prevenção**:
 - Implementar refresh automático de token
-- Usar `supabase.auth.onAuthStateChange()` para detectar mudanças
+- Usar `auth.onAuthStateChange()` para detectar mudanças
 
 ---
 
@@ -52,12 +52,12 @@ Cannot delete clinic_id='xxx' - referenced in table 'prontuarios'
 **Solução**:
 ```typescript
 // Opção 1: Deletar em cascata (cuidado!)
-await supabase.from('clinic_modules').delete().eq('clinic_id', clinicId);
-await supabase.from('prontuarios').delete().eq('clinic_id', clinicId);
-await supabase.from('clinics').delete().eq('id', clinicId);
+await apiClient.from('clinic_modules').delete().eq('clinic_id', clinicId);
+await apiClient.from('prontuarios').delete().eq('clinic_id', clinicId);
+await apiClient.from('clinics').delete().eq('id', clinicId);
 
 // Opção 2: Soft delete (recomendado)
-await supabase
+await apiClient
   .from('clinics')
   .update({ deleted_at: new Date().toISOString(), is_active: false })
   .eq('id', clinicId);
@@ -108,7 +108,7 @@ duplicate key value violates unique constraint "clinic_modules_clinic_id_module_
 **Solução**:
 ```typescript
 // Usar UPSERT ao invés de INSERT
-const { error } = await supabase
+const { error } = await apiClient
   .from('clinic_modules')
   .upsert(
     { clinic_id: 'xxx', module_catalog_id: 1, is_active: true },
@@ -124,7 +124,7 @@ const { error } = await supabase
 
 **Diagnóstico**:
 ```sql
--- Ver queries lentas (ativar em Supabase Dashboard → Settings → API)
+-- Ver queries lentas (ativar em Admin Dashboard → Settings → API)
 SELECT * FROM pg_stat_statements 
 ORDER BY mean_exec_time DESC 
 LIMIT 10;
@@ -144,7 +144,7 @@ for (const t of tratamentos) {
 }
 
 // ✅ Join único
-const tratamentos = await supabase
+const tratamentos = await apiClient
   .from('pep_tratamentos')
   .select('*, procedimento:procedimentos(*)')
   .eq('prontuario_id', id);

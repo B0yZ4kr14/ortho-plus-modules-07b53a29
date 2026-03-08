@@ -170,7 +170,7 @@ SELECT cron.schedule(
   '0 * * * *',  -- A cada hora
   $$
   SELECT net.http_post(
-    url:='https://yxpoqjyfgotkytwtifau.supabase.co/functions/v1/scheduled-cleanup',
+    url:='https://yxpoqjyfgotkytwtifau.api/scheduled-cleanup',
     headers:='{"Content-Type": "application/json", "Authorization": "Bearer [ANON_KEY]"}'::jsonb
   ) as request_id;
   $$
@@ -752,7 +752,7 @@ Conteúdo:
 
 ### Longo Prazo
 1. Suporte a backup de arquivos binários (imagens de radiografias, anexos)
-2. Backup automático do Supabase Storage buckets
+2. Backup automático do MinIO Storage buckets
 3. Point-in-time recovery (restaurar para momento específico)
 4. Replicação automática para múltiplas regiões geográficas
 
@@ -769,7 +769,7 @@ SELECT cron.schedule(
   '0 * * * *',
   $$
   SELECT net.http_post(
-    url:='https://yxpoqjyfgotkytwtifau.supabase.co/functions/v1/scheduled-cleanup',
+    url:='https://yxpoqjyfgotkytwtifau.api/scheduled-cleanup',
     headers:='{"Content-Type": "application/json", "Authorization": "Bearer [ANON_KEY]"}'::jsonb
   ) as request_id;
   $$
@@ -781,7 +781,7 @@ SELECT cron.schedule(
   '0 3 * * *',
   $$
   SELECT net.http_post(
-    url:='https://yxpoqjyfgotkytwtifau.supabase.co/functions/v1/cleanup-old-backups',
+    url:='https://yxpoqjyfgotkytwtifau.api/cleanup-old-backups',
     headers:='{"Content-Type": "application/json", "Authorization": "Bearer [ANON_KEY]"}'::jsonb
   ) as request_id;
   $$

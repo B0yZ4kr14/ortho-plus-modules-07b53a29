@@ -10,7 +10,7 @@ O Ortho+ é um sistema SaaS B2B multitenant para clínicas odontológicas, const
 2. **Descentralização de Dados**: Schema PostgreSQL dedicado por módulo
 3. **Comunicação por Eventos**: Event Bus para comunicação assíncrona entre módulos
 4. **APIs Internas**: REST APIs para comunicação síncrona entre módulos
-5. **Portabilidade**: Abstração de infraestrutura para suportar Cloud (Supabase) e On-Premises
+5. **Portabilidade**: Abstração de infraestrutura para suportar Cloud (PostgreSQL) e On-Premises
 
 ---
 
@@ -602,7 +602,7 @@ POST   /api/terminal/whitelist/add
 
 ### Próxima Fase: Frontend Integration
 1. Refatorar frontend para consumir APIs modulares
-2. Remover dependência de Supabase Client no frontend
+2. Remover dependência de PostgreSQL Client no frontend
 3. Implementar axios client com interceptors
 4. Criar hooks customizados por módulo
 5. Atualizar componentes para usar novos hooks

@@ -49,7 +49,7 @@ src/
 │       │   ├── [Feature]Upload.tsx# Uploads
 │       │   └── ...
 │       ├── hooks/
-│       │   └── use[Feature].ts    # Custom hooks (ex: useOdontogramaSupabase)
+│       │   └── use[Feature].ts    # Custom hooks (ex: useOdontograma)
 │       ├── types/
 │       │   └── [module].types.ts  # TypeScript types
 │       └── utils/
@@ -83,7 +83,7 @@ src/
 │       │   ├── AssinaturaDigital.tsx
 │       │   └── ProntuarioPDF.tsx
 │       ├── hooks/
-│       │   └── useOdontogramaSupabase.ts
+│       │   └── useOdontograma.ts
 │       └── types/
 │           └── pep.types.ts
 │
@@ -228,7 +228,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Form, FormField } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api/apiClient';
 
 const formSchema = z.object({
   field1: z.string().min(1, 'Campo obrigatório'),
@@ -251,7 +251,7 @@ export function FeatureForm({ onSuccess, onCancel }: FeatureFormProps) {
 
   const onSubmit = async (data: FormValues) => {
     try {
-      const { error } = await supabase
+      const { error } = await apiClient
         .from('table_name')
         .insert([data]);
 
@@ -307,7 +307,7 @@ export function FeatureForm({ onSuccess, onCancel }: FeatureFormProps) {
 ```tsx
 // src/modules/[module-name]/hooks/useFeature.ts
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api/apiClient';
 import { useToast } from '@/hooks/use-toast';
 
 export function useFeature(id: string) {
@@ -322,7 +322,7 @@ export function useFeature(id: string) {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await apiClient
         .from('table_name')
         .select('*')
         .eq('id', id)
@@ -343,7 +343,7 @@ export function useFeature(id: string) {
 
   const updateData = async (updates: any) => {
     try {
-      const { error } = await supabase
+      const { error } = await apiClient
         .from('table_name')
         .update(updates)
         .eq('id', id);
@@ -554,17 +554,17 @@ CREATE TRIGGER log_module_changes_trigger
 
 ```tsx
 // Em componentes/hooks
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api/apiClient';
 
 async function logAction(action: string, details: any) {
-  const { data: { user } } = await supabase.auth.getUser();
-  const { data: profile } = await supabase
+  const { data: { user } } = await auth.getUser();
+  const { data: profile } = await apiClient
     .from('profiles')
     .select('clinic_id')
     .eq('id', user?.id)
     .single();
 
-  await supabase.from('audit_logs').insert({
+  await apiClient.from('audit_logs').insert({
     clinic_id: profile?.clinic_id,
     user_id: user?.id,
     action,
@@ -663,7 +663,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DataTable } from '@/components/shared/DataTable';
 import { MyModuleForm } from '@/modules/my-module/components/MyModuleForm';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api/apiClient';
 import { useToast } from '@/hooks/use-toast';
 import { Plus } from 'lucide-react';
 
@@ -680,7 +680,7 @@ export default function MyModule() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await apiClient
         .from('my_module_table')
         .select('*')
         .order('created_at', { ascending: false });

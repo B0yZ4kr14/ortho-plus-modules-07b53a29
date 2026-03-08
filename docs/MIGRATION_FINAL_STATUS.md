@@ -31,7 +31,7 @@
 // src/modules/pacientes/hooks/usePatientsUnified.ts
 export function usePatientsUnified() {
   const { useRESTAPI } = useDataSource();
-  return useRESTAPI ? usePatientsAPI() : usePatientsSupabase();
+  return useRESTAPI ? usePatientsAPI() : usePatients();
 }
 ```
 
@@ -45,16 +45,16 @@ export function usePatientsUnified() {
 
 ## 🚀 Como Usar
 
-### Alternar Entre Supabase e REST API
+### Alternar Entre PostgreSQL e REST API
 
 Edite `src/main.tsx`:
 
 ```typescript
-// SUPABASE (atual - padrão seguro)
-const DATA_SOURCE: 'supabase' | 'rest-api' = 'supabase';
+// JWT (atual - padrão seguro)
+const DATA_SOURCE: 'apiClient' | 'rest-api' = 'apiClient';
 
 // REST API (novo backend Node.js)
-const DATA_SOURCE: 'supabase' | 'rest-api' = 'rest-api';
+const DATA_SOURCE: 'apiClient' | 'rest-api' = 'rest-api';
 ```
 
 ### Iniciar Backend REST API
@@ -98,7 +98,7 @@ ortho-plus/
 │   │   └── pacientes/
 │   │       └── hooks/
 │   │           ├── usePatientsAPI.ts        # ✅ REST API hook
-│   │           ├── usePatientsSupabase.ts   # ✅ Supabase hook
+│   │           ├── usePatients.ts   # ✅ PostgreSQL hook
 │   │           └── usePatientsUnified.ts    # ✅ Hook unificado
 │   │
 │   └── pages/
@@ -148,7 +148,7 @@ ortho-plus/
 ### Fase 1: Desenvolvimento Local (ATUAL)
 ```typescript
 // src/main.tsx
-const DATA_SOURCE = 'supabase'; // ← Padrão seguro
+const DATA_SOURCE = 'apiClient'; // ← Padrão seguro
 ```
 
 ### Fase 2: Testes Internos

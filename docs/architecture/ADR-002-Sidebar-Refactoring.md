@@ -95,7 +95,7 @@ src/modules/teleodontologia/
 src/modules/teleodonto/
 ├── application/hooks/
 │   ├── useTeleconsultas.ts
-│   └── useTeleodontologiaSupabase.ts  ← Movido de teleodontologia/
+│   └── useTeleodontologia.ts  ← Movido de teleodontologia/
 ├── presentation/components/
 │   ├── TeleconsultaForm.tsx           ← Movido de teleodontologia/
 │   └── VideoRoom.tsx                  ← Movido de teleodontologia/
@@ -113,7 +113,7 @@ src/modules/split-pagamento/
 src/modules/split-pagamento/
 ├── application/hooks/
 │   ├── useSplitConfig.ts              ← De split/
-│   └── useSplitSupabase.ts            ← Movido de split-pagamento/
+│   └── useSplit.ts            ← Movido de split-pagamento/
 └── domain/types/
     └── split.types.ts                 ← Consolidado
 ```

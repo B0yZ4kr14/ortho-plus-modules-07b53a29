@@ -34,18 +34,18 @@ Crie usuários ROOT **APENAS** para:
 ### Método 1: Edge Function (Recomendado)
 
 **Requisitos:**
-- Acesso à `SUPABASE_SERVICE_ROLE_KEY`
+- Acesso à `DB_SERVICE_KEY`
 - Ferramenta de API (Postman, cURL, etc.)
 
 **Passo a Passo:**
 
 ```bash
-# 1. Obter as credenciais do Supabase (variáveis de ambiente)
-SUPABASE_URL="https://yxpoqjyfgotkytwtifau.supabase.co"
+# 1. Obter as credenciais do banco (variáveis de ambiente)
+API_BASE_URL="https://yxpoqjyfgotkytwtifau.backend.orthoplus.local"
 SERVICE_ROLE_KEY="sua-service-role-key-aqui"
 
 # 2. Chamar a Edge Function create-root-user
-curl -X POST "${SUPABASE_URL}/functions/v1/create-root-user" \
+curl -X POST "${API_BASE_URL}/functions/v1/create-root-user" \
   -H "Authorization: Bearer ${SERVICE_ROLE_KEY}" \
   -H "Content-Type: application/json" \
   -d '{
@@ -159,7 +159,7 @@ INSERT INTO public.security_audit_log (
 
 ### 4. **MFA (Multi-Factor Authentication)**
 - **IMPORTANTE:** Habilite MFA para contas ROOT assim que possível
-- Supabase suporta MFA via TOTP (Google Authenticator, Authy, etc.)
+- PostgreSQL suporta MFA via TOTP (Google Authenticator, Authy, etc.)
 
 ### 5. **Rotação de Credenciais**
 - Troque senhas ROOT a cada 90 dias
@@ -290,8 +290,8 @@ SELECT * FROM clinics;
 
 **Recuperação:**
 
-1. **Via Supabase Dashboard:**
-   - Acesse: https://supabase.com/dashboard/project/yxpoqjyfgotkytwtifau
+1. **Via Admin Dashboard:**
+   - Acesse: https://backend.orthoplus.localm/dashboard/project/yxpoqjyfgotkytwtifau
    - Table Editor → `profiles` → Edite manualmente para `app_role = 'ROOT'`
 
 2. **Via SQL Editor:**
@@ -323,7 +323,7 @@ Antes de criar um usuário ROOT, confirme:
 
 ## 🔗 Recursos Adicionais
 
-- [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security)
+- [PostgreSQL Row Level Security](https://apiClient.com/docs/guides/database/postgres/row-level-security)
 - [PostgreSQL SECURITY DEFINER](https://www.postgresql.org/docs/current/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY)
 - [OWASP Access Control Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Access_Control_Cheat_Sheet.html)
 - [NIST Privileged User Management](https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final)

@@ -32,7 +32,7 @@ tests/
 │
 └── integration/                # Testes de Integração
     ├── backend-switching.test.ts
-    └── supabase-auth.test.ts
+    └── apiClient-auth.test.ts
 ```
 
 ## E2E Tests (Playwright)
@@ -254,10 +254,10 @@ import { describe, it, expect } from 'vitest';
 import { BackendProvider, useBackend } from '@/lib/providers/BackendProvider';
 
 describe('Backend Switching', () => {
-  it('should switch from Supabase to PostgreSQL', async () => {
+  it('should switch from PostgreSQL to PostgreSQL', async () => {
     const { switchBackend, backendType } = useBackend();
 
-    expect(backendType).toBe('supabase');
+    expect(backendType).toBe('apiClient');
 
     await switchBackend('postgresql');
 
@@ -268,8 +268,8 @@ describe('Backend Switching', () => {
   it('should maintain data consistency after switch', async () => {
     const { backend, switchBackend } = useBackend();
 
-    // Query data from Supabase
-    const { data: supabaseData } = await backend.data.query('patients');
+    // Query data from PostgreSQL
+    const { data: PostgreSQLData } = await backend.data.query('patients');
 
     // Switch to PostgreSQL
     await switchBackend('postgresql');
@@ -278,7 +278,7 @@ describe('Backend Switching', () => {
     const { data: postgresData } = await backend.data.query('patients');
 
     // Should have same number of records (assuming sync)
-    expect(supabaseData.length).toBe(postgresData.length);
+    expect(PostgreSQLData.length).toBe(postgresData.length);
   });
 });
 ```

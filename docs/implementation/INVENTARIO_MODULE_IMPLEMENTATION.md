@@ -260,7 +260,7 @@ Usuários com acesso ao módulo ESTOQUE automaticamente têm acesso ao submenu I
 
 ---
 
-## 6. Integração com Supabase (Próximo Passo)
+## 6. Integração com PostgreSQL (Próximo Passo)
 
 ### 6.1. Tabelas Necessárias
 
@@ -327,7 +327,7 @@ CREATE INDEX idx_inventario_itens_inventario_id ON inventario_itens(inventario_i
 
 ### 6.2. Hook Necessário
 
-**Criar:** `src/modules/estoque/hooks/useInventarioSupabase.ts`
+**Criar:** `src/modules/estoque/hooks/useInventarioPostgreSQL.ts`
 
 **Funcionalidades:**
 - `loadInventarios()` - Buscar inventários da clínica
@@ -343,8 +343,8 @@ CREATE INDEX idx_inventario_itens_inventario_id ON inventario_itens(inventario_i
 ## 7. Próximas Melhorias
 
 ### 7.1. Prioridade ALTA
-- [ ] Criar tabelas `inventarios` e `inventario_itens` no Supabase
-- [ ] Implementar hook `useInventarioSupabase.ts`
+- [ ] Criar tabelas `inventarios` e `inventario_itens` no banco
+- [ ] Implementar hook `useInventarioPostgreSQL.ts`
 - [ ] Integrar hook na página `EstoqueInventario.tsx`
 - [ ] Implementar função "Gerar Ajustes Automáticos"
 
@@ -436,8 +436,8 @@ CREATE INDEX idx_inventario_itens_inventario_id ON inventario_itens(inventario_i
 - ✅ Layout profissional e responsivo
 
 **Pendente:**
-- 🔜 Criação de tabelas no Supabase
-- 🔜 Implementação do hook `useInventarioSupabase`
+- 🔜 Criação de tabelas no banco
+- 🔜 Implementação do hook `useInventarioPostgreSQL`
 - 🔜 Integração backend completa
 
 **Módulo pronto para integração com backend!** 🚀

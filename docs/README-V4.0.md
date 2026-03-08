@@ -25,7 +25,7 @@ Ortho+ é um sistema SaaS B2B multitenant de **gestão odontológica enterprise*
 ### Pré-requisitos
 - Node.js 18+ 
 - npm ou bun
-- Conta Lovable Cloud (backend automático)
+- Conta OrthoPlus Cloud (backend automático)
 
 ### Instalação
 ```bash
@@ -66,10 +66,10 @@ npm run preview
 - **DnD Kit 6.3** - Drag & Drop
 - **React Window 1.8** - Virtualização
 
-### Backend (Lovable Cloud / Supabase)
+### Backend (OrthoPlus Cloud / PostgreSQL)
 - **PostgreSQL 15** - Database
-- **Supabase Auth** - Autenticação
-- **Supabase Storage** - Arquivos
+- **Express Auth** - Autenticação
+- **MinIO Storage** - Arquivos
 - **Edge Functions (Deno)** - Serverless Logic
 - **Row Level Security** - Segurança nível de linha
 
@@ -96,7 +96,7 @@ src/
 │   └── dtos/                # Data Transfer Objects
 │
 ├── infrastructure/           # Camada de Infraestrutura
-│   ├── repositories/        # Implementações Supabase
+│   ├── repositories/        # Implementações PostgreSQL
 │   ├── mappers/             # Conversão domain <-> persistence
 │   └── errors/              # Erros customizados
 │
@@ -268,7 +268,7 @@ npm run validate:quality
 
 ### API Documentation
 - Edge Functions: Disponível em `/api-docs` (quando logado como admin)
-- Database Schema: Auto-gerado em `src/integrations/supabase/types.ts`
+- Database Schema: Auto-gerado em `src/integrations/apiClient/types.ts`
 
 ---
 

@@ -43,8 +43,8 @@ echo "senha_super_segura_123" | docker secret create db_password -
 # JWT Secret
 echo "jwt_secret_key_production" | docker secret create jwt_secret -
 
-# Supabase Key (se usar Lovable Cloud)
-echo "eyJhbGciOiJIUzI1NiIs..." | docker secret create supabase_key -
+# PostgreSQL Key (se usar OrthoPlus Cloud)
+echo "eyJhbGciOiJIUzI1NiIs..." | docker secret create PostgreSQL_key -
 ```
 
 ### 3. Build de Imagens
@@ -298,7 +298,7 @@ docker service scale orthoplus_backend=5
 ## 🎯 CHECKLIST DE DEPLOYMENT
 
 - [ ] Docker Swarm inicializado (1 manager + 2+ workers)
-- [ ] Secrets criados (db_password, jwt_secret, supabase_key)
+- [ ] Secrets criados (db_password, jwt_secret, PostgreSQL_key)
 - [ ] Imagens buildadas (frontend e backend)
 - [ ] Stack deployado (`docker stack deploy`)
 - [ ] Serviços rodando (`docker service ls`)

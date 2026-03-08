@@ -271,7 +271,7 @@ Endpoint: `GET /metrics`
 
 1. **Frontend Integration** (20% completo)
    - Adaptar componentes React para consumir REST APIs
-   - Substituir chamadas Supabase por axios/fetch
+   - Substituir chamadas PostgreSQL por axios/fetch
    - Atualizar AuthContext e ModulesContext
 
 2. **Docker Orchestration** (0%)

@@ -207,7 +207,7 @@ Se o usuário não tiver permissão para o módulo, será redirecionado para `/4
 ✅ **Categorização Correta:** Migration SQL alinha `module_catalog` com UX  
 ✅ **Modularidade:** Novos módulos podem ser adicionados sem refatoração  
 ✅ **Permissões Granulares (V5.3):** Controle fino por módulo e usuário  
-✅ **Backend Agnóstico (V5.3):** Alternância Supabase ↔ Ubuntu Server  
+✅ **Backend Agnóstico (V5.3):** Alternância PostgreSQL ↔ Ubuntu Server  
 
 ---
 

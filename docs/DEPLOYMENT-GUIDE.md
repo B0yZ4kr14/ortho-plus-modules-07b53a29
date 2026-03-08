@@ -6,7 +6,7 @@ Antes de fazer deploy para produção, certifique-se de ter:
 
 - [ ] Node.js 18+ instalado
 - [ ] Conta Lovable ativa
-- [ ] Projeto Supabase configurado (se self-hosted)
+- [ ] Projeto banco configurado (se self-hosted)
 - [ ] Secrets configurados
 - [ ] Domínio personalizado (opcional)
 
@@ -45,11 +45,11 @@ npm run build
 ### 3. Segurança
 
 ```bash
-# Executar Supabase Linter
-supabase db lint
+# Executar Database Linter
+npx prisma validate
 
 # Revisar RLS policies
-supabase db diff
+apiClient db diff
 ```
 
 **Resultado esperado**: 0 warnings críticos
@@ -71,7 +71,7 @@ ls -lh dist/assets/*.js
 
 ---
 
-## 🌐 Deploy no Lovable Cloud
+## 🌐 Deploy no OrthoPlus Cloud
 
 ### Passo 1: Preparar o Projeto
 
@@ -85,7 +85,7 @@ ls -lh dist/assets/*.js
 2. **Revisar Configurações**:
    - Settings → Cloud → Configurações
    - Verificar que o backend está funcionando
-   - Testar conexão com Supabase
+   - Testar conexão com PostgreSQL
 
 ### Passo 2: Deploy do Frontend
 
@@ -99,7 +99,7 @@ ls -lh dist/assets/*.js
 ✅ **Migrações de DB** são aplicadas automaticamente  
 ✅ **Políticas RLS** são sincronizadas automaticamente
 
-**Nada de manual!** O Lovable Cloud cuida de tudo.
+**Nada de manual!** O OrthoPlus Cloud cuida de tudo.
 
 ### Passo 4: Configurar Domínio Custom (Opcional)
 
@@ -117,7 +117,7 @@ ls -lh dist/assets/*.js
 
 ### 1. Revisar RLS Policies
 
-Acesse o Supabase dashboard e valide:
+Acesse o banco dashboard e valide:
 
 ```sql
 -- Verificar políticas ativas
@@ -177,11 +177,11 @@ if (errorRate > 5%) {
 }
 ```
 
-### 3. Logs (Supabase)
+### 3. Logs (PostgreSQL)
 
 Acessar via:
 - **Lovable**: Cloud tab → Logs
-- **Supabase**: Dashboard → Logs → Edge Functions
+- **PostgreSQL**: Dashboard → Logs → Edge Functions
 
 ---
 
@@ -197,12 +197,12 @@ Acessar via:
 2. **Rollback do Backend**:
    ```bash
    # Reverter última migration
-   supabase migration down
+   apiClient migration down
    ```
 
 3. **Redeployar Edge Functions** (se necessário):
    ```bash
-   supabase functions deploy function-name
+   npm run deploy function-name
    ```
 
 ---
@@ -214,7 +214,7 @@ Acessar via:
 - [ ] Uptime > 99%
 - [ ] Response time < 2s (P95)
 - [ ] Error rate < 0.5%
-- [ ] Nenhum warning de segurança no Supabase
+- [ ] Nenhum warning de segurança no banco
 - [ ] Backup automático funcionando
 - [ ] Monitoramento ativo (Sentry/Datadog)
 - [ ] SSL/HTTPS ativo
@@ -228,12 +228,12 @@ Acessar via:
 
 1. **Verificar Status**:
    - Lovable Status: https://status.lovable.dev
-   - Supabase Status: https://status.supabase.com
+   - PostgreSQL Status: https://status.backend.orthoplus.localm
 
 2. **Logs**:
    - Console do navegador (F12)
-   - Lovable Cloud → Logs
-   - Supabase → Logs
+   - OrthoPlus Cloud → Logs
+   - PostgreSQL → Logs
 
 3. **Contato**:
    - Discord Lovable: https://discord.gg/lovable

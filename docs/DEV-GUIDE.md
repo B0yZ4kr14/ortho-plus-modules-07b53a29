@@ -7,7 +7,7 @@
 3. [Padrões de Desenvolvimento](#padrões-de-desenvolvimento)
 4. [Criando Novos Módulos](#criando-novos-módulos)
 5. [Trabalhando com DDD](#trabalhando-com-ddd)
-6. [Supabase & Backend](#supabase--backend)
+6. [PostgreSQL & Backend](#apiClient--backend)
 7. [Testes](#testes)
 8. [Deploy](#deploy)
 
@@ -41,9 +41,9 @@ npm run dev
 ### Variáveis de Ambiente
 
 ```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
-VITE_SUPABASE_PROJECT_ID=your-project-id
+VITE_API_BASE_URL=https://your-project.backend.orthoplus.local
+VITE_API_KEY=your-anon-key
+VITE_PROJECT_ID=your-project-id
 ```
 
 ---
@@ -221,14 +221,14 @@ export interface IMinhaEntidadeRepository {
 ### Passo 4: Repository Implementation (Infrastructure)
 
 ```typescript
-// src/modules/novo-modulo/infrastructure/repositories/SupabaseMinhaEntidadeRepository.ts
-import { supabase } from '@/integrations/supabase/client';
+// src/modules/novo-modulo/infrastructure/repositories/PostgreSQLMinhaEntidadeRepository.ts
+import { apiClient } from '@/lib/api/apiClient';
 import { IMinhaEntidadeRepository } from '../../domain/repositories/IMinhaEntidadeRepository';
 import { MinhaEntidade } from '../../domain/entities/MinhaEntidade';
 
-export class SupabaseMinhaEntidadeRepository implements IMinhaEntidadeRepository {
+export class PostgreSQLMinhaEntidadeRepository implements IMinhaEntidadeRepository {
   async save(entity: MinhaEntidade): Promise<MinhaEntidade> {
-    const { data, error } = await supabase
+    const { data, error } = await apiClient
       .from('minha_tabela')
       .insert({
         id: entity.id,
@@ -243,7 +243,7 @@ export class SupabaseMinhaEntidadeRepository implements IMinhaEntidadeRepository
   }
 
   async findById(id: string): Promise<MinhaEntidade | null> {
-    const { data, error } = await supabase
+    const { data, error } = await apiClient
       .from('minha_tabela')
       .select('*')
       .eq('id', id)
@@ -330,7 +330,7 @@ export const SERVICE_KEYS = {
 // Registrar no bootstrap
 container.register(
   SERVICE_KEYS.MINHA_ENTIDADE_REPOSITORY,
-  () => new SupabaseMinhaEntidadeRepository(),
+  () => new PostgreSQLMinhaEntidadeRepository(),
   true
 );
 
@@ -345,16 +345,16 @@ container.register(
 
 ---
 
-## 🗄️ Supabase & Backend
+## 🗄️ PostgreSQL & Backend
 
 ### Migrations
 
 ```bash
 # Criar nova migration
-supabase migration new create_minha_tabela
+apiClient migration new create_minha_tabela
 
 # Executar migrations
-supabase db push
+npx prisma db push
 ```
 
 ### RLS Policies
@@ -381,14 +381,14 @@ USING (clinic_id = get_user_clinic_id());
 ### Edge Functions
 
 ```typescript
-// supabase/functions/minha-function/index.ts
+// backend/functions/minha-function/index.ts
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@/lib/api/apiClient@2';
 
 serve(async (req) => {
-  const supabaseClient = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+  const PostgreSQLClient = createClient(
+    Deno.env.get('API_BASE_URL') ?? '',
+    Deno.env.get('API_ANON_KEY') ?? '',
     {
       global: {
         headers: { Authorization: req.headers.get('Authorization')! },
@@ -441,7 +441,7 @@ npm run deploy
 
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 - [React Query Docs](https://tanstack.com/query/latest)
-- [Supabase Docs](https://supabase.com/docs)
+- [PostgreSQL Docs](https://apiClient.com/docs)
 - [Tailwind CSS](https://tailwindcss.com/docs)
 
 ---

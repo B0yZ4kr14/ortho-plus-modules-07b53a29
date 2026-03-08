@@ -158,14 +158,14 @@ const { produtos, isLoading, error } = useProdutos(); // React Query pattern
 
 **Antes**:
 ```typescript
-import { supabase } from '@/integrations/supabase/client';
-const { data } = await supabase.from('produtos').select();
+import { apiClient } from '@/lib/api/apiClient';
+const { data } = await apiClient.from('produtos').select();
 ```
 
 **Depois**:
 ```typescript
-import { SupabaseProdutoRepository } from '@/modules/estoque/infrastructure/repositories/SupabaseProdutoRepository';
-const repository = new SupabaseProdutoRepository();
+import { PostgreSQLProdutoRepository } from '@/modules/estoque/infrastructure/repositories/PostgreSQLProdutoRepository';
+const repository = new PostgreSQLProdutoRepository();
 const produtos = await repository.findByClinicId(clinicId);
 ```
 
@@ -220,7 +220,7 @@ const produtos = await repository.findByClinicId(clinicId);
 
 ```bash
 # Fazer backup do banco de dados
-supabase db dump -f backup-v3.sql
+apiClient db dump -f backup-v3.sql
 
 # Fazer backup dos arquivos
 git tag -a v3.2-final -m "Última versão V3"
@@ -232,7 +232,7 @@ git push --tags
 1. Fazer pull do código V4.0
 2. Executar migrações:
    ```bash
-   supabase db push
+   npx prisma db push
    ```
 3. Testar em staging
 4. Deploy para produção (botão "Publish" no Lovable)

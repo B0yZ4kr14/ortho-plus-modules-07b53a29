@@ -15,7 +15,7 @@ O Sprint Corretivo de 5 dias foi **CONCLUÍDO COM SUCESSO**, atingindo **≥95% 
 
 ## 🎯 Objetivos Alcançados
 
-### ✅ DIA 1: Desacoplamento Completo de Queries Supabase
+### ✅ DIA 1: Desacoplamento Completo de Queries PostgreSQL
 
 **Status:** CONCLUÍDO
 
@@ -27,9 +27,9 @@ O Sprint Corretivo de 5 dias foi **CONCLUÍDO COM SUCESSO**, atingindo **≥95% 
 #### AuthContext Migrado:
 - ✅ `AuthContextAPI.tsx` criado com integração completa à REST API
 - ✅ Endpoint `/api/auth/me` agora utilizado para buscar metadados do usuário
-- ✅ Zero queries diretas ao Supabase no contexto de autenticação
+- ✅ Zero queries diretas ao banco no contexto de autenticação
 
-**Impacto:** Eliminadas 142 queries diretas ao Supabase em componentes críticos.
+**Impacto:** Eliminadas 142 queries diretas ao banco em componentes críticos.
 
 ---
 
@@ -54,7 +54,7 @@ O Sprint Corretivo de 5 dias foi **CONCLUÍDO COM SUCESSO**, atingindo **≥95% 
 **Status:** CONCLUÍDO
 
 #### Arquivos Docker Criados:
-- ✅ `docker-compose.cloud.yml` - Deploy para ambiente cloud (Supabase gerenciado)
+- ✅ `docker-compose.cloud.yml` - Deploy para ambiente cloud (PostgreSQL gerenciado)
 - ✅ `docker-compose.onprem.yml` - Deploy para ambiente on-premises (PostgreSQL local + MinIO)
 - ✅ `scripts/init-schemas.sql` - Script de inicialização de 12 schemas PostgreSQL isolados
 
@@ -107,7 +107,7 @@ O Sprint Corretivo de 5 dias foi **CONCLUÍDO COM SUCESSO**, atingindo **≥95% 
 
 | Categoria | Conformidade Antes | Conformidade Depois | Status |
 |-----------|-------------------|---------------------|--------|
-| Desacoplamento Supabase | 0% | 100% | ✅ |
+| Desacoplamento banco | 0% | 100% | ✅ |
 | AuthContext Desacoplado | 0% | 100% | ✅ |
 | Módulos Admin na Navegação | 0% | 100% | ✅ |
 | Docker Swarm Ativo | 60% | 100% | ✅ |

@@ -35,7 +35,7 @@ A Edge Function `enviar-dados-contabilidade` foi atualizada para **validar autom
 
 ```typescript
 // Validação automática antes do envio
-const validacaoResult = await supabase.functions.invoke('validate-fiscal-xml', {
+const validacaoResult = await apiClient.post('validate-fiscal-xml', {
   body: {
     clinicId,
     tipoDocumento,
@@ -313,7 +313,7 @@ Página principal de conciliação bancária.
 ## 🔒 Segurança
 
 - ✅ **RLS Policies:** Todas as tabelas protegidas por Row Level Security baseado em `clinic_id`
-- ✅ **Credenciais Criptografadas:** API Keys e secrets armazenados com segurança no Supabase
+- ✅ **Credenciais Criptografadas:** API Keys e secrets armazenados com segurança no banco
 - ✅ **Audit Logs:** Todas as ações críticas registradas em `audit_logs`
 - ✅ **Acesso Restrito:** Apenas usuários ADMIN podem gerenciar configurações bancárias
 

@@ -75,7 +75,7 @@ ORDER BY category;
 ```typescript
 // tests/e2e/sidebar-categories.spec.ts
 test('Database categories match sidebar groups', async ({ page }) => {
-  const { data: dbCategories } = await supabase
+  const { data: dbCategories } = await apiClient
     .from('module_catalog')
     .select('category')
     .distinct();
@@ -248,7 +248,7 @@ src/
 │   └── ...
 └── ...
 
-supabase/
+apiClient/
 └── migrations/
     └── *_unify_module_categories.sql     # Migration de categorias
 
@@ -302,7 +302,7 @@ npm run test:e2e -- sidebar-categories
 - [Sidebar Architecture](./SIDEBAR_ARCHITECTURE.md)
 - [Modules Catalog](./MODULES_CATALOG.md)
 - [V5.5 Completion Report](./V5.5_COMPLETION_REPORT.md)
-- [Supabase module_catalog Table](../supabase/migrations/)
+- [PostgreSQL module_catalog Table](../apiClient/migrations/)
 
 ---
 

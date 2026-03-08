@@ -9,7 +9,7 @@
 O **Ortho+ SaaS** é um sistema B2B multitenant de gestão odontológica construído com:
 
 - **Frontend**: React 18.3 + Vite + TypeScript
-- **Backend**: **PostgreSQL 15.x no Supabase** (100% serverless)
+- **Backend**: **PostgreSQL 15.x no banco** (100% serverless)
 - **Infraestrutura**: Docker Compose + Nginx + Prometheus + Grafana
 
 ```mermaid
@@ -20,11 +20,11 @@ graph TB
         C[React Query + Zustand]
     end
     
-    subgraph "Backend Supabase PostgreSQL"
+    subgraph "Backend PostgreSQL"
         D[(PostgreSQL 15.x)]
-        E[PostgREST API]
-        F[Supabase Auth JWT]
-        G[Supabase Storage S3]
+        E[Express REST API]
+        F[Express Auth JWT]
+        G[MinIO Storage S3]
         H[Edge Functions Deno]
     end
     
@@ -53,18 +53,18 @@ graph TB
 
 ---
 
-## 🗄️ Backend: PostgreSQL no Supabase
+## 🗄️ Backend: PostgreSQL no banco
 
 ### Por que PostgreSQL?
 
-O Ortho+ **roda 100% em PostgreSQL 15.x** hospedado no Supabase. Isso oferece:
+O Ortho+ **roda 100% em PostgreSQL 15.x** hospedado no banco. Isso oferece:
 
 ✅ **Banco de dados relacional** robusto e escalável  
 ✅ **Row Level Security (RLS)** para segurança por linha  
 ✅ **Triggers, functions e policies** em SQL nativo  
-✅ **Auto-scaling gerenciado** pelo Supabase  
+✅ **Auto-scaling gerenciado** pelo banco  
 ✅ **Backups automáticos diários**  
-✅ **PostgREST API** gerada automaticamente  
+✅ **Express REST API** gerada automaticamente  
 ✅ **Realtime subscriptions** via WebSockets  
 ✅ **Storage integrado** para arquivos (radiografias, PEP)  
 
@@ -72,10 +72,10 @@ O Ortho+ **roda 100% em PostgreSQL 15.x** hospedado no Supabase. Isso oferece:
 
 ```mermaid
 graph LR
-    A[React Frontend] --> B[Supabase Client]
-    B --> C[PostgREST API]
-    B --> D[Supabase Auth]
-    B --> E[Supabase Storage]
+    A[React Frontend] --> B[PostgreSQL Client]
+    B --> C[Express REST API]
+    B --> D[Express Auth]
+    B --> E[MinIO Storage]
     B --> F[Edge Functions]
     
     C --> G[(PostgreSQL 15.x)]
@@ -183,10 +183,10 @@ CREATE POLICY "only_admin_can_delete_patients"
 
 ```typescript
 // ❌ SEM RLS (PERIGOSO - qualquer usuário vê todos os pacientes)
-const { data } = await supabase.from('patients').select('*');
+const { data } = await apiClient.from('patients').select('*');
 
 // ✅ COM RLS (SEGURO - usuário só vê pacientes da sua clínica)
-const { data } = await supabase.from('patients').select('*');
+const { data } = await apiClient.from('patients').select('*');
 // RLS automaticamente adiciona: WHERE clinic_id = current_user.clinic_id
 ```
 
@@ -240,14 +240,14 @@ src/
 │   └── use-cases/      # Casos de uso (lógica de negócio)
 │
 ├── infrastructure/     # Implementações de infraestrutura
-│   └── repositories/   # Repositórios Supabase
+│   └── repositories/   # Repositórios PostgreSQL
 │
 ├── lib/                # Utilitários
-│   ├── supabase.ts     # Cliente Supabase
+│   ├── apiClient.ts     # Cliente PostgreSQL
 │   └── utils.ts
 │
 └── integrations/       # Integrações externas
-    └── supabase/       # Types auto-gerados
+    └── apiClient/       # Types auto-gerados
 ```
 
 ### Data Fetching (React Query)
@@ -255,13 +255,13 @@ src/
 ```typescript
 // hooks/usePacientes.ts
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api/apiClient';
 
 export const usePacientes = () => {
   return useQuery({
     queryKey: ['patients'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await apiClient
         .from('patients')
         .select('*')
         .order('created_at', { ascending: false });
@@ -327,17 +327,17 @@ graph LR
 ### Exemplo: `get-my-modules` (Sistema Modular)
 
 ```typescript
-// supabase/functions/get-my-modules/index.ts
-import { createClient } from '@supabase/supabase-js';
+// backend/functions/get-my-modules/index.ts
+import { createClient } from '@/lib/api/apiClient';
 
 Deno.serve(async (req) => {
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  const apiClient = createClient(
+    Deno.env.get('API_BASE_URL')!,
+    Deno.env.get('DB_SERVICE_KEY')!
   );
 
   // 1. Buscar módulos contratados pela clínica
-  const { data: clinicModules } = await supabase
+  const { data: clinicModules } = await apiClient
     .from('clinic_modules')
     .select(`
       *,
@@ -346,7 +346,7 @@ Deno.serve(async (req) => {
     .eq('clinic_id', clinicId);
 
   // 2. Buscar dependências de módulos
-  const { data: dependencies } = await supabase
+  const { data: dependencies } = await apiClient
     .from('module_dependencies')
     .select('*');
 
@@ -373,7 +373,7 @@ Deno.serve(async (req) => {
 sequenceDiagram
     participant U as User
     participant F as Frontend
-    participant SA as Supabase Auth
+    participant SA as Express Auth
     participant DB as PostgreSQL
     
     U->>F: Login (email, senha)
@@ -625,7 +625,7 @@ graph LR
 
 ## 📚 Documentação Relacionada
 
-- **[02-BACKEND-SUPABASE](./02-BACKEND-SUPABASE.md)** - Detalhes do PostgreSQL
+- **[01-ARQUITETURA-GERAL](./01-ARQUITETURA-GERAL.md)** - Detalhes do PostgreSQL
 - **[03-EDGE-FUNCTIONS](./03-EDGE-FUNCTIONS.md)** - Funções serverless
 - **[04-AUTENTICACAO-RLS](./04-AUTENTICACAO-RLS.md)** - Auth + RLS
 - **[05-MODULOS-DEPENDENCIAS](./05-MODULOS-DEPENDENCIAS.md)** - Sistema modular

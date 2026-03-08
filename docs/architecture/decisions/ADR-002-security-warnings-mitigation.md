@@ -9,7 +9,7 @@
 
 ## Context
 
-Durante a auditoria de segurança (Supabase Linter), identificamos **4 security warnings críticos**:
+Durante a auditoria de segurança (Database Linter), identificamos **4 security warnings críticos**:
 
 1. ✅ **Function Search Path Mutable** (2 warnings) - **RESOLVIDO**
 2. ⚠️ **Extension in Public** (1 warning) - **PARCIALMENTE RESOLVIDO**
@@ -40,21 +40,21 @@ ALTER FUNCTION public.* SET search_path = '';
 - Criado schema `extensions`
 - Movidas extensões compatíveis para `extensions` schema
 - **Exceções mantidas** (não suportam `SET SCHEMA`):
-  - `pg_net` (Supabase native extension)
+  - `pg_net` (PostgreSQL native extension)
   - `pgsodium` (Encryption library)
-  - `supabase_vault` (Secrets management)
+  - `PostgreSQL_vault` (Secrets management)
   - `plpgsql` (Core PostgreSQL language)
 
 **Rationale:**
-- Estas extensões são **gerenciadas pelo Supabase** e não podem ser movidas
+- Estas extensões são **gerenciadas pelo banco** e não podem ser movidas
 - São extensões de sistema com controle de acesso rigoroso
-- Movê-las causaria falha no serviço Supabase
+- Movê-las causaria falha no serviço banco
 
 **Risk Assessment:** ✅ **ACEITÁVEL**
 - Extensões mantidas no `public` schema são:
-  - Parte da infraestrutura core do Supabase
+  - Parte da infraestrutura core do banco
   - Não expõem vetores de ataque ao app
-  - Protegidas por RLS e RBAC do Supabase
+  - Protegidas por RLS e RBAC do banco
 
 **Status:** 1 warning residual (esperado e seguro)
 
@@ -65,7 +65,7 @@ ALTER FUNCTION public.* SET search_path = '';
 **Problem:** Proteção contra senhas vazadas (Pwned Passwords API) desabilitada.
 
 **Solution Required:**
-Via Supabase Dashboard:
+Via Admin Dashboard:
 1. Acessar: Authentication → Policies → Password
 2. Habilitar: "Enable leaked password protection"
 3. Configurar: Minimum password strength (AAGUID v4+)
@@ -95,7 +95,7 @@ WHERE id = 'default';
 - ✅ **Redução de 50% dos warnings** (de 4 para 2)
 
 ### Negative
-- ⚠️ **1 warning residual** (Extension in Public) - não remediável sem quebrar Supabase
+- ⚠️ **1 warning residual** (Extension in Public) - não remediável sem quebrar PostgreSQL
 - ⚠️ **1 warning pendente** (Leaked Password) - requer ação manual via Dashboard
 
 ### Neutral
@@ -107,7 +107,7 @@ WHERE id = 'default';
 ## Compliance
 
 Este ADR implementa a seguinte diretriz do plano de refatoração:
-> **T0.4**: Corrigir 4 Security Warnings (Supabase Linter). Migration: adicionar search_path em todas as funções SECURITY DEFINER. Migration: mover extensões para schema extensions. Habilitar leaked password check.
+> **T0.4**: Corrigir 4 Security Warnings (Database Linter). Migration: adicionar search_path em todas as funções SECURITY DEFINER. Migration: mover extensões para schema extensions. Habilitar leaked password check.
 
 ---
 
@@ -123,20 +123,20 @@ Este ADR implementa a seguinte diretriz do plano de refatoração:
 ## Enforcement
 
 ### Pre-migration Checklist (Futuro - T7.x)
-- [ ] Executar `supabase db lint` antes de cada PR
+- [ ] Executar `npx prisma validate` antes de cada PR
 - [ ] CI/CD deve falhar em warnings críticos (ERROR level)
 - [ ] Warnings (WARN level) devem ser documentados em ADR
 
 ### Periodic Security Audit (Futuro - T8.x)
 - Frequência: Mensal
 - Responsável: DevOps Lead
-- Ferramentas: Supabase Linter, OWASP ZAP, Snyk
+- Ferramentas: Database Linter, OWASP ZAP, Snyk
 
 ---
 
 ## References
 
-- [Supabase Security Best Practices](https://supabase.com/docs/guides/database/database-linter)
+- [PostgreSQL Security Best Practices](https://apiClient.com/docs/guides/database/database-linter)
 - [OWASP - Injection Flaws](https://owasp.org/www-project-top-ten/)
 - [PostgreSQL search_path Security](https://www.postgresql.org/docs/current/ddl-schemas.html#DDL-SCHEMAS-PATH)
 - [HaveIBeenPwned Passwords API](https://haveibeenpwned.com/API/v3#PwnedPasswords)
@@ -159,4 +159,4 @@ Este ADR implementa a seguinte diretriz do plano de refatoração:
 - [x] T0.4.4: ADR documentado e versionado
 
 **Status Final T0.4:** 75% completo (3/4 tarefas)  
-**Blocker:** Requer acesso admin ao Supabase Dashboard para T0.4.3
+**Blocker:** Requer acesso admin ao Admin Dashboard para T0.4.3

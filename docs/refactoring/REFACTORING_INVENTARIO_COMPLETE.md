@@ -5,7 +5,7 @@
 ## Problemas Identificados e Corrigidos
 
 ### 1. Catálogo de Módulos Incompleto
-**Problema:** O catálogo de módulos no Supabase estava incompleto, faltando 27 sub-módulos críticos.
+**Problema:** O catálogo de módulos no banco estava incompleto, faltando 27 sub-módulos críticos.
 
 **Solução:**
 - Adicionados todos os sub-módulos de Estoque (11 módulos):
@@ -96,7 +96,7 @@
 
 ## Arquivos Modificados
 
-### Backend (Supabase)
+### Backend (PostgreSQL)
 1. **Migration SQL:** Adicionados 27 módulos e suas dependências
 2. **Edge Function:** `get-my-modules` validada (sem alterações necessárias)
 

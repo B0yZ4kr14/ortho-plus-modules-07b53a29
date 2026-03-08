@@ -32,7 +32,7 @@
 ### ✅ Solução Implementada
 
 #### 1.1 Migration SQL Completa
-**Arquivo criado:** `supabase/migrations/[timestamp]_create_crypto_payment_system.sql`
+**Arquivo criado:** `apiClient/migrations/[timestamp]_create_crypto_payment_system.sql`
 
 **Tabelas criadas:**
 1. ✅ `crypto_exchange_config` - Configurações de exchanges (Binance, Coinbase, etc.)

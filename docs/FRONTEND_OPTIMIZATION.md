@@ -224,7 +224,7 @@ src/modules/patients/
 │   ├── use-cases/CreatePatient.ts
 │   └── dtos/PatientDTO.ts
 ├── infrastructure/
-│   └── repositories/SupabasePatientRepository.ts
+│   └── repositories/DbPatientRepository.ts
 └── presentation/
     ├── components/PatientList.tsx
     └── pages/PatientsPage.tsx
@@ -271,7 +271,7 @@ src/modules/patients/
 ## Próximos Passos
 
 ### Curto Prazo (1-2 semanas)
-1. ✅ Conectar dashboards com dados reais do Supabase
+1. ✅ Conectar dashboards com dados reais do banco
 2. ✅ Implementar gráficos recharts nos dashboards
 3. ✅ Criar hook `useRealTimeStats` funcional
 

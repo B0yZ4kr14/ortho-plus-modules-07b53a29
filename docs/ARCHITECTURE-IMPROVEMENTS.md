@@ -34,13 +34,13 @@ src/
 │       └── modules.config.ts ❌ (Duplicado)
 ├── infrastructure/
 │   └── repositories/
-│       ├── SupabaseProdutoRepository.ts ❌ (Duplicado)
-│       └── SupabaseMovimentacaoEstoqueRepository.ts ❌ (Duplicado)
+│       ├── PostgreSQLProdutoRepository.ts ❌ (Duplicado)
+│       └── PostgreSQLMovimentacaoEstoqueRepository.ts ❌ (Duplicado)
 ├── pages/
 │   └── settings/
 │       └── ModulesSimple.tsx ❌ (418 linhas)
 
-supabase/functions/
+backend/functions/
 ├── backup-deduplication/ ❌
 ├── backup-immutability/ ❌
 ├── backup-streaming/ ❌
@@ -71,7 +71,7 @@ src/
 │           ├── ModuleCard.tsx ✅ (110 linhas)
 │           └── ModulesList.tsx ✅ (40 linhas)
 
-supabase/functions/
+backend/functions/
 ├── backup-manager/ ✅ (Consolidado 4→1)
 ├── crypto-manager/ ✅ (Consolidado 4→1)
 ├── _shared/
@@ -244,8 +244,8 @@ logger.error('Database error', error, { context: 'patient_query' });
 
 **Aplicações**:
 - ✅ Módulos: `src/core/config/modules.config.ts`
-- ✅ Tipos compartilhados: `supabase/functions/_shared/types.ts`
-- ✅ Logger: `src/lib/logger.ts` + `supabase/functions/_shared/logger.ts`
+- ✅ Tipos compartilhados: `backend/functions/_shared/types.ts`
+- ✅ Logger: `src/lib/logger.ts` + `backend/functions/_shared/logger.ts`
 
 **Benefícios**:
 - Zero inconsistências
@@ -632,7 +632,7 @@ logger.info('Patient operation', {
 ```
 ✅ Feature-Based: src/modules/[module]/
 ✅ Layer-Based: domain/application/infrastructure
-✅ Shared Code: src/core/ e supabase/functions/_shared/
+✅ Shared Code: src/core/ e backend/functions/_shared/
 ```
 
 ### 3. Testing Strategy
@@ -732,7 +732,7 @@ logger.info('Patient operation', {
 - [ADRs](./architecture/)
 - [Testes](../src/__tests__/)
 - [Scripts](../scripts/)
-- [Supabase Dashboard](https://supabase.com/dashboard)
+- [Admin Dashboard](https://backend.orthoplus.localm/dashboard)
 
 ---
 

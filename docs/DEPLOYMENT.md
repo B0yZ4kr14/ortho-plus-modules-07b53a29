@@ -3,12 +3,12 @@
 ## Visão Geral
 
 O Ortho+ V5.2 suporta dois ambientes de deploy:
-1. **Cloud**: Usando Supabase gerenciado (production-ready)
+1. **Cloud**: Usando banco gerenciado (production-ready)
 2. **On-Premises**: Usando PostgreSQL local + Docker Swarm
 
 ## Índice
 
-1. [Deploy Cloud (Supabase)](#deploy-cloud-supabase)
+1. [Deploy Cloud (PostgreSQL)](#deploy-cloud-apiClient)
 2. [Deploy On-Premises (Docker Swarm)](#deploy-on-premises-docker-swarm)
 3. [Variáveis de Ambiente](#variáveis-de-ambiente)
 4. [CI/CD Pipeline](#cicd-pipeline)
@@ -17,11 +17,11 @@ O Ortho+ V5.2 suporta dois ambientes de deploy:
 
 ---
 
-## Deploy Cloud (Supabase)
+## Deploy Cloud (PostgreSQL)
 
 ### Pré-requisitos
 
-- Conta no Lovable Cloud (Supabase gerenciado)
+- Conta no OrthoPlus Cloud (PostgreSQL gerenciado)
 - Node.js 18+
 - Bun ou npm
 
@@ -42,7 +42,7 @@ bun run preview
 
 #### 2. Deploy Automático via Lovable
 
-O Lovable Cloud realiza deploy automático quando você faz push para a branch principal:
+O OrthoPlus Cloud realiza deploy automático quando você faz push para a branch principal:
 
 ```bash
 git add .
@@ -61,7 +61,7 @@ git push origin main
 Edge Functions são deployadas automaticamente ao fazer push:
 
 ```
-supabase/functions/
+backend/functions/
 ├── get-dashboard-data/
 ├── sidebar-badges/
 └── webhook-crypto-transaction/
@@ -236,14 +236,14 @@ echo "seu_password_seguro" | docker secret create db_password -
 
 ## Variáveis de Ambiente
 
-### Cloud (Supabase)
+### Cloud (PostgreSQL)
 
 ```env
-# .env.production (Lovable Cloud)
-VITE_BACKEND_TYPE=supabase
-VITE_SUPABASE_URL=https://seu-projeto.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
-VITE_SUPABASE_PROJECT_ID=seu-projeto-id
+# .env.production (OrthoPlus Cloud)
+VITE_BACKEND_TYPE=apiClient
+VITE_API_BASE_URL=https://seu-projeto.backend.orthoplus.local
+VITE_API_ANON_KEY=eyJhbGciOi...
+VITE_PROJECT_ID=seu-projeto-id
 ```
 
 ### On-Premises (PostgreSQL)

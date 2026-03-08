@@ -17,7 +17,7 @@ Este diagrama detalha o fluxo completo de autenticação no Ortho+, desde o logi
 sequenceDiagram
     actor User as Usuário
     participant UI as React App
-    participant Auth as Supabase Auth
+    participant Auth as Express Auth
     participant DB as PostgreSQL
     participant RLS as RLS Engine
 
@@ -28,7 +28,7 @@ sequenceDiagram
         UI-->>User: ❌ Erro de validação
     end
     
-    UI->>Auth: supabase.auth.signInWithPassword({email, password})
+    UI->>Auth: auth.signInWithPassword({email, password})
     
     Auth->>DB: Consulta auth.users WHERE email = ?
     
@@ -73,7 +73,7 @@ sequenceDiagram
 sequenceDiagram
     actor User as Usuário
     participant UI as React App
-    participant API as Supabase API<br/>(PostgREST)
+    participant API as PostgreSQL API<br/>(Express)
     participant RLS as RLS Engine
     participant DB as PostgreSQL
 
@@ -124,7 +124,7 @@ sequenceDiagram
 sequenceDiagram
     actor User as Usuário
     participant UI as React App
-    participant Auth as Supabase Auth
+    participant Auth as Express Auth
 
     Note over UI,Auth: Access Token expira em 1 hora<br/>Refresh Token expira em 7 dias
 
@@ -137,7 +137,7 @@ sequenceDiagram
     end
     
     alt Token expirando
-        UI->>Auth: supabase.auth.refreshSession()
+        UI->>Auth: auth.refreshSession()
         
         Auth->>Auth: Validar refresh_token
         
@@ -167,12 +167,12 @@ sequenceDiagram
 sequenceDiagram
     actor User as Usuário
     participant UI as React App
-    participant Auth as Supabase Auth
+    participant Auth as Express Auth
     participant DB as PostgreSQL
 
     User->>UI: Clica em "Sair"
     
-    UI->>Auth: supabase.auth.signOut()
+    UI->>Auth: auth.signOut()
     
     Auth->>DB: DELETE FROM auth.sessions<br/>WHERE id = session_id
     
@@ -267,7 +267,7 @@ flowchart TD
     "aud": "authenticated",
     "exp": 1705507200,
     "iat": 1705503600,
-    "iss": "https://yxpoqjyfgotkytwtifau.supabase.co/auth/v1",
+    "iss": "https://yxpoqjyfgotkytwtifau.backend.orthoplus.local/auth/v1",
     "sub": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "email": "admin@clinica.com.br",
     "phone": "",
@@ -296,7 +296,7 @@ flowchart TD
 
 **Como usar no frontend:**
 ```typescript
-const { data: { user, session } } = await supabase.auth.getUser();
+const { data: { user, session } } = await auth.getUser();
 
 const clinicId = session?.user?.user_metadata?.clinic_id;
 const appRole = session?.user?.user_metadata?.app_role;
@@ -319,7 +319,7 @@ const JWT_SECRET = "my-secret-key"; // Hardcoded
 
 ✅ **CORRETO:**
 ```javascript
-const JWT_SECRET = Deno.env.get('SUPABASE_JWT_SECRET');
+const JWT_SECRET = process.env.JWT_SECRET;
 ```
 
 ### 2. Sempre Validar Token no Backend
@@ -343,8 +343,8 @@ USING (has_role(auth.uid(), 'ADMIN'));
 ### 3. Refresh Token Rotation
 
 ```typescript
-// Supabase faz automaticamente
-supabase.auth.onAuthStateChange((event, session) => {
+// PostgreSQL faz automaticamente
+auth.onAuthStateChange((event, session) => {
   if (event === 'TOKEN_REFRESHED') {
     console.log('Token refreshed:', session);
     // Novo access_token e refresh_token
@@ -356,13 +356,13 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 ```typescript
 // Invalidar todas as sessões do usuário
-const { error } = await supabase.auth.admin.deleteUser(userId);
+const { error } = await auth.admin.deleteUser(userId);
 
 // Ou apenas a sessão atual
-await supabase.auth.signOut({ scope: 'local' });
+await auth.signOut({ scope: 'local' });
 
 // Ou todas as sessões
-await supabase.auth.signOut({ scope: 'global' });
+await auth.signOut({ scope: 'global' });
 ```
 
 ---
@@ -372,7 +372,7 @@ await supabase.auth.signOut({ scope: 'global' });
 ### 1. JWT Expired
 
 ```typescript
-supabase.auth.onAuthStateChange((event, session) => {
+auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_OUT') {
     // Token expirou, redirecionar para login
     window.location.href = '/login';
@@ -384,11 +384,11 @@ supabase.auth.onAuthStateChange((event, session) => {
 
 ```typescript
 try {
-  const { data, error } = await supabase.from('pacientes').select();
+  const { data, error } = await apiClient.from('pacientes').select();
   
   if (error && error.code === 'PGRST301') {
     // JWT signature inválida
-    await supabase.auth.signOut();
+    await auth.signOut();
     window.location.href = '/login';
   }
 } catch (err) {
@@ -399,7 +399,7 @@ try {
 ### 3. Permission Denied
 
 ```typescript
-const { data, error } = await supabase.from('pacientes').insert(newPatient);
+const { data, error } = await apiClient.from('pacientes').insert(newPatient);
 
 if (error && error.code === '42501') {
   // Insufficient privileges (RLS blocked)
@@ -413,7 +413,7 @@ if (error && error.code === '42501') {
 
 ### Logs de Autenticação
 
-**Supabase Dashboard → Authentication → Logs**
+**Admin Dashboard → Authentication → Logs**
 
 Eventos rastreados:
 - `user_signedup`: Novo cadastro
@@ -463,11 +463,11 @@ EXECUTE FUNCTION log_user_login();
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api/apiClient';
 
 describe('Authentication', () => {
   it('should login with valid credentials', async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await auth.signInWithPassword({
       email: 'test@example.com',
       password: 'Test123!@#'
     });
@@ -478,7 +478,7 @@ describe('Authentication', () => {
   });
   
   it('should reject invalid credentials', async () => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await auth.signInWithPassword({
       email: 'test@example.com',
       password: 'wrong-password'
     });
@@ -524,7 +524,7 @@ test('logout flow', async ({ page }) => {
 
 ## Referências
 
-- [Supabase Auth Documentation](https://supabase.com/docs/guides/auth)
+- [Express Auth Documentation](https://apiClient.com/docs/guides/auth)
 - [JWT.io - JWT Debugger](https://jwt.io/)
 - [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
 - [Guia Técnico: RLS Policies](../GUIAS-TECNICO/05-RLS-POLICIES.md)

@@ -1,5 +1,5 @@
 # Relatório de Validação Final - Sistema Ortho+
-## Refatoração Completa e Migração para Supabase
+## Refatoração Completa e Migração para o banco
 
 **Data:** 11/Novembro/2025  
 **Versão:** 8.0 Final - Production Ready
@@ -10,9 +10,9 @@
 
 ### 🎯 Objetivos Alcançados
 
-1. ✅ **Migração de LocalStorage para Supabase** - 100% concluída
+1. ✅ **Migração de LocalStorage para o banco** - 100% concluída
 2. ✅ **Criação Real de Pacientes** - Mock removido, persistência implementada
-3. ✅ **Módulo Agenda Funcional** - Completamente migrado para Supabase
+3. ✅ **Módulo Agenda Funcional** - Completamente migrado para o banco
 4. ✅ **Código Obsoleto Removido** - useAgendaStore.ts deletado
 
 ---
@@ -26,7 +26,7 @@
 - ✅ Real-time subscriptions ativas
 - ✅ Dashboard com métricas consolidadas
 - ✅ Adapter methods para compatibilidade
-- ✅ Integração 100% com Supabase
+- ✅ Integração 100% com PostgreSQL
 
 **Tabelas:** `contas_receber`, `contas_pagar`, `notas_fiscais`
 
@@ -53,7 +53,7 @@ const mockPatient: Patient = {
 };
 
 // Depois (Real):
-const { data: profileData } = await supabase
+const { data: profileData } = await apiClient
   .from('profiles')
   .insert({ full_name: patientData.nome, clinic_id: clinicId })
   .select()
@@ -66,7 +66,7 @@ const { data: profileData } = await supabase
 **Status:** 🟢 **PRODUCTION-READY**
 
 **Migração Completa Executada:**
-- ✅ Criado `useAgendaSupabase.ts` substituindo `useAgendaStore.ts`
+- ✅ Criado `useAgenda.ts` substituindo `useAgendaStore.ts`
 - ✅ CRUD completo com tabela `appointments`
 - ✅ Real-time subscriptions implementadas
 - ✅ Carregamento de dentistas do banco
@@ -82,8 +82,8 @@ const { data: profileData } = await supabase
 // ❌ ANTES (localStorage):
 localStorage.setItem(STORAGE_KEY, JSON.stringify(mockAppointments));
 
-// ✅ DEPOIS (Supabase):
-const { data, error } = await supabase
+// ✅ DEPOIS (PostgreSQL):
+const { data, error } = await apiClient
   .from('appointments')
   .insert([{ clinic_id, patient_id, dentist_id, ... }])
   .select()
@@ -118,13 +118,13 @@ const { data, error } = await supabase
 ## 🔧 ARQUIVOS MODIFICADOS/CRIADOS
 
 ### Novos Arquivos Criados:
-1. ✅ `src/modules/agenda/hooks/useAgendaSupabase.ts` - Hook Supabase completo
+1. ✅ `src/modules/agenda/hooks/useAgenda.ts` - Hook PostgreSQL completo
 2. ✅ `REFACTORING_FINAL_REPORT.md` - Documentação da refatoração
 3. ✅ `VALIDATION_REPORT_FINAL.md` - Este relatório
 
 ### Arquivos Modificados:
-4. ✅ `src/modules/pacientes/hooks/usePatientsSupabase.ts` - addPatient corrigido
-5. ✅ `src/pages/AgendaClinica.tsx` - Migrado para useAgendaSupabase
+4. ✅ `src/modules/pacientes/hooks/usePatients.ts` - addPatient corrigido
+5. ✅ `src/pages/AgendaClinica.tsx` - Migrado para useAgenda
 
 ### Arquivos Deletados:
 6. ✅ `src/modules/agenda/hooks/useAgendaStore.ts` - Obsoleto removido
@@ -134,7 +134,7 @@ const { data, error } = await supabase
 ## 🎯 VALIDAÇÃO TÉCNICA
 
 ### Persistência de Dados
-- ✅ Todas as operações persistem no Supabase PostgreSQL
+- ✅ Todas as operações persistem no PostgreSQL
 - ✅ Nenhum dado crítico usa localStorage
 - ✅ Multi-device sync funcional via cloud database
 
@@ -151,7 +151,7 @@ const { data, error } = await supabase
 ### Segurança
 - ✅ RLS policies configuradas em todas as tabelas
 - ✅ Queries filtradas por `clinic_id`
-- ✅ Autenticação via Supabase Auth
+- ✅ Autenticação via Express Auth
 
 ---
 
@@ -192,7 +192,7 @@ const { data, error } = await supabase
 
 - ✅ **Financeiro:** Persistência completa, real-time ativo
 - ✅ **Pacientes:** Criação real implementada, mock removido
-- ✅ **Agenda:** Migração completa para Supabase, localStorage removido
+- ✅ **Agenda:** Migração completa para o banco, localStorage removido
 - ✅ **Crypto:** Totalmente funcional com cache e joins nativos
 - ✅ **PEP:** PatientSelector implementado e funcional
 

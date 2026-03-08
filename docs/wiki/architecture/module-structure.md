@@ -29,7 +29,7 @@ src/modules/{module-name}/
 │
 ├── infrastructure/          # Camada de Infraestrutura (Implementações)
 │   ├── repositories/        # Implementações concretas
-│   │   ├── SupabaseEntityRepository.ts
+│   │   ├── PostgreSQLEntityRepository.ts
 │   │   └── mappers/         # Mapeamento Domain <-> DB
 │   │       └── EntityMapper.ts
 │   └── services/            # Serviços externos (APIs, etc.)
@@ -331,8 +331,8 @@ export class CreateEntityUseCase {
 
 ### 4. Infrastructure Layer (Implementação):
 ```typescript
-// infrastructure/repositories/SupabaseEntityRepository.ts
-export class SupabaseEntityRepository implements IEntityRepository {
+// infrastructure/repositories/PostgreSQLEntityRepository.ts
+export class PostgreSQLEntityRepository implements IEntityRepository {
   async findById(id: string): Promise<Entity | null> { /* ... */ }
   async save(entity: Entity): Promise<void> { /* ... */ }
 }
@@ -342,7 +342,7 @@ export class SupabaseEntityRepository implements IEntityRepository {
 ```typescript
 // presentation/hooks/useEntities.ts
 export function useEntities() {
-  const repository = new SupabaseEntityRepository();
+  const repository = new PostgreSQLEntityRepository();
   const useCase = new ListEntitiesUseCase(repository);
   // React Query logic...
 }
@@ -357,7 +357,7 @@ Ao criar um novo módulo, garanta:
 - [ ] **Entidades** com validações de domínio
 - [ ] **Use Cases** bem definidos
 - [ ] **Repositories** com interface e implementação
-- [ ] **Mappers** Domain ↔ Supabase
+- [ ] **Mappers** Domain ↔ PostgreSQL
 - [ ] **Hooks** com React Query
 - [ ] **Componentes** memoizados (`React.memo`)
 - [ ] **Tipos TypeScript** completos

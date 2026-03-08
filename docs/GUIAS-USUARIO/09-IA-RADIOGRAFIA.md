@@ -514,7 +514,7 @@ A IA é uma **ferramenta de auxílio**, não substitui:
 
 ### Onde os Dados São Processados?
 
-- **Armazenamento:** Supabase (Brasil)
+- **Armazenamento:** PostgreSQL (Brasil)
 - **Processamento IA:** Google Cloud (South America - São Paulo)
 - **Conformidade:** LGPD, HIPAA-equivalent
 

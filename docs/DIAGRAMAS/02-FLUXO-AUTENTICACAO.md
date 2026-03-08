@@ -10,42 +10,42 @@
 sequenceDiagram
     actor User as 👤 Usuário
     participant Frontend as React App
-    participant Supabase as Supabase Auth
+    participant Auth as Express Auth
     participant JWT as JWT Token
     participant Postgres as PostgreSQL
     participant RLS as Row Level Security
 
     User->>Frontend: 1. Digita email/senha
-    Frontend->>Supabase: 2. POST /auth/v1/token<br/>{email, password}
+    Frontend->>PostgreSQL: 2. POST /auth/v1/token<br/>{email, password}
     
-    Supabase->>Postgres: 3. SELECT * FROM auth.users<br/>WHERE email = ?
-    Postgres-->>Supabase: User encontrado
+    PostgreSQL->>Postgres: 3. SELECT * FROM auth.users<br/>WHERE email = ?
+    Postgres-->>PostgreSQL: User encontrado
     
-    Supabase->>Supabase: 4. Valida senha (bcrypt)
+    PostgreSQL->>PostgreSQL: 4. Valida senha (bcrypt)
     
     alt Senha incorreta
-        Supabase-->>Frontend: ❌ 401 Unauthorized
+        Backend-->Frontend: ❌ 401 Unauthorized
         Frontend-->>User: "Email ou senha incorretos"
     else Senha correta
-        Supabase->>Postgres: 5. SELECT clinic_id, app_role<br/>FROM profiles WHERE id = user.id
-        Postgres-->>Supabase: {clinic_id, app_role}
+        PostgreSQL->>Postgres: 5. SELECT clinic_id, app_role<br/>FROM profiles WHERE id = user.id
+        Postgres-->>PostgreSQL: {clinic_id, app_role}
         
-        Supabase->>JWT: 6. Gera JWT com custom claims<br/>{user_id, clinic_id, app_role}
-        JWT-->>Supabase: access_token + refresh_token
+        PostgreSQL->>JWT: 6. Gera JWT com custom claims<br/>{user_id, clinic_id, app_role}
+        JWT-->>PostgreSQL: access_token + refresh_token
         
-        Supabase-->>Frontend: ✅ 200 OK<br/>{access_token, refresh_token, user}
+        Backend-->Frontend: ✅ 200 OK<br/>{access_token, refresh_token, user}
         Frontend->>Frontend: 7. Armazena tokens em localStorage
         
-        Frontend->>Supabase: 8. GET /rest/v1/patients<br/>Authorization: Bearer token
-        Supabase->>JWT: 9. Valida token
-        JWT-->>Supabase: Token válido
+        Frontend->>PostgreSQL: 8. GET /rest/v1/patients<br/>Authorization: Bearer token
+        PostgreSQL->>JWT: 9. Valida token
+        JWT-->>PostgreSQL: Token válido
         
-        Supabase->>Postgres: 10. SELECT * FROM patients<br/>(Com RLS ativo)
+        PostgreSQL->>Postgres: 10. SELECT * FROM patients<br/>(Com RLS ativo)
         Postgres->>RLS: 11. Extrai clinic_id do JWT
         RLS->>RLS: 12. Aplica policy:<br/>WHERE clinic_id = jwt.clinic_id
         RLS-->>Postgres: Apenas pacientes da clínica
-        Postgres-->>Supabase: Dados filtrados
-        Supabase-->>Frontend: ✅ Dados seguros
+        Postgres-->>PostgreSQL: Dados filtrados
+        Backend-->Frontend: ✅ Dados seguros
         Frontend-->>User: Exibe dashboard
     end
 ```
@@ -59,7 +59,7 @@ sequenceDiagram
 **Frontend** (`src/contexts/AuthContext.tsx`):
 ```typescript
 const signIn = async (email: string, password: string) => {
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await auth.signInWithPassword({
     email,
     password
   })
@@ -71,7 +71,7 @@ const signIn = async (email: string, password: string) => {
 
 **Request HTTP**:
 ```http
-POST https://yxpoqjyfgotkytwtifau.supabase.co/auth/v1/token
+POST https://yxpoqjyfgotkytwtifau.backend.orthoplus.local/auth/v1/token
 Content-Type: application/json
 
 {
@@ -84,10 +84,10 @@ Content-Type: application/json
 
 ### **3-4. Validação de Senha**
 
-Supabase usa **bcrypt** com **cost factor 10**:
+PostgreSQL usa **bcrypt** com **cost factor 10**:
 
 ```sql
--- auth.users (tabela interna do Supabase)
+-- auth.users (tabela interna do banco)
 SELECT 
   id,
   email,
@@ -185,10 +185,10 @@ jwt decode eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### **7. Armazenamento Seguro**
 
-**LocalStorage** (`supabase-auth-token`):
+**LocalStorage** (`apiClient-auth-token`):
 ```typescript
-// Supabase gerencia automaticamente
-localStorage.setItem('supabase.auth.token', JSON.stringify({
+// PostgreSQL gerencia automaticamente
+localStorage.setItem('auth.token', JSON.stringify({
   access_token: 'eyJhbGciOiJIUzI1NiIs...',
   refresh_token: 'v1.MRz...',
   expires_at: 1705323600,
@@ -201,7 +201,7 @@ localStorage.setItem('supabase.auth.token', JSON.stringify({
 ```
 
 **Segurança**:
-- ✅ HttpOnly Cookies (mais seguro, mas Supabase usa localStorage por padrão)
+- ✅ HttpOnly Cookies (mais seguro, mas PostgreSQL usa localStorage por padrão)
 - ⚠️ LocalStorage vulnerável a XSS (Cross-Site Scripting)
 - 🔒 Solução: Sanitize inputs, CSP headers
 
@@ -211,15 +211,15 @@ localStorage.setItem('supabase.auth.token', JSON.stringify({
 
 **Frontend**:
 ```typescript
-const { data: patients } = await supabase
+const { data: patients } = await apiClient
   .from('patients')
   .select('*')
-// Supabase adiciona automaticamente header Authorization
+// PostgreSQL adiciona automaticamente header Authorization
 ```
 
 **Request HTTP Real**:
 ```http
-GET https://yxpoqjyfgotkytwtifau.supabase.co/rest/v1/patients
+GET https://yxpoqjyfgotkytwtifau.backend.orthoplus.local/rest/v1/patients
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (anon key)
 ```
@@ -242,7 +242,7 @@ CREATE POLICY "Isolamento por clínica"
 ```
 
 **Como funciona**:
-1. PostgreSQL extrai `auth.uid()` do JWT (função mágica do Supabase)
+1. PostgreSQL extrai `auth.uid()` do JWT (função mágica do banco)
 2. Busca `clinic_id` do usuário na tabela `profiles`
 3. Filtra query automaticamente: `WHERE clinic_id = 'uuid-da-clinica'`
 
@@ -267,30 +267,30 @@ WHERE clinic_id = (
 ```mermaid
 sequenceDiagram
     participant Frontend as React App
-    participant Supabase as Supabase Auth
+    participant Auth as Express Auth
     participant JWT as JWT
 
     Frontend->>Frontend: 1. Detecta access_token expirado<br/>(após 1 hora)
-    Frontend->>Supabase: 2. POST /auth/v1/token<br/>{refresh_token}
-    Supabase->>JWT: 3. Valida refresh_token
+    Frontend->>PostgreSQL: 2. POST /auth/v1/token<br/>{refresh_token}
+    PostgreSQL->>JWT: 3. Valida refresh_token
     
     alt Refresh token válido
-        JWT-->>Supabase: ✅ Token válido
-        Supabase->>Supabase: 4. Gera novo access_token
-        Supabase-->>Frontend: ✅ {new_access_token}
+        JWT-->>PostgreSQL: ✅ Token válido
+        PostgreSQL->>PostgreSQL: 4. Gera novo access_token
+        Backend-->Frontend: ✅ {new_access_token}
         Frontend->>Frontend: 5. Atualiza localStorage
-        Frontend->>Supabase: 6. Retry request original
+        Frontend->>PostgreSQL: 6. Retry request original
     else Refresh token expirado/inválido
-        JWT-->>Supabase: ❌ Token inválido
-        Supabase-->>Frontend: ❌ 401 Unauthorized
+        JWT-->>PostgreSQL: ❌ Token inválido
+        Backend-->Frontend: ❌ 401 Unauthorized
         Frontend->>Frontend: 7. Redireciona para /login
     end
 ```
 
 **Implementação Automática**:
 ```typescript
-// Supabase gerencia refresh automaticamente
-supabase.auth.onAuthStateChange((event, session) => {
+// PostgreSQL gerencia refresh automaticamente
+auth.onAuthStateChange((event, session) => {
   if (event === 'TOKEN_REFRESHED') {
     console.log('Token renovado automaticamente')
   }
@@ -359,13 +359,13 @@ const ProtectedRoute = ({ children, requiredModule }) => {
 
 ### Ver JWT decodificado:
 ```typescript
-const session = await supabase.auth.getSession()
+const session = await auth.getSession()
 console.log('JWT Payload:', JSON.parse(atob(session.data.session.access_token.split('.')[1])))
 ```
 
 ### Ver clinic_id do usuário:
 ```typescript
-const { data: profile } = await supabase
+const { data: profile } = await apiClient
   .from('profiles')
   .select('clinic_id, app_role')
   .eq('id', user.id)
@@ -389,7 +389,7 @@ SELECT * FROM patients;
 
 ## 📚 Recursos
 
-- [Supabase Auth Docs](https://supabase.com/docs/guides/auth)
+- [Express Auth Docs](https://apiClient.com/docs/guides/auth)
 - [JWT.io](https://jwt.io/) - Decoder de tokens
 - [PostgreSQL RLS](https://www.postgresql.org/docs/15/ddl-rowsecurity.html)
 

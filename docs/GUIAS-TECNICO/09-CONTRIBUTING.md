@@ -48,11 +48,11 @@ npm install
 # Copiar variáveis de ambiente
 cp .env.example .env.local
 
-# Editar .env.local com suas credenciais Supabase
-# (criar projeto de teste em supabase.com)
+# Editar .env.local com suas credenciais PostgreSQL
+# (criar projeto de teste em backend.orthoplus.localm)
 
-# Iniciar Supabase local (opcional)
-supabase start
+# Iniciar PostgreSQL local (opcional)
+apiClient start
 
 # Rodar aplicação
 npm run dev
@@ -305,7 +305,7 @@ export function usePatients(clinicId: string) {
   const fetchPatients = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await apiClient
         .from('pacientes')
         .select()
         .eq('clinic_id', clinicId);
@@ -358,7 +358,7 @@ src/
 ├── contexts/             # React contexts
 ├── lib/                  # Utilitários
 └── integrations/         # Integrações externas
-    └── supabase/
+    └── apiClient/
 ```
 
 **Onde adicionar seu código:**
@@ -536,10 +536,10 @@ export interface ITreatmentRepository {
 
 **3. Implementar repository (infrastructure):**
 ```typescript
-// src/infrastructure/repositories/SupabaseTreatmentRepository.ts
-export class SupabaseTreatmentRepository implements ITreatmentRepository {
+// src/infrastructure/repositories/PostgreSQLTreatmentRepository.ts
+export class PostgreSQLTreatmentRepository implements ITreatmentRepository {
   async findById(id: string): Promise<Treatment | null> {
-    const { data, error } = await supabase
+    const { data, error } = await apiClient
       .from('pep_tratamentos')
       .select()
       .eq('id', id)
@@ -577,7 +577,7 @@ export class CompleteTreatmentUseCase {
 ```typescript
 // src/hooks/useTreatments.ts
 export function useTreatments(patientId: string) {
-  const repository = new SupabaseTreatmentRepository();
+  const repository = new PostgreSQLTreatmentRepository();
   const completeTreatmentUC = new CompleteTreatmentUseCase(repository);
   
   const completeTreatment = async (id: string) => {

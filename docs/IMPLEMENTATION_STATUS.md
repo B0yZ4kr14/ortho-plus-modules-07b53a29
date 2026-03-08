@@ -72,7 +72,7 @@
 
 ### FASE 7: Frontend Integration (IN PROGRESS)
 - ⏳ Adaptar componentes React para consumir backend Node.js
-- ⏳ Substituir chamadas Supabase Edge Functions por REST API
+- ⏳ Substituir chamadas PostgreSQL Edge Functions por REST API
 - ⏳ Implementar client HTTP (axios/fetch)
 - ⏳ Atualizar Context Providers (AuthContext, ModulesContext)
 
@@ -122,7 +122,7 @@
 
 ## 🎯 PRÓXIMOS PASSOS IMEDIATOS
 
-1. **Integrar frontend** com novo backend REST API (substituir Supabase calls)
+1. **Integrar frontend** com novo backend REST API (substituir PostgreSQL calls)
 2. **Configurar Grafana dashboards** para visualização de métricas Prometheus
 3. **Escrever testes** unitários e de integração para todos os módulos
 4. **Implementar repositories** completos (atualmente apenas controllers/stubs)

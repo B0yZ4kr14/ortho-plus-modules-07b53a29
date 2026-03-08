@@ -197,7 +197,7 @@ Processa automaticamente o progresso de metas e atualiza ranking de vendedores.
 
 ```typescript
 // Exemplo de chamada
-const { data, error } = await supabase.functions.invoke('processar-metas-gamificacao', {
+const { data, error } = await apiClient.post('processar-metas-gamificacao', {
   body: { clinic_id: clinicId }
 });
 ```
@@ -218,7 +218,7 @@ Processa transações TEF com integração à operadora configurada.
 **Exemplo de Uso:**
 
 ```typescript
-const { data, error } = await supabase.functions.invoke('processar-pagamento-tef', {
+const { data, error } = await apiClient.post('processar-pagamento-tef', {
   body: {
     clinic_id: clinicId,
     caixa_movimento_id: caixaId,
@@ -280,7 +280,7 @@ Gera arquivo SPED Fiscal (Sistema Público de Escrituração Digital) compilando
 **Exemplo de Uso:**
 
 ```typescript
-const { data, error } = await supabase.functions.invoke('gerar-sped-fiscal', {
+const { data, error } = await apiClient.post('gerar-sped-fiscal', {
   body: {
     clinic_id: clinicId,
     data_inicio: '2025-01-01',
@@ -418,17 +418,17 @@ VALUES (clinic_id, 'ABERTURA', 100.00, 'ABERTO', user_id);
 ### 2. Venda com TEF
 ```typescript
 // 1. Registrar venda
-const venda = await supabase.from('caixa_movimentos').insert({
+const venda = await apiClient.from('caixa_movimentos').insert({
   clinic_id, tipo: 'VENDA', valor: 150.00, caixa_id
 });
 
 // 2. Processar TEF
-const tef = await supabase.functions.invoke('processar-pagamento-tef', {
+const tef = await apiClient.post('processar-pagamento-tef', {
   body: { clinic_id, caixa_movimento_id: venda.id, tipo_pagamento: 'CREDITO', valor: 150.00 }
 });
 
 // 3. Emitir NFCe
-const nfce = await supabase.functions.invoke('emitir-nfce', {
+const nfce = await apiClient.post('emitir-nfce', {
   body: { clinic_id, venda_id: venda.id, produtos: [...] }
 });
 ```
@@ -436,13 +436,13 @@ const nfce = await supabase.functions.invoke('emitir-nfce', {
 ### 3. Sangria Inteligente
 ```typescript
 // 1. Consultar sugestão
-const { data: sugestao } = await supabase.functions.invoke('sugerir-sangria-ia', {
+const { data: sugestao } = await apiClient.post('sugerir-sangria-ia', {
   body: { clinic_id, caixa_id }
 });
 
 // 2. Se sugestão positiva, executar sangria
 if (sugestao.sugerir_sangria) {
-  await supabase.from('caixa_movimentos').insert({
+  await apiClient.from('caixa_movimentos').insert({
     clinic_id, tipo: 'SANGRIA', valor: sugestao.valor_sugerido,
     caixa_id, sugerido_por_ia: true, risco_calculado: sugestao.risco_calculado
   });
@@ -452,19 +452,19 @@ if (sugestao.sugerir_sangria) {
 ### 4. Fechamento de Caixa
 ```typescript
 // 1. Consolidar vendas
-const { data: vendas } = await supabase.from('caixa_movimentos')
+const { data: vendas } = await apiClient.from('caixa_movimentos')
   .select('valor').eq('tipo', 'VENDA').eq('caixa_id', caixaId);
 
 const totalVendas = vendas.reduce((sum, v) => sum + v.valor, 0);
 
 // 2. Consolidar NFCe
-const { data: nfce } = await supabase.from('nfce_emitidas')
+const { data: nfce } = await apiClient.from('nfce_emitidas')
   .select('valor_total').eq('caixa_id', caixaId);
 
 const totalNFCe = nfce.reduce((sum, n) => sum + n.valor_total, 0);
 
 // 3. Registrar fechamento
-await supabase.from('fechamento_caixa').insert({
+await apiClient.from('fechamento_caixa').insert({
   clinic_id, caixa_movimento_id: caixaId,
   total_vendas_pdv: totalVendas,
   total_nfce_emitidas: totalNFCe,
@@ -472,7 +472,7 @@ await supabase.from('fechamento_caixa').insert({
 });
 
 // 4. Gerar SPED Fiscal
-await supabase.functions.invoke('gerar-sped-fiscal', {
+await apiClient.post('gerar-sped-fiscal', {
   body: { clinic_id, data_inicio, data_fim }
 });
 ```
@@ -482,7 +482,7 @@ await supabase.functions.invoke('gerar-sped-fiscal', {
 -- Cron job diário às 23:59
 SELECT cron.schedule('processar-metas-diario', '59 23 * * *', 
   $$ SELECT net.http_post(
-    url := 'https://[project].supabase.co/functions/v1/processar-metas-gamificacao',
+    url := 'https://[project].api/processar-metas-gamificacao',
     headers := '{"Authorization": "Bearer [key]"}'::jsonb
   ) $$
 );

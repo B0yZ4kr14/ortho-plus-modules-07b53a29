@@ -14,11 +14,11 @@ Todas as funcionalidades solicitadas foram implementadas, testadas e validadas c
 
 ### ✅ 1. Sistema de Busca Global Funcional
 **Solicitação Original:**
-> "Implementar sistema de busca global funcional no header que pesquisa em tempo real pacientes, procedimentos, dentistas e outras entidades com dropdown de resultados usando Lovable Cloud query."
+> "Implementar sistema de busca global funcional no header que pesquisa em tempo real pacientes, procedimentos, dentistas e outras entidades com dropdown de resultados usando OrthoPlus Cloud query."
 
 **Implementação:**
 - ✅ Componente `GlobalSearch.tsx` criado
-- ✅ Integração completa com Supabase (Lovable Cloud)
+- ✅ Integração completa com PostgreSQL (OrthoPlus Cloud)
 - ✅ Busca em tempo real com debounce de 300ms
 - ✅ Queries otimizadas em 3 tabelas principais:
   - `prontuarios` (pacientes)
@@ -125,7 +125,7 @@ Todas as funcionalidades solicitadas foram implementadas, testadas e validadas c
 - [x] Modal ajuda + Busca sem conflitos
 - [x] Múltiplos hotkeys sequenciais
 - [x] Integração com AuthContext
-- [x] Integração com Supabase
+- [x] Integração com PostgreSQL
 - [x] Integração com React Router
 
 ### ✅ Testes de Edge Cases
@@ -225,7 +225,7 @@ Ctrl/Cmd + S → Configurações
 
 Todas as 4 funcionalidades solicitadas foram implementadas com sucesso:
 
-1. ✅ **Sistema de busca global funcional** com queries em tempo real no Supabase
+1. ✅ **Sistema de busca global funcional** com queries em tempo real no banco
 2. ✅ **Barra de busca aumentada e centralizada** sem sobreposições
 3. ✅ **Layout header corrigido** com estrutura otimizada
 4. ✅ **Modal de ajuda interativo** com hotkeys categorizados

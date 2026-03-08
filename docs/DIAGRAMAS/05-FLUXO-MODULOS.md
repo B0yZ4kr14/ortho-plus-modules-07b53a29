@@ -19,7 +19,7 @@ sequenceDiagram
     participant UI as Interface (React)
     participant Auth as AuthContext
     participant Edge as Edge Function<br/>toggle-module-state
-    participant DB as PostgreSQL<br/>(Supabase)
+    participant DB as PostgreSQL<br/>(PostgreSQL)
     participant Sidebar as Sidebar Component
 
     Admin->>UI: Clica em "Ativar Módulo X"
@@ -161,7 +161,7 @@ graph LR
 graph TD
     A[Módulo Ativado/Desativado] --> B[AuthContext.invalidateCache]
     
-    B --> C[Fetch active modules<br/>FROM Supabase]
+    B --> C[Fetch active modules<br/>FROM PostgreSQL]
     C --> D[Update activeModules state]
     
     D --> E[Notify Sidebar Component]
@@ -322,7 +322,7 @@ graph TD
 
 ## Referências
 
-- [Guia Técnico: Backend Supabase](../GUIAS-TECNICO/02-BACKEND-SUPABASE.md)
+- [Guia Técnico: Backend PostgreSQL](../GUIAS-TECNICO/01-ARQUITETURA-GERAL.md)
 - [Guia Técnico: Edge Functions](../GUIAS-TECNICO/03-EDGE-FUNCTIONS.md)
 - [Tutorial: Como Ativar Módulos](../TUTORIAIS/01-COMO-ATIVAR-MODULOS.md)
 

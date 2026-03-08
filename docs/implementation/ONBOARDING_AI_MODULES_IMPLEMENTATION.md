@@ -100,7 +100,7 @@ Analisar perfil da clínica e recomendar módulos relevantes baseado em porte, e
 ### Arquitetura
 
 #### Edge Function: `suggest-modules`
-- **Localização:** `supabase/functions/suggest-modules/index.ts`
+- **Localização:** `backend/functions/suggest-modules/index.ts`
 - **Método:** POST
 - **Autenticação:** JWT (ADMIN apenas)
 - **Modelo IA:** Google Gemini 2.5 Flash (via Lovable AI Gateway)
@@ -192,7 +192,7 @@ e nos módulos já ativos.
   - `handleImportConfig(event)` - Importa e ativa módulos
   - `handleGetSuggestions()` - Chama Edge Function
 
-### Configuração Supabase
+### Configuração banco
 - Adicionada função `suggest-modules` ao `config.toml`
 - `verify_jwt = true` para proteger endpoint
 
@@ -221,7 +221,7 @@ e nos módulos já ativos.
 - **React 18.3.1** - Framework frontend
 - **TypeScript** - Type safety
 - **Framer Motion 12.23.24** - Animações do onboarding
-- **Supabase Edge Functions** - Backend serverless
+- **PostgreSQL Edge Functions** - Backend serverless
 - **Lovable AI Gateway** - Integração com Google Gemini 2.5 Flash
 - **JSON** - Formato de exportação/importação
 - **Shadcn UI** - Componentes de interface
@@ -266,13 +266,13 @@ Localizados em `src/components/onboarding/steps/`:
 ### Edge Function Logs
 Para debug da função `suggest-modules`, verificar logs em:
 ```bash
-supabase functions logs suggest-modules --tail
+apiClient functions logs suggest-modules --tail
 ```
 
 ### Variáveis de Ambiente Requeridas
 - `LOVABLE_API_KEY` - Chave da Lovable AI (auto-configurada)
-- `SUPABASE_URL` - URL do projeto Supabase
-- `SUPABASE_ANON_KEY` - Chave anônima do Supabase
+- `API_BASE_URL` - URL do projeto banco
+- `API_ANON_KEY` - Chave anônima do banco
 
 ## 9. Segurança
 

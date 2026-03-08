@@ -4,7 +4,7 @@
 
 **Última Atualização**: 2025-11-15  
 **Versão**: 1.0.0 (MVP Completo)  
-**Stack**: React + Vite + TypeScript + Supabase + Tailwind CSS
+**Stack**: React + Vite + TypeScript + PostgreSQL + Tailwind CSS
 
 ---
 
@@ -49,7 +49,7 @@
   - Estimativa: 2 semanas
   - Responsável: Backend Team
   
-- 🔄 Migrar para Supabase Realtime v2
+- 🔄 Migrar para o banco Realtime v2
   - Prioridade: **Média**
   - Estimativa: 1 semana
   - Impacto: Melhor performance em notificações real-time
@@ -202,7 +202,7 @@
 3. **ADR-17**: Modelo de precificação de módulos
 
 ### Dependências Externas
-- **Supabase**: v2.81.1 (atualização para v2.90+ planejada Q1)
+- **PostgreSQL**: v2.81.1 (atualização para v2.90+ planejada Q1)
 - **React**: v18.3.1 (aguardar v19 stable)
 - **Vite**: v5.x (considerar migração para Turbopack Q2)
 

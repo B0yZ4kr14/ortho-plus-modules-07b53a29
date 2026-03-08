@@ -17,11 +17,11 @@ Este guia detalha o processo de deployment do Ortho+ incluindo ambientes, pipeli
 ```
 ┌──────────────────────────────────────────┐
 │   Frontend (React + Vite)                │
-│   Hospedado: Lovable Cloud / Vercel      │
+│   Hospedado: OrthoPlus Cloud / Vercel      │
 └──────────────────────────────────────────┘
                     ↓
 ┌──────────────────────────────────────────┐
-│   Backend (Supabase)                     │
+│   Backend (PostgreSQL)                     │
 │   - PostgreSQL Database                  │
 │   - Edge Functions (Deno)                │
 │   - Storage (S3-compatible)              │
@@ -49,15 +49,15 @@ Este guia detalha o processo de deployment do Ortho+ incluindo ambientes, pipeli
 # Frontend
 npm run dev  # Vite dev server (port 5173)
 
-# Supabase Local
-supabase start  # PostgreSQL, Edge Functions
+# PostgreSQL Local
+apiClient start  # PostgreSQL, Edge Functions
 ```
 
 **Configuração:**
 ```env
 # .env.local
-VITE_SUPABASE_URL=http://localhost:54321
-VITE_SUPABASE_ANON_KEY=<local-anon-key>
+VITE_API_BASE_URL=http://localhost:54321
+VITE_API_ANON_KEY=<local-anon-key>
 ```
 
 **Características:**
@@ -77,8 +77,8 @@ VITE_SUPABASE_ANON_KEY=<local-anon-key>
 **Configuração:**
 ```env
 # .env.staging
-VITE_SUPABASE_URL=https://staging-project.supabase.co
-VITE_SUPABASE_ANON_KEY=<staging-anon-key>
+VITE_API_BASE_URL=https://staging-project.backend.orthoplus.local
+VITE_API_ANON_KEY=<staging-anon-key>
 ```
 
 **Características:**
@@ -98,8 +98,8 @@ VITE_SUPABASE_ANON_KEY=<staging-anon-key>
 **Configuração:**
 ```env
 # .env.production
-VITE_SUPABASE_URL=https://prod-project.supabase.co
-VITE_SUPABASE_ANON_KEY=<prod-anon-key>
+VITE_API_BASE_URL=https://prod-project.backend.orthoplus.local
+VITE_API_ANON_KEY=<prod-anon-key>
 ```
 
 **Características:**
@@ -152,18 +152,18 @@ Cumulative Layout Shift (CLS): < 0.1
 
 **Deploy Command:**
 ```bash
-supabase functions deploy <function-name>
+npm run deploy <function-name>
 ```
 
 **Ou deploy todas:**
 ```bash
-supabase functions deploy --all
+npm run deploy --all
 ```
 
 **Processo:**
 1. Transpile TypeScript → JavaScript
 2. Bundle dependencies
-3. Upload para Supabase
+3. Upload para o banco
 4. Deploy em edge locations globais
 
 **Regiões:**
@@ -234,8 +234,8 @@ jobs:
       - name: Build frontend
         run: npm run build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_API_ANON_KEY: ${{ secrets.VITE_API_ANON_KEY }}
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -268,16 +268,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
+      - name: Setup Backend CLI
+        # apiClient cli removed - using Express backend
         with:
           version: latest
       
       - name: Deploy Edge Functions
-        run: supabase functions deploy --all
+        run: npm run deploy --all
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          API_ACCESS_TOKEN: ${{ secrets.API_ACCESS_TOKEN }}
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
 
   run-migrations:
     needs: deploy-edge-functions
@@ -285,14 +285,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
+      - name: Setup Backend CLI
+        # apiClient cli removed - using Express backend
       
       - name: Run database migrations
-        run: supabase db push
+        run: npx prisma db push
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          API_ACCESS_TOKEN: ${{ secrets.API_ACCESS_TOKEN }}
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
 
   smoke-tests:
     needs: [deploy-frontend, deploy-edge-functions, run-migrations]
@@ -321,17 +321,17 @@ jobs:
 ### Criar Nova Migration
 
 ```bash
-supabase migration new <migration-name>
+apiClient migration new <migration-name>
 ```
 
 **Exemplo:**
 ```bash
-supabase migration new add_patient_risk_scores
+apiClient migration new add_patient_risk_scores
 ```
 
 **Output:**
 ```
-supabase/migrations/20250117123045_add_patient_risk_scores.sql
+apiClient/migrations/20250117123045_add_patient_risk_scores.sql
 ```
 
 ### Escrever Migration
@@ -362,19 +362,19 @@ COMMIT;
 
 **Local:**
 ```bash
-supabase db reset  # Limpa DB e aplica todas migrations
+apiClient db reset  # Limpa DB e aplica todas migrations
 ```
 
 **Production:**
 ```bash
-supabase db push  # Aplica apenas novas migrations
+npx prisma db push  # Aplica apenas novas migrations
 ```
 
 ### Rollback
 
 **Criar migration de rollback:**
 ```sql
--- supabase/migrations/20250117130000_rollback_patient_risk_scores.sql
+-- apiClient/migrations/20250117130000_rollback_patient_risk_scores.sql
 BEGIN;
 
 DROP POLICY IF EXISTS "Users can view patient risk scores" ON pacientes;
@@ -386,7 +386,7 @@ COMMIT;
 
 **Aplicar rollback:**
 ```bash
-supabase db push
+npx prisma db push
 ```
 
 ---
@@ -399,26 +399,26 @@ supabase db push
 ```
 Settings → Secrets and variables → Actions
 
-VITE_SUPABASE_URL
-VITE_SUPABASE_ANON_KEY
-SUPABASE_ACCESS_TOKEN
-SUPABASE_PROJECT_ID
+VITE_API_BASE_URL
+VITE_API_ANON_KEY
+API_ACCESS_TOKEN
+PROJECT_ID
 VERCEL_TOKEN
 VERCEL_ORG_ID
 VERCEL_PROJECT_ID
 SLACK_WEBHOOK
 ```
 
-**Supabase Secrets (Edge Functions):**
+**Environment Secrets (Edge Functions):**
 ```bash
-supabase secrets set RESEND_API_KEY=<value>
-supabase secrets set GOOGLE_API_KEY=<value>
-supabase secrets set OPENAI_API_KEY=<value>
+apiClient secrets set RESEND_API_KEY=<value>
+apiClient secrets set GOOGLE_API_KEY=<value>
+apiClient secrets set OPENAI_API_KEY=<value>
 ```
 
 **Listar secrets:**
 ```bash
-supabase secrets list
+apiClient secrets list
 ```
 
 ---
@@ -447,7 +447,7 @@ Edge Functions **não** suportam rollback automático.
 2. Re-deploy função antiga:
    ```bash
    git revert HEAD
-   supabase functions deploy <function-name>
+   npm run deploy <function-name>
    ```
 
 ### 3. Database Rollback
@@ -455,11 +455,11 @@ Edge Functions **não** suportam rollback automático.
 **Via migration reversa:**
 ```bash
 # Criar migration de rollback (manual)
-supabase migration new rollback_<feature>
+apiClient migration new rollback_<feature>
 
 # Escrever SQL reverso
 # Aplicar
-supabase db push
+npx prisma db push
 ```
 
 ---
@@ -483,7 +483,7 @@ https://app.orthoplus.com.br/api/health (JSON response)
 
 ### 2. Application Monitoring
 
-**Supabase Dashboard:**
+**Admin Dashboard:**
 - Database CPU/Memory usage
 - API requests/second
 - Edge Function invocations
@@ -505,10 +505,10 @@ API Errors > 10%: Critical
 
 **Frontend:**
 - Sentry.io (React error boundary)
-- Console logs enviados para Supabase
+- Console logs enviados para o banco
 
 **Backend:**
-- Edge Function logs (Supabase Dashboard)
+- Edge Function logs (Admin Dashboard)
 - Database logs (PostgreSQL logs)
 
 ### 4. Performance Monitoring
@@ -551,7 +551,7 @@ jobs:
 
 ### Backups Automáticos
 
-**Supabase:**
+**PostgreSQL:**
 - Daily automatic backups (retenção: 7 dias)
 - Point-in-Time Recovery (PITR): Últimas 7 dias
 
@@ -710,8 +710,8 @@ self.addEventListener('fetch', (event) => {
 # GitHub Actions
 # Acessar Actions tab → Ver workflow → Ver logs
 
-# Supabase Edge Functions
-supabase functions logs <function-name>
+# PostgreSQL Edge Functions
+apiClient functions logs <function-name>
 ```
 
 **2. Testar localmente:**
@@ -720,7 +720,7 @@ supabase functions logs <function-name>
 npm run build
 
 # Testar edge function
-supabase functions serve <function-name>
+apiClient functions serve <function-name>
 ```
 
 **3. Rollback:**
@@ -736,7 +736,7 @@ git push
 
 **1. Ver erro:**
 ```bash
-supabase db push --debug
+npx prisma db push --debug
 ```
 
 **2. Corrigir SQL:**
@@ -748,7 +748,7 @@ ALTER TABLE new_table ADD COLUMN IF NOT EXISTS col_name TEXT;
 
 **3. Re-aplicar:**
 ```bash
-supabase db push
+npx prisma db push
 ```
 
 ---
@@ -773,7 +773,7 @@ supabase db push
 ## Referências
 
 - [Vite Build Guide](https://vitejs.dev/guide/build.html)
-- [Supabase CLI Reference](https://supabase.com/docs/reference/cli)
+- [Backend CLI Reference](https://apiClient.com/docs/reference/cli)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Vercel Deployment](https://vercel.com/docs/deployments)
 

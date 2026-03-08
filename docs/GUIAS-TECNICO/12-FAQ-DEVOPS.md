@@ -35,20 +35,20 @@ SELECT version();
 
 ---
 
-### **P: Supabase self-hosted ou cloud?**
+### **P: PostgreSQL self-hosted ou cloud?**
 **R:** **Ambos são suportados**, mas recomendamos:
 
 | Ambiente | Recomendação | Motivo |
 |----------|--------------|--------|
-| **Produção** | Supabase Cloud | Auto-scaling, backups gerenciados, SLA 99.9% |
+| **Produção** | PostgreSQL Cloud | Auto-scaling, backups gerenciados, SLA 99.9% |
 | **Desenvolvimento** | Self-hosted | Controle total, sem custos |
-| **Staging** | Supabase Cloud | Paridade com produção |
+| **Staging** | PostgreSQL Cloud | Paridade com produção |
 
 **Self-hosted setup**:
 ```bash
-# Clone Supabase
-git clone --depth 1 https://github.com/supabase/supabase
-cd supabase/docker
+# Clone PostgreSQL
+git clone --depth 1 https://github.com/apiClient/apiClient
+cd apiClient/docker
 
 # Configure .env
 cp .env.example .env
@@ -68,7 +68,7 @@ docker compose up -d
 - Triggers e functions em PL/pgSQL
 - Tipo de dado JSONB (queries complexas)
 - `pg_stat_statements` para performance tuning
-- PostgREST para API REST automática
+- Express para API REST automática
 
 **Alternativas NÃO suportadas**: MySQL, MariaDB, MongoDB, SQLite.
 
@@ -163,7 +163,7 @@ LIMIT 100;
 ---
 
 ### **P: JWT expiration? Como funcionam os tokens?**
-**R:** Configurado em `supabase/config.toml`:
+**R:** Configurado em `apiClient/config.toml`:
 
 ```toml
 [auth]
@@ -174,11 +174,11 @@ refresh_token_ttl = 2592000    # 30 dias
 **Fluxo de refresh**:
 ```typescript
 // Frontend detecta token expirado
-const { data, error } = await supabase.auth.getSession()
+const { data, error } = await auth.getSession()
 
 if (error?.message === 'Token expired') {
   // Refresh automático
-  const { data: refreshed } = await supabase.auth.refreshSession()
+  const { data: refreshed } = await auth.refreshSession()
   // Retry request original
 }
 ```
@@ -206,23 +206,23 @@ $$ LANGUAGE plpgsql STABLE;
 ---
 
 ### **P: Como proteger contra SQL Injection?**
-**R:** O Supabase **protege automaticamente** via parameterized queries:
+**R:** O PostgreSQL **protege automaticamente** via parameterized queries:
 
 ```typescript
 // ✅ SEGURO (parameterized)
-const { data } = await supabase
+const { data } = await apiClient
   .from('patients')
   .select('*')
   .eq('full_name', userInput) // Escapado automaticamente
 
 // ❌ PERIGOSO (se usar SQL raw)
-const { data } = await supabase.rpc('unsafe_query', {
+const { data } = await apiClient.rpc('unsafe_query', {
   sql: `SELECT * FROM patients WHERE full_name = '${userInput}'`
 })
 // NÃO FAÇA ISSO!
 ```
 
-**Regra de ouro**: Use sempre query builder do Supabase, nunca concatene SQL.
+**Regra de ouro**: Use sempre query builder do banco, nunca concatene SQL.
 
 ---
 
@@ -233,16 +233,16 @@ const { data } = await supabase.rpc('unsafe_query', {
 
 ```typescript
 // ❌ RUIM (N+1 queries)
-const patients = await supabase.from('patients').select('*')
+const patients = await apiClient.from('patients').select('*')
 for (const p of patients.data) {
-  const { data: prontuarios } = await supabase
+  const { data: prontuarios } = await apiClient
     .from('prontuarios')
     .select('*')
     .eq('patient_id', p.id)
 }
 
 // ✅ BOM (1 query)
-const { data: patients } = await supabase
+const { data: patients } = await apiClient
   .from('patients')
   .select(`
     *,
@@ -284,7 +284,7 @@ getFID(metric => sendToAnalytics(metric))
 getLCP(metric => sendToAnalytics(metric))
 
 function sendToAnalytics(metric) {
-  supabase.from('rum_metrics').insert({
+  apiClient.from('rum_metrics').insert({
     metric_type: metric.name,
     value: metric.value,
     page_url: window.location.pathname
@@ -319,7 +319,7 @@ export const queryClient = new QueryClient({
 **Quando NÃO usar**:
 - ❌ Formulários (use `useState`)
 - ❌ UI state (use Zustand)
-- ❌ WebSockets/Realtime (use `supabase.channel()`)
+- ❌ WebSockets/Realtime (use `apiClient.channel()`)
 
 ---
 
@@ -387,7 +387,7 @@ WHERE clinic_id = 'uuid'
 ```yaml
 services:
   postgres:
-    image: supabase/postgres:15
+    image: apiClient/postgres:15
     
   frontend:
     build: .
@@ -583,14 +583,14 @@ app.get('/metrics', async (req, res) => {
 
 ```bash
 # Deploy de uma function específica
-npx supabase functions deploy get-my-modules
+npx npm run deploy get-my-modules
 
 # Deploy de todas as functions
-npx supabase functions deploy
+npx npm run deploy
 
 # Deploy com secrets
-npx supabase secrets set GOOGLE_API_KEY=your_key_here
-npx supabase functions deploy analyze-radiografia
+npx apiClient secrets set GOOGLE_API_KEY=your_key_here
+npx npm run deploy analyze-radiografia
 ```
 
 ---
@@ -600,16 +600,16 @@ npx supabase functions deploy analyze-radiografia
 
 ```bash
 # Logs de uma function específica
-npx supabase functions logs get-my-modules --tail
+npx apiClient functions logs get-my-modules --tail
 
 # Logs de todas as functions
-npx supabase functions logs --tail
+npx apiClient functions logs --tail
 
 # Filtrar por erro
-npx supabase functions logs get-my-modules --level error
+npx apiClient functions logs get-my-modules --level error
 
 # Salvar logs em arquivo
-npx supabase functions logs > functions.log
+npx apiClient functions logs > functions.log
 ```
 
 ---
@@ -618,7 +618,7 @@ npx supabase functions logs > functions.log
 **R:** Sim, **60 segundos por padrão**. Max: **300s** (5min).
 
 ```typescript
-// supabase/functions/analyze-radiografia/index.ts
+// backend/functions/analyze-radiografia/index.ts
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 serve({ 
@@ -672,8 +672,8 @@ POST /functions/v1/trigger-backup
 ```bash
 # Trigger teste de restore em sandbox
 curl -X POST \
-  https://yxpoqjyfgotkytwtifau.supabase.co/functions/v1/test-backup-restore \
-  -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+  https://yxpoqjyfgotkytwtifau.api/test-backup-restore \
+  -H "Authorization: Bearer $API_ANON_KEY" \
   -d '{"backup_id": "uuid-do-backup"}'
 
 Response:
@@ -707,7 +707,7 @@ schedule = "0 2 * * 0"  # Todo domingo 2h AM
 - Backups incrementais a cada hora
 
 ```sql
--- Habilitar PITR (Supabase Pro)
+-- Habilitar PITR (PostgreSQL Pro)
 ALTER DATABASE postgres SET wal_level = logical;
 SELECT pg_create_restore_point('before_migration');
 ```
@@ -794,10 +794,10 @@ pgbouncer:
 
 **Frontend** (limitar conexões):
 ```typescript
-// src/integrations/supabase/client.ts
-export const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
+// src/integrations/apiClient/client.ts
+export const apiClient = createClient(
+  import.meta.env.VITE_API_BASE_URL,
+  import.meta.env.VITE_API_ANON_KEY,
   {
     db: {
       schema: 'public',
@@ -821,9 +821,9 @@ export const supabase = createClient(
 ---
 
 ### **P: Frontend não conecta ao backend (CORS error)**
-**Causa**: Configuração CORS incorreta no Supabase.
+**Causa**: Configuração CORS incorreta no banco.
 
-**Solução** (`supabase/config.toml`):
+**Solução** (`apiClient/config.toml`):
 ```toml
 [api]
 enabled = true
@@ -843,15 +843,15 @@ allowed_headers = ["authorization", "content-type", "x-client-info"]
 
 **Restart**:
 ```bash
-npx supabase stop
-npx supabase start
+npx apiClient stop
+npx apiClient start
 ```
 
 ---
 
 ## 📚 Recursos Adicionais
 
-- [Supabase Docs](https://supabase.com/docs)
+- [PostgreSQL Docs](https://apiClient.com/docs)
 - [PostgreSQL Performance](https://www.postgresql.org/docs/current/performance-tips.html)
 - [Deno Manual](https://deno.land/manual)
 - [Docker Compose](https://docs.docker.com/compose/)

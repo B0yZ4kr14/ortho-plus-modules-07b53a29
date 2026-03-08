@@ -32,7 +32,7 @@ ALTER FUNCTION update_inadimplencia_updated_at()
 
 **Status**: ✅ **CORRIGIDO** (Migration aplicada em 2025-11-15)
 
-**Referência**: [Supabase Docs - Function Search Path](https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable)
+**Referência**: [PostgreSQL Docs - Function Search Path](https://apiClient.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable)
 
 ---
 
@@ -57,7 +57,7 @@ GRANT USAGE ON SCHEMA extensions TO postgres, authenticated, service_role;
 
 **Status**: ✅ **CORRIGIDO** (Migration aplicada em 2025-11-15)
 
-**Referência**: [Supabase Docs - Extension in Public](https://supabase.com/docs/guides/database/database-linter?lint=0014_extension_in_public)
+**Referência**: [PostgreSQL Docs - Extension in Public](https://apiClient.com/docs/guides/database/database-linter?lint=0014_extension_in_public)
 
 ---
 
@@ -65,7 +65,7 @@ GRANT USAGE ON SCHEMA extensions TO postgres, authenticated, service_role;
 
 ### 3. Leaked Password Protection (ALTO) ⚠️
 
-**Problema**: Proteção contra senhas vazadas está desabilitada no Supabase Auth.
+**Problema**: Proteção contra senhas vazadas está desabilitada no Express Auth.
 
 **Impacto**: **ALTO** - Usuários podem usar senhas comprometidas conhecidas
 
@@ -73,7 +73,7 @@ GRANT USAGE ON SCHEMA extensions TO postgres, authenticated, service_role;
 
 **Como Corrigir**:
 
-1. Acesse: [Supabase Dashboard](https://supabase.com/dashboard) → Seu Projeto
+1. Acesse: [Admin Dashboard](https://backend.orthoplus.localm/dashboard) → Seu Projeto
 2. Navegue para: **Authentication** → **Policies**
 3. Encontre: **"Leaked Password Protection"**
 4. **Habilite** a proteção
@@ -81,7 +81,7 @@ GRANT USAGE ON SCHEMA extensions TO postgres, authenticated, service_role;
 
 **Prazo**: **IMEDIATO** ⚠️
 
-**Referência**: [Supabase Docs - Password Security](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection)
+**Referência**: [PostgreSQL Docs - Password Security](https://apiClient.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection)
 
 ---
 
@@ -156,7 +156,7 @@ WHERE n.nspname = 'public';
 
 **Progresso**: 
 - ✅ Logger implementado: `src/lib/logger.ts`
-- ✅ Logger para Edge Functions: `supabase/functions/_shared/logger.ts`
+- ✅ Logger para Edge Functions: `backend/functions/_shared/logger.ts`
 - 🔄 Substituição em andamento: 8/337 (2.3%)
 
 **Prioridade de Substituição**:
@@ -230,7 +230,7 @@ WHERE n.nspname = 'public';
 ## 📚 Recursos Úteis
 
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- [Supabase Security Best Practices](https://supabase.com/docs/guides/platform/security)
+- [PostgreSQL Security Best Practices](https://apiClient.com/docs/guides/platform/security)
 - [PostgreSQL Security](https://www.postgresql.org/docs/current/security.html)
 - [LGPD Compliance Checklist](https://www.gov.br/cidadania/pt-br/acesso-a-informacao/lgpd)
 

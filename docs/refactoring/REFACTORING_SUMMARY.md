@@ -187,7 +187,7 @@ src/
 3. Criar HOC para páginas com CRUD padrão
 
 ### Longo Prazo
-1. Migrar localStorage para backend (Supabase)
+1. Migrar localStorage para backend (PostgreSQL)
 2. Implementar cache e sincronização offline
 3. Adicionar logs e analytics
 

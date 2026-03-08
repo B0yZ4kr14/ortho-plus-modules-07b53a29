@@ -42,7 +42,7 @@ export default defineConfig({
         '**/*.d.ts',
         '**/*.config.*',
         '**/mockData',
-        'src/integrations/supabase/types.ts',
+        'src/integrations/apiClient/types.ts',
       ],
     },
   },

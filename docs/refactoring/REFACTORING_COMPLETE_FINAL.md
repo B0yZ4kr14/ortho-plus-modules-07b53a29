@@ -2,22 +2,22 @@
 
 ## 🎯 Visão Geral
 
-Refatoração abrangente do sistema Ortho+ para migração completa de localStorage para Supabase, criação de componentes reutilizáveis e remoção de código legacy.
+Refatoração abrangente do sistema Ortho+ para migração completa de localStorage para o banco, criação de componentes reutilizáveis e remoção de código legacy.
 
 ---
 
 ## 📋 Fases Implementadas
 
-### FASE 7: Integração Supabase nas Páginas Principais
+### FASE 7: Integração banco nas Páginas Principais
 **Arquivo:** `REFACTORING_PHASE7_COMPLETE.md`
 
-✅ **Pacientes.tsx:** Migrado para `usePatientsSupabase`
-✅ **Financeiro.tsx:** Migrado para `useFinanceiroSupabase`  
-✅ **AgendaClinica.tsx:** Atualizado para usar hooks Supabase
+✅ **Pacientes.tsx:** Migrado para `usePatients`
+✅ **Financeiro.tsx:** Migrado para `useFinanceiro`  
+✅ **AgendaClinica.tsx:** Atualizado para usar hooks PostgreSQL
 ✅ **Hooks Criados:**
-  - `usePatientsSupabase` (com realtime)
-  - `useFinanceiroSupabase` (com métodos adapter)
-  - `useAgendaStore` (já atualizado para Supabase)
+  - `usePatients` (com realtime)
+  - `useFinanceiro` (com métodos adapter)
+  - `useAgendaStore` (já atualizado para o banco)
 
 ### FASE 8: PatientSelector e Limpeza
 **Arquivo:** `REFACTORING_PHASE8_COMPLETE.md`
@@ -36,15 +36,15 @@ Refatoração abrangente do sistema Ortho+ para migração completa de localStor
 
 ### Criados (2 arquivos):
 1. `src/components/shared/PatientSelector.tsx` - Componente reutilizável
-2. `src/modules/pacientes/hooks/usePatientsSupabase.ts` - Hook Supabase
+2. `src/modules/pacientes/hooks/usePatients.ts` - Hook PostgreSQL
 
 ### Modificados (6 arquivos):
-1. `src/pages/Pacientes.tsx` - Usa `usePatientsSupabase`
-2. `src/pages/Financeiro.tsx` - Usa `useFinanceiroSupabase`
-3. `src/pages/AgendaClinica.tsx` - Usa `usePatientsSupabase`
+1. `src/pages/Pacientes.tsx` - Usa `usePatients`
+2. `src/pages/Financeiro.tsx` - Usa `useFinanceiro`
+3. `src/pages/AgendaClinica.tsx` - Usa `usePatients`
 4. `src/pages/PEP.tsx` - Usa `PatientSelector`
 5. `src/modules/pacientes/types/patient.types.ts` - Adicionado `prontuarioId`
-6. `src/modules/financeiro/hooks/useFinanceiroSupabase.ts` - Métodos adapter
+6. `src/modules/financeiro/hooks/useFinanceiro.ts` - Métodos adapter
 
 ### Deletados (5 arquivos):
 1. `src/modules/pacientes/hooks/usePatientsStore.ts`
@@ -59,16 +59,16 @@ Refatoração abrangente do sistema Ortho+ para migração completa de localStor
 
 ### Código:
 - **Linhas Removidas:** ~1.200 linhas de código legacy
-- **Linhas Adicionadas:** ~600 linhas de código Supabase
+- **Linhas Adicionadas:** ~600 linhas de código banco
 - **Resultado Líquido:** -600 linhas (código mais limpo)
 
 ### Arquivos:
 - **5 arquivos** deletados (localStorage)
-- **2 arquivos** criados (Supabase + Componente)
+- **2 arquivos** criados (PostgreSQL + Componente)
 - **6 arquivos** refatorados
 
 ### Funcionalidades:
-- **3 hooks** migrados para Supabase
+- **3 hooks** migrados para o banco
 - **1 componente** reutilizável criado
 - **4 páginas** atualizadas
 - **100%** do localStorage removido
@@ -99,7 +99,7 @@ Refatoração abrangente do sistema Ortho+ para migração completa de localStor
 ❌ Sem backup automático
 ```
 
-### Depois (Supabase):
+### Depois (PostgreSQL):
 ```
 ┌──────────────┐
 │  Component   │
@@ -107,12 +107,12 @@ Refatoração abrangente do sistema Ortho+ para migração completa de localStor
        │
        ↓
 ┌───────────────────────┐
-│  usePatientsSupabase  │
+│  usePatients  │
 └──────┬────────────────┘
        │
        ↓
 ┌──────────────────────────┐
-│  Supabase Client         │
+│  PostgreSQL Client         │
 └──────┬───────────────────┘
        │
        ↓
@@ -148,7 +148,7 @@ Refatoração abrangente do sistema Ortho+ para migração completa de localStor
 **Depois:**
 ```
 1. Acessa /pacientes
-2. usePatientsSupabase carrega do Supabase
+2. usePatients carrega do banco
 3. Adiciona paciente
 4. Inserido no PostgreSQL via RLS
 5. Realtime atualiza lista automaticamente
@@ -168,10 +168,10 @@ Refatoração abrangente do sistema Ortho+ para migração completa de localStor
 **Depois:**
 ```
 1. Acessa /financeiro  
-2. useFinanceiroSupabase carrega contas_receber e contas_pagar
+2. useFinanceiro carrega contas_receber e contas_pagar
 3. Adiciona transação
 4. Inserida em tabela específica (receber/pagar)
-5. Cálculos feitos via queries Supabase
+5. Cálculos feitos via queries PostgreSQL
 6. Dashboard atualizado em tempo real
 ```
 
@@ -191,7 +191,7 @@ Refatoração abrangente do sistema Ortho+ para migração completa de localStor
 3. Busca e seleciona paciente
 4. PEP carrega prontuário do paciente selecionado
 5. Pode trocar paciente a qualquer momento
-6. Dados sincronizados com Supabase
+6. Dados sincronizados com PostgreSQL
 ```
 
 ---
@@ -202,7 +202,7 @@ Refatoração abrangente do sistema Ortho+ para migração completa de localStor
 - **Reutilizável:** Pode ser usado em qualquer módulo
 - **2 Modos:** Completo (seleção) e Compacto (exibição)
 - **Busca em Tempo Real:** Filtragem instantânea
-- **Integrado:** Usa `usePatientsSupabase` automaticamente
+- **Integrado:** Usa `usePatients` automaticamente
 
 ### Props:
 ```typescript
@@ -234,7 +234,7 @@ interface PatientSelectorProps {
 
 ## 🔒 Segurança (RLS Policies)
 
-Todas as tabelas Supabase implementam Row Level Security:
+Todas as tabelas PostgreSQL implementam Row Level Security:
 
 ### Exemplo - Tabela `prontuarios`:
 ```sql
@@ -310,14 +310,14 @@ USING (clinic_id = get_user_clinic_id(auth.uid()));
 
 ## 📝 Padrões Implementados
 
-### 1. **Hook Pattern (Supabase)**
+### 1. **Hook Pattern (PostgreSQL)**
 ```typescript
-export function usePatientsSupabase() {
+export function usePatients() {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const loadPatients = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await apiClient
       .from('prontuarios')
       .select('*')
       .eq('clinic_id', clinicId);
@@ -329,7 +329,7 @@ export function usePatientsSupabase() {
     loadPatients();
     
     // Realtime subscription
-    const subscription = supabase
+    const subscription = apiClient
       .channel('prontuarios_changes')
       .on('postgres_changes', { ... }, loadPatients)
       .subscribe();
@@ -343,9 +343,9 @@ export function usePatientsSupabase() {
 
 ### 2. **Adapter Pattern (Compatibilidade)**
 ```typescript
-// useFinanceiroSupabase retorna interface compatível
+// useFinanceiro retorna interface compatível
 return {
-  // Métodos nativos Supabase
+  // Métodos nativos PostgreSQL
   contasReceber, addContaReceber, ...
   
   // Métodos adapter para compatibilidade
@@ -382,8 +382,8 @@ return {
 - ❌ `module-workflow.test.tsx` - Integração localStorage
 
 ### Testes a Criar (Próximas Fases):
-- [ ] `usePatientsSupabase.test.ts`
-- [ ] `useFinanceiroSupabase.test.ts`
+- [ ] `usePatients.test.ts`
+- [ ] `useFinanceiro.test.ts`
 - [ ] `PatientSelector.test.tsx`
 - [ ] Testes E2E para fluxo de seleção de paciente
 
@@ -392,7 +392,7 @@ return {
 ## 📚 Documentação Gerada
 
 1. **REFACTORING_PHASE7_SUMMARY.md** - Análise inicial e problemas
-2. **REFACTORING_PHASE7_COMPLETE.md** - Migração Supabase
+2. **REFACTORING_PHASE7_COMPLETE.md** - Migração banco
 3. **REFACTORING_PHASE8_COMPLETE.md** - PatientSelector e limpeza
 4. **REFACTORING_COMPLETE_FINAL.md** - Este documento (consolidado)
 
@@ -402,11 +402,11 @@ return {
 
 ### Imediato:
 - [ ] Validar fluxo completo em produção
-- [ ] Monitorar logs de erro Supabase
+- [ ] Monitorar logs de erro banco
 - [ ] Verificar performance de queries
 
 ### Curto Prazo:
-- [ ] Criar testes unitários para hooks Supabase
+- [ ] Criar testes unitários para hooks PostgreSQL
 - [ ] Implementar cache de pacientes recentemente acessados
 - [ ] Adicionar loading skeletons em PatientSelector
 
@@ -427,7 +427,7 @@ return {
 A refatoração foi **100% concluída** com sucesso:
 
 ✅ **localStorage eliminado** completamente
-✅ **Supabase integrado** em todos os módulos
+✅ **PostgreSQL integrado** em todos os módulos
 ✅ **PatientSelector** reutilizável criado
 ✅ **PEP funcional** com seleção real de pacientes
 ✅ **-600 linhas** de código morto removidas
@@ -445,4 +445,4 @@ O sistema Ortho+ agora é um **SaaS modular profissional** com:
 **Status:** ✅ REFATORAÇÃO COMPLETA
 **Data:** 2025-01-13
 **Desenvolvedor:** TSI Telecom
-**Versão:** 2.0.0 (Supabase)
+**Versão:** 2.0.0 (PostgreSQL)

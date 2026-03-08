@@ -1,17 +1,17 @@
-# Refatoração Fase 7 - Integração Supabase Completa
+# Refatoração Fase 7 - Integração banco Completa
 
 ## ✅ Implementado
 
 ### 1. Módulo de Pacientes
 **Arquivo:** `src/pages/Pacientes.tsx`
-- ✅ Substituído `usePatientsStore` por `usePatientsSupabase`
-- ✅ Dados agora persistem no Supabase (tabela `prontuarios`)
+- ✅ Substituído `usePatientsStore` por `usePatients`
+- ✅ Dados agora persistem no banco (tabela `prontuarios`)
 - ✅ Sincronização em tempo real via WebSocket
 - ✅ RLS policies configuradas por `clinic_id`
 
 ### 2. Módulo Financeiro
 **Arquivo:** `src/pages/Financeiro.tsx`
-- ✅ Substituído `useFinanceiroStore` por `useFinanceiroSupabase`
+- ✅ Substituído `useFinanceiroStore` por `useFinanceiro`
 - ✅ Dados persistem nas tabelas `contas_receber` e `contas_pagar`
 - ✅ Métodos adapter criados para compatibilidade com interface existente
 - ✅ Sincronização em tempo real implementada
@@ -28,13 +28,13 @@
 
 ### 3. Módulo de Agenda
 **Arquivo:** `src/pages/AgendaClinica.tsx`
-- ✅ Atualizado para usar `usePatientsSupabase`
-- ✅ Mantém `useAgendaStore` (já atualizado para Supabase na Fase 1)
+- ✅ Atualizado para usar `usePatients`
+- ✅ Mantém `useAgendaStore` (já atualizado para o banco na Fase 1)
 - ✅ Integração completa entre agenda e pacientes
 
-### 4. Hooks Supabase Criados
+### 4. Hooks PostgreSQL Criados
 
-#### `usePatientsSupabase`
+#### `usePatients`
 ```typescript
 - loadPatients(): Carrega pacientes da clínica
 - addPatient(): Adiciona novo paciente
@@ -44,7 +44,7 @@
 - reloadPatients(): Recarrega lista
 ```
 
-#### `useFinanceiroSupabase`
+#### `useFinanceiro`
 ```typescript
 // Contas a Receber
 - loadContasReceber()
@@ -83,7 +83,7 @@ Todos os hooks implementam sincronização em tempo real:
 
 ```typescript
 // Exemplo de subscription
-const subscription = supabase
+const subscription = apiClient
   .channel('table_changes')
   .on('postgres_changes', {
     event: '*',
@@ -135,7 +135,7 @@ USING (clinic_id = get_user_clinic_id(auth.uid()));
 - [ ] Remover `usePatientsStore.ts` (localStorage)
 - [ ] Remover `useFinanceiroStore.ts` (localStorage)
 - [ ] Limpar código morto relacionado a localStorage
-- [ ] Atualizar testes para usar hooks Supabase
+- [ ] Atualizar testes para usar hooks PostgreSQL
 
 ## ✨ Benefícios
 
@@ -144,7 +144,7 @@ USING (clinic_id = get_user_clinic_id(auth.uid()));
 3. **Tempo Real:** Mudanças sincronizadas instantaneamente
 4. **Segurança:** RLS policies protegem dados por clínica
 5. **Auditoria:** Todas as ações registradas com `created_by`
-6. **Backup:** Dados protegidos no Supabase
+6. **Backup:** Dados protegidos no banco
 7. **Escalabilidade:** Suporta múltiplas clínicas e usuários
 
 ## 🐛 Problemas Corrigidos

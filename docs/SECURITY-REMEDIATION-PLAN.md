@@ -254,14 +254,14 @@ WHERE p.prosecdef = true
 
 ---
 
-### A2: Habilitar "Leaked Password Protection" no Supabase Auth
+### A2: Habilitar "Leaked Password Protection" no Express Auth
 
 **Vulnerabilidade**: Sistema não valida se senhas escolhidas estão em listas de senhas vazadas (haveibeenpwned).
 
-**Ação Manual (Supabase Dashboard)**:
+**Ação Manual (Admin Dashboard)**:
 
 ```markdown
-1. Acesse: Supabase Dashboard > Authentication > Settings
+1. Acesse: Admin Dashboard > Authentication > Settings
 2. Navegue até: Password Requirements
 3. Habilite: "Enable Leaked Password Protection"
 4. Salve as configurações
@@ -295,7 +295,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 ALTER TABLE public.admin_configurations
 ADD COLUMN IF NOT EXISTS config_data_encrypted BYTEA;
 
--- 3. Criar função para criptografar (usa chave do Supabase Vault)
+-- 3. Criar função para criptografar (usa chave do banco Vault)
 CREATE OR REPLACE FUNCTION public.encrypt_config_data(data JSONB)
 RETURNS BYTEA
 LANGUAGE plpgsql
@@ -393,7 +393,7 @@ SELECT extname, extversion
 FROM pg_extension
 WHERE extnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public');
 
--- 3. Mover extensões compatíveis (CUIDADO: algumas extensões Supabase não podem ser movidas)
+-- 3. Mover extensões compatíveis (CUIDADO: algumas extensões PostgreSQL não podem ser movidas)
 -- Exemplo: uuid-ossp, pgcrypto são seguras de mover
 
 ALTER EXTENSION "uuid-ossp" SET SCHEMA extensions;
@@ -421,8 +421,8 @@ ORDER BY n.nspname, e.extname;
 
 ```typescript
 // Arquivos a revisar:
-// - src/hooks/usePatientsStore.ts (REMOVER - já migrado para Supabase)
-// - src/hooks/useFinanceiroStore.ts (REMOVER - já migrado para Supabase)
+// - src/hooks/usePatientsStore.ts (REMOVER - já migrado para o banco)
+// - src/hooks/useFinanceiroStore.ts (REMOVER - já migrado para o banco)
 // - Qualquer outro hook que use localStorage
 
 // Padrão de busca:
@@ -446,16 +446,16 @@ ORDER BY n.nspname, e.extname;
 // Manter apenas client_id (que é público)
 ```
 
-2. **Armazenar no Supabase Secrets** (via Lovable Cloud):
+2. **Armazenar no banco Secrets** (via OrthoPlus Cloud):
 ```bash
-# Via interface Lovable Cloud, adicionar secret:
+# Via interface OrthoPlus Cloud, adicionar secret:
 # Nome: GOOGLE_OAUTH_CLIENT_SECRET
 # Valor: <seu-client-secret-aqui>
 ```
 
 3. **Usar em Edge Function**:
 ```typescript
-// supabase/functions/oauth-google/index.ts
+// backend/functions/oauth-google/index.ts
 const clientSecret = Deno.env.get('GOOGLE_OAUTH_CLIENT_SECRET');
 ```
 
@@ -468,14 +468,14 @@ const clientSecret = Deno.env.get('GOOGLE_OAUTH_CLIENT_SECRET');
 **Exemplo para Edge Function**:
 
 ```typescript
-// supabase/functions/_shared/rateLimiter.ts
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+// backend/functions/_shared/rateLimiter.ts
+import { createClient } from 'https://esm.sh/@/lib/api/apiClient@2';
 
 const RATE_LIMIT_WINDOW = 60; // 1 minuto
 const MAX_REQUESTS = 10; // 10 requisições por minuto
 
 export async function checkRateLimit(
-  supabase: any,
+  apiClient: any,
   userId: string,
   endpoint: string
 ): Promise<boolean> {
@@ -483,7 +483,7 @@ export async function checkRateLimit(
   const windowStart = now - RATE_LIMIT_WINDOW;
 
   // Contar requisições no último minuto
-  const { count, error } = await supabase
+  const { count, error } = await apiClient
     .from('rate_limit_log')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
@@ -497,7 +497,7 @@ export async function checkRateLimit(
   }
 
   // Registrar requisição atual
-  await supabase.from('rate_limit_log').insert({
+  await apiClient.from('rate_limit_log').insert({
     user_id: userId,
     endpoint,
     timestamp: now,
@@ -556,11 +556,11 @@ console.log('User data:', sanitizeLogData(userData));
 
 ## ✅ Validação Pós-Implementação
 
-### 1. Executar Supabase Linter Novamente
+### 1. Executar Database Linter Novamente
 
 ```bash
-# Via Lovable Cloud ou Supabase CLI
-supabase db lint
+# Via OrthoPlus Cloud ou Backend CLI
+npx prisma validate
 ```
 
 ### 2. Testes de Penetração Básicos
@@ -637,7 +637,7 @@ npm audit --audit-level=high
 - [ ] Treinamento de equipe
 
 ### VALIDAÇÃO FINAL
-- [ ] Executar Supabase Linter
+- [ ] Executar Database Linter
 - [ ] Testes de penetração
 - [ ] Security scan automatizado
 - [ ] Atualizar SECURITY.md
@@ -673,7 +673,7 @@ DROP FUNCTION IF EXISTS public.is_admin();
 
 ## 📚 Referências
 
-- [Supabase RLS Best Practices](https://supabase.com/docs/guides/auth/row-level-security)
+- [PostgreSQL RLS Best Practices](https://apiClient.com/docs/guides/auth/row-level-security)
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 - [PostgreSQL Security](https://www.postgresql.org/docs/current/sql-security-label.html)
 - [LGPD Compliance Guide](https://www.gov.br/cidadania/pt-br/acesso-a-informacao/lgpd)

@@ -122,11 +122,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { usePatients } from './usePatients';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api/apiClient';
 
-// Mock Supabase
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
+// Mock PostgreSQL
+vi.mock('@/integrations/apiClient/client', () => ({
+  apiClient: {
     from: vi.fn(),
     auth: {
       getUser: vi.fn()
@@ -158,7 +158,7 @@ describe('usePatients', () => {
       { id: '2', name: 'Maria Santos', cpf: '987.654.321-00' }
     ];
 
-    // Mock Supabase response
+    // Mock PostgreSQL response
     const selectMock = vi.fn().mockReturnValue({
       eq: vi.fn().mockResolvedValue({
         data: mockPatients,
@@ -166,7 +166,7 @@ describe('usePatients', () => {
       })
     });
 
-    vi.mocked(supabase.from).mockReturnValue({
+    vi.mocked(apiClient.get).mockReturnValue({
       select: selectMock
     } as any);
 
@@ -190,7 +190,7 @@ describe('usePatients', () => {
       })
     });
 
-    vi.mocked(supabase.from).mockReturnValue({
+    vi.mocked(apiClient.get).mockReturnValue({
       select: selectMock
     } as any);
 
@@ -277,25 +277,25 @@ npm run test:ui
 
 ### Testar Edge Functions
 
-**supabase/functions/_tests/getMyModules.test.ts:**
+**backend/functions/_tests/getMyModules.test.ts:**
 ```typescript
 import { assertEquals } from 'https://deno.land/std@0.168.0/testing/asserts.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@/lib/api/apiClient@2';
 
 Deno.test('getMyModules should return active modules', async () => {
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_ANON_KEY')!
+  const apiClient = createClient(
+    Deno.env.get('API_BASE_URL')!,
+    Deno.env.get('API_ANON_KEY')!
   );
 
   // Criar usuário de teste
-  const { data: { user } } = await supabase.auth.signUp({
+  const { data: { user } } = await auth.signUp({
     email: 'test@example.com',
     password: 'Test123!@#'
   });
 
   // Chamar Edge Function
-  const { data, error } = await supabase.functions.invoke('getMyModules', {
+  const { data, error } = await apiClient.post('getMyModules', {
     body: { clinicId: user?.user_metadata?.clinic_id }
   });
 
@@ -304,7 +304,7 @@ Deno.test('getMyModules should return active modules', async () => {
   assertEquals(data.length > 0, true);
 
   // Cleanup
-  await supabase.auth.admin.deleteUser(user!.id);
+  await auth.admin.deleteUser(user!.id);
 });
 ```
 
@@ -312,10 +312,10 @@ Deno.test('getMyModules should return active modules', async () => {
 
 ```bash
 # Testar Edge Function localmente
-deno test --allow-net --allow-env supabase/functions/_tests/
+deno test --allow-net --allow-env backend/functions/_tests/
 
-# Testar contra Supabase remoto
-SUPABASE_URL=<url> SUPABASE_ANON_KEY=<key> deno test
+# Testar contra PostgreSQL remoto
+API_BASE_URL=<url> API_ANON_KEY=<key> deno test
 ```
 
 ---

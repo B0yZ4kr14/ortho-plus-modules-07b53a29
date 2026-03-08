@@ -136,15 +136,15 @@ function MyComponent() {
 ### Como Verificar Role no Backend (Edge Functions)
 
 ```typescript
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@/lib/api/apiClient@2';
 
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL')!,
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const apiClient = createClient(
+  Deno.env.get('API_BASE_URL')!,
+  Deno.env.get('DB_SERVICE_KEY')!
 );
 
 // Verificar se usuário é admin
-const { data: profile } = await supabase
+const { data: profile } = await apiClient
   .from('profiles')
   .select('app_role')
   .eq('id', userId)
@@ -178,11 +178,11 @@ if (profile?.app_role !== 'ADMIN') {
 ```typescript
 import { checkRateLimit, getClientIp } from '../_shared/rateLimiter.ts';
 
-const supabase = createClient(/*...*/);
+const apiClient = getApiClient();
 const ipAddress = getClientIp(req);
 
 const rateLimitResult = await checkRateLimit(
-  supabase,
+  apiClient,
   userId,
   ipAddress,
   'endpoint-name'
@@ -260,7 +260,7 @@ SELECT public.validate_password_strength('MinhaSenha123!@#');
 
 ```typescript
 // Edge Function: Validar antes de criar usuário
-const isPasswordStrong = await supabase.rpc('validate_password_strength', { 
+const isPasswordStrong = await apiClient.rpc('validate_password_strength', { 
   password 
 });
 
@@ -351,13 +351,13 @@ serve(async (req) => {
 ```typescript
 // NUNCA FAÇA ISSO!
 const query = `SELECT * FROM patients WHERE name = '${userInput}'`;
-await supabase.rpc('execute_sql', { query });
+await apiClient.rpc('execute_sql', { query });
 ```
 
 **✅ CORRETO:**
 ```typescript
-// Use o query builder do Supabase
-const { data, error } = await supabase
+// Use o query builder do banco
+const { data, error } = await apiClient
   .from('patients')
   .select('*')
   .eq('full_name', userInput); // Prepared statement automático
@@ -375,7 +375,7 @@ const { data, error } = await supabase
 
 ```typescript
 // Exemplo: Registrar criação de paciente
-await supabase.from('audit_logs').insert({
+await apiClient.from('audit_logs').insert({
   clinic_id,
   user_id: auth.uid(),
   action: 'PATIENT_CREATED',
@@ -417,9 +417,9 @@ ORDER BY created_at DESC;
 
 ### Para Desenvolvedores
 
-1. **Nunca exponha `SUPABASE_SERVICE_ROLE_KEY` no frontend**
+1. **Nunca exponha `DB_SERVICE_KEY` no frontend**
    - Use apenas em Edge Functions (backend)
-   - Frontend deve usar `SUPABASE_ANON_KEY`
+   - Frontend deve usar `API_ANON_KEY`
 
 2. **Sempre use RLS policies para controle de acesso**
    - Não confie apenas em lógica de frontend
@@ -430,7 +430,7 @@ ORDER BY created_at DESC;
    - Server-side: Segurança (não confie no cliente)
 
 4. **Use prepared statements**
-   - Supabase query builder faz isso automaticamente
+   - PostgreSQL query builder faz isso automaticamente
    - Nunca concatene strings SQL
 
 5. **Rotate secrets periodicamente**
@@ -445,7 +445,7 @@ ORDER BY created_at DESC;
 
 1. **Habilite MFA (Multi-Factor Authentication)**
    - Obrigatório para contas ADMIN e ROOT
-   - Supabase suporta TOTP (Google Authenticator)
+   - PostgreSQL suporta TOTP (Google Authenticator)
 
 2. **Configure alertas de segurança**
    - Rate limit exceeded
@@ -454,7 +454,7 @@ ORDER BY created_at DESC;
    - Abuse reports criados
 
 3. **Backups regulares**
-   - Automáticos: Diários (Supabase faz isso)
+   - Automáticos: Diários (PostgreSQL faz isso)
    - Testes de restore: Mensais
    - Retention: 30 dias (LGPD: mínimo 6 meses para auditorias)
 
@@ -469,7 +469,7 @@ ORDER BY created_at DESC;
 
 ### Antes do Deploy
 
-- [ ] **Habilitar "Leaked Password Protection"** no Supabase Auth
+- [ ] **Habilitar "Leaked Password Protection"** no Express Auth
 - [ ] **Configurar alertas de segurança** (email para admins)
 - [ ] **Backup automático configurado** e testado
 - [ ] **SSL/TLS habilitado** (Lovable faz automaticamente)

@@ -10,7 +10,7 @@
 
 **Status:** 🟢 **PRODUCTION-READY - 100% VALIDADO**
 
-Todas as inconsistências arquiteturais foram identificadas e corrigidas. O sistema está agora completamente alinhado com a arquitetura Supabase + Edge Functions aprovada.
+Todas as inconsistências arquiteturais foram identificadas e corrigidas. O sistema está agora completamente alinhado com a arquitetura PostgreSQL + Edge Functions aprovada.
 
 ---
 
@@ -19,7 +19,7 @@ Todas as inconsistências arquiteturais foram identificadas e corrigidas. O sist
 ### 1. Arquitetura de Módulos ✅
 
 **Problema Identificado:**
-- Duas páginas de gestão de módulos coexistindo (uma antiga com localStorage, uma nova com Supabase)
+- Duas páginas de gestão de módulos coexistindo (uma antiga com localStorage, uma nova com PostgreSQL)
 - Rota `/modulos` apontando para página obsoleta `GerenciamentoModulos.tsx`
 - Inconsistência no sistema de notificações (sonner vs useToast)
 
@@ -33,7 +33,7 @@ Todas as inconsistências arquiteturais foram identificadas e corrigidas. O sist
 
 **Resultado:**
 - ✅ Rota única `/settings/modules` para gestão de módulos (ADMIN-only)
-- ✅ Integração 100% Supabase via Edge Functions (get-my-modules, toggle-module-state)
+- ✅ Integração 100% PostgreSQL via Edge Functions (get-my-modules, toggle-module-state)
 - ✅ Sistema de notificações padronizado em toda aplicação
 - ✅ Validação de dependências funcionando corretamente
 - ✅ Animações confetti e shake nos toggles de módulos
@@ -65,7 +65,7 @@ toast({ title: 'Erro', description: 'Mensagem', variant: 'destructive' });
 
 ---
 
-### 3. Integração Supabase ✅
+### 3. Integração banco ✅
 
 **Validação de Tabelas:**
 
@@ -305,7 +305,7 @@ const { hasModuleAccess } = useAuth();
 ## 🏆 CONQUISTAS DA VALIDAÇÃO
 
 ### Técnicas
-1. ✅ **Arquitetura 100% Supabase:** Sem dependências localStorage em módulos críticos
+1. ✅ **Arquitetura 100% PostgreSQL:** Sem dependências localStorage em módulos críticos
 2. ✅ **Edge Functions Funcionais:** Todas as 30+ funções operacionais
 3. ✅ **Sistema de Notificações Unificado:** useToast em 100% do código
 4. ✅ **Componentes Reutilizáveis:** Biblioteca completa implementada

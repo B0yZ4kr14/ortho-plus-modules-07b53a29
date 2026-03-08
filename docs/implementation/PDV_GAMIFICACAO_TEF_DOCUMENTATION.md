@@ -370,7 +370,7 @@ graph LR
 - **1** cópia off-site
 
 **Implementação Ortho+:**
-- 1 cópia local (Supabase Storage)
+- 1 cópia local (MinIO Storage)
 - 1 cópia AWS S3 (região primária)
 - 1 cópia Google Cloud (região secundária)
 
@@ -531,7 +531,7 @@ INSERT INTO vendedor_metas (
 
 ### 2. Cron Jobs (Automação)
 
-**Configurar no Supabase:**
+**Configurar no banco:**
 
 ```sql
 -- Processar metas e rankings (a cada hora)
@@ -540,7 +540,7 @@ SELECT cron.schedule(
   '0 * * * *',
   $$
   SELECT net.http_post(
-    url := 'https://yxpoqjyfgotkytwtifau.supabase.co/functions/v1/processar-metas-gamificacao',
+    url := 'https://yxpoqjyfgotkytwtifau.api/processar-metas-gamificacao',
     headers := '{"Authorization": "Bearer ' || current_setting('app.settings.service_role_key') || '"}'::jsonb
   );
   $$
@@ -552,7 +552,7 @@ SELECT cron.schedule(
   '0 */6 * * *',
   $$
   SELECT net.http_post(
-    url := 'https://yxpoqjyfgotkytwtifau.supabase.co/functions/v1/replicate-backup',
+    url := 'https://yxpoqjyfgotkytwtifau.api/replicate-backup',
     headers := '{"Authorization": "Bearer ' || current_setting('app.settings.service_role_key') || '"}'::jsonb
   );
   $$
@@ -564,7 +564,7 @@ SELECT cron.schedule(
 **Teste de TEF (Homologação):**
 ```bash
 curl -X POST \
-  https://yxpoqjyfgotkytwtifau.supabase.co/functions/v1/processar-pagamento-tef \
+  https://yxpoqjyfgotkytwtifau.api/processar-pagamento-tef \
   -H "Content-Type: application/json" \
   -d '{
     "clinic_id": "uuid",
@@ -578,7 +578,7 @@ curl -X POST \
 **Teste de Metas:**
 ```bash
 curl -X POST \
-  https://yxpoqjyfgotkytwtifau.supabase.co/functions/v1/processar-metas-gamificacao \
+  https://yxpoqjyfgotkytwtifau.api/processar-metas-gamificacao \
   -H "Authorization: Bearer SERVICE_ROLE_KEY"
 ```
 

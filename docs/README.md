@@ -1,6 +1,6 @@
 # 📚 Documentação Ortho+ SaaS v4.0
 
-> Sistema de Gestão Odontológica B2B Multitenant com PostgreSQL no Supabase
+> Sistema de Gestão Odontológica B2B Multitenant com PostgreSQL no banco
 
 ---
 
@@ -34,7 +34,7 @@
 | Guia | Descrição |
 |------|-----------|
 | [01-ARQUITETURA-GERAL](./GUIAS-TECNICO/01-ARQUITETURA-GERAL.md) | Arquitetura completa com diagramas |
-| [02-BACKEND-SUPABASE](./GUIAS-TECNICO/02-BACKEND-SUPABASE.md) | PostgreSQL, RLS, Auth, Storage |
+| [01-ARQUITETURA-GERAL]../GUIAS-TECNICO/01-ARQUITETURA-GERAL.md) | PostgreSQL, RLS, Auth, Storage |
 | [03-EDGE-FUNCTIONS](./GUIAS-TECNICO/03-EDGE-FUNCTIONS.md) | Funções serverless (Deno) |
 | [04-AUTENTICACAO-RLS](./GUIAS-TECNICO/04-AUTENTICACAO-RLS.md) | Auth + Row Level Security |
 | [05-MODULOS-DEPENDENCIAS](./GUIAS-TECNICO/05-MODULOS-DEPENDENCIAS.md) | Sistema modular plug-and-play |
@@ -70,7 +70,7 @@
 
 | Documento | Descrição |
 |-----------|-----------|
-| [01-REST-API](./API-REFERENCE/01-REST-API.md) | Endpoints REST do Supabase |
+| [01-REST-API](./API-REFERENCE/01-REST-API.md) | Endpoints REST do banco |
 | [02-EDGE-FUNCTIONS-API](./API-REFERENCE/02-EDGE-FUNCTIONS-API.md) | Edge Functions documentadas |
 | [03-WEBHOOKS](./API-REFERENCE/03-WEBHOOKS.md) | Webhooks disponíveis |
 | [04-SCHEMAS](./API-REFERENCE/04-SCHEMAS.md) | Schemas Zod/TypeScript |
@@ -101,17 +101,17 @@
 
 ---
 
-## 🗄️ Backend: PostgreSQL no Supabase
+## 🗄️ Backend: PostgreSQL no banco
 
-Este sistema **roda 100% em PostgreSQL 15.x hospedado no Supabase**.
+Este sistema **roda 100% em PostgreSQL 15.x hospedado no banco**.
 
 ### O que isso significa?
 - ✅ **Banco de dados relacional** robusto e escalável
 - ✅ **Row Level Security (RLS)** para segurança por linha
 - ✅ **Triggers, functions e policies** em SQL nativo
-- ✅ **Auto-scaling gerenciado** pelo Supabase
+- ✅ **Auto-scaling gerenciado** pelo banco
 - ✅ **Backups automáticos diários**
-- ✅ **PostgREST API** gerada automaticamente
+- ✅ **Express REST API** gerada automaticamente
 - ✅ **Realtime subscriptions** via WebSockets
 - ✅ **Storage integrado** para arquivos (radiografias, PEP)
 
@@ -119,9 +119,9 @@ Este sistema **roda 100% em PostgreSQL 15.x hospedado no Supabase**.
 ```
 Frontend (React + Vite)
     ↓
-Supabase Client
+PostgreSQL Client
     ↓
-PostgREST API
+Express REST API
     ↓
 PostgreSQL 15.x
     ↓
@@ -129,7 +129,7 @@ Row Level Security (RLS)
 ```
 
 ### Documentação Oficial
-- **Supabase:** [https://supabase.com/docs](https://supabase.com/docs)
+- **PostgreSQL:** [https://apiClient.com/docs](https://apiClient.com/docs)
 - **PostgreSQL RLS:** [https://www.postgresql.org/docs/15/ddl-rowsecurity.html](https://www.postgresql.org/docs/15/ddl-rowsecurity.html)
 
 ---
@@ -144,11 +144,11 @@ Row Level Security (RLS)
 - **Zustand** (client state)
 - **React Router v6**
 
-### Backend (PostgreSQL no Supabase)
+### Backend (PostgreSQL no banco)
 - **PostgreSQL 15.x**
-- **PostgREST** (REST API)
-- **Supabase Auth** (JWT)
-- **Supabase Storage** (S3-compatible)
+- **Express** (REST API)
+- **Express Auth** (JWT)
+- **MinIO Storage** (S3-compatible)
 - **Edge Functions** (Deno runtime)
 
 ### Infraestrutura

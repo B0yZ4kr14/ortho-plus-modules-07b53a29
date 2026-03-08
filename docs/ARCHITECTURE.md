@@ -33,7 +33,7 @@ src/
 │   │   └── ComercialDashboard.tsx
 │   └── [módulo]/
 └── integrations/
-    └── supabase/        # Integração com backend
+    └── apiClient/        # Integração com backend
 ```
 
 ## Padrões Arquiteturais
@@ -113,7 +113,7 @@ const {
 ```mermaid
 graph TD
     A[Componente React] -->|useQuery| B[React Query]
-    B -->|Supabase Client| C[Supabase Backend]
+    B -->|PostgreSQL Client| C[PostgreSQL Backend]
     C -->|RLS Policies| D[PostgreSQL]
     D -->|Real-time| C
     C -->|WebSocket| B
@@ -124,7 +124,7 @@ graph TD
 
 ### Row Level Security (RLS)
 - Todas as queries filtram por `clinic_id` automaticamente
-- Políticas de RLS no Supabase garantem isolamento multi-tenant
+- Políticas de RLS no banco garantem isolamento multi-tenant
 
 ### Controle de Acesso
 - Roles: `ADMIN` e `MEMBER`
@@ -153,7 +153,7 @@ src/modules/patients/
 │   ├── use-cases/CreatePatient.ts
 │   └── dtos/PatientDTO.ts
 ├── infrastructure/
-│   └── repositories/SupabasePatientRepository.ts
+│   └── repositories/DbPatientRepository.ts
 └── presentation/
     ├── components/PatientList.tsx
     └── pages/PatientsPage.tsx

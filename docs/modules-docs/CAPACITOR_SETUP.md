@@ -286,7 +286,7 @@ Antes de publicar na loja de apps:
 - [ ] Notificações de sucesso/erro funcionando
 - [ ] Interface responsiva em diferentes tamanhos de tela
 - [ ] Performance aceitável (leitura < 2 segundos)
-- [ ] Atualização em tempo real no Supabase
+- [ ] Atualização em tempo real no banco
 
 ---
 

@@ -71,7 +71,7 @@ const log = eventBus.getEventLog();
 #### AuditLogHandler
 **Arquivo:** `src/core/application/handlers/AuditLogHandler.ts`
 
-**Função:** Persiste todos os eventos na tabela `audit_logs` do Supabase
+**Função:** Persiste todos os eventos na tabela `audit_logs` do banco
 
 **Dados salvos:**
 - Event ID
@@ -197,7 +197,7 @@ sequenceDiagram
     EventBus->>Handlers: NotificationHandler
     EventBus->>Handlers: AuditLogHandler
     Handlers-->>UI: Toast notification
-    Handlers-->>Supabase: Log to audit_logs
+    Handlers-->>PostgreSQL: Log to audit_logs
 ```
 
 ---
