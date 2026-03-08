@@ -54,7 +54,7 @@ export interface Requisicao {
 export interface Movimentacao {
   id?: string;
   produtoId: string;
-  tipo: "ENTRADA" | "SAIDA" | "AJUSTE" | "PERDA" | "VENCIMENTO";
+  tipo: "ENTRADA" | "SAIDA" | "AJUSTE" | "PERDA" | "VENCIMENTO" | "DEVOLUCAO";
   quantidade: number;
   lote?: string;
   dataValidade?: string;

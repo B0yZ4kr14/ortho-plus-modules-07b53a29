@@ -1,3 +1,4 @@
+import { useAuthAPI } from '@/contexts/AuthContextAPI';
 import { useState } from 'react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,8 +36,9 @@ export default function EstoqueRequisicoes() {
     id: null,
   });
 
-  const currentUser = 'Usuário Atual'; // TODO: Integrar com sistema de autenticação
-  const isAdmin = true; // TODO: Integrar com sistema de roles
+  const { user: authUser } = useAuthAPI();
+  const currentUser = authUser?.full_name ?? 'Usuário Atual';
+  const isAdmin = authUser?.app_role === 'ADMIN' || authUser?.app_role === 'ROOT';
 
   const handleSubmit = async (data: Requisicao) => {
     try {

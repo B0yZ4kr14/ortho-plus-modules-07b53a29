@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuthAPI } from '@/contexts/AuthContextAPI';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { LoadingState } from '@/components/shared/LoadingState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,7 +29,8 @@ export default function EstoqueMovimentacoes() {
   const [searchTerm, setSearchTerm] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState<string>('TODOS');
 
-  const currentUser = 'Usuário Atual'; // TODO: Integrar com sistema de autenticação
+  const { user: authUser } = useAuthAPI();
+  const currentUser = authUser?.full_name ?? 'Usuário Atual';
 
   const handleSubmit = async (data: Movimentacao) => {
     try {
