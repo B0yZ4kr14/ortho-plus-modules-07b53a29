@@ -1,13 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Gestão de Módulos (ADMIN)', () => {
   test.beforeEach(async ({ page }) => {
     // Login como ADMIN
-    await page.goto('/auth');
-    await page.getByLabel(/email/i).fill('admin@orthomais.com');
-    await page.getByLabel(/senha/i).fill('Admin123!');
-    await page.getByRole('button', { name: /entrar/i }).click();
-    await page.waitForURL('/dashboard');
+    // Auth token injected via fixtures.ts
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
     
     // Navegar para configurações -> módulos
     await page.getByRole('link', { name: /configurações/i }).click();
@@ -68,7 +66,6 @@ test.describe('Gestão de Módulos (ADMIN)', () => {
     
     if (financeiroState === 'checked') {
       await financeiroToggle.click();
-      await page.waitForTimeout(500);
     }
     
     // Tentar ativar SPLIT_PAGAMENTO
@@ -88,14 +85,12 @@ test.describe('Gestão de Módulos (ADMIN)', () => {
     const financeiroToggle = page.locator('[data-module="FINANCEIRO"]').locator('button[role="switch"]');
     if (await financeiroToggle.getAttribute('data-state') === 'unchecked') {
       await financeiroToggle.click();
-      await page.waitForTimeout(500);
     }
     
     // Ativar SPLIT_PAGAMENTO (depende de FINANCEIRO)
     const splitToggle = page.locator('[data-module="SPLIT_PAGAMENTO"]').locator('button[role="switch"]');
     if (await splitToggle.getAttribute('data-state') === 'unchecked' && !await splitToggle.isDisabled()) {
       await splitToggle.click();
-      await page.waitForTimeout(500);
     }
     
     // Tentar desativar FINANCEIRO (deve falhar)

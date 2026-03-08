@@ -1,12 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('PEP (Prontuário Eletrônico) Workflows', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/login');
-    await page.fill('input[name="email"]', 'admin@orthoplus.com');
-    await page.fill('input[name="password"]', 'Admin123!');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+    // Auth token injected via fixtures.ts
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('should create new prontuário for patient', async ({ page }) => {
@@ -20,7 +18,7 @@ test.describe('PEP (Prontuário Eletrônico) Workflows', () => {
     await page.fill('textarea[name="queixa_principal"]', 'Dor no dente 36');
     await page.fill('textarea[name="historico_doenca_atual"]', 'Paciente relata dor há 3 dias');
     
-    await page.click('button[type="submit"]');
+    await page.getByRole('button', { name: /entrar/i }).click();
     await expect(page.locator('.toast')).toContainText('Prontuário criado com sucesso');
   });
 
@@ -82,7 +80,7 @@ test.describe('PEP (Prontuário Eletrônico) Workflows', () => {
     await page.fill('textarea[name="evolucao"]', 'Paciente retornou para avaliação. Dor reduzida. Seguir com tratamento.');
     await page.fill('input[name="procedimento_realizado"]', 'Consulta de retorno');
     
-    await page.click('button[type="submit"]');
+    await page.getByRole('button', { name: /entrar/i }).click();
     await expect(page.locator('.toast')).toContainText('Evolução registrada com sucesso');
   });
 
@@ -148,7 +146,6 @@ test.describe('PEP (Prontuário Eletrônico) Workflows', () => {
   test('should search prontuários by patient name', async ({ page }) => {
     await page.goto('/prontuario');
     await page.fill('[data-testid="prontuario-search"]', 'João');
-    await page.waitForTimeout(500);
     
     const rows = page.locator('[data-testid="prontuario-row"]');
     const count = await rows.count();

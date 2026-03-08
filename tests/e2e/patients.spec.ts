@@ -1,12 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Gestão de Pacientes', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/auth');
-    await page.getByLabel(/email/i).fill('admin@orthomais.com');
-    await page.getByLabel(/senha/i).fill('Admin123!');
-    await page.getByRole('button', { name: /entrar/i }).click();
-    await page.waitForURL('/dashboard');
+    // Auth token injected via fixtures.ts
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
     
     await page.goto('/pacientes');
   });

@@ -1,0 +1,18 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:8080",
+      "localStorage": [
+        {
+          "name": "ortho-theme",
+          "value": "professional-dark"
+        },
+        {
+          "name": "access_token",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJlbWFpbCI6ImFkbWluQG9ydGhvbWFpcy5jb20iLCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImlhdCI6MTc3Mjg0NzIyMiwiZXhwIjoxNzcyODUwODIyfQ.-HytjKubBG5hZmn5IlIOVDj3p7m96HD3BMkBfoBHE2o"
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 /**
  * FASE 5 (E2E Tests) - Gestão de Módulos
@@ -8,15 +8,13 @@ import { test, expect } from '@playwright/test';
 test.describe('Gestão de Módulos', () => {
   test.beforeEach(async ({ page }) => {
     // Login como admin
-    await page.goto('/auth');
-    await page.getByLabel(/email/i).fill('admin@orthomais.com');
-    await page.getByLabel(/senha/i).fill('Admin123!');
-    await page.getByRole('button', { name: /entrar/i }).click();
-    await page.waitForURL('/dashboard');
+    // Auth token injected via fixtures.ts
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
     
     // Navegar para gestão de módulos
     await page.goto('/settings/modules');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('deve exibir lista de módulos', async ({ page }) => {
@@ -52,7 +50,7 @@ test.describe('Gestão de Módulos', () => {
     await toggle.click();
     
     // Aguardar confirmação
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState("domcontentloaded");
     
     // Verificar que o toggle mudou de estado
     const isChecked = await toggle.getAttribute('data-state');
@@ -107,7 +105,7 @@ test.describe('Gestão de Módulos', () => {
         if (!isDisabled) {
           // Pode ser ativado
           await toggle.click();
-          await page.waitForTimeout(2000);
+          await page.waitForLoadState("domcontentloaded");
           
           // Verificar mudança
           const newState = await toggle.getAttribute('data-state');
@@ -121,7 +119,6 @@ test.describe('Gestão de Módulos', () => {
   test('deve filtrar módulos por categoria', async ({ page }) => {
     // Clicar na categoria "Financeiro"
     await page.getByText(/financeiro/i).first().click();
-    await page.waitForTimeout(500);
     
     // Verificar que apenas módulos financeiros estão visíveis
     const visibleModules = page.locator('[data-testid="module-card"]:visible');

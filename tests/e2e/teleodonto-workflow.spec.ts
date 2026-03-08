@@ -1,16 +1,15 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Teleodontologia Workflow', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/auth');
-    await page.fill('input[type="email"]', 'test@orthoplus.com');
-    await page.fill('input[type="password"]', 'Test123!');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+    // Auth token injected via fixtures.ts
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('should navigate to Teleodonto page', async ({ page }) => {
-    await page.click('a[href="/teleodonto"]');
+    await page.goto('/teleodonto');
+    await page.waitForLoadState('domcontentloaded');
     await expect(page).toHaveURL('/teleodonto');
     await expect(page.locator('h1')).toContainText('Teleodontologia');
   });

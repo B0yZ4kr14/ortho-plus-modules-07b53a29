@@ -1,12 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Patients CRUD Flow', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/login');
-    await page.fill('input[name="email"]', 'admin@orthoplus.com');
-    await page.fill('input[name="password"]', 'Admin123!');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+    // Auth token injected via fixtures.ts
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
     await page.goto('/pacientes');
   });
 
@@ -25,7 +23,7 @@ test.describe('Patients CRUD Flow', () => {
     await page.fill('input[name="telefone"]', '(11) 98765-4321');
     await page.fill('input[name="email"]', 'joao.teste@example.com');
     
-    await page.click('button[type="submit"]');
+    await page.getByRole('button', { name: /entrar/i }).click();
     await expect(page.locator('.toast')).toContainText('Paciente cadastrado com sucesso');
     await page.waitForURL('/pacientes');
     await expect(page.locator('text=João Silva Teste E2E')).toBeVisible();
@@ -36,7 +34,7 @@ test.describe('Patients CRUD Flow', () => {
     await page.waitForSelector('[data-testid="patient-form"]');
     
     await page.fill('input[name="telefone"]', '(11) 91111-2222');
-    await page.click('button[type="submit"]');
+    await page.getByRole('button', { name: /entrar/i }).click();
     
     await expect(page.locator('.toast')).toContainText('Paciente atualizado com sucesso');
     await page.waitForURL('/pacientes');
@@ -68,7 +66,7 @@ test.describe('Patients CRUD Flow', () => {
 
   test('should search for patients', async ({ page }) => {
     await page.fill('[data-testid="patient-search"]', 'João');
-    await page.waitForTimeout(500); // debounce
+    // Playwright auto-waits // debounce
     
     const rows = page.locator('[data-testid="patient-row"]');
     const count = await rows.count();
@@ -81,7 +79,6 @@ test.describe('Patients CRUD Flow', () => {
     await page.click('[data-testid="status-filter"]');
     await page.click('text=EM_TRATAMENTO');
     
-    await page.waitForTimeout(500);
     const rows = page.locator('[data-testid="patient-row"]');
     const count = await rows.count();
     expect(count).toBeGreaterThanOrEqual(0);
@@ -102,7 +99,7 @@ test.describe('Patients CRUD Flow', () => {
     await page.click('button:has-text("Novo Paciente")');
     await page.waitForSelector('[data-testid="patient-form"]');
     
-    await page.click('button[type="submit"]');
+    await page.getByRole('button', { name: /entrar/i }).click();
     
     await expect(page.locator('text=Nome completo é obrigatório')).toBeVisible();
     await expect(page.locator('text=CPF é obrigatório')).toBeVisible();
@@ -113,7 +110,7 @@ test.describe('Patients CRUD Flow', () => {
     await page.waitForSelector('[data-testid="patient-form"]');
     
     await page.fill('input[name="cpf"]', '123456789');
-    await page.click('button[type="submit"]');
+    await page.getByRole('button', { name: /entrar/i }).click();
     
     await expect(page.locator('text=CPF inválido')).toBeVisible();
   });

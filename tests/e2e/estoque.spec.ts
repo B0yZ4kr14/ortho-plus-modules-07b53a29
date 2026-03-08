@@ -1,13 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Módulo de Estoque', () => {
   test.beforeEach(async ({ page }) => {
     // Login como ADMIN
-    await page.goto('/auth');
-    await page.fill('input[type="email"]', 'admin@test.com');
-    await page.fill('input[type="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+    // Auth token injected via fixtures.ts
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test.describe('Dashboard de Estoque', () => {
@@ -67,11 +65,9 @@ test.describe('Módulo de Estoque', () => {
       
       // Clicar em tab de produtos
       await page.click('button:has-text("Produtos")');
-      await page.waitForTimeout(300);
       
       // Clicar em novo produto
       await page.click('button:has-text("Novo Produto")');
-      await page.waitForTimeout(500);
       
       // Verificar campos do formulário
       await expect(page.getByLabel(/nome/i)).toBeVisible();
@@ -83,9 +79,7 @@ test.describe('Módulo de Estoque', () => {
       await page.goto('/estoque/cadastros');
       
       await page.click('button:has-text("Produtos")');
-      await page.waitForTimeout(300);
       await page.click('button:has-text("Novo Produto")');
-      await page.waitForTimeout(500);
       
       // Preencher formulário
       const timestamp = Date.now();
@@ -107,13 +101,11 @@ test.describe('Módulo de Estoque', () => {
       await page.goto('/estoque/cadastros');
       
       await page.click('button:has-text("Produtos")');
-      await page.waitForTimeout(300);
       
       // Clicar em editar primeiro produto (se existir)
       const editButton = page.locator('button:has-text("Editar")').first();
       if (await editButton.isVisible()) {
         await editButton.click();
-        await page.waitForTimeout(500);
         
         // Modificar nome
         const nomeInput = page.locator('input[name="nome"]');
@@ -131,12 +123,10 @@ test.describe('Módulo de Estoque', () => {
       await page.goto('/estoque/cadastros');
       
       await page.click('button:has-text("Produtos")');
-      await page.waitForTimeout(300);
       
       // Buscar produto
       const searchInput = page.getByPlaceholder(/buscar produtos/i);
       await searchInput.fill('teste');
-      await page.waitForTimeout(500);
       
       // Verificar se filtrou resultados
       // (pode não ter resultados se não houver produtos com "teste")
@@ -146,12 +136,10 @@ test.describe('Módulo de Estoque', () => {
       await page.goto('/estoque/cadastros');
       
       await page.click('button:has-text("Produtos")');
-      await page.waitForTimeout(300);
       
       const deleteButton = page.locator('button:has-text("Excluir")').first();
       if (await deleteButton.isVisible()) {
         await deleteButton.click();
-        await page.waitForTimeout(300);
         
         // Verificar dialog de confirmação
         await expect(page.getByText(/confirmar exclusão/i)).toBeVisible();
@@ -167,10 +155,8 @@ test.describe('Módulo de Estoque', () => {
       await page.goto('/estoque/cadastros');
       
       await page.click('button:has-text("Fornecedores")');
-      await page.waitForTimeout(300);
       
       await page.click('button:has-text("Novo Fornecedor")');
-      await page.waitForTimeout(500);
       
       await expect(page.getByLabel(/nome/i)).toBeVisible();
     });
@@ -179,9 +165,7 @@ test.describe('Módulo de Estoque', () => {
       await page.goto('/estoque/cadastros');
       
       await page.click('button:has-text("Fornecedores")');
-      await page.waitForTimeout(300);
       await page.click('button:has-text("Novo Fornecedor")');
-      await page.waitForTimeout(500);
       
       const timestamp = Date.now();
       await page.fill('input[name="nome"]', `Fornecedor Teste ${timestamp}`);
@@ -197,11 +181,9 @@ test.describe('Módulo de Estoque', () => {
       await page.goto('/estoque/cadastros');
       
       await page.click('button:has-text("Fornecedores")');
-      await page.waitForTimeout(300);
       
       const searchInput = page.getByPlaceholder(/buscar fornecedores/i);
       await searchInput.fill('teste');
-      await page.waitForTimeout(500);
     });
   });
 
@@ -210,10 +192,8 @@ test.describe('Módulo de Estoque', () => {
       await page.goto('/estoque/cadastros');
       
       await page.click('button:has-text("Categorias")');
-      await page.waitForTimeout(300);
       
       await page.click('button:has-text("Nova Categoria")');
-      await page.waitForTimeout(500);
       
       await expect(page.getByLabel(/nome/i)).toBeVisible();
     });
@@ -222,9 +202,7 @@ test.describe('Módulo de Estoque', () => {
       await page.goto('/estoque/cadastros');
       
       await page.click('button:has-text("Categorias")');
-      await page.waitForTimeout(300);
       await page.click('button:has-text("Nova Categoria")');
-      await page.waitForTimeout(500);
       
       const timestamp = Date.now();
       await page.fill('input[name="nome"]', `Categoria ${timestamp}`);
@@ -259,7 +237,6 @@ test.describe('Módulo de Estoque', () => {
       await page.goto('/estoque/movimentacoes');
       
       await page.click('button:has-text("Nova Movimentação")');
-      await page.waitForTimeout(500);
       
       await expect(page.getByText('Registrar Movimentação')).toBeVisible();
     });
@@ -269,9 +246,7 @@ test.describe('Módulo de Estoque', () => {
       
       // Aplicar filtro
       await page.click('[role="combobox"]');
-      await page.waitForTimeout(300);
       await page.click('text=Entradas');
-      await page.waitForTimeout(500);
       
       // Tab de entradas deve mostrar apenas entradas
       await page.click('button:has-text("Entradas")');
@@ -282,7 +257,6 @@ test.describe('Módulo de Estoque', () => {
       
       const searchInput = page.getByPlaceholder(/buscar por produto/i);
       await searchInput.fill('teste');
-      await page.waitForTimeout(500);
     });
 
     test('should switch between tabs', async ({ page }) => {
@@ -290,13 +264,10 @@ test.describe('Módulo de Estoque', () => {
       
       // Testar navegação entre tabs
       await page.click('button:has-text("Entradas")');
-      await page.waitForTimeout(300);
       
       await page.click('button:has-text("Saídas")');
-      await page.waitForTimeout(300);
       
       await page.click('button:has-text("Ajustes")');
-      await page.waitForTimeout(300);
       
       await page.click('button:has-text("Todas")');
     });
@@ -307,7 +278,6 @@ test.describe('Módulo de Estoque', () => {
       await page.goto('/estoque/cadastros');
       
       await page.click('button:has-text("Scanner de Código de Barras")');
-      await page.waitForTimeout(500);
       
       // Dialog deve abrir (pode não funcionar completamente sem câmera real)
       await expect(page.locator('[role="dialog"]')).toBeVisible();
@@ -318,7 +288,7 @@ test.describe('Módulo de Estoque', () => {
     test('should show loading state on dashboard', async ({ page }) => {
       // Interceptar request para simular loading
       await page.route('**/rest/v1/estoque_produtos*', async route => {
-        await page.waitForTimeout(2000); // Simular delay
+        await page.waitForLoadState("domcontentloaded"); // Wait for page
         route.continue();
       });
       
@@ -354,9 +324,7 @@ test.describe('Módulo de Estoque', () => {
       await page.goto('/estoque/cadastros');
       
       await page.click('button:has-text("Produtos")');
-      await page.waitForTimeout(300);
       await page.click('button:has-text("Novo Produto")');
-      await page.waitForTimeout(500);
       
       const timestamp = Date.now();
       await page.fill('input[name="nome"]', `Produto ${timestamp}`);

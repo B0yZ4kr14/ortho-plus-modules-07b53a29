@@ -1,12 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Financial Workflows', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/login');
-    await page.fill('input[name="email"]', 'admin@orthoplus.com');
-    await page.fill('input[name="password"]', 'Admin123!');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+    // Auth token injected via fixtures.ts
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
     await page.goto('/financeiro');
   });
 
@@ -29,7 +27,7 @@ test.describe('Financial Workflows', () => {
     await page.click('[data-testid="patient-select"]');
     await page.click('[data-testid="patient-option"]:first-child');
     
-    await page.click('button[type="submit"]');
+    await page.getByRole('button', { name: /entrar/i }).click();
     await expect(page.locator('.toast')).toContainText('Conta a receber criada com sucesso');
   });
 
@@ -42,7 +40,7 @@ test.describe('Financial Workflows', () => {
     await page.fill('input[name="data_vencimento"]', '2024-12-10');
     await page.selectOption('select[name="categoria"]', 'DESPESAS_FIXAS');
     
-    await page.click('button[type="submit"]');
+    await page.getByRole('button', { name: /entrar/i }).click();
     await expect(page.locator('.toast')).toContainText('Conta a pagar criada com sucesso');
   });
 
@@ -80,7 +78,7 @@ test.describe('Financial Workflows', () => {
     await page.check('input[name="parcelado"]');
     await page.fill('input[name="numero_parcelas"]', '8');
     
-    await page.click('button[type="submit"]');
+    await page.getByRole('button', { name: /entrar/i }).click();
     await expect(page.locator('.toast')).toContainText('Conta a receber parcelada criada');
     await expect(page.locator('text=8x de R$ 1.000,00')).toBeVisible();
   });
@@ -106,7 +104,6 @@ test.describe('Financial Workflows', () => {
     await page.fill('input[name="data_fim"]', '2024-11-30');
     await page.click('button:has-text("Filtrar")');
     
-    await page.waitForTimeout(500);
     const rows = page.locator('[data-testid="transaction-row"]');
     const count = await rows.count();
     expect(count).toBeGreaterThanOrEqual(0);
@@ -116,7 +113,6 @@ test.describe('Financial Workflows', () => {
     await page.click('[data-testid="category-filter"]');
     await page.click('text=SERVICOS_PRESTADOS');
     
-    await page.waitForTimeout(500);
     const rows = page.locator('[data-testid="transaction-row"]');
     expect(await rows.count()).toBeGreaterThanOrEqual(0);
   });

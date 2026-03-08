@@ -1,13 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Dashboard Navigation and Layout', () => {
   test.beforeEach(async ({ page }) => {
     // Login como ADMIN
-    await page.goto('/auth');
-    await page.fill('input[type="email"]', 'admin@test.com');
-    await page.fill('input[type="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+    // Auth token injected via fixtures.ts
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('should display dashboard without header overlap', async ({ page }) => {
@@ -43,7 +41,6 @@ test.describe('Dashboard Navigation and Layout', () => {
     
     // Clicar em "Novo Paciente"
     await page.click('button:has-text("Novo Paciente")');
-    await page.waitForTimeout(500);
     
     // Verificar navegação
     await expect(page).toHaveURL(/\/pacientes/);
@@ -120,7 +117,6 @@ test.describe('Dashboard Navigation and Layout', () => {
     
     // Pressionar Cmd+K (Ctrl+K no Windows/Linux)
     await page.keyboard.press('Meta+K');
-    await page.waitForTimeout(300);
     
     // Verificar se dialog de busca abriu
     await expect(page.getByPlaceholder(/buscar/i)).toBeVisible();
@@ -131,7 +127,6 @@ test.describe('Dashboard Navigation and Layout', () => {
     
     // Clicar no ícone de notificações
     await page.click('button:has([data-icon="bell"])');
-    await page.waitForTimeout(300);
     
     // Verificar dropdown de notificações
     await expect(page.getByText(/notificações/i)).toBeVisible();
@@ -146,7 +141,6 @@ test.describe('Dashboard Navigation and Layout', () => {
     
     // Clicar para abrir dialog
     await themeButton.click();
-    await page.waitForTimeout(300);
     
     // Verificar se dialog de temas abriu
     await expect(page.getByText('Escolher Tema')).toBeVisible();
@@ -157,7 +151,6 @@ test.describe('Dashboard Navigation and Layout', () => {
     
     // Clicar no avatar do usuário
     await page.click('button:has([role="img"])');
-    await page.waitForTimeout(300);
     
     // Verificar opções do menu
     await expect(page.getByText('Sair')).toBeVisible();

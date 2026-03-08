@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Performance Optimization - React.memo & useCallback', () => {
   test.beforeEach(async ({ page }) => {
@@ -31,7 +31,7 @@ test.describe('Performance Optimization - React.memo & useCallback', () => {
       
       // Type search query
       await searchInput.fill('João');
-      await page.waitForTimeout(500); // Debounce
+      // Playwright auto-waits // Debounce
       
       // Verify filtered results
       const rows = page.locator('tbody tr');
@@ -53,7 +53,6 @@ test.describe('Performance Optimization - React.memo & useCallback', () => {
       const statusFilter = page.locator('select').first();
       await statusFilter.selectOption('Ativo');
       
-      await page.waitForTimeout(300);
       
       // Verify all visible patients have "Ativo" status
       const statusBadges = page.locator('tbody td').locator('text=/Ativo/i');
@@ -88,7 +87,7 @@ test.describe('Performance Optimization - React.memo & useCallback', () => {
       await page.goto('/financeiro/transacoes');
       
       // Wait for transactions to load
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState("domcontentloaded");
       
       // Check for table or empty state
       const hasTable = await page.locator('table').count() > 0;
@@ -99,7 +98,7 @@ test.describe('Performance Optimization - React.memo & useCallback', () => {
 
     test('should format currency with memoized useCallback', async ({ page }) => {
       await page.goto('/financeiro/transacoes');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState("domcontentloaded");
       
       // Look for currency values (R$ format)
       const currencyValues = page.locator('text=/R\\$\\s*[\\d.,]+/');
@@ -113,7 +112,7 @@ test.describe('Performance Optimization - React.memo & useCallback', () => {
 
     test('should handle view details with memoized callback', async ({ page }) => {
       await page.goto('/financeiro/transacoes');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState("domcontentloaded");
       
       // Look for view/eye icon button
       const viewButtons = page.locator('button').filter({ has: page.locator('svg') });
@@ -123,7 +122,6 @@ test.describe('Performance Optimization - React.memo & useCallback', () => {
         await viewButtons.first().click();
         
         // Verify details dialog/modal opens
-        await page.waitForTimeout(500);
         const modalVisible = await page.locator('[role="dialog"]').count() > 0;
         expect(modalVisible).toBeTruthy();
       }
@@ -133,7 +131,7 @@ test.describe('Performance Optimization - React.memo & useCallback', () => {
   test.describe('DentistasList - React.memo optimization', () => {
     test('should render dentists list without excessive re-renders', async ({ page }) => {
       await page.goto('/dentistas');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState("domcontentloaded");
       
       const hasTable = await page.locator('table').count() > 0;
       const hasEmptyState = await page.locator('text=/Nenhum/i').count() > 0;
@@ -143,13 +141,12 @@ test.describe('Performance Optimization - React.memo & useCallback', () => {
 
     test('should handle search with useCallback optimization', async ({ page }) => {
       await page.goto('/dentistas');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState("domcontentloaded");
       
       const searchInput = page.locator('input[placeholder*="Buscar"]').first();
       
       if (await searchInput.count() > 0) {
         await searchInput.fill('Dr.');
-        await page.waitForTimeout(500);
         
         // Results should be filtered
         const rows = page.locator('tbody tr');
@@ -162,7 +159,7 @@ test.describe('Performance Optimization - React.memo & useCallback', () => {
   test.describe('ProcedimentosList - useMemo & useCallback optimization', () => {
     test('should render procedures with memoized filters', async ({ page }) => {
       await page.goto('/procedimentos');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState("domcontentloaded");
       
       const hasContent = await page.locator('text=/Procedimento/i').count() > 0;
       expect(hasContent).toBeTruthy();
@@ -170,14 +167,13 @@ test.describe('Performance Optimization - React.memo & useCallback', () => {
 
     test('should apply filters with memoized computation', async ({ page }) => {
       await page.goto('/procedimentos');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState("domcontentloaded");
       
       // Look for filter dropdowns
       const categoryFilter = page.locator('select').first();
       
       if (await categoryFilter.count() > 0) {
         await categoryFilter.selectOption({ index: 1 }); // Select first category
-        await page.waitForTimeout(300);
         
         // Verify filtering works
         expect(true).toBeTruthy(); // Basic smoke test
@@ -186,7 +182,7 @@ test.describe('Performance Optimization - React.memo & useCallback', () => {
 
     test('should format values with memoized useCallback', async ({ page }) => {
       await page.goto('/procedimentos');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState("domcontentloaded");
       
       // Look for currency formatting
       const prices = page.locator('text=/R\\$\\s*[\\d.,]+/');
@@ -214,7 +210,7 @@ test.describe('Performance Optimization - React.memo & useCallback', () => {
       await page.goto('/');
       
       // Wait for all content to load
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState("domcontentloaded");
       
       // Check that key elements are visible and stable
       await expect(page.locator('header')).toBeVisible();

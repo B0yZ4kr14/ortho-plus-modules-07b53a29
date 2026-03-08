@@ -3,16 +3,13 @@
  * Valida integração completa do Dashboard com REST API
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Dashboard API Integration', () => {
   test.beforeEach(async ({ page }) => {
-    // Login
-    await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@orthoplus.com');
-    await page.fill('input[type="password"]', 'Admin123!');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+    // Token is injected via addInitScript from fixtures.ts
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('should load dashboard overview from REST API', async ({ page }) => {
@@ -97,7 +94,7 @@ test.describe('Dashboard API Integration', () => {
     await page.goto('/');
 
     // Verificar se há mensagem de erro ou fallback
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState("domcontentloaded");
     
     // Dashboard deve mostrar dados mockados em caso de erro
     const statsCards = await page.$$('[data-testid="stats-card"]');

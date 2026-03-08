@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('ToastEnhanced Component - FASE 5', () => {
   test.beforeEach(async ({ page }) => {
@@ -8,13 +8,12 @@ test.describe('ToastEnhanced Component - FASE 5', () => {
   test.describe('Toast Animations & Visual Feedback', () => {
     test('should display success toast after creating patient', async ({ page }) => {
       await page.goto('/pacientes');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState("domcontentloaded");
       
       const addButton = page.locator('button').filter({ hasText: /Adicionar|Novo/i }).first();
       
       if (await addButton.count() > 0) {
         await addButton.click();
-        await page.waitForTimeout(500);
         
         // Fill form (if modal opens)
         const nameInput = page.locator('input[name="nome"], input[placeholder*="nome" i]').first();
@@ -29,7 +28,7 @@ test.describe('ToastEnhanced Component - FASE 5', () => {
             await submitButton.click();
             
             // Check for toast (success or error)
-            await page.waitForTimeout(1000);
+            await page.waitForLoadState("domcontentloaded");
             const toast = page.locator('[class*="toast"], [role="status"], [role="alert"]').first();
             const toastVisible = await toast.count() > 0;
             
@@ -79,21 +78,19 @@ test.describe('ToastEnhanced Component - FASE 5', () => {
 
     test('should have error variant with XCircle icon', async ({ page }) => {
       await page.goto('/pacientes');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState("domcontentloaded");
       
       // Try to trigger validation error by submitting empty form
       const addButton = page.locator('button').filter({ hasText: /Adicionar|Novo/i }).first();
       
       if (await addButton.count() > 0) {
         await addButton.click();
-        await page.waitForTimeout(500);
         
         // Submit without filling required fields
         const submitButton = page.locator('button[type="submit"]').first();
         
         if (await submitButton.count() > 0) {
           await submitButton.click();
-          await page.waitForTimeout(500);
           
           // Should show validation errors (could be toast or inline)
           const errorIndicators = page.locator('[class*="error"], [class*="destructive"], text=/obrigatório/i');
@@ -108,7 +105,7 @@ test.describe('ToastEnhanced Component - FASE 5', () => {
       // Warning toasts are contextual and may not always appear
       // This test validates that the component structure supports it
       await page.goto('/financeiro');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState("domcontentloaded");
       
       // Check for any warning badges/indicators
       const warnings = page.locator('[class*="warning"]');
@@ -153,7 +150,7 @@ test.describe('ToastEnhanced Component - FASE 5', () => {
 
     test('should have sufficient color contrast', async ({ page }) => {
       await page.goto('/');
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState("domcontentloaded");
       
       // Check that design system colors are loaded
       const rootStyles = await page.evaluate(() => {
@@ -201,7 +198,7 @@ test.describe('ToastEnhanced Component - FASE 5', () => {
   test.describe('Toast Performance', () => {
     test('should not cause layout shifts', async ({ page }) => {
       await page.goto('/');
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState("domcontentloaded");
       
       // Measure layout stability
       const cls = await page.evaluate(() => {

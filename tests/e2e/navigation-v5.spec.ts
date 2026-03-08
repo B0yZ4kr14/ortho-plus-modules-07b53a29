@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 /**
  * TESTES E2E V5.0 - Navegação Modular
@@ -34,7 +34,7 @@ test.describe('Navegação Modular V5.0', () => {
 
   test('deve exibir badges dinâmicos na sidebar', async ({ page }) => {
     // Verificar se badges estão renderizando (aguardar carregamento)
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState("domcontentloaded");
     
     // Verificar se há pelo menos um badge visível
     const badges = page.locator('[data-badge]');
@@ -45,7 +45,6 @@ test.describe('Navegação Modular V5.0', () => {
   test('deve navegar para módulo FISCAL', async ({ page }) => {
     // Expandir submenu Fiscal
     await page.click('text=Fiscal');
-    await page.waitForTimeout(500);
     
     // Clicar em Notas Fiscais
     await page.click('text=Notas Fiscais');
@@ -87,7 +86,6 @@ test.describe('Navegação Modular V5.0', () => {
   test('deve colapsar e expandir sidebar mantendo badges', async ({ page }) => {
     // Colapsar sidebar
     await page.click('[data-testid="sidebar-toggle"]');
-    await page.waitForTimeout(500);
     
     // Badges ainda devem existir (mesmo que não visíveis)
     const badges = page.locator('[data-badge]');
@@ -96,7 +94,6 @@ test.describe('Navegação Modular V5.0', () => {
     
     // Expandir sidebar
     await page.click('[data-testid="sidebar-toggle"]');
-    await page.waitForTimeout(500);
   });
 
   test('deve navegar para módulo de pagamentos em criptomoedas', async ({ page }) => {
@@ -117,7 +114,6 @@ test.describe('Navegação Modular V5.0', () => {
     
     // Expandir submenu Administração & DevOps
     await page.click('text=Administração & DevOps');
-    await page.waitForTimeout(500);
     
     // Verificar subitems
     await expect(page.locator('text=Database Admin')).toBeVisible();

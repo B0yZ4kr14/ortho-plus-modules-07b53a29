@@ -3,16 +3,14 @@
  * Valida navegação baseada em Bounded Contexts (DDD)
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Modular Navigation (DDD)', () => {
   test.beforeEach(async ({ page }) => {
     // Login
-    await page.goto('/login');
-    await page.fill('input[type="email"]', 'admin@orthoplus.com');
-    await page.fill('input[type="password"]', 'Admin123!');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+    // Auth token injected via fixtures.ts
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('should display all bounded contexts in sidebar', async ({ page }) => {
@@ -83,7 +81,6 @@ test.describe('Modular Navigation (DDD)', () => {
     
     // Colapsar sidebar
     await toggleButton.click();
-    await page.waitForTimeout(500);
     
     // Verificar se sidebar está colapsada (mini width)
     const sidebar = await page.locator('[data-testid="sidebar"]');
@@ -92,7 +89,6 @@ test.describe('Modular Navigation (DDD)', () => {
     
     // Expandir sidebar
     await toggleButton.click();
-    await page.waitForTimeout(500);
     
     // Verificar se sidebar está expandida
     const isExpanded = await sidebar.evaluate(el => el.classList.contains('w-60'));
@@ -102,7 +98,6 @@ test.describe('Modular Navigation (DDD)', () => {
   test('should persist sidebar state', async ({ page, context }) => {
     // Colapsar sidebar
     await page.click('[data-testid="sidebar-trigger"]');
-    await page.waitForTimeout(500);
     
     // Navegar para outra página
     await page.click('text=PACIENTES');
@@ -120,11 +115,9 @@ test.describe('Modular Navigation (DDD)', () => {
     await page.click('text=Sair');
     
     // Login como MEMBER
-    await page.goto('/login');
-    await page.fill('input[type="email"]', 'member@orthoplus.com');
-    await page.fill('input[type="password"]', 'Member123!');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+    // Auth token injected via fixtures.ts
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
     
     // Verificar se apenas módulos permitidos estão visíveis
     const configLink = await page.locator('text=CONFIGURAÇÕES').isVisible();

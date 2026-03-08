@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 /**
  * FASE 5 (E2E Tests) - Fluxo Financeiro Completo
@@ -8,15 +8,13 @@ import { test, expect } from '@playwright/test';
 test.describe('Financeiro - CRUD Completo', () => {
   test.beforeEach(async ({ page }) => {
     // Login como admin
-    await page.goto('/auth');
-    await page.getByLabel(/email/i).fill('admin@orthomais.com');
-    await page.getByLabel(/senha/i).fill('Admin123!');
-    await page.getByRole('button', { name: /entrar/i }).click();
-    await page.waitForURL('/dashboard');
+    // Auth token injected via fixtures.ts
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
     
     // Navegar para Financeiro
     await page.goto('/financeiro');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('deve exibir dashboard financeiro com KPIs', async ({ page }) => {
@@ -46,7 +44,7 @@ test.describe('Financeiro - CRUD Completo', () => {
     await page.getByRole('combobox', { name: /status/i }).click();
     await page.getByRole('option', { name: /pendente/i }).click();
     
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState("domcontentloaded");
     
     // Verificar que apenas contas pendentes são exibidas
     const rows = page.locator('[data-testid="conta-row"]');
@@ -79,7 +77,6 @@ test.describe('Financeiro - CRUD Completo', () => {
   test('deve buscar contas por descrição', async ({ page }) => {
     // Digitar busca
     await page.getByPlaceholder(/buscar/i).fill('Consulta');
-    await page.waitForTimeout(500);
     
     // Verificar resultados
     const results = page.locator('[data-testid="conta-row"]');
@@ -103,11 +100,9 @@ test.describe('Financeiro - CRUD Completo', () => {
   test('deve navegar entre meses no calendário', async ({ page }) => {
     // Clicar em próximo mês
     await page.getByRole('button', { name: /próximo/i }).click();
-    await page.waitForTimeout(500);
     
     // Clicar em mês anterior
     await page.getByRole('button', { name: /anterior/i }).click();
-    await page.waitForTimeout(500);
     
     // Verificar que o calendário está visível
     await expect(page.locator('[data-calendar]')).toBeVisible();
@@ -121,6 +116,6 @@ test.describe('Financeiro - CRUD Completo', () => {
     await page.getByRole('menuitem', { name: /excel/i }).click();
     
     // Aguardar download (não vamos validar o arquivo)
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState("domcontentloaded");
   });
 });
