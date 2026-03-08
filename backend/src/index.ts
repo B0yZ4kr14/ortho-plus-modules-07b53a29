@@ -28,6 +28,26 @@ import { startAllWorkers } from "./workers/index";
 import { authMiddleware } from "./middleware/authMiddleware";
 import configuracoesRouter from "./routes/configuracoes";
 
+// Batch 8 Module Routers
+import adminToolsRouter from "./modules/admin_tools/api/router";
+import contratosRouter from "./modules/contratos/api/router";
+import crmRouter from "./modules/crm/api/router";
+import funcionariosRouter from "./modules/funcionarios/api/router";
+import lgpdRouter from "./modules/lgpd/api/router";
+import orcamentosRouter from "./modules/orcamentos/api/router";
+import procedimentosRouter from "./modules/procedimentos/api/router";
+import teleodontoRouter from "./modules/teleodonto/api/router";
+
+// Batch 9 Module Routers
+import biRouter from "./modules/bi/api/router";
+import fidelidadeRouter from "./modules/fidelidade/api/router";
+import marketingRouter from "./modules/marketing/api/router";
+import tissRouter from "./modules/tiss/api/router";
+
+// Batch 10 Module Routers
+import inadimplenciaRouter from "./modules/inadimplencia/api/router";
+import splitPagamentoRouter from "./modules/split_pagamento/api/router";
+
 dotenv.config();
 
 const app = express();
@@ -73,6 +93,33 @@ app.use("/api/fiscal", fiscalRoutes);
 app.use("/api/estoque", estoqueRoutes);
 app.use("/api/financeiro", financeiroRoutes);
 app.use("/api/configuracoes", configuracoesRouter);
+
+// Batch 8 — CRUD Modules
+app.use("/api/admin", adminToolsRouter);
+app.use("/api/contratos", contratosRouter);
+app.use("/api/contrato-templates", contratosRouter); // alias for /contratos/templates
+app.use("/api/crm", crmRouter);
+app.use("/api/funcionarios", funcionariosRouter);
+app.use("/api/lgpd", lgpdRouter);
+app.use("/api/orcamentos", orcamentosRouter);
+app.use("/api/procedimentos", procedimentosRouter);
+app.use("/api/teleodonto", teleodontoRouter);
+
+// Batch 9 — Medium Complexity Modules
+app.use("/api/bi", biRouter);
+app.use("/api/fidelidade", fidelidadeRouter);
+app.use("/api/marketing", marketingRouter);
+app.use("/api/tiss", tissRouter);
+
+// Batch 10 — Financial Modules
+app.use("/api/inadimplencia", inadimplenciaRouter);
+app.use("/api/split-pagamento", splitPagamentoRouter);
+
+// Legacy Edge Function redirect: /functions/v1/<fn> → /api/<fn>
+app.use("/functions/v1", (req, res) => {
+  const newUrl = `/api${req.url}`;
+  res.redirect(307, newUrl);
+});
 
 // Temporary mock for active-modules to allow E2E tests to pass and sidebar to render
 app.get("/api/clinics/:id/active-modules", (_req, res) => {
