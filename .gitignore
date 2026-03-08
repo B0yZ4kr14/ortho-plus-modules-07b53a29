@@ -29,3 +29,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Test artifacts
+test-results/
+playwright-report/
+test-results.json
+test-output.txt
+test-output-create.txt
+test-api-errors.txt
+last-run.txt
+
+# Backend debug logs
+backend/backend_logs.txt
