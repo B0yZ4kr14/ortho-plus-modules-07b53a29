@@ -48,6 +48,10 @@ import tissRouter from "./modules/tiss/api/router";
 import inadimplenciaRouter from "./modules/inadimplencia/api/router";
 import splitPagamentoRouter from "./modules/split_pagamento/api/router";
 
+// Patch — previously unregistered modules
+import { createPepRouter } from "./modules/pep/api/router";
+import { createPdvRouter } from "./modules/pdv/api/router";
+
 dotenv.config();
 
 const app = express();
@@ -113,7 +117,14 @@ app.use("/api/tiss", tissRouter);
 
 // Batch 10 — Financial Modules
 app.use("/api/inadimplencia", inadimplenciaRouter);
+app.use("/api/campanhas-inadimplencia", inadimplenciaRouter); // alias: frontend uses this path
 app.use("/api/split-pagamento", splitPagamentoRouter);
+app.use("/api/split", splitPagamentoRouter); // alias: frontend uses /split/*
+
+// PEP & PDV — modules with existing controllers, not previously wired
+app.use("/api/pep", createPepRouter());
+app.use("/api/pdv", createPdvRouter());
+app.use("/api/inventario", createPdvRouter()); // alias: /inventario/produtos shares pdv module
 
 // Legacy Edge Function redirect: /functions/v1/<fn> → /api/<fn>
 app.use("/functions/v1", (req, res) => {
