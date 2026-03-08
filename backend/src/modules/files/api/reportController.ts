@@ -90,10 +90,10 @@ export class ReportController {
 
       if (options.includeFinanceiro) {
         exportData.data.financeiro = {
-          contasReceber: await (prisma as any).contas_receber.findMany({
+          contasReceber: await prisma.contas_receber.findMany({
             where: { clinic_id: clinicId },
           }),
-          contasPagar: await (prisma as any).contas_pagar.findMany({
+          contasPagar: await prisma.contas_pagar.findMany({
             where: { clinic_id: clinicId },
           }),
         };
@@ -218,7 +218,7 @@ export class ReportController {
       ) {
         for (const prontuario of importData.data.prontuarios) {
           try {
-            const inserted = await (prisma as any).prontuarios.create({
+            const inserted = await prisma.prontuarios.create({
               data: {
                 ...prontuario,
                 clinic_id: clinicId,
@@ -239,7 +239,7 @@ export class ReportController {
               );
 
               for (const odonto of odontogramasOriginal) {
-                await (prisma as any).odontograma_teeth.create({
+                await prisma.pep_odontograma.create({
                   data: {
                     ...odonto,
                     prontuario_id: inserted.id,

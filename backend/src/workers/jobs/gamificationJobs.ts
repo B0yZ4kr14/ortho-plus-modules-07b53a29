@@ -17,7 +17,7 @@ export async function runGamificationMetricsJob() {
     console.log("[Gamificação] Iniciando processamento de metas e rankings");
 
     // Buscar todas as clínicas ativas
-    const clinics = await (prisma as any).clinics.findMany({
+    const clinics = await prisma.clinics.findMany({
       select: { id: true },
     });
 
@@ -48,7 +48,7 @@ export async function runGamificationMetricsJob() {
             new Date().getMonth(),
             1,
           );
-          const count = await (prisma as any).appointment.count({
+          const count = await (prisma as any).appointments.count({
             where: {
               dentistId: meta.user_id, // assuming user_id maps to dentistId
               status: "CONCLUIDA",

@@ -253,7 +253,7 @@ export class PacientesController {
 
       const [appointments, treatments, budgets, statusChanges] =
         await Promise.all([
-          (prisma as any).appointments_ortho.findMany({
+          prisma.appointments.findMany({
             where: { patient_id: patientId },
             select: {
               id: true,
@@ -265,7 +265,7 @@ export class PacientesController {
             orderBy: { start_time: "desc" },
             take: 20,
           }),
-          (prisma as any).pep_tratamentos.findMany({
+          prisma.pep_tratamentos.findMany({
             where: { patient_id: patientId },
             select: {
               id: true,
@@ -277,7 +277,7 @@ export class PacientesController {
             orderBy: { created_at: "desc" },
             take: 20,
           }),
-          (prisma as any).budgets.findMany({
+          prisma.budgets.findMany({
             where: { patient_id: patientId },
             select: {
               id: true,
@@ -289,7 +289,7 @@ export class PacientesController {
             orderBy: { created_at: "desc" },
             take: 20,
           }),
-          (prisma as any).patient_status_history.findMany({
+          prisma.patient_status_history.findMany({
             where: { patient_id: patientId },
             select: {
               id: true,
@@ -358,7 +358,7 @@ export class PacientesController {
       const prisma = new PrismaClient();
 
       if (action === "login") {
-        const account = await (prisma as any).patient_accounts.findFirst({
+        const account = await prisma.patient_accounts.findFirst({
           where: { email },
         });
 
@@ -379,7 +379,7 @@ export class PacientesController {
         const sessionId = "sess-" + Math.random().toString(36).substring(7);
         const token = "jwt-mock-" + sessionId;
 
-        await (prisma as any).patient_sessions.create({
+        await prisma.patient_sessions.create({
           data: {
             id: sessionId,
             patient_id: account.patient_id,
@@ -410,7 +410,7 @@ export class PacientesController {
       if (action === "logout") {
         const sessionId = req.headers["x-session-id"] as string;
         if (sessionId) {
-          await (prisma as any).patient_sessions.deleteMany({
+          await prisma.patient_sessions.deleteMany({
             where: { id: sessionId },
           });
         }

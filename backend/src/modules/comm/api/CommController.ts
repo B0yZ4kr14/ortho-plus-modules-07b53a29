@@ -44,7 +44,7 @@ export class CommController {
         token = `dev-token-${Date.now()}`;
       }
 
-      const backendUrl = process.env.BACKEND_URL || "http://localhost:3000"; // Should ideally be frontend URL or similar depending on original "supabaseUrl" usage
+      const backendUrl = process.env.BACKEND_URL || "http://localhost:3000"; // Should ideally be frontend URL
       const salaUrl = `${backendUrl}/teleconsulta/sala/${teleconsultaId}`;
 
       // Update teleconsulta with link_sala

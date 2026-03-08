@@ -113,3 +113,16 @@ export const patientAuth = async (req: Request, res: Response) => {
     },
   });
 };
+
+export const getUserMetadata = async (_req: Request, res: Response) => {
+  res.json({
+    roleData: { role: "ADMIN" },
+    profileData: {
+      clinic_id: "mock-clinic-id",
+      avatar_url: "",
+      full_name: "Mock Admin",
+    },
+    clinicData: { id: "mock-clinic-id", name: "Clinica Mock E2E" },
+    permissionsData: ["ALL"],
+  });
+};

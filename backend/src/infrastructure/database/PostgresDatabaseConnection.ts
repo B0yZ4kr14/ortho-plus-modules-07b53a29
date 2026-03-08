@@ -2,7 +2,7 @@
  * PostgresDatabaseConnection - Implementação PostgreSQL nativo
  *
  * Suporta:
- * - Supabase Self-Hosted
+ * - PostgreSQL Self-Hosted
  * - PostgreSQL local/on-premises
  */
 

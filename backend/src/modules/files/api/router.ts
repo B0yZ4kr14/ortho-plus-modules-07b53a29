@@ -23,7 +23,7 @@ const reportController = new ReportController();
 // ----------------------------------------
 // generic File Upload routes
 // ----------------------------------------
-// Handles basic file uploads locally to replace supabase.storage
+// Handles basic file uploads using local storage
 router.post(
   "/upload",
   upload.single("file"),

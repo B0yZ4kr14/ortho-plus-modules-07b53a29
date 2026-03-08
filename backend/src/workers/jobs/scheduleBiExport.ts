@@ -19,7 +19,7 @@ export const runScheduleBiExportJob = async () => {
       `Generated BI aggregated report for ${reports.length} event types.`,
     );
 
-    // Normally we would push this file to an S3/Supabase Storage bucket and log
+    // Normally we would push this file to an S3/MinIO bucket and log
     console.log("BI Export completed successfully.");
   } catch (error) {
     console.error("Error in schedule-bi-export cron: ", error);

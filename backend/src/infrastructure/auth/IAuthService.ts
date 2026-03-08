@@ -1,7 +1,7 @@
 /**
  * IAuthService - Abstração de autenticação
  * 
- * Permite trocar implementação (Supabase Auth <-> JWT local)
+ * Permite trocar implementação de autenticação
  * sem alterar lógica de negócio dos módulos.
  */
 
@@ -78,7 +78,7 @@ export interface IAuthService {
  * Tipo de implementação de autenticação
  */
 export enum AuthType {
-  SUPABASE_CLOUD = 'supabase_cloud',
-  SUPABASE_SELF_HOSTED = 'supabase_self_hosted',
+  HOSTED_CLOUD = 'hosted_cloud',
+  SELF_HOSTED = 'self_hosted',
   JWT_LOCAL = 'jwt_local',
 }

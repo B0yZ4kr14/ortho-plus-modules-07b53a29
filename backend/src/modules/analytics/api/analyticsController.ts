@@ -34,7 +34,7 @@ export class AnalyticsController {
       };
 
       try {
-        stats.totalPatients = await (prisma as any).patient.count({
+        stats.totalPatients = await ( prisma as any).patients.count({
           where: { clinicId },
         });
       } catch (e) {}
@@ -45,7 +45,7 @@ export class AnalyticsController {
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        stats.todayAppointments = await (prisma as any).appointment.count({
+        stats.todayAppointments = await ( prisma as any).appointments.count({
           where: {
             clinicId,
             startTime: { gte: today, lt: tomorrow },
@@ -61,7 +61,7 @@ export class AnalyticsController {
         );
 
         // Tratar o sum no Prisma
-        const sumResult = await (prisma as any).transaction.aggregate({
+        const sumResult = await ( prisma as any).financial_transactions.aggregate({
           _sum: { amount: true },
           where: {
             clinicId,
@@ -83,14 +83,14 @@ export class AnalyticsController {
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        const totalAppointments = await (prisma as any).appointment.count({
+        const totalAppointments = await ( prisma as any).appointments.count({
           where: {
             clinicId,
             startTime: { gte: today, lt: tomorrow },
           },
         });
 
-        const dentistsCount = await (prisma as any).profiles.count({
+        const dentistsCount = await ( prisma as any).profiles.count({
           where: { clinicId }, // Presumindo todos os profiles ou poderia filtrar por role
         });
 
@@ -100,10 +100,10 @@ export class AnalyticsController {
       } catch (e) {}
 
       try {
-        stats.pendingTreatments = await (prisma as any).pep_tratamentos.count({
+        stats.pendingTreatments = await ( prisma as any).pep_tratamentos.count({
           where: { clinicId, status: "EM_ANDAMENTO" },
         });
-        stats.completedTreatments = await (prisma as any).pep_tratamentos.count(
+        stats.completedTreatments = await ( prisma as any).pep_tratamentos.count(
           {
             where: { clinicId, status: "CONCLUIDO" },
           },
@@ -186,7 +186,7 @@ export class AnalyticsController {
       });
       const receita_total = Number(currentMonthRevenueAgg._sum.amount) || 0;
 
-      const lastMonthRevenueAgg = await (prisma as any).transaction.aggregate({
+      const lastMonthRevenueAgg = await ( prisma as any).financial_transactions.aggregate({
         _sum: { amount: true },
         where: {
           clinicId,
@@ -221,14 +221,14 @@ export class AnalyticsController {
         receita_total > 0 ? (lucro_liquido / receita_total) * 100 : 0;
 
       // Clinical Metrics
-      const appointments = await (prisma as any).appointment.findMany({
+      const appointments = await ( prisma as any).appointments.findMany({
         where: { clinicId, startTime: { gte: startOfMonth } },
         select: { startTime: true, endTime: true, status: true },
       });
 
       const total_appointments = appointments.length;
       const completed_appointments = appointments.filter(
-        (a: any) => a.status === "CONCLUIDA",
+        (a: { status: string }) => a.status === "CONCLUIDA",
       ).length; // Correct status string might be 'CONCLUIDA' vs 'CONCLUIDO'
       const taxa_ocupacao =
         total_appointments > 0
@@ -236,20 +236,18 @@ export class AnalyticsController {
           : 0;
 
       const durations = appointments
-        .filter((a: any) => a.status === "CONCLUIDA" && a.endTime)
-        .map(
-          (a: any) =>
-            new Date(a.endTime!).getTime() - new Date(a.startTime).getTime(),
+        .filter((a: { status: string; endTime?: Date; startTime: Date }) => a.status === "CONCLUIDA" && a.endTime)
+        .map((a: { status: string; endTime: Date; startTime: Date }) => new Date(a.endTime).getTime() - new Date(a.startTime).getTime(),
         );
 
       const tempo_medio_consulta = durations.length
-        ? durations.reduce((sum: any, d: any) => sum + d, 0) /
+        ? durations.reduce((sum: number, d: number) => sum + d, 0) /
           durations.length /
           60000
         : 0;
 
       // Financial Metrics
-      const uniquePatientsAgg = await (prisma as any).transaction.groupBy({
+      const uniquePatientsAgg = await ( prisma as any).financial_transactions.groupBy({
         by: ["patientId"],
         where: {
           clinicId,
@@ -263,7 +261,7 @@ export class AnalyticsController {
       const ticket_medio =
         unique_patients > 0 ? receita_total / unique_patients : 0;
 
-      const receivables = await (prisma as any).transaction.findMany({
+      const receivables = await ( prisma as any).financial_transactions.findMany({
         where: {
           clinicId,
           type: "RECEITA",
@@ -273,7 +271,7 @@ export class AnalyticsController {
       });
 
       const overdue = receivables.filter(
-        (r: any) => r.dataVencimento && new Date(r.dataVencimento) < new Date(),
+        (r: { dataVencimento?: string }) => r.dataVencimento && new Date(r.dataVencimento) < new Date(),
       ).length;
       const total_receivables = receivables.length;
       const inadimplencia =
@@ -281,11 +279,11 @@ export class AnalyticsController {
       const fluxo_caixa = lucro_liquido;
 
       // Commercial Metrics
-      const total_leads = await (prisma as any).crmLead.count({
+      const total_leads = await ( prisma as any).crm_leads.count({
         where: { clinicId, createdAt: { gte: startOfMonth } },
       });
 
-      const converted_leads = await (prisma as any).crmLead.count({
+      const converted_leads = await ( prisma as any).crm_leads.count({
         where: {
           clinicId,
           statusFunil: "CONVERTIDO",
@@ -298,7 +296,7 @@ export class AnalyticsController {
           ? (converted_leads / total_leads) * 100
           : 0;
 
-      const marketingExpensesAgg = await (prisma as any).transaction.aggregate({
+      const marketingExpensesAgg = await ( prisma as any).financial_transactions.aggregate({
         _sum: { amount: true },
         where: {
           clinicId,
@@ -367,7 +365,7 @@ export class AnalyticsController {
       const clinicId = req.clinicId;
       if (!clinicId) return res.status(401).json({ error: "Unauthorized" });
 
-      const patients = await (prisma as any).patient.findMany({
+      const patients = await ( prisma as any).patients.findMany({
         where: {
           clinicId,
           marketingCampaign: { not: null },
@@ -381,7 +379,7 @@ export class AnalyticsController {
         },
       });
 
-      const campaigns = await (prisma as any).marketingCampaign.findMany({
+      const campaigns = await ( prisma as any).marketing_campaigns.findMany({
         where: { clinicId },
         select: {
           id: true,
@@ -395,23 +393,23 @@ export class AnalyticsController {
 
       const totalPatients = patients.length;
       const convertedPatients = patients.filter(
-        (p: any) => p.status === "TRATAMENTO" || p.status === "CONCLUIDO",
+        (p: { status: string }) => p.status === "TRATAMENTO" || p.status === "CONCLUIDO",
       ).length;
 
       const totalBudget = campaigns.reduce(
-        (sum: any, c: any) => sum + (c.budget ? Number(c.budget) : 0),
+        (sum: number, c: { budget?: unknown }) => sum + (c.budget ? Number(c.budget) : 0),
         0,
       );
       const cac = totalPatients > 0 ? totalBudget / totalPatients : 0;
       const conversionRate =
         totalPatients > 0 ? (convertedPatients / totalPatients) * 100 : 0;
 
-      const campaignROI = campaigns.map((campaign: any) => {
+      const campaignROI = campaigns.map((campaign: { id: string; name: string; budget?: unknown; status: string; createdAt: Date }) => {
         const campaignPatients = patients.filter(
-          (p: any) => p.marketingCampaign === campaign.name,
+          (p: { marketingCampaign?: string; status: string }) => p.marketingCampaign === campaign.name,
         );
         const converted = campaignPatients.filter(
-          (p: any) => p.status === "TRATAMENTO" || p.status === "CONCLUIDO",
+          (p: { status: string }) => p.status === "TRATAMENTO" || p.status === "CONCLUIDO",
         ).length;
 
         return {
@@ -436,7 +434,7 @@ export class AnalyticsController {
         { total: number; converted: number }
       > = {};
 
-      patients.forEach((p: any) => {
+      patients.forEach((p: { marketingSource?: string; status: string }) => {
         const source = p.marketingSource || "Não especificado";
         if (!sourcePerformanceAcc[source]) {
           sourcePerformanceAcc[source] = { total: 0, converted: 0 };
@@ -650,7 +648,7 @@ export class AnalyticsController {
               new Date().getMonth(),
               1,
             );
-            const count = await (prisma as any).appointment.count({
+            const count = await ( prisma as any).appointments.count({
               where: {
                 dentistId: userId,
                 status: "CONCLUIDA",
@@ -707,7 +705,7 @@ export class AnalyticsController {
     }
   }
 
-  private async saveOnboardingAnalytics(analyticsData: any) {
+  private async saveOnboardingAnalytics(analyticsData: Record<string, unknown>) {
     try {
       const { userId, clinicId, step, action, duration, metadata } =
         analyticsData;

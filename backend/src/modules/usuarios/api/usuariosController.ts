@@ -10,7 +10,7 @@ export class UsuariosController {
     try {
       const user = (req as any).user;
 
-      const profiles = await (prisma as any).profiles.findMany({
+      const profiles = await prisma.profiles.findMany({
         where: { clinic_id: user.clinicId },
       });
 
@@ -18,7 +18,7 @@ export class UsuariosController {
         .$queryRaw`SELECT id, email, last_sign_in_at FROM auth.users`;
 
       const usersWithEmail = profiles.map((p: any) => {
-        const authUser = (authUsers as any[]).find((u: any) => u.id === p.id);
+        const authUser = (authUsers as { email: string; id: string; last_sign_in_at?: string }[]).find((u) => u.id === p.id);
         return {
           id: p.id,
           email: authUser?.email || "N/A",
@@ -49,7 +49,7 @@ export class UsuariosController {
         10,
       );
 
-      const userResult = await (prisma as any).$queryRaw`
+      const userResult = await prisma.$queryRaw`
         INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, created_at, updated_at)
         VALUES (gen_random_uuid(), ${email}, ${hashedPassword}, NOW(), NOW(), NOW())
         RETURNING id, email
@@ -57,7 +57,7 @@ export class UsuariosController {
 
       const newUserId = (userResult as any[])[0].id;
 
-      await (prisma as any).profiles.create({
+      await prisma.profiles.create({
         data: {
           id: newUserId,
           clinic_id: user.clinicId,
@@ -79,7 +79,7 @@ export class UsuariosController {
       const { id } = req.params;
       const { full_name, app_role, is_active, password } = req.body;
 
-      await (prisma as any).profiles.update({
+      await prisma.profiles.update({
         where: { id },
         data: {
           ...(full_name !== undefined && { full_name }),
@@ -90,7 +90,7 @@ export class UsuariosController {
 
       if (password) {
         const hashedPassword = await bcrypt.hash(password, 10);
-        await (prisma as any).$executeRaw`
+        await prisma.$executeRaw`
           UPDATE auth.users SET encrypted_password = ${hashedPassword}, updated_at = NOW() WHERE id = ${id}::uuid
         `;
       }
@@ -107,7 +107,7 @@ export class UsuariosController {
       const { id } = req.params;
       const { is_active } = req.body;
 
-      await (prisma as any).profiles.update({
+      await prisma.profiles.update({
         where: { id },
         data: { is_active },
       });
@@ -122,7 +122,7 @@ export class UsuariosController {
     try {
       const { id } = req.params;
 
-      await (prisma as any).profiles.delete({ where: { id } });
+      await prisma.profiles.delete({ where: { id } });
       await (prisma as any)
         .$executeRaw`DELETE FROM auth.users WHERE id = ${id}::uuid`;
 
@@ -139,7 +139,7 @@ export class UsuariosController {
       const user = (req as any).user;
       const { full_name, avatar_url } = req.body;
 
-      await (prisma as any).profiles.update({
+      await prisma.profiles.update({
         where: { id: user.id },
         data: {
           ...(full_name !== undefined && { full_name }),

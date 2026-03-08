@@ -12,7 +12,7 @@ export const runScheduleAppointmentsJob = async () => {
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const appointments = await (prisma as any).agendamentos.findMany({
+    const appointments = await (prisma as any).appointments.findMany({
       where: {
         data_hora: {
           gte: now,

@@ -3,7 +3,7 @@ import * as restController from '../controllers/restController';
 
 const router = Router();
 
-// To emulate Supabase's /rest/v1/:table
+// Generic REST table endpoint
 router.get('/:table', restController.getAll);
 router.get('/:table/:id', restController.getById);
 router.post('/:table', restController.create);

@@ -1,73 +1,71 @@
-export const parseSupabaseQuery = (query: any) => {
-  const prismaQuery: any = {};
+type PrimitiveValue = string | number | boolean;
 
-  if (query.select && query.select !== "*") {
+type PrismaWhereCondition =
+  | PrimitiveValue
+  | { contains: string; mode: 'insensitive' }
+  | { in: string[] }
+  | { gte: PrimitiveValue }
+  | { lte: PrimitiveValue }
+  | { gt: PrimitiveValue }
+  | { lt: PrimitiveValue }
+  | { not: PrimitiveValue };
+
+interface PrismaQuery {
+  select?: Record<string, true>;
+  where?: Record<string, PrismaWhereCondition>;
+  orderBy?: Record<string, string>;
+  take?: number;
+  skip?: number;
+}
+
+const RESERVED_KEYS = new Set(['select', 'order', 'limit', 'offset', 'apikey', 'authorization']);
+
+/** Parse URL query value into a typed primitive (boolean / number / string). */
+function coerce(raw: string, key: string): PrimitiveValue {
+  if (raw === 'true') return true;
+  if (raw === 'false') return false;
+  if (!isNaN(Number(raw)) && raw !== '' && !key.endsWith('_id') && key !== 'id') {
+    return Number(raw);
+  }
+  return raw;
+}
+
+export const parseRestQuery = (query: Record<string, string>): PrismaQuery => {
+  const prismaQuery: PrismaQuery = {};
+
+  if (query.select && query.select !== '*') {
     prismaQuery.select = {};
-    query.select.split(",").forEach((field: string) => {
-      prismaQuery.select[field.trim()] = true;
+    query.select.split(',').forEach((field: string) => {
+      prismaQuery.select![field.trim()] = true;
     });
   }
 
-  const where: any = {};
-  for (const [key, value] of Object.entries(query)) {
-    if (
-      [
-        "select",
-        "order",
-        "limit",
-        "offset",
-        "apikey",
-        "authorization",
-      ].includes(key.toLowerCase())
-    )
-      continue;
+  const where: Record<string, PrismaWhereCondition> = {};
 
-    if (typeof value === "string") {
-      if (value.startsWith("eq.")) {
-        let val: any = value.replace("eq.", "");
-        if (val === "true") val = true;
-        if (val === "false") val = false;
-        if (!isNaN(Number(val)) && val !== "") val = Number(val);
-        where[key] = val;
-      } else if (value.startsWith("ilike.*") && value.endsWith("*")) {
+  for (const [key, value] of Object.entries(query)) {
+    if (RESERVED_KEYS.has(key.toLowerCase())) continue;
+
+    if (typeof value === 'string') {
+      if (value.startsWith('eq.')) {
+        where[key] = coerce(value.replace('eq.', ''), key);
+      } else if (value.startsWith('ilike.*') && value.endsWith('*')) {
         where[key] = {
-          contains: value.replace("ilike.*", "").replace("*", ""),
-          mode: "insensitive",
+          contains: value.replace('ilike.*', '').replace('*', ''),
+          mode: 'insensitive',
         };
-      } else if (value.startsWith("in.(")) {
-        // in.(val1,val2)
-        const vals = value.replace("in.(", "").replace(")", "").split(",");
+      } else if (value.startsWith('in.(')) {
+        const vals = value.replace('in.(', '').replace(')', '').split(',');
         where[key] = { in: vals };
-      } else if (value.startsWith("gte.")) {
-        let val: any = value.replace("gte.", "");
-        if (val === "true") val = true;
-        if (val === "false") val = false;
-        if (!isNaN(Number(val)) && val !== "") val = Number(val);
-        where[key] = { gte: val };
-      } else if (value.startsWith("lte.")) {
-        let val: any = value.replace("lte.", "");
-        if (val === "true") val = true;
-        if (val === "false") val = false;
-        if (!isNaN(Number(val)) && val !== "") val = Number(val);
-        where[key] = { lte: val };
-      } else if (value.startsWith("gt.")) {
-        let val: any = value.replace("gt.", "");
-        if (val === "true") val = true;
-        if (val === "false") val = false;
-        if (!isNaN(Number(val)) && val !== "") val = Number(val);
-        where[key] = { gt: val };
-      } else if (value.startsWith("lt.")) {
-        let val: any = value.replace("lt.", "");
-        if (val === "true") val = true;
-        if (val === "false") val = false;
-        if (!isNaN(Number(val)) && val !== "") val = Number(val);
-        where[key] = { lt: val };
-      } else if (value.startsWith("neq.")) {
-        let val: any = value.replace("neq.", "");
-        if (val === "true") val = true;
-        if (val === "false") val = false;
-        if (!isNaN(Number(val)) && val !== "") val = Number(val);
-        where[key] = { not: val };
+      } else if (value.startsWith('gte.')) {
+        where[key] = { gte: coerce(value.replace('gte.', ''), key) };
+      } else if (value.startsWith('lte.')) {
+        where[key] = { lte: coerce(value.replace('lte.', ''), key) };
+      } else if (value.startsWith('gt.')) {
+        where[key] = { gt: coerce(value.replace('gt.', ''), key) };
+      } else if (value.startsWith('lt.')) {
+        where[key] = { lt: coerce(value.replace('lt.', ''), key) };
+      } else if (value.startsWith('neq.')) {
+        where[key] = { not: coerce(value.replace('neq.', ''), key) };
       }
     }
   }
@@ -77,8 +75,8 @@ export const parseSupabaseQuery = (query: any) => {
   }
 
   if (query.order) {
-    const [field, dir] = query.order.split(".");
-    prismaQuery.orderBy = { [field]: dir || "asc" };
+    const [field, dir] = query.order.split('.');
+    prismaQuery.orderBy = { [field]: dir || 'asc' };
   }
 
   if (query.limit) {

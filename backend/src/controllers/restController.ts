@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { parseSupabaseQuery } from "../utils/queryParser";
+import { parseRestQuery } from "../utils/queryParser";
 import prisma from "../utils/prisma";
 
 const getModel = (tableName: string) => {
@@ -15,7 +15,7 @@ export const getAll = async (req: Request, res: Response) => {
         return;
     }
 
-    const queryArgs = parseSupabaseQuery(req.query);
+    const queryArgs = parseRestQuery(req.query as Record<string, string>);
     const data = await model.findMany(queryArgs);
     res.json(data);
   } catch (error: any) {

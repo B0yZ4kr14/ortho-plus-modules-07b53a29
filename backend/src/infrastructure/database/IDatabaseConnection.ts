@@ -1,7 +1,7 @@
 /**
  * IDatabaseConnection - Abstração de conexão com banco de dados
  * 
- * Permite trocar implementação (Supabase Cloud <-> PostgreSQL local)
+ * Permite trocar implementação de banco de dados
  * sem alterar lógica de negócio dos módulos.
  */
 
@@ -66,7 +66,7 @@ export interface IDatabaseConnection {
  * Tipo de implementação de banco
  */
 export enum DatabaseType {
-  SUPABASE_CLOUD = 'supabase_cloud',
-  SUPABASE_SELF_HOSTED = 'supabase_self_hosted',
+  HOSTED_CLOUD = 'hosted_cloud',
+  SELF_HOSTED = 'self_hosted',
   POSTGRES_LOCAL = 'postgres_local',
 }

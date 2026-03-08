@@ -1,7 +1,7 @@
 /**
  * IStorageService - Abstração de armazenamento de arquivos
  * 
- * Permite trocar implementação (Supabase Storage <-> MinIO local)
+ * Permite trocar implementação de armazenamento (S3/MinIO)
  * sem alterar lógica de negócio dos módulos.
  */
 
@@ -102,8 +102,8 @@ export interface IStorageService {
  * Tipo de implementação de storage
  */
 export enum StorageType {
-  SUPABASE_CLOUD = 'supabase_cloud',
-  SUPABASE_SELF_HOSTED = 'supabase_self_hosted',
+  HOSTED_CLOUD = 'hosted_cloud',
+  SELF_HOSTED = 'self_hosted',
   MINIO_LOCAL = 'minio_local',
   S3_COMPATIBLE = 's3_compatible',
 }

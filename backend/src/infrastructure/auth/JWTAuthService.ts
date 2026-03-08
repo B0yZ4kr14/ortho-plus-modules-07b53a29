@@ -1,7 +1,7 @@
 /**
  * JWTAuthService - Implementação JWT local
  *
- * Para uso on-premises sem Supabase Auth
+ * Implementação JWT standalone
  */
 
 import { IDatabaseConnection } from "@/infrastructure/database/IDatabaseConnection";

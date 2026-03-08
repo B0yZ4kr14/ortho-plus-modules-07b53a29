@@ -312,7 +312,7 @@ export class CryptoConfigController {
           });
 
           if (existingTx.conta_receber_id) {
-            await (prisma as any).contas_receber.update({
+            await prisma.contas_receber.update({
               where: { id: existingTx.conta_receber_id },
               data: { status: "PAGO", data_pagamento: new Date() },
             });
@@ -353,7 +353,7 @@ export class CryptoConfigController {
         }
       }
 
-      await (prisma as any).audit_logs.create({
+      await prisma.audit_logs.create({
         data: {
           clinic_id: wallet.clinic_id,
           action: "CRYPTO_TRANSACTION_WEBHOOK",
